@@ -5,11 +5,12 @@
 [![Format](https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON)](http://json.org)  
 [![License](https://img.shields.io/badge/license-MIT-608060.svg?style=plastic)](../LICENSE)
 
-> `CXJSON` is a [`JSON`](http://json.org/) parser and generator based on [`CXON`](../README.md)
+> `CXJSON` is a polymorphic `C++` type for binding of an arbitrary [`JSON`](http://json.org/)  
+> `CXJSON` is using [`CXON`](../README.md) for serialization
 
 ## Introduction
 
-`CXJSON` is an implementation of a polymorphic type capable to represent arbitrary`JSON` data.  
+`CXJSON` is an implementation of a polymorphic type, which can describe an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
   - object - [`std::map`](https://en.cppreference.com/w/cpp/container/map)
   - array - [`std::vector`](https://en.cppreference.com/w/cpp/container/vector)
@@ -20,7 +21,7 @@
 
 ##### Example 1
 
-Creation, write and read of a simple `JSON`:
+Build, write and read of a simple `JSON`:
 
 ``` c++
     using node = cxjson::node;
@@ -42,7 +43,7 @@ Creation, write and read of a simple `JSON`:
 
 ##### Example 2
 
-Create, write and read using all available methods:
+Build using node's methods:
 
 ``` c++
     using node = cxjson::node;
@@ -104,6 +105,6 @@ See [`CXON`](../README.md#installation).
 
 -------------------------------------------------------------------------------
 
-Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.
+Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.
 
 [GitHub](https://github.com/oknenavin/cxon)  
