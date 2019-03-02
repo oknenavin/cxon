@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
         for (auto& c : pass) {
             std::ifstream is(c.source, std::ifstream::binary);
                 if (!is) {
-                    ++err, c.error = "cannot be opened";
+                    ++err, c.error = c.source + ": cannot be opened";
                     continue;
                 }
             std::string const s = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
