@@ -1,11 +1,12 @@
 # `CXJSON` library
 
-[![CXON](https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic)](https://github.com/libcxon/cxon)  
-[![Language](https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B)](https://isocpp.org/wiki/faq/cpp11)
-[![Format](https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON)](http://json.org)  
-[![License](https://img.shields.io/badge/license-MIT-608060.svg?style=plastic)](../LICENSE)
+[![Version][url-cxon-image]](https://github.com/libcxon/cxon)
+[![Version][url-version-image]](https://github.com/libcxon/cxon)  
+[![Language][url-language-image]](https://isocpp.org/wiki/faq/cpp11)
+[![Format][url-format-image]](http://json.org)  
+[![License][url-license-image]](../LICENSE)
 
-> `CXJSON` is a polymorphic `C++` type for binding of an arbitrary [`JSON`](http://json.org/)  
+> `CXJSON` is a polymorphic `C++` type for binding of an arbitrary `JSON`  
 > `CXJSON` is using [`CXON`](../README.md) for serialization
 
 ## Introduction
@@ -21,24 +22,24 @@
 
 ##### Example 1
 
-Build, write and read of a simple `JSON`:
+Build, write and read:
 
 ``` c++
     using node = cxjson::node;
         
-    char const s1[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
-    node const n2 = node::object {
+    char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
+    node const n0 = node::object {
         { "even", node::array { 2, 4, 6 } },
         { "odd", node::array { 1, 3, 5 } }
     };
 
     node n1; // read
-        cxon::from_chars(n1, s1);
-    assert(n1 == n2);
+        cxon::from_chars(n1, s0);
+    assert(n1 == n0);
 
-    std::string s2; // write
-        cxon::to_chars(s2, n2);
-    assert(s1 == s2);
+    std::string s1; // write
+        cxon::to_chars(s1, n0);
+    assert(s1 == s0);
 ```
 
 ##### Example 2
@@ -67,24 +68,26 @@ Build using node's methods:
     };
 
     // build using node's methods
-    node n2; // default node (of node_type::null)
+    node n2;
+        assert(n2.is<node::null>()); // default node type is node_type::null
         auto& o = n2.imbue<node::object>(); // change the type and return its value
-            o["object"] = node::object {};  // default node::object type is std::map
-            o["array"] = node::array {};
-            o["string"] = "string";
-            o["number"] = 3.14;
-            o["boolean"] = false;
-            o["null"] = nullptr;
-        auto& o1 = o["object"].get<node::object>(); // get node::object
+            assert(n2.is<node::object>());
+            o["object"] = node::object {};      assert(o["object"].is<node::object>());
+            o["array"] = node::array {};        assert(o["array"].is<node::array>());
+            o["string"] = "string";             assert(o["string"].is<node::string>());
+            o["number"] = 3.14;                 assert(o["number"].is<node::number>());
+            o["boolean"] = false;               assert(o["boolean"].is<node::boolean>());
+            o["null"] = nullptr;                assert(o["null"].is<node::null>());
+        auto& o1 = o["object"].get<node::object>(); // get value reference, the type is known
             o1["object"] = 0;
-        auto& a = o["array"].get<node::array>();    // get node::array
-            a.push_back(node::object {});           // default node::array type is std::vector
-            a.push_back(node::array { 1, 2, 3 });
-            a.push_back("4");
-            a.push_back(5);
-            a.push_back(true);
-            a.push_back(nullptr);
-        auto* o2 = a[0].get_if<node::object>(); // get value pointer if node's type match
+        auto& a = o["array"].get<node::array>();    // get value reference, the type is known
+            a.push_back(node::object {});       assert(a.back().is<node::object>());
+            a.push_back(node::array {1, 2, 3}); assert(a.back().is<node::array>());
+            a.push_back("4");                   assert(a.back().is<node::string>());
+            a.push_back(5);                     assert(a.back().is<node::number>());
+            a.push_back(true);                  assert(a.back().is<node::boolean>());
+            a.push_back(nullptr);               assert(a.back().is<node::null>());
+        auto* o2 = a[0].get_if<node::object>(); // get value pointer if the type match
             (*o2)["object"] = 0;
     assert(n1 == n2);
 
@@ -95,16 +98,43 @@ Build using node's methods:
     assert(s1 == s2);
 ```
 
-## Installation
+The resulting `JSON` is:
 
-See [`CXON`](../README.md#installation).
+``` json
+    {
+        "object": {"object": 0},
+        "array": [
+            {"object": 0},
+            [1, 2, 3],
+            "4",
+            5,
+            true,
+            null
+        ],
+        "string": "string",
+        "number": 3.1400000000000001,
+        "boolean": false,
+        "null": null
+    }
+```
+
+## Installation & Compilation
+
+See [`CXON`](../README.md#compilation).
 
 ## Documentation
 
-[MANUAL.md](MANUAL.md)
+See the [MANUAL](MANUAL.md).
 
--------------------------------------------------------------------------------
+## Contributing
 
-Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.
+Any contributions are welcome.  
+Contact via [GitHub](https://github.com/oknenavin/cxon) or [mail](mailto:oknenavin@outlook.com).
 
-[GitHub](https://github.com/oknenavin/cxon)  
+
+<!-- links -->
+[url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
+[url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[url-language-image]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
+[url-format-image]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
+[url-license-image]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
