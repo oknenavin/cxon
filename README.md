@@ -6,10 +6,12 @@
 [![License](https://img.shields.io/badge/license-MIT-608060.svg?style=plastic)](LICENSE)
 
 > `CXON` is a _simple_, non-intrusive `C++` serialization library  
-> `CXON`'s default serialization format is `UTF-8` encoded [`JSON`](http://json.org/) thus,
-> `CXON` allows direct binding of `JSON` data to `C++` types - no other `JSON` library is needed  
-> `CXON` is `C++11` compliant, header-only library with no dependencies besides the standard library  
+> `CXON`'s default serialization format is `UTF-8` encoded `JSON`  
+> `CXON` makes it trivial to bind `JSON` to arbitrary `C++` types  
+> `CXON` is `C++11` compliant, self contained, header-only library  
 > `CXON` core library consist of one header
+
+`CXON/JSON` strictly complies with [`RFC7159`](https://www.ietf.org/rfc/rfc7159.txt) / [`ECMA-404`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 
 ## Introduction
 
