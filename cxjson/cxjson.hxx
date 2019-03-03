@@ -79,6 +79,7 @@ namespace cxjson {
 
     namespace bits {
 
+        template <typename N, typename T>   struct query;
         template <typename N, typename T>   struct imbue;
         template <typename N, typename T>   struct get;
         template <typename N, typename T>   struct get_if;
@@ -207,6 +208,9 @@ namespace cxjson {
 
             node_type type() const noexcept                         { return type_; }
 
+            template <typename N, typename T> friend struct bits::query;
+            template <typename T>       bool  is() const            { return bits::query<basic_node, T>::it(*this); }
+
             template <typename N, typename T> friend struct bits::imbue;
             template <typename T>       T& imbue()                  { return bits::imbue<basic_node, T>::it(*this); }
 
@@ -243,6 +247,19 @@ namespace cxjson {
         };
 
     namespace bits {
+
+#       define CXJSON_DEF(T)\
+            template <typename N>\
+                struct query<N, typename N::T> {\
+                    static bool it(const N& n)      { return n.type_ == node_type::T; }\
+                }
+            CXJSON_DEF(object);
+            CXJSON_DEF(array);
+            CXJSON_DEF(string);
+            CXJSON_DEF(number);
+            CXJSON_DEF(boolean);
+            CXJSON_DEF(null);
+#       undef CXJSON_DEF
 
         template <typename N, typename V>
             inline V& imbue_it(N& n, node_type& nt, node_type t, V& v) {
