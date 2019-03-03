@@ -18,24 +18,24 @@ _Defined in header [cxjson.hxx](cxjson.hxx)_
 
 Type            | Definition
 ----------------|----------------------------------------------------
-`cxjson::node` | `using node = basic_node<node_traits>;`
+`cxjson::node`  | `using node = basic_node<node_traits>;`
 
 ##### Template parameters
 -------------------------------------------------------------------------------
 
-  - `Traits` - traits class specifying the actual types of each `JSON` type
+  - `Traits` - traits class specifying the actual types of each `JSON` value type
 
 ##### Member types
 -------------------------------------------------------------------------------
 
-Member type|Definition
------------|-----------
-`object`  | `Traits::object_type`
-`array`   | `Traits::array_type`
-`string`  | `Traits::string_type`
-`number`  | `Traits::number_type`
-`boolean` | `Traits::boolean_type`
-`null`    | `Traits::null_type`
+Member type |Definition
+------------|-----------
+`object`    | `Traits::object_type`
+`array`     | `Traits::array_type`
+`string`    | `Traits::string_type`
+`number`    | `Traits::number_type`
+`boolean`   | `Traits::boolean_type`
+`null`      | `Traits::null_type`
 
 ##### Member functions
 -------------------------------------------------------------------------------
