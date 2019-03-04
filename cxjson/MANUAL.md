@@ -14,31 +14,27 @@ _Defined in header [cxjson.hxx](cxjson.hxx)_
 ```
 
 ##### Aliases
--------------------------------------------------------------------------------
 
 Type            | Definition
 ----------------|----------------------------------------------------
 `cxjson::node`  | `using node = basic_node<node_traits>;`
 
 ##### Template parameters
--------------------------------------------------------------------------------
 
   - `Traits` - traits class specifying the actual types of each `JSON` value type
 
 ##### Member types
--------------------------------------------------------------------------------
 
 Member type |Definition
 ------------|-----------
-`object`    | `Traits::object_type`
-`array`     | `Traits::array_type`
-`string`    | `Traits::string_type`
-`number`    | `Traits::number_type`
-`boolean`   | `Traits::boolean_type`
 `null`      | `Traits::null_type`
+`boolean`   | `Traits::boolean_type`
+`number`    | `Traits::number_type`
+`string`    | `Traits::string_type`
+`array`     | `Traits::array_type<basic_node>`
+`object`    | `Traits::object_type<string, basic_node>`
 
 ##### Member functions
--------------------------------------------------------------------------------
 
 [`(constructor)`](#constructor) - construct a basic_node  
 `(destructor)` - destroys the node, deallocating internal storage if used  
@@ -53,16 +49,15 @@ Member type |Definition
 [`operator !=`](#comparison-operators) - assigns values to the node  
 
 -------------------------------------------------------------------------------
-
 ##### Constructor
 
 ``` c++
-    basic_node();
+    basic_node();                       (1)
 
-    basic_node(basic_node&& n);
-    basic_node(const basic_node& n);
+    basic_node(basic_node&& o);         (2)
+    basic_node(const basic_node& o);
 
-    basic_node(object&& v);
+    basic_node(object&& v);             (3)
     basic_node(const object& v)
     basic_node(array&& v);
     basic_node(const array& v)
@@ -75,23 +70,58 @@ Member type |Definition
     basic_node(null&& v);
     basic_node(const null& v)
 
-    basic_node(int v);
+    basic_node(int v);                  (4)
     basic_node(const char* v)
 ```
 
-##### Destructor
+Constructs new node from a variety of data sources.
+  1. Default constructor. Constructs node with `null` value type.
+  2. Move and copy constructors:
+     - constructs the node with the contents of `o` using move semantics, `o` is left  
+       in valid state, but its value is in unspecified state
+     - constructs the node with the copy of the contents of `o`
+  3. Move and copy constructors for each value type
+  4. Constructors for `string` and `number` value types
+
+###### Example
 
 ``` c++
-    ~basic_node();
+    using cxjson;
+
+    {   // (1)
+        node n; assert(n.is<node::null>());
+    }
+    {   // (2)
+        node o = true; assert(o.is<node::boolean>());
+        node n(o); assert(n.is<node::boolean>() && n.get<node::boolean>());
+    }
+    {   // (3)
+        node n(42.0); assert(n.is<node::number>() && n.get<node::number>() == 42.0);
+    }
+    {   // (3)
+        node::object const o = { {"key", "value"} };
+        node n(o); assert(n.is<node::object>() && n.get<node::object>() == o);
+    }
+    {   // (3)
+        node::array const a = { 1, "string" };
+        node n(a); assert(n.is<node::array>() && n.get<node::array>() == a);
+    }
+    {   // (4)
+        node n(42); assert(n.is<node::number>() && n.get<node::number>() == 42);
+    }
+    {   // (4)
+        node n("string"); assert(n.is<node::string>() && n.get<node::string>() == "string");
+    }
 ```
 
+-------------------------------------------------------------------------------
 ##### assignment operator
 
 ``` c++
-    basic_node& operator =(basic_node&& n);
-    basic_node& operator =(const basic_node& n);
+    basic_node& operator =(basic_node&& o);         (1)
+    basic_node& operator =(const basic_node& o);
 
-    basic_node& operator =(object&& v);
+    basic_node& operator =(object&& v);             (2)
     basic_node& operator =(const object& v)
     basic_node& operator =(array&& v);
     basic_node& operator =(const array& v)
@@ -105,28 +135,65 @@ Member type |Definition
     basic_node& operator =(const null& v)
 
     basic_node& operator =(int v);
-    basic_node& operator =(const char* v)
+    basic_node& operator =(const char* v)           (3)
 ```
 
+Replaces the contents of the node. 
+  1. Replaces the content with those of `o`:
+     - using move semantics, `o` is left in valid state, but its value is in unspecified state
+     - Copy constructor - constructs the node with the copy of the contents of `o`
+  2. For each value type, replaces the content with those of `v`
+  3. For `string` and `number` value types, replaces the content with those of `v`
+
+###### Return value
+
+`*this`
+
+-------------------------------------------------------------------------------
 ##### reset
 
 ``` c++
     void reset()
 ```
 
+Resets the content of node, the value type is left `null`.
+
+###### Return value
+
+(none)
+
+-------------------------------------------------------------------------------
 ##### type
 
 ``` c++
     node_type type() const noexcept;
 ```
 
+###### Return value
+
+value type id
+
+``` c++
+    using namespace cxjson;
+
+    node const n; assert(n.type() == node_type::null);
+```
+
+-------------------------------------------------------------------------------
 ##### is
 
 ``` c++
     template <typename T>
-        bool  is() const;
+        bool is() const;
 ```
 
+Checks if value type is `T`.
+
+###### Return value
+
+`bool` if the type is `T`, `false` otherwise
+
+-------------------------------------------------------------------------------
 ##### imbue
 
 ``` c++
@@ -134,6 +201,30 @@ Member type |Definition
         T& imbue()
 ```
 
+Changes the value type of the node. If `T` is different than nodes's value type,
+the content is reset.
+
+###### Return value
+
+If `T` is same as the value type, a reference to it; otherwise, reference to the
+new value
+
+###### Example
+
+``` c++
+    using namespace cxjson;
+
+    {   // T is the same
+        node n = "string";
+        node::string& v = n.imbue<node::string>(); assert(v == "string");
+    }
+    {   // T is not the same
+        node n = "string";
+        node::number& v = n.imbue<node::number>(); assert(v == 0);
+    }
+```
+
+-------------------------------------------------------------------------------
 ##### get
 
 ``` c++
@@ -143,6 +234,21 @@ Member type |Definition
         const T& get() const;
 ```
 
+###### Return value
+
+value reference, the behavior is undefined if `T` is not same as the value type
+
+###### Example
+
+``` c++
+    using namespace cxjson;
+
+    node n = "one";
+        n.get<node::string>() = "another";
+    assert(n.get<node::string>() == "another");
+```
+
+-------------------------------------------------------------------------------
 ##### get_if
 
 ``` c++
@@ -152,9 +258,29 @@ Member type |Definition
         const T* get_if() const noexcept
 ```
 
+###### Return value
+
+value pointer if `T` is same as the value type, `nullptr` otherwise
+
+###### Example
+
+``` c++
+    using namespace cxjson;
+
+    node n = "one";
+        auto *v = n.get_if<node::string>(); assert(v != nullptr);
+    assert(n.get_if<node::array>() == nullptr);
+```
+
+-------------------------------------------------------------------------------
 ##### comparison operators
 
 ``` c++
-    bool operator == (const basic_node& n) const;
-    bool operator != (const basic_node& n) const;
+    bool operator == (const basic_node& n) const; (1)
+    bool operator != (const basic_node& n) const; (2)
 ```
+
+###### Return value
+
+1. `true` if equal, `false` otherwise
+2. `false` if equal, `true` otherwise

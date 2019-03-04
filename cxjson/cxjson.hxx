@@ -123,9 +123,9 @@ namespace cxjson {
             basic_node() noexcept : type_(node_type::null)  {}
             ~basic_node()                                   { reset(); }
 
-            basic_node(basic_node&& n) noexcept(is_nothrow_move_constructible::value) : type_(n.type_) {
-                switch (n.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: new (&reinterpret_cast<T&>(value_)) T(std::move(n.get<T>())); break
+            basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : type_(o.type_) {
+                switch (o.type_) {
+#                   define CXJSON_DEF(T)    case node_type::T: new (&reinterpret_cast<T&>(value_)) T(std::move(o.get<T>())); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -135,9 +135,9 @@ namespace cxjson {
 #                   undef CXJSON_DEF
                 }
             }
-            basic_node& operator =(basic_node&& n) noexcept(is_nothrow_move_assignable::value) {
-                switch (n.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: get<T>() = std::move(n.get<T>()); break
+            basic_node& operator =(basic_node&& o) noexcept(is_nothrow_move_assignable::value) {
+                switch (o.type_) {
+#                   define CXJSON_DEF(T)    case node_type::T: get<T>() = std::move(o.get<T>()); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -149,9 +149,9 @@ namespace cxjson {
                 return *this;
             }
 
-            basic_node(const basic_node& n) : type_(n.type_) {
-                switch (n.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: new (&reinterpret_cast<T&>(value_)) T(n.get<T>()); break
+            basic_node(const basic_node& o) : type_(o.type_) {
+                switch (o.type_) {
+#                   define CXJSON_DEF(T)    case node_type::T: new (&reinterpret_cast<T&>(value_)) T(o.get<T>()); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -161,9 +161,9 @@ namespace cxjson {
 #                   undef CXJSON_DEF
                 }
             }
-            basic_node& operator =(const basic_node& n) {
-                switch (n.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: imbue<T>() = n.get<T>(); break
+            basic_node& operator =(const basic_node& o) {
+                switch (o.type_) {
+#                   define CXJSON_DEF(T)    case node_type::T: imbue<T>() = o.get<T>(); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
