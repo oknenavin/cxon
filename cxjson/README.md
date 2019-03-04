@@ -1,6 +1,6 @@
 # `CXJSON` library
 
-[![Version][url-cxon-image]](https://github.com/libcxon/cxon)
+[![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
 [![Version][url-version-image]](https://github.com/libcxon/cxon)  
 [![Language][url-language-image]](https://isocpp.org/wiki/faq/cpp11)
 [![Format][url-format-image]](http://json.org)  
@@ -13,12 +13,12 @@
 
 `CXJSON` is an implementation of a polymorphic type, which can describe an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
-  - object - [`std::map`](https://en.cppreference.com/w/cpp/container/map)
-  - array - [`std::vector`](https://en.cppreference.com/w/cpp/container/vector)
-  - string - [`std::string`](https://en.cppreference.com/w/cpp/string/basic_string)
-  - number - [`double`](https://en.cppreference.com/w/cpp/language/types)
-  - true|false - [`bool`](https://en.cppreference.com/w/cpp/language/types)
-  - null - [`std::nullptr_t`](https://en.cppreference.com/w/cpp/language/types)
+  - object - [`std::map`][url-cpp-map]
+  - array - [`std::vector`][url-cpp-vect]
+  - string - [`std::string`][url-cpp-bstr]
+  - number - [`double`][url-cpp-types]
+  - true|false - [`bool`][url-cpp-types]
+  - null - [`std::nullptr_t`][url-cpp-types]
 
 ##### Example 1
 
@@ -138,3 +138,7 @@ Contact via [GitHub](https://github.com/oknenavin/cxon) or [mail](mailto:oknenav
 [url-language-image]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
 [url-format-image]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [url-license-image]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[url-cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
+[url-cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
+[url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[url-cpp-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124

@@ -1,6 +1,7 @@
 # `CXON/CXJSON` library
 
-[![CXON](https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic)](https://github.com/libcxon/cxon)
+[![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
+[![CXON][url-version-image]](https://github.com/libcxon/cxon)
 
 -------------------------------------------------------------------------------
 
@@ -278,3 +279,8 @@ _Example_
 _Return value_  
 1. `true` if equal, `false` otherwise
 2. `false` if equal, `true` otherwise
+
+
+<!-- links -->
+[url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
+[url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic

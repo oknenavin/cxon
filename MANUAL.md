@@ -1,33 +1,45 @@
 # `CXON` library
 
-[![CXON](https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic)](https://github.com/libcxon/cxon)  
+[![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
+[![CXON][url-version-image]](https://github.com/libcxon/cxon)  
 
 (in progress)
 
-## Interface
+### Introduction
 
-As mentioned, `CXON` interface is a generalization of `C++17`'s
-[`<charconv>`](https://en.cppreference.com/w/cpp/header/charconv) interface:
+`CXON` defines and implements an interface which is generalization of C++17's
+[`<charconv>`][url-cpp-charconv] interface:
 
 ``` c++
     namespace cxon {
 
-        template <typename FormatTraits = JSON<json_format_traits>, typename T, typename InIt>
-            from_chars_result<InIt> from_chars(T& t, InIt b, InIt e);
+        template <typename InIt>
+            struct from_chars_result {
+                std::error_condition ec;
+                InIt end;
+            };
 
-        template <typename FormatTraits = JSON<json_format_traits>, typename OutIt, typename T>
-            to_chars_result<OutIt> to_chars(OutIt o, const T& t);
+        template <typename Traits, typename T, typename InIt, typename ...CtxPrm>
+            inline from_chars_result<> from_chars(T& t, InIt b, InIt e, CtxPrm... p);
+
+        template <typename Out>
+            struct to_chars_result {
+                std::error_condition ec;
+                Out end;
+            };
+
+        template <typename Traits, typename Out, typename T, typename ...CtxPrm>
+            inline to_chars_result<> to_chars(Out o, const T& t, CtxPrm... p);
 
     }
 ```
 
-  - [`FormatTraits`](#format-traits) template parameter allows selection and/or configuration of 
-    given serialization format
-  - `JSON<json_format_traits>` default value is a [_format-selector_](#format-traits)
-  - `InIt` and `OutIt` template parameters are only required to meet 
-    [input](https://en.cppreference.com/w/cpp/named_req/InputIterator) and 
-    [output](https://en.cppreference.com/w/cpp/named_req/OutputIterator) iterator requirements thus,
-    `CXON` can be used with streams
+##### Template parameters
+  - [`Traits`](#format-traits) - traits class specifying given serialization format
+  - `T` - the type of the value to serialize
+  - `InIt` - the type of the iterator, must meet at least [InputIterator][url-cpp-init] requirements
+  - `CtxPrm` - the types of the remaining parameters (see [TODO]())
+  - `Out` - TODO
 
 ## Implementation Bridge
 
@@ -104,7 +116,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 By using of the non-intrusive methods, core `CXON` implements good part of `C++`'s 
 fundamental and standard libraries types:
 
-  - [fundamental types](https://en.cppreference.com/w/cpp/language/types)
+  - [fundamental types][url-cpp-fund-types]
     - `nullptr_t`
     - `bool`
     - character types - `char`, `wchar_t`, `char16_t` and `char32_t`
@@ -112,10 +124,10 @@ fundamental and standard libraries types:
     - floating-point types - `float`, `double`, `long double`
   - arrays and pointers
   - standard library types
-    - [`std::basic_string`](https://en.cppreference.com/w/cpp/string/basic_string)
-    - [`std::tuple`](https://en.cppreference.com/w/cpp/utility/tuple)
-    - [`std::pair`](https://en.cppreference.com/w/cpp/utility/pair)
-    - [containers library](https://en.cppreference.com/w/cpp/container) - in its entirety
+    - [`std::basic_string`][url-cpp-bstr]
+    - [`std::tuple`][url-cpp-tuple]
+    - [`std::pair`][url-cpp-pair]
+    - [containers library][url-cpp-container] - in its entirety
 
 Core library also provides convenient way for binding of `enum`s and `struct`s via
 set of simple non-intrusive and intrusive macros (only a thin and debug friendly wrappers).
@@ -251,7 +263,7 @@ namespace cxon {
 
 will work with any custom traits.  
 _Here, the helper types `cxon::enable_for_t` is convenience typedef based on 
-[`std::enable_if`](https://en.cppreference.com/w/cpp/types/enable_if)._
+[`std::enable_if`][url-cpp-enab-if]._
 
 
 ##### Example (JSON-RPC)
@@ -364,3 +376,17 @@ implementation:
 Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.
 
 [GitHub](https://github.com/oknenavin/cxon)  
+
+
+<!-- links -->
+[url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
+[url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[url-cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
+[url-cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
+[url-cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[url-cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
+[url-cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
+[url-cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[url-cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
