@@ -1,7 +1,9 @@
 ## `CXON` library
 
 [![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
-[![CXON][url-version-image]](https://github.com/libcxon/cxon)  
+[![CXON][url-version-image]](https://github.com/libcxon/cxon)
+
+--------------------------------------------------------------------------------
 
 (in progress)
 
@@ -370,10 +372,8 @@ assert(r && ret.id == 1 && ret.error.code == 42 && ret.error.message == "divide 
 
 ```
 
--------------------------------------------------------------------------------
-
-Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.
-
+--------------------------------------------------------------------------------
+Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 
 

@@ -19,8 +19,8 @@ namespace cxjson {
 ###### Aliases
 
 Type            | Definition
-----------------|----------------------------------------
-`cxjson::node`  | `using node = basic_node<node_traits>;`
+----------------|---------------------------------------
+`cxjson::node`  | `using node = basic_node<node_traits>`
 
 ###### Template parameters
 
@@ -274,8 +274,11 @@ bool operator != (const basic_node& n) const; (2)
 - (1) `true` if equal, `false` otherwise
 - (2) `false` if equal, `true` otherwise
 
-
 --------------------------------------------------------------------------------
+Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.  
+[GitHub](https://github.com/oknenavin/cxon)  
+
+
 <!-- links -->
 [url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic

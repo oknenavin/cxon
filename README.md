@@ -6,6 +6,8 @@
 [![Format][url-format-image]](http://json.org)  
 [![License][url-license-image]](LICENSE)
 
+--------------------------------------------------------------------------------
+
 > `CXON` is a _simple_, non-intrusive `C++` serialization library  
 > `CXON`'s default serialization format is `UTF-8` encoded `JSON`  
 > `CXON` makes it trivial to bind `JSON` to arbitrary `C++` types  
@@ -16,31 +18,63 @@
 
 #### Introduction
 
+`CXON` defines and implements an interface, which is a generalization of C++17's
+[`<charconv>`][url-cpp-charconv] interface.
+
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it DOM, DOM-like, etc., mimicking popular `XML` libraries.  
 In contrast, `CXON` binds `JSON` to any suitable `C++` type, though [`CXJSON`](cxjson/README.md),
-which is part of `CXON`, is an implementation of such type.  
-`CXON` defines and implements an interface which is generalization of C++17's
-[`<charconv>`][url-cpp-charconv] interface.
+which is part of `CXON`, is an implementation of such a type.
+
+`CXON` implements good part of `C++`'s fundamental and standard libraries types including:
+
+- [fundamental types][url-cpp-fund-types]
+    - `nullptr_t`
+    - `bool`
+    - character types - `char`, `wchar_t`, `char16_t` and `char32_t`
+    - integral types - `signed` and `unsigned` `char`, `short`, `int`, `long`, `long long`
+    - floating-point types - `float`, `double`, `long double`
+- arrays and pointers of arbitrary types
+- standard library types
+    - [`std::basic_string`][url-cpp-bstr]
+    - [`std::tuple`][url-cpp-tuple]
+    - [`std::pair`][url-cpp-pair]
+    - [containers library][url-cpp-container] - in its entirety
+
+`CXON` can be easily extended for arbitray type, using intrusive and non-intrusive methods
+(see the [`MANUAL`](MANUAL.md#implemanetation-bridge) for details). But for convenience,
+core library also provides a way for binding of `enum` and `struct` types via a set of simple,
+non-intrusive and intrusive macros (thin and debug friendly wrappers).
 
 ###### Example
 
 Bind to a library type:
 
 ``` c++
+#include "cxon/cxon.hxx"
+#include <cassert>
+
+// an arbitrary complex combination of fundamental and library types
 using my_type = std::map<std::string, std::vector<int>>;
 
-my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
-        mv2;
-std::string json;
-    cxon::to_chars(json, mv1);
-    cxon::from_chars(mv2, json);
-assert(mv1 == mv2);
+int main() {
+    my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
+            mv2;
+    std::string json;
+        // write it to output-iterator, container, buffer, etc.
+        cxon::to_chars(json, mv1);
+        // read it from input-iterator, container, buffer, etc.
+        cxon::from_chars(mv2, json);
+    assert(mv1 == mv2);
+}
 ```
 
 Bind to a custom type:
 
 ``` c++
+#include "cxon/cxon.hxx"
+#include <cassert>
+
 struct my_type {
     std::vector<int> even;
     std::list<int> odd;
@@ -48,17 +82,21 @@ struct my_type {
         return even == v.even && odd == v.odd;
     }
 };
+
+// in this simple case, some trivial macros can be used to implement the type for CXON
 CXON_STRUCT(my_type,
     CXON_STRUCT_FIELD_ASIS(even),
     CXON_STRUCT_FIELD_ASIS(odd)
 )
-...
-my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
-        mv2;
-std::string json;
-    cxon::to_chars(json, mv1);
-    cxon::from_chars(mv2, json);
-assert(mv1 == mv2);
+
+int main() {
+    my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
+            mv2;
+    std::string json;
+        cxon::to_chars(json, mv1);
+        cxon::from_chars(mv2, json);
+    assert(mv1 == mv2);
+}
 ```
 
 In both cases `my_type` is bound to the same `JSON`:
@@ -76,13 +114,14 @@ In both cases `my_type` is bound to the same `JSON`:
 
 #### Installation
 
-Copy the header(s) you need or use the provided makefile to install `CXON` on `POSIX` systems:
+`CXON` is a header-only library, copy the header(s) you need or use
+the provided makefile to install it on `POSIX` systems:
 
 ``` bash
 $ make install
 ```
 
-Run the test suites with:
+or run the test suites with:
 
 ``` bash
 # g++
@@ -97,11 +136,15 @@ See the [MANUAL](MANUAL.md).
 
 #### Contributing
 
-Any contributions are welcome.  
-Contact via [GitHub][url-github] or [mail](mailto:oknenavin@outlook.com).
-
+Any kind of contribution (code, feedback, etc.) is welcome.  
+Contact via [GitHub][url-github] (create an issue even it's just a question) or
+[mail](mailto:oknenavin@outlook.com).
 
 --------------------------------------------------------------------------------
+Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.  
+[GitHub](https://github.com/oknenavin/cxon)  
+
+
 <!-- links -->
 [url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [url-github]: https://github.com/oknenavin/cxon
@@ -111,3 +154,8 @@ Contact via [GitHub][url-github] or [mail](mailto:oknenavin@outlook.com).
 [url-license-image]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
 [url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [url-cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
+[url-cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[url-cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
+[url-cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
+[url-cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942

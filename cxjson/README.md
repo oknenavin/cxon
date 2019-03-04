@@ -6,6 +6,8 @@
 [![Format][url-format-image]](http://json.org)  
 [![License][url-license-image]](../LICENSE)
 
+--------------------------------------------------------------------------------
+
 > `CXJSON` is a polymorphic `C++` type for binding of an arbitrary `JSON`  
 > `CXJSON` is using [`CXON`](../README.md) for serialization
 
@@ -69,8 +71,8 @@ node n1 = node::object {
 
 // build using node's methods
 node n2;
-    assert(n2.is<node::null>()); // default node type is node_type::null
-    auto& o = n2.imbue<node::object>(); // change the type and return its value
+    assert(n2.is<node::null>()); // default node type is node::null
+    auto& o = n2.imbue<node::object>(); // change the type and return reference of the value
         assert(n2.is<node::object>());
         o["object"] = node::object {};      assert(o["object"].is<node::object>());
         o["array"] = node::array {};        assert(o["array"].is<node::array>());
@@ -98,7 +100,7 @@ std::string s2;
 assert(s1 == s2);
 ```
 
-The resulting `JSON` is:
+The resulting `JSON` is (*default number type is `double`*):
 
 ``` json
 {
@@ -128,11 +130,15 @@ See the [MANUAL](MANUAL.md).
 
 #### Contributing
 
-Any contributions are welcome.  
-Contact via [GitHub](https://github.com/oknenavin/cxon) or [mail](mailto:oknenavin@outlook.com).
-
+Any kind of contribution (code, feedback, etc.) is welcome.  
+Contact via [GitHub][url-github] (create an issue even it's just a question) or
+[mail](mailto:oknenavin@outlook.com).
 
 --------------------------------------------------------------------------------
+Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.  
+[GitHub](https://github.com/oknenavin/cxon)  
+
+
 <!-- links -->
 [url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
