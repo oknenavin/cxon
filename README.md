@@ -1,5 +1,6 @@
 ## `CXON` library
 
+[![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
 [![Version][url-version-image]](https://github.com/libcxon/cxon)  
 [![Language][url-language-image]](https://isocpp.org/wiki/faq/cpp11)
 [![Format][url-format-image]](http://json.org)  
@@ -18,7 +19,9 @@
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it DOM, DOM-like, etc., mimicking popular `XML` libraries.  
 In contrast, `CXON` binds `JSON` to any suitable `C++` type, though [`CXJSON`](cxjson/README.md),
-which is part of `CXON`, is an implementation of such type.
+which is part of `CXON`, is an implementation of such type.  
+`CXON` defines and implements an interface which is generalization of C++17's
+[`<charconv>`][url-cpp-charconv] interface.
 
 ###### Example
 
@@ -69,7 +72,7 @@ In both cases `my_type` is bound to the same `JSON`:
 
 #### Compilation
 
-`CXON` requires [`C++11`](https://en.cppreference.com/w/cpp/compiler_support) compliant compiler.
+`CXON` requires [`C++11`][url-cpp-comp-support] compliant compiler.
 
 #### Installation
 
@@ -100,8 +103,11 @@ Contact via [GitHub][url-github] or [mail](mailto:oknenavin@outlook.com).
 
 --------------------------------------------------------------------------------
 <!-- links -->
+[url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [url-github]: https://github.com/oknenavin/cxon
 [url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
 [url-language-image]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
 [url-format-image]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [url-license-image]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[url-cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
