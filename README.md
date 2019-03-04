@@ -1,4 +1,4 @@
-# `CXON` library
+## `CXON` library
 
 [![Version][url-version-image]](https://github.com/libcxon/cxon)  
 [![Language][url-language-image]](https://isocpp.org/wiki/faq/cpp11)
@@ -13,65 +13,65 @@
 
 `CXON/JSON` strictly complies with [`RFC7159`](https://www.ietf.org/rfc/rfc7159.txt) / [`ECMA-404`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 
-## Introduction
+#### Introduction
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it DOM, DOM-like, etc., mimicking popular `XML` libraries.  
 In contrast, `CXON` binds `JSON` to any suitable `C++` type, though [`CXJSON`](cxjson/README.md),
 which is part of `CXON`, is an implementation of such type.
 
-##### Example
+###### Example
 
 Bind to a library type:
 
 ``` c++
-    using my_type = std::map<std::string, std::vector<int>>;
+using my_type = std::map<std::string, std::vector<int>>;
 
-    my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
-            mv2;
-    std::string json;
-        cxon::to_chars(json, mv1);
-        cxon::from_chars(mv2, json);
-    assert(mv1 == mv2);
+my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
+        mv2;
+std::string json;
+    cxon::to_chars(json, mv1);
+    cxon::from_chars(mv2, json);
+assert(mv1 == mv2);
 ```
 
 Bind to a custom type:
 
 ``` c++
-    struct my_type {
-        std::vector<int> even;
-        std::list<int> odd;
-        bool operator ==(const my_type& v) const {
-            return even == v.even && odd == v.odd;
-        }
-    };
-    CXON_STRUCT(my_type,
-        CXON_STRUCT_FIELD_ASIS(even),
-        CXON_STRUCT_FIELD_ASIS(odd)
-    )
-    ...
-    my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
-            mv2;
-    std::string json;
-        cxon::to_chars(json, mv1);
-        cxon::from_chars(mv2, json);
-    assert(mv1 == mv2);
+struct my_type {
+    std::vector<int> even;
+    std::list<int> odd;
+    bool operator ==(const my_type& v) const {
+        return even == v.even && odd == v.odd;
+    }
+};
+CXON_STRUCT(my_type,
+    CXON_STRUCT_FIELD_ASIS(even),
+    CXON_STRUCT_FIELD_ASIS(odd)
+)
+...
+my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
+        mv2;
+std::string json;
+    cxon::to_chars(json, mv1);
+    cxon::from_chars(mv2, json);
+assert(mv1 == mv2);
 ```
 
 In both cases `my_type` is bound to the same `JSON`:
 
 ``` json
-    {
-        "even": [2, 4, 6],
-        "odd": [1, 3, 5]
-    }
+{
+    "even": [2, 4, 6],
+    "odd": [1, 3, 5]
+}
 ```
 
-## Compilation
+#### Compilation
 
 `CXON` requires [`C++11`](https://en.cppreference.com/w/cpp/compiler_support) compliant compiler.
 
-## Installation
+#### Installation
 
 Copy the header(s) you need or use the provided makefile to install `CXON` on `POSIX` systems:
 
@@ -88,16 +88,17 @@ $ make test
 $ make CXX=clang++ test
 ```
 
-## Documentation
+#### Documentation
 
 See the [MANUAL](MANUAL.md).
 
-## Contributing
+#### Contributing
 
 Any contributions are welcome.  
 Contact via [GitHub][url-github] or [mail](mailto:oknenavin@outlook.com).
 
 
+--------------------------------------------------------------------------------
 <!-- links -->
 [url-github]: https://github.com/oknenavin/cxon
 [url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
