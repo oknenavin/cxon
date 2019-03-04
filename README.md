@@ -42,7 +42,7 @@ which is part of `CXON`, is an implementation of such a type.
     - [containers library][url-cpp-container] - in its entirety
 
 `CXON` can be easily extended for arbitray type, using intrusive and non-intrusive methods
-(see the [`MANUAL`](MANUAL.md#implemanetation-bridge) for details). But for convenience,
+(see the [`MANUAL`](MANUAL.md#implementation-bridge) for details). But for convenience,
 core library also provides a way for binding of `enum` and `struct` types via a set of simple,
 non-intrusive and intrusive macros (thin and debug friendly wrappers).
 
