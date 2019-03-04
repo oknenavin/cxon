@@ -17,8 +17,8 @@
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it DOM, DOM-like, etc., mimicking popular `XML` libraries.  
-In contrast, `CXON` binds `JSON` to any suitable `C++` type, though [`CXJSON`](cxjson/README.md)
-which is part of `CXON` is an implementation of such type.
+In contrast, `CXON` binds `JSON` to any suitable `C++` type, though [`CXJSON`](cxjson/README.md),
+which is part of `CXON`, is an implementation of such type.
 
 ##### Example
 
@@ -41,7 +41,9 @@ Bind to a custom type:
     struct my_type {
         std::vector<int> even;
         std::list<int> odd;
-        bool operator ==(const my_type& v) const { return even == v.even && odd == v.odd; }
+        bool operator ==(const my_type& v) const {
+            return even == v.even && odd == v.odd;
+        }
     };
     CXON_STRUCT(my_type,
         CXON_STRUCT_FIELD_ASIS(even),

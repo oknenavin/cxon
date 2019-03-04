@@ -38,7 +38,7 @@ Member type |Definition
 
 [`(constructor)`](#constructor) - construct a basic_node  
 `(destructor)` - destroys the node, deallocating internal storage if used  
-[`operator =`](#assignment-operator) - assigns values to the node  
+[`operator =`](#assignment-operators) - assigns values to the node  
 [`reset`](#reset) - resets the node  
 [`type`](#type) - returns node's value type  
 [`is`](#is) - returns `true` if node's value is of given type  
@@ -58,20 +58,20 @@ Member type |Definition
     basic_node(const basic_node& o);
 
     basic_node(object&& v);             (3)
-    basic_node(const object& v)
+    basic_node(const object& v);
     basic_node(array&& v);
-    basic_node(const array& v)
+    basic_node(const array& v);
     basic_node(string&& v);
-    basic_node(const string& v)
+    basic_node(const string& v);
     basic_node(number&& v);
-    basic_node(const number& v)
+    basic_node(const number& v);
     basic_node(boolean&& v);
-    basic_node(const boolean& v)
+    basic_node(const boolean& v);
     basic_node(null&& v);
-    basic_node(const null& v)
+    basic_node(const null& v);
 
     basic_node(int v);                  (4)
-    basic_node(const char* v)
+    basic_node(const char* v);
 ```
 
 Constructs new node from a variety of data sources.
@@ -83,7 +83,7 @@ Constructs new node from a variety of data sources.
   3. Move and copy constructors for each value type
   4. Constructors for `string` and `number` value types
 
-###### Example
+_Example_
 
 ``` c++
     using cxjson;
@@ -115,27 +115,27 @@ Constructs new node from a variety of data sources.
 ```
 
 -------------------------------------------------------------------------------
-##### assignment operator
+##### Assignment operators
 
 ``` c++
     basic_node& operator =(basic_node&& o);         (1)
     basic_node& operator =(const basic_node& o);
 
     basic_node& operator =(object&& v);             (2)
-    basic_node& operator =(const object& v)
+    basic_node& operator =(const object& v);
     basic_node& operator =(array&& v);
-    basic_node& operator =(const array& v)
+    basic_node& operator =(const array& v);
     basic_node& operator =(string&& v);
-    basic_node& operator =(const string& v)
+    basic_node& operator =(const string& v);
     basic_node& operator =(number&& v);
-    basic_node& operator =(const number& v)
+    basic_node& operator =(const number& v);
     basic_node& operator =(boolean&& v);
-    basic_node& operator =(const boolean& v)
+    basic_node& operator =(const boolean& v);
     basic_node& operator =(null&& v);
-    basic_node& operator =(const null& v)
+    basic_node& operator =(const null& v);
 
-    basic_node& operator =(int v);
-    basic_node& operator =(const char* v)           (3)
+    basic_node& operator =(int v);                  (3)
+    basic_node& operator =(const char* v);
 ```
 
 Replaces the contents of the node. 
@@ -145,21 +145,19 @@ Replaces the contents of the node.
   2. For each value type, replaces the content with those of `v`
   3. For `string` and `number` value types, replaces the content with those of `v`
 
-###### Return value
-
+_Return value_  
 `*this`
 
 -------------------------------------------------------------------------------
 ##### reset
 
 ``` c++
-    void reset()
+    void reset();
 ```
 
 Resets the content of node, the value type is left `null`.
 
-###### Return value
-
+_Return value_  
 (none)
 
 -------------------------------------------------------------------------------
@@ -169,9 +167,10 @@ Resets the content of node, the value type is left `null`.
     node_type type() const noexcept;
 ```
 
-###### Return value
-
+_Return value_  
 value type id
+
+_Example_
 
 ``` c++
     using namespace cxjson;
@@ -189,8 +188,7 @@ value type id
 
 Checks if value type is `T`.
 
-###### Return value
-
+_Return value_  
 `bool` if the type is `T`, `false` otherwise
 
 -------------------------------------------------------------------------------
@@ -198,18 +196,17 @@ Checks if value type is `T`.
 
 ``` c++
     template <typename T>
-        T& imbue()
+        T& imbue();
 ```
 
 Changes the value type of the node. If `T` is different than nodes's value type,
 the content is reset.
 
-###### Return value
-
+_Return value_  
 If `T` is same as the value type, a reference to it; otherwise, reference to the
 new value
 
-###### Example
+_Example__
 
 ``` c++
     using namespace cxjson;
@@ -234,11 +231,10 @@ new value
         const T& get() const;
 ```
 
-###### Return value
-
+_Return value_  
 value reference, the behavior is undefined if `T` is not same as the value type
 
-###### Example
+_Example_
 
 ``` c++
     using namespace cxjson;
@@ -255,14 +251,13 @@ value reference, the behavior is undefined if `T` is not same as the value type
     template <typename T>
         T* get_if() noexcept;
     template <typename T>
-        const T* get_if() const noexcept
+        const T* get_if() const noexcept;
 ```
 
-###### Return value
-
+_Return value_  
 value pointer if `T` is same as the value type, `nullptr` otherwise
 
-###### Example
+_Example_
 
 ``` c++
     using namespace cxjson;
@@ -273,14 +268,13 @@ value pointer if `T` is same as the value type, `nullptr` otherwise
 ```
 
 -------------------------------------------------------------------------------
-##### comparison operators
+##### Comparison operators
 
 ``` c++
     bool operator == (const basic_node& n) const; (1)
     bool operator != (const basic_node& n) const; (2)
 ```
 
-###### Return value
-
+_Return value_  
 1. `true` if equal, `false` otherwise
 2. `false` if equal, `true` otherwise
