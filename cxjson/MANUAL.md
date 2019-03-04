@@ -43,7 +43,7 @@ Member type |Definition
 [`(constructor)`](#constructor) - construct a basic_node  
 `(destructor)` - destroys the node, deallocating internal storage if used  
 [`operator =`](#assignment-operator) - assigns values to the node  
-[`reset`](#operator) - resets the node  
+[`reset`](#reset) - resets the node  
 [`type`](#type) - returns node's value type  
 [`is`](#is) - returns `true` if node's value is of given type  
 [`imbue`](#imbue) - resets node's value type; returns value reference  
