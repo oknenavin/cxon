@@ -88,7 +88,7 @@ Constructs new node from a variety of data sources.
 - (3) Move and copy constructors for each value type
 - (4) Constructors for `string` and `number` value types
 
-*Example*
+###### Example
 
 ``` c++
 using namespace cxjson;
@@ -150,7 +150,7 @@ Replaces the contents of the node:
 - (2) For each value type, replaces the content with those of `v`
 - (3) For `string` and `number` value types, replaces the content with those of `v`
 
-*Return value*  
+###### Return value
 `*this`
 
 
@@ -171,10 +171,10 @@ Resets the content of node, the value type is `null`.
 node_type type() const noexcept;
 ```
 
-*Return value*  
+###### Return value
 `node_type` of the value
 
-*Example*
+###### Example
 
 ``` c++
 using namespace ;
@@ -192,7 +192,7 @@ template <typename T>
 
 Checks if value type is `T`.
 
-*Return value*  
+###### Return value
 `true` if the type is `T`, `false` otherwise
 
 
@@ -207,11 +207,11 @@ template <typename T>
 Changes the value type of the node. If `T` is different than nodes's value type,
 the content is reset.
 
-*Return value*  
+###### Return value
 If `T` is same as the value type, a reference to it; otherwise, reference to the
 new value
 
-*Example*
+###### Example
 
 ``` c++
 using namespace cxjson;
@@ -236,10 +236,10 @@ template <typename T>
     const T& get() const;
 ```
 
-*Return value*  
+###### Return value
 `T&`, the behavior is undefined if `T` is not same as the value type
 
-*Example*
+###### Example
 
 ``` c++
 using namespace cxjson;
@@ -259,10 +259,10 @@ template <typename T>
     const T* get_if() const noexcept;
 ```
 
-*Return value*  
+###### Return value
 `T*` if `T` is same as the value type, `nullptr` otherwise
 
-*Example*
+###### Example
 
 ``` c++
 using namespace cxjson;
@@ -280,7 +280,7 @@ bool operator == (const basic_node& n) const; (1)
 bool operator != (const basic_node& n) const; (2)
 ```
 
-*Return value*  
+###### Return value
 - (1) `true` if equal, `false` otherwise
 - (2) `false` if equal, `true` otherwise
 

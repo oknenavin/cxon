@@ -24,10 +24,11 @@
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it DOM, DOM-like, etc., mimicking popular `XML` libraries.  
-In contrast, `CXON` binds `JSON` to any suitable `C++` type, though [`CXJSON`](cxjson/README.md),
-which is part of `CXON`, is an implementation of such a type.
+In contrast, `CXON` binds `JSON` to any suitable `C++` type ([`CXJSON`](cxjson/README.md)
+which is part of `CXON`, is an implementation of such a type, and also an example of how
+`CXON` can be used).
 
-`CXON` implements good part of `C++`'s fundamental and standard libraries types including:
+`CXON` implements good part of `C++`'s fundamental and standard library types including:
 
 - [fundamental types][url-cpp-fund-types]
     - `nullptr_t`
@@ -42,10 +43,10 @@ which is part of `CXON`, is an implementation of such a type.
     - [`std::pair`][url-cpp-pair]
     - [containers library][url-cpp-container] - in its entirety
 
-`CXON` can be easily extended for arbitray type, using intrusive and non-intrusive methods
-(see the [`MANUAL`](MANUAL.md#implementation-bridge) for details). But for convenience,
-core library also provides a way for binding of `enum` and `struct` types via a set of simple,
-non-intrusive and intrusive macros (thin and debug friendly wrappers).
+`CXON` can easily be extended for arbitray types, using intrusive and non-intrusive methods
+(see the [`MANUAL`](MANUAL.md#implementation-bridge) for details). For convenience, core library
+also provides a way for binding of `enum` and `struct` types via a set of simple, non-intrusive and
+intrusive macros (thin and debug friendly wrappers).
 
 ###### Example
 
