@@ -61,13 +61,13 @@ namespace cxon {
 
     template <typename X = JSON<cxjson::format_traits>, typename Tr, typename InIt, typename ...CtxPrm>
         inline auto     from_chars(basic_node<Tr>& t, InIt b, InIt e, CtxPrm... p)      -> from_chars_result<InIt>;
-    template <typename X = JSON<cxjson::format_traits>, typename Tr, typename C, typename ...CtxPrm>
-        inline auto     from_chars(basic_node<Tr>& t, const C& c, CtxPrm... p)          -> from_chars_result<decltype(std::begin(c))>;
+    template <typename X = JSON<cxjson::format_traits>, typename Tr, typename Iterable, typename ...CtxPrm>
+        inline auto     from_chars(basic_node<Tr>& t, const Iterable& i, CtxPrm... p)   -> from_chars_result<decltype(std::begin(i))>;
 
-    template <typename X = JSON<cxjson::format_traits>, typename Out, typename Tr, typename ...CtxPrm>
-        inline auto     to_chars(Out o, const basic_node<Tr>& t, CtxPrm... p)           -> enable_if_t<is_output_iterator<Out>::value, to_chars_result<Out>>;
-    template <typename X = JSON<cxjson::format_traits>, typename C, typename Tr, typename ...CtxPrm>
-        inline auto     to_chars(C& c, const basic_node<Tr>& t, CtxPrm... p)            -> enable_if_t<is_back_insertable<C>::value, to_chars_result<decltype(c.begin())>>;
+    template <typename X = JSON<cxjson::format_traits>, typename OutIt, typename Tr, typename ...CtxPrm>
+        inline auto     to_chars(OutIt o, const basic_node<Tr>& t, CtxPrm... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
+    template <typename X = JSON<cxjson::format_traits>, typename Insertable, typename Tr, typename ...CtxPrm>
+        inline auto     to_chars(Insertable& i, const basic_node<Tr>& t, CtxPrm... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
     template <typename X = JSON<>, typename FwIt, typename Tr, typename ...CtxPrm>
         inline auto     to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CtxPrm... p)  -> to_chars_result<FwIt>;
 
@@ -361,18 +361,18 @@ namespace cxon {
         inline auto from_chars(basic_node<Tr>& t, II b, II e, CtxPrm... p) -> from_chars_result<II> {
             return interface::from_chars<X>(t, b, e, p...);
         }
-    template <typename X, typename Tr, typename C, typename ...CtxPrm>
-        inline auto from_chars(basic_node<Tr>& t, const C& c, CtxPrm... p) -> from_chars_result<decltype(std::begin(c))> {
-            return interface::from_chars<X>(t, c, p...);
+    template <typename X, typename Tr, typename I, typename ...CtxPrm>
+        inline auto from_chars(basic_node<Tr>& t, const I& i, CtxPrm... p) -> from_chars_result<decltype(std::begin(i))> {
+            return interface::from_chars<X>(t, i, p...);
         }
 
-    template <typename X, typename O, typename Tr, typename ...CtxPrm>
-        inline auto to_chars(O o, const basic_node<Tr>& t, CtxPrm... p) -> enable_if_t<is_output_iterator<O>::value, to_chars_result<O>> {
+    template <typename X, typename OI, typename Tr, typename ...CtxPrm>
+        inline auto to_chars(OI o, const basic_node<Tr>& t, CtxPrm... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
             return interface::to_chars<X>(o, t, p...);
         }
-    template <typename X, typename C, typename Tr, typename ...CtxPrm>
-        inline auto to_chars(C& c, const basic_node<Tr>& t, CtxPrm... p) -> enable_if_t<is_back_insertable<C>::value, to_chars_result<decltype(c.begin())>> {
-            return interface::to_chars<X>(c, t, p...);
+    template <typename X, typename I, typename Tr, typename ...CtxPrm>
+        inline auto to_chars(I& i, const basic_node<Tr>& t, CtxPrm... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
+            return interface::to_chars<X>(i, t, p...);
         }
     template <typename X, typename FwIt, typename Tr, typename ...CtxPrm>
         inline auto to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CtxPrm... p) -> to_chars_result<FwIt> {
