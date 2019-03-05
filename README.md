@@ -142,7 +142,7 @@ Any kind of contribution (code, feedback, etc.) is welcome.
 Contact via [GitHub][url-github] (create an issue even it's just a question) or
 [mail](mailto:oknenavin@outlook.com).
 
--
+
 -------------------------------------------------------------------------------
 Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
