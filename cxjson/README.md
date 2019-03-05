@@ -8,6 +8,7 @@
 
 --------------------------------------------------------------------------------
 
+
 > `CXJSON` is a polymorphic `C++` type for binding of an arbitrary `JSON`  
 > `CXJSON` is using [`CXON`](../README.md) for serialization
 
@@ -133,6 +134,7 @@ See the [MANUAL](MANUAL.md).
 Any kind of contribution (code, feedback, etc.) is welcome.  
 Contact via [GitHub][url-github] (create an issue even it's just a question) or
 [mail](mailto:oknenavin@outlook.com).
+
 
 --------------------------------------------------------------------------------
 Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.  

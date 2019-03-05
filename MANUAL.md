@@ -5,33 +5,69 @@
 
 --------------------------------------------------------------------------------
 
-(in progress)
 
 #### Introduction
 
-`CXON` defines and implements an interface which is generalization of C++17's
-[`<charconv>`][url-cpp-charconv] interface:
+`CXON` defines and implements an interface, which is a generalization of C++17's
+[`<charconv>`][url-cpp-charconv] interface.
+
+##### Read interface
 
 ``` c++
 namespace cxon {
 
-        template <typename InIt>
-            struct from_chars_result {
-                std::error_condition ec;
-                InIt end;
-            };
+    template <typename Traits, typename T, typename InIt, typename ...CtxPrm>
+        from_chars_result<It> from_chars(T& t, InIt b, InIt e, CtxPrm... p);            (1)
+    template <typename Traits, typename T, typename Iterable, typename ...CtxPrm>
+        from_chars_result<It)> from_chars(T& t, const Iterable& i, CtxPrm... p);        (2)
 
-        template <typename Traits, typename T, typename InIt, typename ...CtxPrm>
-            inline from_chars_result<> from_chars(T& t, InIt b, InIt e, CtxPrm... p);
+    template <typename It>
+        struct from_chars_result {
+            std::error_condition ec;
+            It end;
+        };
+```
 
-        template <typename Out>
-            struct to_chars_result {
-                std::error_condition ec;
-                Out end;
-            };
+###### Template parameters
+- [`Traits`](#format-traits) - traits class specifying given serialization format
+- `T` - the type of the value to serialize
+- `InIt` - the type of the iterator, must meet [InputIterator][url-cpp-init] requirements
+- `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
+- `It` - an iterator
+  - (1) `InIt`
+  - (2) `decltype(std::begin(i))`
+- `CtxPrm` - the types of the remaining parameters (see [Implementation Bridge](#implementation-bridge))
 
-        template <typename Traits, typename Out, typename T, typename ...CtxPrm>
-            inline to_chars_result<> to_chars(Out o, const T& t, CtxPrm... p);
+###### Parameters
+- `t` - the out-parameter where the parsed value is stored if successful
+- `b`, `e` -  valid (`char`) range to parse
+- `i` - a parameter representing a valid (`char`) range to parse
+- `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
+
+###### Return value
+*TODO*
+
+###### Exceptions
+*TODO*
+
+
+##### Write interface
+
+``` c++
+namespace cxon {
+
+    template <typename Traits, typename OutIt, typename T, typename ...CtxPrm>
+        to_chars_result<It> to_chars(OutIt o, const T& t, CtxPrm... p);                 (1)
+    template <typename Traits, typename Insertable, typename T, typename ...CtxPrm>
+        to_chars_result<It> to_chars(Insertable& i, const T& t, CtxPrm... p);           (2)
+    template <typename Traits, typename FwIt, typename T, typename ...CtxPrm>
+        to_chars_result<It> to_chars(FwIt b, FwIt e, const T& t, CtxPrm... p);          (3)
+
+    template <typename It>
+        struct to_chars_result {
+            std::error_condition ec;
+            It end;
+        };
 
 }
 ```
@@ -39,10 +75,30 @@ namespace cxon {
 ###### Template parameters
 - [`Traits`](#format-traits) - traits class specifying given serialization format
 - `T` - the type of the value to serialize
-- `InIt` - the type of the iterator, must meet at least [InputIterator][url-cpp-init] requirements
+- `OutIt` - the type of the iterator, must meet [OutputIterator][url-cpp-outit] requirements
+- `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
+- `FwIt` - the type of the iterator, must meet [ForwardIterator][url-cpp-fwit] requirements
+- `It` - an iterator
+  - (1) `OutIt`
+  - (2) `decltype(std::begin(i))`
+  - (3) `FwIt`
 - `CtxPrm` - the types of the remaining parameters (see [TODO]())
-- `Out` - TODO
 
+###### Parameters
+- `o` - an output iterator to write to
+- `i` - a back insertable value to write to
+- `b`, `e` - a (`char`) range to write to
+- `t` - the value to convert to its representation 
+- `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
+
+###### Return value
+*TODO*
+
+###### Exceptions
+*TODO*
+
+
+--------------------------------------------------------------------------------
 #### Implementation Bridge
 
 The interface communicate the implementation via the so-called _implementation bridge_:
@@ -136,6 +192,8 @@ fundamental and standard libraries types:
 Core library also provides convenient way for binding of `enum`s and `struct`s via
 set of simple non-intrusive and intrusive macros (only a thin and debug friendly wrappers).
 
+
+--------------------------------------------------------------------------------
 #### Format Traits
 
 `FormatTraits` template parameter has two roles:
@@ -268,6 +326,8 @@ namespace cxon {
 *Here, the helper types `cxon::enable_for_t` is convenience typedef based on 
 [`std::enable_if`][url-cpp-enab-if].*
 
+
+--------------------------------------------------------------------------------
 ###### Example (JSON-RPC)
 
 `struct` binding with a toy [`JSON-RPC`](https://www.jsonrpc.org/) implementation:
@@ -372,6 +432,7 @@ assert(r && ret.id == 1 && ret.error.code == 42 && ret.error.message == "divide 
 
 ```
 
+
 --------------------------------------------------------------------------------
 Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
@@ -383,6 +444,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [url-cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
 [url-cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
+[url-cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
 [url-cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
 [url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [url-cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562

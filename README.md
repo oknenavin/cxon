@@ -8,6 +8,7 @@
 
 --------------------------------------------------------------------------------
 
+
 > `CXON` is a _simple_, non-intrusive `C++` serialization library  
 > `CXON`'s default serialization format is `UTF-8` encoded `JSON`  
 > `CXON` makes it trivial to bind `JSON` to arbitrary `C++` types  
@@ -140,7 +141,8 @@ Any kind of contribution (code, feedback, etc.) is welcome.
 Contact via [GitHub][url-github] (create an issue even it's just a question) or
 [mail](mailto:oknenavin@outlook.com).
 
---------------------------------------------------------------------------------
+-
+-------------------------------------------------------------------------------
 Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 

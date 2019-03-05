@@ -5,6 +5,7 @@
 
 --------------------------------------------------------------------------------
 
+
 #### cxjson::basic_node
 
 *Defined in header [cxjson.hxx](cxjson.hxx)*
@@ -50,6 +51,7 @@ Member type |Definition
 - [`get_if`](#get_if) - returns value pointer if node's value type matches  
 - [`operator ==`](#comparison-operators) - assigns values to the node  
 - [`operator !=`](#comparison-operators) - assigns values to the node  
+
 
 --------------------------------------------------------------------------------
 #### Constructors
@@ -116,6 +118,7 @@ using namespace cxjson;
 }
 ```
 
+
 --------------------------------------------------------------------------------
 #### assignment operators
 
@@ -150,6 +153,7 @@ Replaces the contents of the node:
 *Return value*  
 `*this`
 
+
 --------------------------------------------------------------------------------
 #### reset
 
@@ -158,6 +162,7 @@ void reset();
 ```
 
 Resets the content of node, the value type is `null`.
+
 
 --------------------------------------------------------------------------------
 #### type
@@ -176,6 +181,7 @@ using namespace ;
 node const n; assert(n.type() == node_type::null);
 ```
 
+
 --------------------------------------------------------------------------------
 #### is
 
@@ -188,6 +194,7 @@ Checks if value type is `T`.
 
 *Return value*  
 `true` if the type is `T`, `false` otherwise
+
 
 --------------------------------------------------------------------------------
 #### imbue
@@ -218,6 +225,7 @@ using namespace cxjson;
 }
 ```
 
+
 --------------------------------------------------------------------------------
 #### get
 
@@ -239,6 +247,7 @@ node n = "one";
     n.get<node::string>() = "another";
 assert(n.get<node::string>() == "another");
 ```
+
 
 --------------------------------------------------------------------------------
 #### get_if
@@ -262,6 +271,7 @@ node n = "one";
 assert(n.get_if<node::array>() == nullptr);
 ```
 
+
 --------------------------------------------------------------------------------
 #### comparison operators
 
@@ -273,6 +283,7 @@ bool operator != (const basic_node& n) const; (2)
 *Return value*  
 - (1) `true` if equal, `false` otherwise
 - (2) `false` if equal, `true` otherwise
+
 
 --------------------------------------------------------------------------------
 Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.  
