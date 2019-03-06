@@ -24,7 +24,7 @@
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it DOM, DOM-like, etc., mimicking popular `XML` libraries.  
-In contrast, `CXON` binds `JSON` to any suitable `C++` type ([`CXJSON`](cxjson/README.md)
+In contrast, `CXON` binds `JSON` to any suitable `C++` type (though [`CXJSON`](cxjson/README.md),
 which is part of `CXON`, is an implementation of such a type, and also an example of how
 `CXON` can be used).
 

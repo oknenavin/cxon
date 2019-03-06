@@ -1,4 +1,4 @@
-## `CXJSON` library
+## `CXON/CXJSON` library
 
 [![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
 [![Version][url-version-image]](https://github.com/libcxon/cxon)  

@@ -25,6 +25,7 @@ namespace cxon {
         struct from_chars_result {
             std::error_condition ec;
             It end;
+            operator bool() const noexcept;
         };
 ```
 
@@ -45,10 +46,19 @@ namespace cxon {
 - `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
 
 ###### Return value
-*TODO*
+On success, returns a value of type `from_chars_result`, such that `end` is one-past-the-end iterator of
+the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
+On failure, returns a value of type `from_chars_result`, such that `end` is an iterator pointing to
+the non-matching input, and `ec` contains the error condition. The value is in valid, but unspecified
+state.
 
 ###### Exceptions
-*TODO*
+Does not throw by itself, however specializations may throw or not:
+- of fundamental types - does not throw
+- of pointers - allocator and constructors may throw
+- of standard library types - constructing and adding of elements may throw with the same guarantees as
+  of the standard library
+- of user types - may or may not throw depending of the implementation
 
 
 ##### Write interface
@@ -67,6 +77,7 @@ namespace cxon {
         struct to_chars_result {
             std::error_condition ec;
             It end;
+            operator bool() const noexcept;
         };
 
 }
@@ -92,10 +103,16 @@ namespace cxon {
 - `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
 
 ###### Return value
-*TODO*
+On success, returns a value of type `to_chars_result`, such that `ec` is value-initialized, and `end` is:
+- (1) one-past-the-end output iterator
+- (2) `std::begin(i)`
+- (3) one-past-the-end iterator of the output written. Note that the output is not terminated.
+
+On failure, returns a value of type `to_chars_result`, such that `ec` contains the error condition, and
+`end` has the same value as in case of success.
 
 ###### Exceptions
-*TODO*
+Does not throw by itself, however writing to the output may throw (e.g. adding to a container).
 
 
 --------------------------------------------------------------------------------
