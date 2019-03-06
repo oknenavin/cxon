@@ -11,7 +11,8 @@
 `CXON` defines and implements an interface, which is a generalization of C++17's
 [`<charconv>`][url-cpp-charconv] interface.
 
-##### Read interface
+##### Read interface  
+*TODO* desciption
 
 ``` c++
 namespace cxon {
@@ -61,7 +62,8 @@ Does not throw by itself, however specializations may throw or not:
 - of user types - may or may not throw depending of the implementation
 
 
-##### Write interface
+##### Write interface  
+*TODO* desciption
 
 ``` c++
 namespace cxon {
