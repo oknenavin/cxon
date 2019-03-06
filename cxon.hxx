@@ -6,8 +6,8 @@
 #ifndef CXON_CXON_HXX_
 #define CXON_CXON_HXX_
 
-#define CXON_VERSION_MAJOR 1
-#define CXON_VERSION_MINOR 0
+#define CXON_VERSION_MAJOR 0
+#define CXON_VERSION_MINOR 42
 #define CXON_VERSION_PATCH 0
 
 #include <string>
