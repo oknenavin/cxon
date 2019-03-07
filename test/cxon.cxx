@@ -33,8 +33,10 @@ TEST_INIT()
 int main() {
     for (auto t : TEST_V)
         t->test();
-    if (TEST_F)
-        fprintf(stderr, "%u of %u failed\n", TEST_F, TEST_A);
+    TEST_F ?
+        fprintf(stdout, "%u of %u failed\n", TEST_F, TEST_A) :
+        fprintf(stdout, "%u of %u passed\n", TEST_A, TEST_A)
+    ;
     return TEST_F;
 }
 
@@ -1351,6 +1353,11 @@ TEST_BEG(cxon::CXON<>) // cxon
         W_TEST("{}", (set<int>{}));
         R_TEST((set<int>({1, 2, 3})), "{1, 1, 2, 3}");
         W_TEST("{1,2,3}", (set<int>({1, 2, 3})));
+    // std::multiset<int>;
+        R_TEST((multiset<int>{}), "{}");
+        W_TEST("{}", (multiset<int>{}));
+        R_TEST((multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
+        W_TEST("{1,1,2,3}", (multiset<int>({1, 1, 2, 3})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "{}");
         W_TEST("{}", (vector<list<int>>{}));
@@ -1388,6 +1395,11 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
         W_TEST("{}", (map<int, int>{}));
         R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::multimap<int, int>
+        R_TEST((multimap<int, int>{}), "{}");
+        W_TEST("{}", (multimap<int, int>{}));
+        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
 TEST_END()
 
 TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
@@ -1518,6 +1530,11 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         W_TEST("{}", (map<int, int>{}));
         R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::multimap<int, int>
+        R_TEST((multimap<int, int>{}), "{}");
+        W_TEST("{}", (multimap<int, int>{}));
+        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
 TEST_END()
 
 
@@ -1689,6 +1706,11 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[]", (set<int>{}));
         R_TEST((set<int>({1, 2, 3})), "[1, 1, 2, 3]");
         W_TEST("[1,2,3]", (set<int>({1, 2, 3})));
+    // std::multiset<int>;
+        R_TEST((multiset<int>{}), "[]");
+        W_TEST("[]", (multiset<int>{}));
+        R_TEST((multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
+        W_TEST("[1,1,2,3]", (multiset<int>({1, 1, 2, 3})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "[]");
         W_TEST("[]", (vector<list<int>>{}));
