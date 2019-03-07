@@ -11,8 +11,38 @@
 `CXON` defines and implements an interface, which is a generalization of C++17's
 [`<charconv>`][url-cpp-charconv] interface.
 
+The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
+types is as follow:
+- [fundamental types][url-cpp-fund-types]
+    - `nullptr_t` -> `null`
+    - `bool` -> `true` or `false`
+    - character types (`char`, `wchar_t`, `char16_t` and `char32_t`) -> `JSON` `string`
+    - integral types (`signed` and `unsigned` `char`, `short`, `int`, `long`, `long long`) ->
+      `JSON` `number`
+    - floating-point types (`float`, `double`, `long double`) -> `JSON` `number`
+- `enum` -> `JSON` `string`
+- [compound types][url-cpp-struct] -> `JSON` `object`
+- arrays -> `JSON` `array`
+- pointers are represented as their value or `JSON` `null`
+- standard library types
+    - [`std::basic_string`][url-cpp-bstr] -> `JSON` `string`
+    - [`std::tuple`][url-cpp-tuple] -> `JSON` `array`
+    - [`std::pair`][url-cpp-pair] -> `JSON` `array`
+    - [containers library][url-cpp-container]
+      - maps ([std::map][url-cpp-map], [std:: unordered_map][url-cpp-umap],
+              [std::multimap][url-cpp-mmap], [std:: unordered_multimap][url-cpp-ummap]) ->
+        `JSON` `object` `(1)`
+      - others -> `JSON` `array`
+
+`(1)` [`ECMA-404`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
+specify this about object keys:
+  > *The JSON syntax does not impose any restrictions on the strings used as names,
+  > __does not require that name strings be unique__*
+
+and by choosing map or multi-map as a `C++` mapping type, value of existing key may be replaced or kept.
+
+
 ##### Read interface  
-*TODO* desciption
 
 ``` c++
 namespace cxon {
@@ -36,8 +66,8 @@ namespace cxon {
 - `InIt` - the type of the iterator, must meet [InputIterator][url-cpp-init] requirements
 - `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
 - `It` - an iterator
-  - (1) `InIt`
-  - (2) `decltype(std::begin(i))`
+  - `(1)` `InIt`
+  - `(2)` `decltype(std::begin(i))`
 - `CtxPrm` - the types of the remaining parameters (see [Implementation Bridge](#implementation-bridge))
 
 ###### Parameters
@@ -63,7 +93,6 @@ Does not throw by itself, however specializations may throw or not:
 
 
 ##### Write interface  
-*TODO* desciption
 
 ``` c++
 namespace cxon {
@@ -92,9 +121,9 @@ namespace cxon {
 - `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
 - `FwIt` - the type of the iterator, must meet [ForwardIterator][url-cpp-fwit] requirements
 - `It` - an iterator
-  - (1) `OutIt`
-  - (2) `decltype(std::begin(i))`
-  - (3) `FwIt`
+  - `(1)` `OutIt`
+  - `(2)` `decltype(std::begin(i))`
+  - `(3)` `FwIt`
 - `CtxPrm` - the types of the remaining parameters (see [TODO]())
 
 ###### Parameters
@@ -106,9 +135,9 @@ namespace cxon {
 
 ###### Return value
 On success, returns a value of type `to_chars_result`, such that `ec` is value-initialized, and `end` is:
-- (1) one-past-the-end output iterator
-- (2) `std::begin(i)`
-- (3) one-past-the-end iterator of the output written. Note that the output is not terminated.
+- `(1)` one-past-the-end output iterator
+- `(2)` `std::begin(i)`
+- `(3)` one-past-the-end iterator of the output written. Note that the output is not terminated.
 
 On failure, returns a value of type `to_chars_result`, such that `ec` contains the error condition, and
 `end` has the same value as in case of success.
@@ -191,22 +220,6 @@ The _implementation bridge_ however, bridges three additional methods of extensi
             }
     };
     ```
-
-By using of the non-intrusive methods, core `CXON` implements good part of `C++`'s 
-fundamental and standard libraries types:
-
-- [fundamental types][url-cpp-fund-types]
-    - `nullptr_t`
-    - `bool`
-    - character types - `char`, `wchar_t`, `char16_t` and `char32_t`
-    - integral types - signed and unsigned `char`, `short`, `int`, `long`, `long long`
-    - floating-point types - `float`, `double`, `long double`
-- arrays and pointers
-- standard library types
-    - [`std::basic_string`][url-cpp-bstr]
-    - [`std::tuple`][url-cpp-tuple]
-    - [`std::pair`][url-cpp-pair]
-    - [containers library][url-cpp-container] - in its entirety
 
 Core library also provides convenient way for binding of `enum`s and `struct`s via
 set of simple non-intrusive and intrusive macros (only a thin and debug friendly wrappers).
@@ -469,4 +482,9 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [url-cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [url-cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [url-cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[url-cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
+[url-cpp-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
+[url-cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
+[url-cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
+[url-cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [url-cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334

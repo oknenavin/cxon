@@ -80,13 +80,13 @@ basic_node(const char* v);
 ```
 
 Constructs new node from a variety of data sources.
-- (1) Default constructor. Constructs node with `null` value type.
-- (2) Move and copy constructors:
+- `(1)` Default constructor. Constructs node with `null` value type.
+- `(2)` Move and copy constructors:
     - constructs the node with the contents of `o` using move semantics, `o` is left  
     in valid state, but its value is in unspecified state
     - constructs the node with the copy of the contents of `o`
-- (3) Move and copy constructors for each value type
-- (4) Constructors for `string` and `number` value types
+- `(3)` Move and copy constructors for each value type
+- `(4)` Constructors for `string` and `number` value types
 
 ###### Example
 
@@ -144,11 +144,11 @@ basic_node& operator =(const char* v);
 ```
 
 Replaces the contents of the node: 
-- (1) Replaces the content with those of `o`:
+- `(1)` Replaces the content with those of `o`:
     - using move semantics, `o` is left in valid state, but its value is in unspecified state
     - constructs the node with copy of the contents of `o`
-- (2) For each value type, replaces the content with those of `v`
-- (3) For `string` and `number` value types, replaces the content with those of `v`
+- `(2)` For each value type, replaces the content with those of `v`
+- `(3)` For `string` and `number` value types, replaces the content with those of `v`
 
 ###### Return value
 `*this`
@@ -281,8 +281,8 @@ bool operator != (const basic_node& n) const; (2)
 ```
 
 ###### Return value
-- (1) `true` if equal, `false` otherwise
-- (2) `false` if equal, `true` otherwise
+- `(1)` `true` if equal, `false` otherwise
+- `(2)` `false` if equal, `true` otherwise
 
 
 --------------------------------------------------------------------------------
