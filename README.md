@@ -23,7 +23,7 @@
 [`<charconv>`][url-cpp-charconv] interface.
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
-`JSON` - many call it DOM, DOM-like, etc., mimicking popular `XML` libraries.  
+`JSON` - many call it DOM, DOM-like, etc., basing on popular `XML` libraries.  
 In contrast, `CXON` binds `JSON` to any suitable `C++` type (though [`CXJSON`](cxjson/README.md),
 which is part of `CXON`, is an implementation of such a type, and also an example of how
 `CXON` can be used).
@@ -63,9 +63,9 @@ int main() {
     my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
             mv2;
     std::string json;
-        // write it to output-iterator, container, buffer, etc.
+        // write it to output-iterator, container, buffer, etc. - in this case, std::string
         cxon::to_chars(json, mv1);
-        // read it from input-iterator, container, buffer, etc.
+        // read it from input-iterator, container, buffer, etc. - in this case, std::string
         cxon::from_chars(mv2, json);
     assert(mv1 == mv2);
 }
@@ -138,7 +138,7 @@ See the [MANUAL](MANUAL.md).
 
 #### Contributing
 
-Any kind of contribution (code, feedback, etc.) is welcome.  
+Any kind of contribution (feedback, suggestions, code, documentation, etc.) is welcome.  
 Contact via [GitHub][url-github] (create an issue even it's just a question) or
 [mail](mailto:oknenavin@outlook.com).
 
@@ -150,11 +150,11 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 
 <!-- links -->
 [url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[url-github]: https://github.com/oknenavin/cxon
 [url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
 [url-language-image]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
 [url-format-image]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [url-license-image]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[url-github]: https://github.com/oknenavin/cxon
 [url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [url-cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
 [url-cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124

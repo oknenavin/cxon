@@ -141,7 +141,7 @@ See the [MANUAL](MANUAL.md).
 
 #### Contributing
 
-Any kind of contribution (code, feedback, etc.) is welcome.  
+Any kind of contribution (feedback, suggestions, code, documentation, etc.) is welcome.  
 Contact via [GitHub][url-github] (create an issue even it's just a question) or
 [mail](mailto:oknenavin@outlook.com).
 
@@ -157,6 +157,7 @@ Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more informat
 [url-language-image]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
 [url-format-image]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [url-license-image]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[url-github]: https://github.com/oknenavin/cxon
 [url-cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
 [url-cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
 [url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637

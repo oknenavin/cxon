@@ -37,7 +37,7 @@ types is as follow:
 `(1)` [`ECMA-404`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
 specify this about object keys:
   > *The JSON syntax does not impose any restrictions on the strings used as names,
-  > __does not require that name strings be unique__*
+  > __does not require that name strings be unique__*...
 
 and by choosing map or multi-map as a `C++` mapping type, value of existing key may be replaced or kept.
 
@@ -159,7 +159,7 @@ namespace cxon {
             ...
         }
     template <typename X, typename T, typename OutIt>
-        void write_value(OutIt& o, const T& t, wctx<X>& ctx) {
+        bool write_value(OutIt& o, const T& t, wctx<X>& ctx) {
             ...
         }
 
@@ -187,7 +187,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
         template <typename X>
             struct write<X, T> {
                 template <typename OutIt>
-                    static void value(OutIt&, const T& t, wctx<X>& ctx) {
+                    static bool value(OutIt&, const T& t, wctx<X>& ctx) {
                         ...
                     }
             };
@@ -202,7 +202,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
                 ...
             }
         template <typename X, typename OutIt>
-            static void write_value(OutIt& o, const T& t, cxon::wctx<X>& ctx) {
+            static bool write_value(OutIt& o, const T& t, cxon::wctx<X>& ctx) {
                 ...
             }
     };
@@ -215,7 +215,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
                 ...
             }
         template <typename X, typename OutIt>
-            void write_value(OutIt& o, cxon::wctx<X>& ctx) {
+            bool write_value(OutIt& o, cxon::wctx<X>& ctx) {
                 ...
             }
     };
@@ -304,7 +304,7 @@ namespace cxon {
 }
 ```
 
-As both definition and configuration are in one place, specialization for given format, 
+As both definition and configuration are in one place, specialization for given format 
 is not possible (because changing of an option requires new type). Because of this,
 `CXON` uses so-called _format-selector_ and it's defined like this:
 
@@ -355,7 +355,9 @@ namespace cxon {
 }
 ```
 
-*Here, the helper types `cxon::enable_for_t` is convenience typedef based on 
+will work with arbitrary format traits.
+
+*Here, the helper types `cxon::enable_for_t` is a convenience typedef similar to 
 [`std::enable_if`][url-cpp-enab-if].*
 
 
