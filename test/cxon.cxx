@@ -1358,6 +1358,16 @@ TEST_BEG(cxon::CXON<>) // cxon
         W_TEST("{}", (multiset<int>{}));
         R_TEST((multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
         W_TEST("{1,1,2,3}", (multiset<int>({1, 1, 2, 3})));
+    // std::unordered_set<int>;
+        R_TEST((unordered_set<int>{}), "{}");
+        W_TEST("{}", (unordered_set<int>{}));
+        R_TEST((unordered_set<int>({1, 2, 3})), "{1, 1, 2, 3}");
+        W_TEST("{1,2,3}", (unordered_set<int>({1, 2, 3})));
+    // std::unordered_multiset<int>;
+        R_TEST((unordered_multiset<int>{}), "{}");
+        W_TEST("{}", (unordered_multiset<int>{}));
+        R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
+        W_TEST("{1,1,2,3}", (unordered_multiset<int>({1, 1, 2, 3})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "{}");
         W_TEST("{}", (vector<list<int>>{}));
@@ -1400,6 +1410,16 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
         W_TEST("{}", (multimap<int, int>{}));
         R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_map<int, int>
+        R_TEST((unordered_map<int, int>{}), "{}");
+        W_TEST("{}", (unordered_map<int, int>{}));
+        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,2:2,3:3}", (unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_multimap<int, int>
+        R_TEST((unordered_multimap<int, int>{}), "{}");
+        W_TEST("{}", (unordered_multimap<int, int>{}));
+        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1,2:2,3:3}", (unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
 TEST_END()
 
 TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
@@ -1535,6 +1555,16 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         W_TEST("{}", (multimap<int, int>{}));
         R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_map<int, int>
+        R_TEST((unordered_map<int, int>{}), "{}");
+        W_TEST("{}", (unordered_map<int, int>{}));
+        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,2:2,3:3}", (unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_multimap<int, int>
+        R_TEST((unordered_multimap<int, int>{}), "{}");
+        W_TEST("{}", (unordered_multimap<int, int>{}));
+        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1,2:2,3:3}", (unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
 TEST_END()
 
 
@@ -1711,6 +1741,16 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[]", (multiset<int>{}));
         R_TEST((multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
         W_TEST("[1,1,2,3]", (multiset<int>({1, 1, 2, 3})));
+    // std::unordered_set<int>
+        R_TEST((unordered_set<int>{}), "[]");
+        W_TEST("[]", (unordered_set<int>{}));
+        R_TEST((unordered_set<int>({1, 2, 3})), "[1, 1, 2, 3]");
+        W_TEST("[1,2,3]", (unordered_set<int>({1, 2, 3})));
+    // std::unordered_multiset<int>;
+        R_TEST((unordered_multiset<int>{}), "[]");
+        W_TEST("[]", (unordered_multiset<int>{}));
+        R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
+        W_TEST("[1,1,2,3]", (unordered_multiset<int>({1, 1, 2, 3})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "[]");
         W_TEST("[]", (vector<list<int>>{}));
