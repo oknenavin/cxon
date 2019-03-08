@@ -9,7 +9,7 @@ test-cxon: $(out)/cxon-test
 
 test-cxjson: $(out)/cxjson-test
 	@(cd $(out) && ../$< \
-							pass    @../data/set.1-pass.in \
+                            pass    @../data/set.1-pass.in \
                                     @../data/set.2-pass.in \
                             fail    @../data/set.1-fail.in \
                                     @../data/set.2-fail.in)
