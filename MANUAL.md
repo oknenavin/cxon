@@ -34,12 +34,16 @@ types is as follow:
         `JSON` `object` `(1)`
       - others -> `JSON` `array`
 
-`(1)` [`ECMA-404`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
-specify this about object keys:
+*`(1)` [`ECMA-404`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
+specify this about object keys:*
   > *The JSON syntax does not impose any restrictions on the strings used as names,
   > __does not require that name strings be unique__*...
 
-and by choosing map or multi-map as a `C++` mapping type, value of existing key may be replaced or kept.
+*and by choosing map or multi-map as a `C++` mapping type, value of existing key
+may be replaced or kept.*
+
+Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/) implementation
+may be found [at the end of the document](#example-json-rpc).
 
 
 ##### Read interface  
@@ -149,7 +153,9 @@ Does not throw by itself, however writing to the output may throw (e.g. adding t
 --------------------------------------------------------------------------------
 #### Implementation Bridge
 
-The interface communicate the implementation via the so-called _implementation bridge_:
+The interface communicate the implementation via the so-called *implementation bridge*.  
+Read/write interface instantiates the context, defined in the [*format traits*](#format-traits),
+with CtxPrm parameters (if any) and then calls the *implementation bridge* with it:
 
 ``` c++
 namespace cxon {
@@ -165,8 +171,6 @@ namespace cxon {
 
 }
 ```
-
-- `ctx` is read/write context defined in the [_format-traits_](#format-traits)
 
 and it is the first non-intrusive way to extend `CXON` for a type - implementing it
 in namespace `cxon`.
@@ -314,11 +318,11 @@ set of simple non-intrusive and intrusive macros (only a thin and debug friendly
 --------------------------------------------------------------------------------
 #### Format Traits
 
-`FormatTraits` template parameter has two roles:
+`Traits` template parameter has two roles:
   - to hold defining information for given serialization format
   - to hold configuration options for given serialization format
 
-The implementation requires _format traits_ to provide one mandatory trait to support the 
+The implementation requires *format traits* to provide one mandatory trait to support the 
 [*implementation bridge*](#implementation-bridge) - a context:
 
 ``` c++
@@ -330,8 +334,8 @@ struct format_traits {
 };
 ```
 
-In essence, the [*interface*](#interface) instantiates the context and then calls 
-the [*implementation bridge*](#implementation-bridge) with it.
+The implementation requires these types to provide mandatory member `ec` of type
+[`std::error_condition`][url-err-cnd].
 
 Although `JSON` is the default format, `CXON` defines a fall-back format called the same, `CXON`.
 This format could be seen as a relaxed `JSON` and its traits are defined like this:
@@ -372,7 +376,7 @@ namespace cxon {
 }
 ```
 
-and `JSON` reuses it as this:
+and `JSON` reuses it like this:
 
 ``` c++
 namespace cxon {
@@ -392,7 +396,7 @@ namespace cxon {
 
 As both definition and configuration are in one place, specialization for given format 
 is not possible (because changing of an option requires new type). Because of this,
-`CXON` uses so-called _format-selector_ and it's defined like this:
+`CXON` uses so-called *format-selector* and it's defined like this:
 
 ``` c++
 namespace cxon {
@@ -406,22 +410,21 @@ namespace cxon {
 }
 ```
 
-Then the interface should be called with _format-selector_ instead of bare format traits:
+Then the interface should be called with *format-selector* instead of with bare format traits.
+
+###### Example
 
 ``` c++
 struct json_unquoted_keys_traits : cxon::json_format_traits {
-    ...
     struct map : format_traits::map {
-        static constexpr bool   unquoted_keys   = true;
+        static constexpr bool unquoted_keys = true;
     };
-    ...
 };
-using MyTraits = cxon::JSON<json_unquoted_keys_traits>;
+using my_traits = cxon::JSON<json_unquoted_keys_traits>;
 
 ...
-auto const result = cxon::from_chars<MyTraits>(...);
+auto const result = cxon::from_chars<my_traits>(...);
 ...
-
 ```
 
 This way, specialization for given type and format is ensured and code like this:
@@ -430,44 +433,46 @@ This way, specialization for given type and format is ensured and code like this
 namespace cxon {
 
     template <typename X, typename II>
-        inline auto read_value(char& t, II& i, II e, rctx<X>& ctx)
+        auto read_value(char& t, II& i, II e, rctx<X>& ctx)
             -> enable_for_t<X, CXON, bool>
         { ... }
     template <typename X, typename II>
-        inline auto read_value(char& t, II& i, II e, rctx<X>& ctx)
+        auto read_value(char& t, II& i, II e, rctx<X>& ctx)
             -> enable_for_t<X, JSON, bool>
         { ... }
 
 }
 ```
 
-will work with arbitrary format traits.
+will work with arbitrary *format traits*.
 
-*Here, the helper types `cxon::enable_for_t` is a convenience typedef similar to 
+*Here, the helper type `cxon::enable_for_t` is a convenience typedef similar to 
 [`std::enable_if`][url-cpp-enab-if].*
 
 
 --------------------------------------------------------------------------------
 ###### Example (JSON-RPC)
 
-`struct` binding with a toy [`JSON-RPC`](https://www.jsonrpc.org/) implementation:
+A toy [`JSON-RPC`](https://www.jsonrpc.org/) implementation and example of its usage with `CXON`.
 
 ``` c++
+#include "cxon/cxon.hxx"
+#include <cassert>
+
 namespace jsonrpc {
 
     // request
 
     template <typename ...P>
         struct request {
-            static char const*const   jsonrpc;
-            size_t const              id;
-            char const*const          method;
-            std::tuple<P...> const    params;
+            static char const*const jsonrpc;
+            size_t const            id;
+            char const*const        method;
+            std::tuple<P...> const  params;
 
             constexpr request(size_t id, const char* method, P... params) noexcept
             :   id(id), method(method), params(params...) { }
 
-            // implements write_value static member for the fields we care about
             CXON_STRUCT_WRITE_MEMBER(request,
                 CXON_STRUCT_FIELD_ASIS(jsonrpc),
                 CXON_STRUCT_FIELD_ASIS(id),
@@ -485,71 +490,64 @@ namespace jsonrpc {
 
     // response
 
-    struct error {
-        int           code;
-        std::string   message;
-    };
+    template <typename D>
+        struct error {
+            int         code;
+            std::string message;
+            D           data;
 
-    template <typename R>
+            CXON_STRUCT_READ_MEMBER(error,
+                CXON_STRUCT_FIELD_ASIS(code),
+                CXON_STRUCT_FIELD_ASIS(message),
+                CXON_STRUCT_FIELD_ASIS(data)
+            )
+        };
+
+    template <typename R, typename D = cxon::structs::skip_type>
         struct response {
-            char      jsonrpc[8];
-            size_t    id;
-            R         result;
-            error     error;
+            char        jsonrpc[8];
+            size_t      id;
+            R           result;
+            error<D>    error;
 
             constexpr response() noexcept
             :   jsonrpc{0}, id(), result(), error() { }
 
-            // here's what's behind the macros
-            template <typename X, typename II>
-                static bool read_value(response& t, II& i, II e, cxon::rctx<X>& ctx) {
-                    using namespace cxon::structs;
-                    static constexpr auto f = make_fields(
-                        make_field("jsonrpc", &response::jsonrpc),
-                        make_field("id", &response::id),
-                        make_field("result", &response::result),
-                        make_field("error", &response::error)
-                    );
-                    return read_fields<X>(t, f, i, e, ctx);
-                }
+            CXON_STRUCT_READ_MEMBER(response,
+                CXON_STRUCT_FIELD_ASIS(jsonrpc),
+                CXON_STRUCT_FIELD_ASIS(id),
+                CXON_STRUCT_FIELD_ASIS(result),
+                CXON_STRUCT_FIELD_ASIS(error)
+            )
         };
 
 }
 
-// the non-intrusive way
-CXON_STRUCT_READ(jsonrpc::error,
-    CXON_STRUCT_FIELD_ASIS(code),
-    CXON_STRUCT_FIELD_ASIS(message),
-    CXON_STRUCT_FIELD_SKIP(data) // 'data' will be skipped if present
-)
-
-...
-// success
-
-auto const call = jsonrpc::make_request(1, "subtract", 42, 23);
-std::string req;
-    cxon::to_chars(req, call);
-assert(req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"subtract\",\"params\":[42,23]}");
-// round-trip req -> res
-char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
-jsonrpc::response<int> ret;
-    auto const r = cxon::from_chars(ret, res);
-assert(r && ret.id == 1 && ret.result == 19);
-
-...
-// error
-
-auto const call = jsonrpc::make_request(1, "div", 42, 0);
-std::string req;
-    cxon::to_chars(req, call);
-assert(req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"div\",\"params\":[42,0]}");
-// round-trip req -> res
-char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
-                    "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
-jsonrpc::response<int> ret;
-    auto const r = cxon::from_chars(ret, res);
-assert(r && ret.id == 1 && ret.error.code == 42 && ret.error.message == "divide by zero");
-
+int main() {
+    {   // success
+        auto const call = jsonrpc::make_request(1, "subtract", 42, 23);
+        std::string req;
+            auto const w = cxon::to_chars(req, call);
+        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"subtract\",\"params\":[42,23]}");
+        // round-trip req -> res
+        char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
+        jsonrpc::response<int> ret;
+            auto const r = cxon::from_chars(ret, res);
+        assert(r && ret.id == 1 && ret.result == 19);
+    }
+    {   // error
+        auto const call = jsonrpc::make_request(1, "div", 42, 0);
+        std::string req;
+            auto const w = cxon::to_chars(req, call);
+        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"div\",\"params\":[42,0]}");
+        // round-trip req -> res
+        char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
+                            "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
+        jsonrpc::response<int> ret;
+            auto const r = cxon::from_chars(ret, res);
+        assert(r && ret.id == 1 && ret.error.code == 42 && ret.error.message == "divide by zero");
+    }
+}
 ```
 
 
@@ -577,3 +575,4 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [url-cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
 [url-cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
 [url-cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
+[url-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
