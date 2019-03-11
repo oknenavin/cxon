@@ -1,7 +1,7 @@
 ## `CXON/CXJSON` library
 
 [![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
-[![CXON][url-version-image]](https://github.com/libcxon/cxon)
+[![cxon][url-version-image]](https://github.com/libcxon/cxon)
 
 --------------------------------------------------------------------------------
 

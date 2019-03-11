@@ -1,7 +1,7 @@
 ## `CXON` library
 
 [![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
-[![CXON][url-version-image]](https://github.com/libcxon/cxon)
+[![cxon][url-version-image]](https://github.com/libcxon/cxon)
 
 --------------------------------------------------------------------------------
 
@@ -169,7 +169,7 @@ namespace cxon {
 - `ctx` is read/write context defined in the [_format-traits_](#format-traits)
 
 and it is the first non-intrusive way to extend `CXON` for a type - implementing it
-in namespace `cxon`.  
+in namespace `cxon`.
 
 The _implementation bridge_ however, bridges three additional methods of extension:
 
@@ -221,9 +221,95 @@ The _implementation bridge_ however, bridges three additional methods of extensi
     };
     ```
 
-Core library also provides convenient way for binding of `enum`s and `struct`s via
-set of simple non-intrusive and intrusive macros (only a thin and debug friendly wrappers).
+Core library also provides convenient way for binding of enumerations and compound types via
+set of simple non-intrusive and intrusive macros (only a thin and debug friendly wrappers):
 
+- [enumerations][url-cpp-enum]
+    ``` c++
+    // implement read interface for enum Type
+    #define CXON_ENUM_READ(Type, ...)
+    // implement write interface for enum Type
+    #define CXON_ENUM_WRITE(Type, ...)
+    // implement read and write interface for enum Type
+    #define CXON_ENUM(Type, ...)
+
+    // define enum value Value, which will be serialized as Name
+    #define CXON_ENUM_VALUE_NAME(Name, Value)
+    // define enum value Value, which will be serialized as ##Value
+    #define CXON_ENUM_VALUE_ASIS(Value)
+    ```
+
+    ###### Example
+
+    ``` c++
+    enum rgb { red, green, blue };
+
+    CXON_ENUM(rgb,
+        CXON_ENUM_VALUE_ASIS(red),
+        CXON_ENUM_VALUE_NAME("green (1)", green),
+        CXON_ENUM_VALUE_ASIS(blue)
+    )
+
+    ...
+
+    std::vector<rgb> v0 = { rgb::red, rgb::green, rgb::blue };
+    std::string s0;
+        cxon::to_chars(s0, v0);
+    assert(s0 == "[\"red\",\"green (1)\",\"blue\"]");
+    std::vector<rgb> v1;
+        cxon::from_chars(v1, s0);
+    assert(v1 == v0);
+    ```
+- [compound types][url-cpp-struct]
+    ``` c++
+    // implement read interface for type Type
+    #define CXON_STRUCT_READ(Type, ...)
+    // implement write interface for type Type
+    #define CXON_STRUCT_WRITE(Type, ...)
+    // implement read and write interface for type Type
+    #define CXON_STRUCT(Type, ...)
+    // and the same set for intrusive implementation
+    #define CXON_STRUCT_READ_MEMBER(Type, ...)
+    #define CXON_STRUCT_WRITE_MEMBER(Type, ...)
+    #define CXON_STRUCT_MEMBER(Type, ...)
+    
+    // define field Field, which will be serialized as Name
+    #define CXON_STRUCT_FIELD_NAME(Name, Field)
+    // define field Field, which will be serialized as ##Field
+    #define CXON_STRUCT_FIELD_ASIS(Field)
+    // define Name, which will be skipped during serialization (only meaningful for reading)
+    #define CXON_STRUCT_FIELD_SKIP(Name)
+    ```
+
+    ###### Example
+
+    ``` c++
+    struct my_struct {
+        int first;
+        int second;
+        int skip;
+        bool operator ==(const my_struct& s) const { return first == s.first && second == s.second; }
+    };
+    CXON_STRUCT_READ(my_struct,
+        CXON_STRUCT_FIELD_ASIS(first),
+        CXON_STRUCT_FIELD_NAME("second field", second),
+        CXON_STRUCT_FIELD_SKIP("skip")
+    )
+    CXON_STRUCT_WRITE(my_struct,
+        CXON_STRUCT_FIELD_ASIS(first),
+        CXON_STRUCT_FIELD_NAME("second field", second)
+    )
+
+    ...
+
+    my_struct v0 = { 1, 2, 3 };
+    std::string s0;
+        cxon::to_chars(s0, v0);
+    assert(s0 == "{\"first\":1,\"second field\":2}");
+    my_struct v1;
+        cxon::from_chars(v1, "{\"first\":1,\"second field\":2,\"skip\":42}");
+    assert(v1 == v0);
+    ```
 
 --------------------------------------------------------------------------------
 #### Format Traits
@@ -480,6 +566,8 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [url-cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
 [url-cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
 [url-cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[url-cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=106277
+[url-cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [url-cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [url-cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
@@ -488,5 +576,4 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [url-cpp-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
 [url-cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
 [url-cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
-[url-cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [url-cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
