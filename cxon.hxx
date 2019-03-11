@@ -3384,6 +3384,18 @@ namespace cxon { namespace structs { // structured types reader/writer construct
 
 }} // cxon::structs structured types reader/writer construction helpers
 
+namespace cxon { // structs::skip_type read
+
+    template <typename X>
+        struct read<X, structs::skip_type> {
+            template <typename InIt>
+                static bool value(structs::skip_type&, InIt& i, InIt e, rctx<X>& ctx) {
+                    return unquoted::read_value<X>(i, e, ctx);
+                }
+        };
+
+}   // cxon structs::skip_type read
+
 #if 1 // cxon struct read/write macros
 
 #   define CXON_STRUCT_FIELD(T, N, F)   cxon::structs::make_field(N, &T::F)
