@@ -13,6 +13,11 @@ test-cxjson: $(out)/cxjson-test
                                     @../data/set.2-pass.in \
                             fail    @../data/set.1-fail.in \
                                     @../data/set.2-fail.in)
+	@(cd $(out) && ../$< \
+                            diff    @../data/set.3-diff.in \
+                                    @../data/set.4-diff.in \
+                                    @../data/set.5-diff.in \
+                                    | xargs -n2 diff -q)
 
 $(out)/cxon-test: cxon.cxx ../cxon.hxx
 	@mkdir -p $(out)
