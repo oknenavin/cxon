@@ -14,7 +14,7 @@
 
 #### Introduction
 
-`CXJSON` is an implementation of a polymorphic type, which can describe an arbitrary `JSON`.  
+`CXJSON` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
   - `object` - [`std::map`][url-cpp-map]
   - `array` - [`std::vector`][url-cpp-vect]

@@ -3,9 +3,17 @@
 [![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
 [![cxon][url-version-image]](https://github.com/libcxon/cxon)
 
+
 --------------------------------------------------------------------------------
+#### Contents
+- [Introduction](#introduction)
+- [Interface](#interface)
+- [Implementation bridge](#implementation-bridge)
+- [Format traits](#format-traits)
+- [Example (`JSON-RPC`)](#example-json-rpc)
 
 
+--------------------------------------------------------------------------------
 #### Introduction
 
 `CXON` defines and implements an interface, which is a generalization of C++17's
@@ -46,6 +54,9 @@ Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/) implementati
 may be found [at the end of the document](#example-json-rpc).
 
 
+--------------------------------------------------------------------------------
+#### Interface
+
 ##### Read interface  
 
 ``` c++
@@ -84,8 +95,19 @@ namespace cxon {
 On success, returns a value of type `from_chars_result`, such that `end` is one-past-the-end iterator of
 the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
 On failure, returns a value of type `from_chars_result`, such that `end` is an iterator pointing to
-the non-matching input, and `ec` contains the error condition. The value is in valid, but unspecified
+the non-matching input, and `ec` contains the [error condition][url-err-cnd]. The value is in valid, but unspecified
 state.
+
+Error code                         | Description
+-----------------------------------|---------------------------------
+read_error::ok                     | no error
+read_error::unexpected             | unexpected input
+read_error::character_invalid      | character invalid
+read_error::integral_invalid       | integral invalid or out of range
+read_error::floating_point_invalid | floating-point invalid
+read_error::boolean_invalid        | boolean invalid
+read_error::escape_invalid         | invalid escape sequence
+read_error::surrogate_invalid      | invalid surrogate
 
 ###### Exceptions
 Does not throw by itself, however specializations may throw or not:
@@ -145,6 +167,11 @@ On success, returns a value of type `to_chars_result`, such that `ec` is value-i
 
 On failure, returns a value of type `to_chars_result`, such that `ec` contains the error condition, and
 `end` has the same value as in case of success.
+
+Error code                         | Description
+-----------------------------------|---------------------------------
+read_error::ok                     | no error
+read_error::output_failure         | output cannot be written
 
 ###### Exceptions
 Does not throw by itself, however writing to the output may throw (e.g. adding to a container).
@@ -451,7 +478,7 @@ will work with arbitrary *format traits*.
 
 
 --------------------------------------------------------------------------------
-###### Example (JSON-RPC)
+###### Example (`JSON-RPC`)
 
 A toy [`JSON-RPC`](https://www.jsonrpc.org/) implementation and example of its usage with `CXON`.
 
