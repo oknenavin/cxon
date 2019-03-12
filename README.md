@@ -23,7 +23,7 @@
 [`<charconv>`][url-cpp-charconv] interface.
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
-`JSON` - many call it DOM, DOM-like, etc., basing on popular `XML` libraries.  
+`JSON` - many call it DOM, DOM-like, etc., refering to popular `XML` libraries.  
 In contrast, `CXON` binds `JSON` to any suitable `C++` type (though [`CXJSON`](cxjson/README.md),
 which is part of `CXON`, is an implementation of such a type, and also an example of how
 `CXON` can be used).
@@ -44,9 +44,7 @@ which is part of `CXON`, is an implementation of such a type, and also an exampl
     - [containers library][url-cpp-container] - in its entirety
 
 `CXON` can easily be extended for arbitrary types, using intrusive and non-intrusive methods
-(see the [`MANUAL`](MANUAL.md#implementation-bridge) for details). For convenience, core library
-also provides a way for binding of `enum` and `struct` types via a set of simple, non-intrusive and
-intrusive macros (thin and debug friendly wrappers).
+(see the [`MANUAL`](MANUAL.md#implementation-bridge) for details).
 
 ###### Example
 
@@ -138,7 +136,7 @@ See the [MANUAL](MANUAL.md).
 
 #### Contributing
 
-Any kind of contribution (feedback, suggestions, code, documentation, etc.) is welcome.  
+Any kind of contribution (feedback, suggestions, code, tests, documentation, etc.) is welcome.  
 Contact via [GitHub][url-github] (create an issue even it's just a question) or
 [mail](mailto:oknenavin@outlook.com).
 
