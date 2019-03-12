@@ -155,7 +155,7 @@ Does not throw by itself, however writing to the output may throw (e.g. adding t
 
 The interface communicate the implementation via the so-called *implementation bridge*.  
 Read/write interface instantiates the context, defined in the [*format traits*](#format-traits),
-with CtxPrm parameters (if any) and then calls the *implementation bridge* with it:
+with `CtxPrm` parameters (if any) and then calls the *implementation bridge* with it:
 
 ``` c++
 namespace cxon {
@@ -225,8 +225,8 @@ The _implementation bridge_ however, bridges three additional methods of extensi
     };
     ```
 
-Core library also provides convenient way for binding of enumerations and compound types via
-set of simple non-intrusive and intrusive macros (only a thin and debug friendly wrappers):
+For convenience, core library also provides a set of simple, non-intrusive and intrusive macros
+for binding of enumerations and compound types:
 
 - [enumerations][url-cpp-enum]
     ``` c++
@@ -319,8 +319,8 @@ set of simple non-intrusive and intrusive macros (only a thin and debug friendly
 #### Format Traits
 
 `Traits` template parameter has two roles:
-  - to hold defining information for given serialization format
-  - to hold configuration options for given serialization format
+  - to keep configuration, related to the definition of given serialization format
+  - to keep configuration parameters for given serialization format
 
 The implementation requires *format traits* to provide one mandatory trait to support the 
 [*implementation bridge*](#implementation-bridge) - a context:
@@ -337,8 +337,9 @@ struct format_traits {
 The implementation requires these types to provide mandatory member `ec` of type
 [`std::error_condition`][url-err-cnd].
 
-Although `JSON` is the default format, `CXON` defines a fall-back format called the same, `CXON`.
-This format could be seen as a relaxed `JSON` and its traits are defined like this:
+Although `JSON` is the default format, `CXON` defines a fall-back format called the same - `CXON`.  
+It is like somewhat relaxed `JSON` (e.g. object keys may not be quoted) and its traits are
+defined like this:
 
 ``` c++
 namespace cxon {
@@ -364,11 +365,11 @@ namespace cxon {
     struct format_traits {
         ...
         struct map {
-            static constexpr char   beg             = '{';
-            static constexpr char   end             = '}';
-            static constexpr char   div             = ':';
-            static constexpr char   sep             = ',';
-            static constexpr bool   unquoted_keys   = true;
+            static constexpr char beg             = '{';
+            static constexpr char end             = '}';
+            static constexpr char div             = ':';
+            static constexpr char sep             = ',';
+            static constexpr bool unquoted_keys   = true;
         };
         ...
     };
@@ -386,7 +387,7 @@ namespace cxon {
     struct json_format_traits : format_traits {
         ...
         struct map : format_traits::map {
-            static constexpr bool   unquoted_keys   = false;
+            static constexpr bool unquoted_keys   = false;
         };
         ...
     };
@@ -395,8 +396,8 @@ namespace cxon {
 ```
 
 As both definition and configuration are in one place, specialization for given format 
-is not possible (because changing of an option requires new type). Because of this,
-`CXON` uses so-called *format-selector* and it's defined like this:
+is not directly possible (because changing of a parameter requires new type).
+Because of this, `CXON` uses so-called *format-selector* and it is defined like this:
 
 ``` c++
 namespace cxon {
@@ -525,27 +526,43 @@ namespace jsonrpc {
 
 int main() {
     {   // success
-        auto const call = jsonrpc::make_request(1, "subtract", 42, 23);
-        std::string req;
+        auto const call = jsonrpc::make_request(1, "sub", 42, 23);
+        std::string req; // serialize call to req
             auto const w = cxon::to_chars(req, call);
-        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"subtract\",\"params\":[42,23]}");
+        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":[42,23]}");
         // round-trip req -> res
         char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
-        jsonrpc::response<int> ret;
+        jsonrpc::response<int> ret; // serialize res to ret
             auto const r = cxon::from_chars(ret, res);
         assert(r && ret.id == 1 && ret.result == 19);
     }
     {   // error
         auto const call = jsonrpc::make_request(1, "div", 42, 0);
-        std::string req;
+        std::string req; // serialize call to req
             auto const w = cxon::to_chars(req, call);
         assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"div\",\"params\":[42,0]}");
         // round-trip req -> res
         char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
                             "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
-        jsonrpc::response<int> ret;
-            auto const r = cxon::from_chars(ret, res);
-        assert(r && ret.id == 1 && ret.error.code == 42 && ret.error.message == "divide by zero");
+        {   // serialize res to ret, error's data will be skipped
+            jsonrpc::response<int> ret;
+                auto const r = cxon::from_chars(ret, res);
+            assert( r &&
+                    ret.id == 1 &&
+                    ret.error.code == 42 &&
+                    ret.error.message == "divide by zero"
+            );
+        }
+        {   // serialize res to ret, error's data is bound to std::string
+            jsonrpc::response<int, std::string> ret;
+                auto const r = cxon::from_chars(ret, res);
+            assert( r &&
+                    ret.id == 1 &&
+                    ret.error.code == 42 &&
+                    ret.error.message == "divide by zero" &&
+                    ret.error.data == "a black hole has been created somewhere"
+            );
+        }
     }
 }
 ```
