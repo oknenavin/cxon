@@ -34,8 +34,8 @@ int main() {
     for (auto t : TEST_V)
         t->test();
     TEST_F ?
-        fprintf(stdout, "%u of %u failed\n", TEST_F, TEST_A) :
-        fprintf(stdout, "%u of %u passed\n", TEST_A, TEST_A)
+        fprintf(stdout, "cxon: %u of %u failed\n", TEST_F, TEST_A) :
+        fprintf(stdout, "cxon: %u of %u passed\n", TEST_A, TEST_A)
     ;
     return TEST_F;
 }

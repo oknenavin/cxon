@@ -3,9 +3,8 @@
 [![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
 [![cxon][url-version-image]](https://github.com/libcxon/cxon)
 
+
 --------------------------------------------------------------------------------
-
-
 #### cxjson::basic_node
 
 *Defined in header [cxjson.hxx](cxjson.hxx)*
