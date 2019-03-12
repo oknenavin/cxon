@@ -125,8 +125,8 @@ bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& time, cas
             }
         CXJSON_PROC(pass)
         CXJSON_PROC(fail)
-        CXJSON_PROC(time)
         CXJSON_PROC(diff)
+        CXJSON_PROC(time)
 #       undef CXJSON_PROC
     }
     return true;
@@ -151,11 +151,16 @@ int main(int argc, char *argv[]) {
                 ++err, c.error += "must pass: '" + c.source + "' (failed with '" + format_error(r, s.begin()) + "')";
             }
         }
-        for (auto& c : pass) {
-            if (!c.error.empty()) {
-                fprintf(stderr, "%s\n", c.error.c_str());
+        size_t fc = 0;
+            for (auto& c : pass) {
+                if (!c.error.empty()) {
+                    ++fc, fprintf(stderr, "%s\n", c.error.c_str());
+                }
             }
-        }
+        fc ?
+            fprintf(stdout, "cxjson/pass: %zu of %zu failed\n", fc, pass.size()) :
+            fprintf(stdout, "cxjson/pass: %zu of %zu passed\n", pass.size(), pass.size())
+        ;
     }
     if (!fail.empty()) {
         for (auto& c : fail) {
@@ -174,9 +179,52 @@ int main(int argc, char *argv[]) {
                 ++err, c.error += "must fail: '" + c.source + "' (passed as '" + tluser + "')";
             }
         }
-        for (auto& c : fail) {
+        size_t fc = 0;
+            for (auto& c : fail) {
+                if (!c.error.empty()) {
+                    ++fc, fprintf(stderr, "%s\n", c.error.c_str());
+                }
+            }
+        fc ?
+            fprintf(stdout, "cxjson/fail: %zu of %zu failed\n", fc, fail.size()) :
+            fprintf(stdout, "cxjson/fail: %zu of %zu passed\n", fail.size(), fail.size())
+        ;
+    }
+    if (!diff.empty()) {
+        for (auto& c : diff) {
+            std::string json;
+            {
+                std::ifstream is(c.source, std::ifstream::binary);
+                    if (!is) {
+                        c.error = "cannot be opened";
+                        continue;
+                    }
+                json.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+            }
+            static auto const name = [](const std::string& p) {
+                auto f = p.find_last_of("/\\"); f = f != p.npos ? f + 1 : 0;
+                auto l = p.rfind('.'); if (l == p.npos) l = p.size();
+                return std::string(p, f, l - f);
+            };
+            if (std::ofstream os = std::ofstream(name(c.source) + ".0.json", std::ofstream::binary)) {
+                auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
+                for (auto c : json)  *o = c;
+            }
+            node result;
+            if (auto const r = cxon::from_chars(result, json)) {
+                if (std::ofstream os = std::ofstream(name(c.source) + ".1.json", std::ofstream::binary)) {
+                    auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
+                    auto const r = cxon::to_chars(o, result); CXON_ASSERT(r, "unexpected");
+                }
+                fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str());
+            }
+            else {
+                c.error = format_error(r, json.cbegin());
+            }
+        }
+        for (auto& c : diff) {
             if (!c.error.empty()) {
-                fprintf(stderr, "%s\n", c.error.c_str());
+                fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str());
             }
         }
     }
@@ -208,44 +256,6 @@ int main(int argc, char *argv[]) {
         fprintf(stdout, "\twrite         :                 x %6.2f\n", total.write / total.base);
         fprintf(stdout, "\tcxon::pretty  :                 x %6.2f\n", total.pretty / total.base);
         fprintf(stdout, "\tcxjson::pretty:                 x %6.2f\n", total.pretty_native / total.base);
-    }
-    if (!diff.empty()) {
-        for (auto& c : diff) {
-            std::string json;
-            {
-                std::ifstream is(c.source, std::ifstream::binary);
-                    if (!is) {
-                        c.error = "cannot be opened";
-                        continue;
-                    }
-                json.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-            }
-            static auto const name = [](const std::string& p) {
-                auto f = p.find_last_of("/\\"); f = f != p.npos ? f + 1 : 0;
-                auto l = p.rfind('.'); if (l == p.npos) l = p.size();
-                return std::string(p, f, l - f);
-            };
-            if (std::ofstream os = std::ofstream(name(c.source) + ".0.json", std::ofstream::binary)) {
-                auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
-                for (auto c : json)  *o = c;
-            }
-            node result;
-            if (auto const r = cxon::from_chars(result, json)) {
-                if (std::ofstream os = std::ofstream(name(c.source) + ".1.json", std::ofstream::binary)) {
-                    auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
-                    auto const r = cxon::to_chars(o, result); CXON_ASSERT(r, "unexpected");
-                }
-                fprintf(stdout, "%s %s\n", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str());
-            }
-            else {
-                c.error = format_error(r, json.cbegin());
-            }
-        }
-        for (auto& c : diff) {
-            if (!c.error.empty()) {
-                fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str());
-            }
-        }
     }
     return err;
 }
