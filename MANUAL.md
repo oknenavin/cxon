@@ -47,10 +47,10 @@ specify this about object keys:*
   > *The JSON syntax does not impose any restrictions on the strings used as names,
   > __does not require that name strings be unique__*...
 
-*and by choosing map or multi-map as a `C++` mapping type, value of existing key
+*and by choosing map or multi-map as a `C++` mapping type, value of an existing key
 may be replaced or kept.*
 
-Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/) implementation
+Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation
 may be found [at the end of the document](#example-json-rpc).
 
 
@@ -307,16 +307,16 @@ for binding of enumerations and compound types:
 
 - [enumerations][url-cpp-enum]
     ``` c++
-    // implement read interface for enum Type
+    // implements the read interface for enum Type
     #define CXON_ENUM_READ(Type, ...)
-    // implement write interface for enum Type
+    // implements the write interface for enum Type
     #define CXON_ENUM_WRITE(Type, ...)
-    // implement read and write interface for enum Type
+    // implements the read and write interfaces for enum Type
     #define CXON_ENUM(Type, ...)
 
-    // define enum value Value, which will be serialized as Name
+    // defines enum value Value, which will be serialized as Name
     #define CXON_ENUM_VALUE_NAME(Name, Value)
-    // define enum value Value, which will be serialized as ##Value
+    // defines enum value Value, which will be serialized as ##Value
     #define CXON_ENUM_VALUE_ASIS(Value)
     ```
 
@@ -343,22 +343,23 @@ for binding of enumerations and compound types:
     ```
 - [compound types][url-cpp-struct]
     ``` c++
-    // implement read interface for type Type
+    // implements the read interface for type Type
     #define CXON_STRUCT_READ(Type, ...)
-    // implement write interface for type Type
+    // implements the write interface for type Type
     #define CXON_STRUCT_WRITE(Type, ...)
-    // implement read and write interface for type Type
+    // implements the read and write interfaces for type Type
     #define CXON_STRUCT(Type, ...)
     // and the same set for intrusive implementation
     #define CXON_STRUCT_READ_MEMBER(Type, ...)
     #define CXON_STRUCT_WRITE_MEMBER(Type, ...)
     #define CXON_STRUCT_MEMBER(Type, ...)
     
-    // define field Field, which will be serialized as Name
+    // defines field Field, which will be serialized as Name
     #define CXON_STRUCT_FIELD_NAME(Name, Field)
-    // define field Field, which will be serialized as ##Field
+    // defines field Field, which will be serialized as ##Field
     #define CXON_STRUCT_FIELD_ASIS(Field)
-    // define Name, which will be skipped during serialization (only meaningful for reading)
+    // defines the key Name, which will be skipped during serialization
+    //  (only meaningful for reading)
     #define CXON_STRUCT_FIELD_SKIP(Name)
     ```
 
@@ -531,7 +532,8 @@ will work with arbitrary *format traits*.
 --------------------------------------------------------------------------------
 ###### Example (`JSON-RPC`)
 
-A toy [`JSON-RPC`](https://www.jsonrpc.org/) implementation and example of its usage with `CXON`.
+A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and example of its
+usage with `CXON`.
 
 ``` c++
 #include "cxon/cxon.hxx"
