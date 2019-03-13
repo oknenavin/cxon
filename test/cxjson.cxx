@@ -135,7 +135,7 @@ bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& time, cas
 int main(int argc, char *argv[]) {
     cases pass, fail, time, diff;
     if (!cl_parse(argc, argv, pass, fail, time, diff)) {
-        return fprintf(stderr, "usage: cxjson ((pass|fail|time|diff) (file|@file)+)+\n"), 1;
+        return fprintf(stderr, "usage: cxjson ((pass|fail|diff|time) (file|@file)+)+\n"), 1;
     }
     int err = 0;
     if (!pass.empty()) {

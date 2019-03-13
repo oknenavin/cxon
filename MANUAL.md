@@ -117,6 +117,33 @@ Does not throw by itself, however specializations may throw or not:
   of the standard library
 - of user types - may or may not throw depending of the implementation
 
+###### Example
+
+``` c++
+#include "cxon/cxon.hxx"
+#include <cassert>
+
+int main() {
+    using namespace cxon;
+    {   double v;
+            auto const r = from_chars(v, "42");
+        assert(r && v == 42);
+    }
+    {   int v;
+            auto const r = from_chars(v, "42");
+        assert(r && v == 42);
+    }
+    {   std::vector<float> v;
+            auto const r = from_chars(v, "[42, true]");
+        assert( !r &&
+                r.ec == read_error::floating_point_invalid &&
+                strcmp(r.end, "true]") == 0
+        );
+    }
+}
+
+```
+
 
 ##### Write interface  
 
@@ -175,6 +202,29 @@ read_error::output_failure         | output cannot be written
 
 ###### Exceptions
 Does not throw by itself, however writing to the output may throw (e.g. adding to a container).
+
+###### Example
+
+``` c++
+#include "cxon/cxon.hxx"
+#include <cassert>
+
+int main() {
+    using namespace cxon;
+    {   std::string v;
+            auto const r = to_chars(v, 42);
+        assert(r && v == "42");
+    }
+    {   std::string v;
+            auto const r = to_chars(v, "42");
+        assert(r && v == "\"42\"");
+    }
+    {   char v[4];
+            auto const r = to_chars(std::begin(v), std::end(v), std::vector<int>{ 4, 2 });
+        assert(!r && r.ec == write_error::output_failure);
+    }
+}
+```
 
 
 --------------------------------------------------------------------------------
