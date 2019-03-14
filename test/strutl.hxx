@@ -197,7 +197,10 @@ namespace strutl { // to_string
 
 }   // strutl to_string
 
-#define STRUTL_TO_STRING_SIMPLE(T) template <> struct strutl::str<T> { static string it() { return #T; } }
+#define STRUTL_TO_STRING_SIMPLE(T)\
+    namespace strutl {\
+        template <> struct str<T> { static string it() { return #T; } };\
+    }
 
 #define STRUTL_TO_STRING_STRUCT_BEGIN(T)\
     template <> struct strutl::str<T> {\
