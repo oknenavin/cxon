@@ -3320,7 +3320,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
                 template <typename II>
                     static bool fields(S& t, const char* name, const fields<H, T...>& f, II& i, II e, rctx<X>& ctx) {
                         return std::strcmp(f.field.name, name) == 0 ?
-                            f.field.template read<X, S>(t, i, e, ctx) :
+                            f.field.template read<X>(t, i, e, ctx) :
                             read<X, S, T...>::fields(t, name, f.next, i, e, ctx)
                         ;
                     }
@@ -3353,7 +3353,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             struct write {
                 template <typename O>
                     static bool fields(O& o, const S& t, const fields<H, T...>& f, wctx<X>& ctx) {
-                        return  f.field.template write<X, S>(o, t, ctx) && io::poke<X>(o, X::map::sep, ctx) &&
+                        return  f.field.template write<X>(o, t, ctx) && io::poke<X>(o, X::map::sep, ctx) &&
                                 write<X, S, T...>::fields(o, t, f.next, ctx)
                         ;
                     }
@@ -3362,7 +3362,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             struct write<X, S, F> {
                 template <typename O>
                     static bool fields(O& o, const S& t, const fields<F>& f, wctx<X>& ctx) {
-                        return f.field.template write<X, S>(o, t, ctx);
+                        return f.field.template write<X>(o, t, ctx);
                     }
             };
 

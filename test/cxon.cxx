@@ -1817,7 +1817,7 @@ CXON_ENUM(Enum1,
     CXON_ENUM_VALUE_NAME("Two (2)", two),
     CXON_ENUM_VALUE_ASIS(three)
 )
-STRUTL_TO_STRING_SIMPLE(Enum1)
+STRUTL_TO_STRING_SIMPLE(Enum1);
 
 TEST_BEG(cxon::CXON<>) // enum
     R_TEST(Enum1::one, "one");
@@ -1865,8 +1865,8 @@ CXON_STRUCT(Struct2,
     CXON_STRUCT_FIELD_NAME("B", b)
 )
 
-STRUTL_TO_STRING_SIMPLE(Struct1)
-STRUTL_TO_STRING_SIMPLE(Struct2)
+STRUTL_TO_STRING_SIMPLE(Struct1);
+STRUTL_TO_STRING_SIMPLE(Struct2);
 
 TEST_BEG(cxon::CXON<>) // struct macros
     R_TEST(Struct1(0, Enum1::one), "{A: 0, b: one}");
@@ -1904,7 +1904,7 @@ CXON_STRUCT(Struct3,
     CXON_STRUCT_FIELD_ASIS(b)
 )
 
-STRUTL_TO_STRING_SIMPLE(Struct3)
+STRUTL_TO_STRING_SIMPLE(Struct3);
 
 TEST_BEG(cxon::CXON<>)
     R_TEST(Struct3(1, new Struct3(2, nullptr)), "{a: 1, b: {a: 2}}");
@@ -1942,7 +1942,7 @@ private:
     int a;
 };
 
-STRUTL_TO_STRING_SIMPLE(Struct4)
+STRUTL_TO_STRING_SIMPLE(Struct4);
 
 TEST_BEG(cxon::CXON<>) // static nmethod
     R_TEST(Struct4(1), "1");
@@ -1976,7 +1976,7 @@ private:
     int a;
 };
 
-STRUTL_TO_STRING_SIMPLE(Struct5)
+STRUTL_TO_STRING_SIMPLE(Struct5);
 
 TEST_BEG(cxon::CXON<>) // method
     R_TEST(Struct5(1), "1");
@@ -2010,7 +2010,7 @@ namespace cxon {
         }
 }
 
-STRUTL_TO_STRING_SIMPLE(Struct6)
+STRUTL_TO_STRING_SIMPLE(Struct6);
 
 TEST_BEG(cxon::CXON<>) // function
     R_TEST(Struct6(1), "1");
@@ -2037,7 +2037,7 @@ private:
     int b;
 };
 
-STRUTL_TO_STRING_SIMPLE(Struct7)
+STRUTL_TO_STRING_SIMPLE(Struct7);
 
 TEST_BEG(cxon::CXON<>) // macros inside
     R_TEST(Struct7(1, 2), "{a: 1, b: 2}");
@@ -2084,7 +2084,7 @@ private:
     int b;
 };
 
-STRUTL_TO_STRING_SIMPLE(Struct8)
+STRUTL_TO_STRING_SIMPLE(Struct8);
 
 TEST_BEG(cxon::CXON<>)
     R_TEST(Struct8(1, 2), "{a: 1, \"b\": 2}");
@@ -2114,7 +2114,7 @@ struct Struct9 {
 int Struct9::a = 0;
 int const Struct9::b = 3;
 
-STRUTL_TO_STRING_SIMPLE(Struct9)
+STRUTL_TO_STRING_SIMPLE(Struct9);
 
 TEST_BEG(cxon::CXON<>) // static field
     R_TEST(Struct9(), "{}");
@@ -2158,7 +2158,7 @@ CXON_STRUCT_WRITE(Struct10,
     CXON_STRUCT_FIELD_ASIS(a)
 )
 
-STRUTL_TO_STRING_SIMPLE(Struct10)
+STRUTL_TO_STRING_SIMPLE(Struct10);
 
 TEST_BEG(cxon::CXON<>) // skip field
     R_TEST(Struct10(1), "{skip1: true, a: 1}");
