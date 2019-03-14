@@ -23,7 +23,7 @@
 [`<charconv>`][url-cpp-charconv] interface.
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
-`JSON` - many call it `DOM`, `DOM`-like, etc., refering to popular `XML` libraries.  
+`JSON` - many call it `DOM`, `DOM`-like, etc. refering to popular `XML` libraries.  
 In contrast, `CXON` binds `JSON` to any suitable `C++` type (though [`CXJSON`](cxjson/README.md),
 which is part of `CXON`, is an implementation of such a type, and also an example of how
 `CXON` can be used).
@@ -108,6 +108,8 @@ In both cases `my_type` is bound to the same `JSON`:
 }
 ```
 
+*Somewhat more meaningful example can be found here [`JSON-RPC`](MANUAL.md#example-json-rpc).*
+
 #### Compilation
 
 `CXON` requires [`C++11`][url-cpp-comp-support] compliant compiler.
@@ -137,8 +139,8 @@ See the [MANUAL](MANUAL.md).
 #### Contributing
 
 Any kind of contribution (feedback, suggestions, code, tests, documentation, etc.) is welcome.  
-Contact via [GitHub][url-github] (create an issue even it's just a question) or
-[mail](mailto:oknenavin@outlook.com).
+Contact via [GitHub][url-github] (create an issue even it's just a question or comment) or
+via [mail](mailto:oknenavin@outlook.com).
 
 
 -------------------------------------------------------------------------------

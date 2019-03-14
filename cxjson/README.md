@@ -142,8 +142,8 @@ See the [MANUAL](MANUAL.md).
 #### Contributing
 
 Any kind of contribution (feedback, suggestions, code, tests, documentation, etc.) is welcome.  
-Contact via [GitHub][url-github] (create an issue even it's just a question) or
-[mail](mailto:oknenavin@outlook.com).
+Contact via [GitHub][url-github] (create an issue even it's just a question or comment) or
+via [mail](mailto:oknenavin@outlook.com).
 
 
 --------------------------------------------------------------------------------

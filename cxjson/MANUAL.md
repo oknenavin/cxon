@@ -5,7 +5,13 @@
 
 
 --------------------------------------------------------------------------------
-#### cxjson::basic_node
+#### Contents
+- [`cxjson::basic_node`](#cxjson-basic_node)
+- [`CXON` Integration](#cxon-integration)
+
+
+--------------------------------------------------------------------------------
+#### `cxjson::basic_node`
 
 *Defined in header [cxjson.hxx](cxjson.hxx)*
 
@@ -53,7 +59,7 @@ Member type |Definition
 
 
 --------------------------------------------------------------------------------
-#### Constructors
+##### Constructors
 
 ``` c++
 basic_node();                       (1)
@@ -119,7 +125,7 @@ using namespace cxjson;
 
 
 --------------------------------------------------------------------------------
-#### assignment operators
+##### Assignment operators
 
 ``` c++
 basic_node& operator =(basic_node&& o);         (1)
@@ -154,7 +160,7 @@ Replaces the contents of the node:
 
 
 --------------------------------------------------------------------------------
-#### reset
+##### reset
 
 ``` c++
 void reset();
@@ -164,7 +170,7 @@ Resets the content of node, the value type is `null`.
 
 
 --------------------------------------------------------------------------------
-#### type
+##### type
 
 ``` c++
 node_type type() const noexcept;
@@ -182,7 +188,7 @@ node const n; assert(n.type() == node_type::null);
 
 
 --------------------------------------------------------------------------------
-#### is
+##### is
 
 ``` c++
 template <typename T>
@@ -196,7 +202,7 @@ Checks if value type is `T`.
 
 
 --------------------------------------------------------------------------------
-#### imbue
+##### imbue
 
 ``` c++
 template <typename T>
@@ -226,7 +232,7 @@ using namespace cxjson;
 
 
 --------------------------------------------------------------------------------
-#### get
+##### get
 
 ``` c++
 template <typename T>
@@ -249,7 +255,7 @@ assert(n.get<node::string>() == "another");
 
 
 --------------------------------------------------------------------------------
-#### get_if
+##### get_if
 
 ``` c++
 template <typename T>
@@ -272,7 +278,7 @@ assert(n.get_if<node::array>() == nullptr);
 
 
 --------------------------------------------------------------------------------
-#### comparison operators
+##### Comparison operators
 
 ``` c++
 bool operator == (const basic_node& n) const; (1)
@@ -282,6 +288,62 @@ bool operator != (const basic_node& n) const; (2)
 ###### Return value
 - `(1)` `true` if equal, `false` otherwise
 - `(2)` `false` if equal, `true` otherwise
+
+
+--------------------------------------------------------------------------------
+#### `CXON` Integration
+
+`cxjson::basic_node` can be serialized as any other type.  
+`CXJSON` defines the following in addition:
+- own context adding recursion depth counter
+
+  ``` c++
+  struct format_traits : cxon::json_format_traits {
+      struct context {
+          struct read  : cxon::read_context  { unsigned depth {}; };
+          struct write : cxon::write_context { unsigned depth {}; };
+      };
+      static constexpr unsigned max_depth = 64;
+  };
+  ```
+
+- own error conditions
+
+  Error code                      | Message
+  --------------------------------|-------------------------------
+  error::invalid                  | invalid `JSON`
+  error::recursion_depth_exceeded | recursion depth limit exceeded
+
+###### Example
+
+``` c++
+#include "cxon/cxjson/cxjson.hxx"
+#include <cassert>
+
+int main() {
+    {   // ex14
+        using namespace cxjson;
+        {   node n;
+                auto const r = cxon::from_chars(n, "#[1]");
+            assert(!r &&
+                    r.ec.category() == error_category::value &&
+                    r.ec == error::invalid
+            );
+        }
+        {   node n;
+                auto const r = cxon::from_chars(n,
+                    "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[["
+                    "1"
+                    "]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+                );
+            assert(!r &&
+                    r.ec.category() == error_category::value &&
+                    r.ec == error::recursion_depth_exceeded
+            );
+        }
+    }
+}
+```
 
 
 --------------------------------------------------------------------------------

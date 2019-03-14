@@ -57,6 +57,8 @@ may be found [at the end of the document](#example-json-rpc).
 --------------------------------------------------------------------------------
 #### Interface
 
+*Defined in header [cxon.hxx](cxon.hxx)*
+
 ##### Read interface  
 
 ``` c++
@@ -98,7 +100,7 @@ On failure, returns a value of type `from_chars_result`, such that `end` is an i
 the non-matching input, and `ec` contains the [error condition][url-err-cnd]. The value is in valid, but unspecified
 state.
 
-Error code                         | Description
+Error code                         | Message
 -----------------------------------|---------------------------------
 read_error::ok                     | no error
 read_error::unexpected             | unexpected input
@@ -135,7 +137,7 @@ int main() {
     }
     {   std::vector<float> v;
             auto const r = from_chars(v, "[42, true]");
-        assert( !r &&
+        assert( !r && // fails with error r.ec and location r.end
                 r.ec == read_error::floating_point_invalid &&
                 strcmp(r.end, "true]") == 0
         );
@@ -195,7 +197,7 @@ On success, returns a value of type `to_chars_result`, such that `ec` is value-i
 On failure, returns a value of type `to_chars_result`, such that `ec` contains the error condition, and
 `end` has the same value as in case of success.
 
-Error code                         | Description
+Error code                         | Message
 -----------------------------------|---------------------------------
 read_error::ok                     | no error
 read_error::output_failure         | output cannot be written
