@@ -324,27 +324,24 @@ namespace cxjson {
 
 namespace cxjson { // errors
     
-    namespace bits {
-
-        struct error_category : std::error_category {
-            const char* name() const noexcept override {
-                return "cxjson";
+    struct error_category : std::error_category {
+        const char* name() const noexcept override {
+            return "cxjson";
+        }
+        std::string message(int ev) const override {
+            switch (static_cast<error>(ev)) {
+                case error::ok:                         return "no error";
+                case error::invalid:                    return "invalid json";
+                case error::recursion_depth_exceeded:   return "recursion depth limit exceeded";
+                default:                                return "unknown error";
             }
-            std::string message(int ev) const override {
-                switch (static_cast<error>(ev)) {
-                    case error::ok:                         return "no error";
-                    case error::invalid:                    return "invalid json";
-                    case error::recursion_depth_exceeded:   return "recursion depth limit exceeded";
-                    default:                                return "unknown error";
-                }
-            }
-            static error_category const value;
-        };
-        error_category const error_category::value {};
+        }
+        static error_category const value;
+    };
+    error_category const error_category::value {};
 
-    }
     std::error_condition make_error_condition(error e) noexcept {
-        return { static_cast<int>(e), bits::error_category::value };
+        return { static_cast<int>(e), error_category::value };
     }
 
 }   // cxjson errors

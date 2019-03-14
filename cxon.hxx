@@ -576,54 +576,48 @@ namespace cxon { // interface implementation
 
 namespace cxon { // errors
 
-    namespace bits {
-
-        struct read_error_category : std::error_category {
-            const char* name() const noexcept override {
-                return "cxon/read";
+    struct read_error_category : std::error_category {
+        const char* name() const noexcept override {
+            return "cxon/read";
+        }
+        std::string message(int ev) const override {
+            switch (static_cast<read_error>(ev)) {
+                case read_error::ok:                        return "no error";
+                case read_error::unexpected:                return "unexpected input";
+                case read_error::character_invalid:         return "invalid character";
+                case read_error::integral_invalid:          return "invalid integral or value out of range";
+                case read_error::floating_point_invalid:    return "invalid floating point";
+                case read_error::boolean_invalid:           return "invalid boolean";
+                case read_error::escape_invalid:            return "invalid escape sequence";
+                case read_error::surrogate_invalid:         return "invalid surrogate";
+                default:                                    return "unknown error";
             }
-            std::string message(int ev) const override {
-                switch (static_cast<read_error>(ev)) {
-                    case read_error::ok:                        return "no error";
-                    case read_error::unexpected:                return "unexpected input";
-                    case read_error::character_invalid:         return "invalid character";
-                    case read_error::integral_invalid:          return "invalid integral or value out of range";
-                    case read_error::floating_point_invalid:    return "invalid floating point";
-                    case read_error::boolean_invalid:           return "invalid boolean";
-                    case read_error::escape_invalid:            return "invalid escape sequence";
-                    case read_error::surrogate_invalid:         return "invalid surrogate";
-                    default:                                    return "unknown error";
-                }
-            }
-            static read_error_category const value;
-        };
-        read_error_category const read_error_category::value {};
+        }
+        static read_error_category const value;
+    };
+    read_error_category const read_error_category::value {};
 
-    }
     inline std::error_condition make_error_condition(read_error e) noexcept {
-        return { static_cast<int>(e), bits::read_error_category::value };
+        return { static_cast<int>(e), read_error_category::value };
     }
 
-    namespace bits {
-
-        struct write_error_category : std::error_category {
-            const char* name() const noexcept override {
-                return "cxon/write";
+    struct write_error_category : std::error_category {
+        const char* name() const noexcept override {
+            return "cxon/write";
+        }
+        std::string message(int ev) const override {
+            switch (static_cast<write_error>(ev)) {
+                case write_error::ok:               return "no error";
+                case write_error::output_failure:   return "output cannot be written";
+                default:                            return "unknown error";
             }
-            std::string message(int ev) const override {
-                switch (static_cast<write_error>(ev)) {
-                    case write_error::ok:               return "no error";
-                    case write_error::output_failure:   return "output cannot be written";
-                    default:                            return "unknown error";
-                }
-            }
-            static write_error_category const value;
-        };
-        write_error_category const write_error_category::value {};
+        }
+        static write_error_category const value;
+    };
+    write_error_category const write_error_category::value {};
 
-    }
     inline std::error_condition make_error_condition(write_error e) noexcept {
-        return { static_cast<int>(e), bits::write_error_category::value };
+        return { static_cast<int>(e), write_error_category::value };
     }
 
 }   // cxon errors
