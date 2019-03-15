@@ -938,24 +938,17 @@ namespace cxon { namespace bits { // <charconv>
         namespace bits {
 
             template <typename T, typename F>
-                constexpr auto clamp(F t)
-                    ->  enable_if_t<
-                            !is_same<T, char>::value && !is_same<T, signed char>::value && !is_same<T, short>::value &&
-                            !is_same<T, unsigned char>::value && !is_same<T, unsigned short>::value, T
-                        >
-                { return t; }
+                constexpr auto clamp(F t)       -> enable_if_t<sizeof(T) == sizeof(F), T> {
+                    return t;
+                }
             template <typename T, typename F>
-                inline auto clamp(F f) noexcept
-                    ->  enable_if_t<is_same<T, char>::value || is_same<T, signed char>::value || is_same<T, short>::value, T>
-                {
+                inline auto clamp(F f) noexcept -> enable_if_t<sizeof(T) < sizeof(F) && std::is_signed<T>(), T> {
                             if (f < numeric_limits<T>::min()) errno = ERANGE, f = numeric_limits<T>::min();
                     else    if (f > numeric_limits<T>::max()) errno = ERANGE, f = numeric_limits<T>::max();
                     return (T)f;
                 }
             template <typename T, typename F>
-                inline auto clamp(F f) noexcept
-                    ->  enable_if_t<is_same<T, unsigned char>::value || is_same<T, unsigned short>::value, T>
-                {
+                inline auto clamp(F f) noexcept -> enable_if_t<sizeof(T) < sizeof(F) && std::is_unsigned<T>(), T> {
                     if (numeric_limits<T>::max() < f) errno = ERANGE, f = numeric_limits<T>::max();
                     return (T)f;
                 }
