@@ -357,7 +357,8 @@ TEST_BEG(cxon::CXON<>) // base
             R_TEST(a, QS("123\\0004"));
             W_TEST(QS("123\\04"), a);
         }
-        {   char32_t a[] = {u'1', u'2', u'3'};
+        {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
             R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
@@ -394,7 +395,6 @@ TEST_BEG(cxon::CXON<>) // base
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
             R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::unexpected, 3);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
