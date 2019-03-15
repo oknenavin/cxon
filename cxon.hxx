@@ -1897,7 +1897,7 @@ namespace cxon { namespace bits { // char arrays
                     if (is_str<X>::end(io::peek(i, ie)))        return *t = '\0', consume_str<X>::end(i, ie, ctx);
                     if (!array_char_read<X>(t, te, i, ie, ctx)) return false;
                 }
-            return ctx|read_error::unexpected, false;
+            return consume_str<X>::end(i, ie, ctx);
         }
 
     template <typename X>
