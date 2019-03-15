@@ -11,6 +11,7 @@
 #include <fstream>
 #include <memory>
 #include <chrono>
+#include <cstring>
 #include <cstdio>
 #include <cassert>
 
@@ -59,9 +60,10 @@ static void cxjson_test_time(test_case& test) {
         if (!is) return test.error = "cannot be opened", void();
     std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
     {   // base
-        std::unique_ptr<char> s;
+        std::unique_ptr<char[]> s;
         test.time.base = measure([&] {
-            s = std::unique_ptr<char>(_strdup(json.c_str()));
+            s = std::unique_ptr<char[]>(new char[json.size() + 1]);
+            std::memcpy(s.get(), json.c_str(), json.size());
         });
     }
     {   // cxon
