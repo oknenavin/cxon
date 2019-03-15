@@ -374,21 +374,6 @@ TEST_BEG(cxon::CXON<>) // base
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
-        R_TEST(L"\xD83C\xDF7A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
-        R_TEST(L"\x2764\xD83C\xDF7Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-        R_TEST(L"\x2764x\xD83C\xDF7A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-        {   wchar_t a[] = {L'\xD83C', L'\xDF7A', L'\x2764', L'x', L'\0'};
-            R_TEST(a, QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"));
-            W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"), a);
-        }
-        {   wchar_t a[] = {L'\x2764', L'\xD83C', L'\xDF7A', L'x', L'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-            W_TEST(QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"), a);
-        }
-        {   wchar_t a[] = {L'\x2764', L'x', L'\xD83C', L'\xDF7A', L'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-            W_TEST(QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"), a);
-        }
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\0004"));
             W_TEST(QS("123\\04"), a);
