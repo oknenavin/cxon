@@ -1,10 +1,12 @@
 ## `CXON` library
 
-[![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
-[![Version][url-version-image]](https://github.com/libcxon/cxon)  
-[![Language][url-language-image]](https://isocpp.org/wiki/faq/cpp11)
-[![Format][url-format-image]](http://json.org)  
-[![License][url-license-image]](LICENSE)
+[![cxon][url-image-cxon]](https://github.com/libcxon/cxon)
+[![Version][url-image-version]](https://github.com/libcxon/cxon)  
+[![Language][url-image-language]](https://isocpp.org/wiki/faq/cpp11)
+[![Format][url-image-format]](http://json.org)  
+[![License][url-image-license]](LICENSE)
+
+[![Build][url-image-build]](https://travis-ci.org/oknenavin/cxon)
 
 --------------------------------------------------------------------------------
 
@@ -149,11 +151,12 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 
 
 <!-- links -->
-[url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
-[url-language-image]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
-[url-format-image]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
-[url-license-image]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[url-image-cxon]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
+[url-image-version]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[url-image-language]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
+[url-image-format]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
+[url-image-license]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[url-image-build]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
 [url-github]: https://github.com/oknenavin/cxon
 [url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [url-cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
