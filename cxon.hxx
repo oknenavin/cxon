@@ -854,13 +854,6 @@ namespace cxon { // I/O
 
 }   // cxon I/O
 
-namespace cxon { // wchar_t
-
-    static_assert(sizeof(wchar_t) == sizeof(char32_t) || sizeof(wchar_t) == sizeof(char16_t), "unexpected");
-    using wchar_type = std::conditional<sizeof(wchar_t) == sizeof(char32_t), char32_t, char16_t>::type;
-
-}   // cxon wchar_t
-
 namespace cxon { // list read/write helpers
 
     namespace  bits {
@@ -1740,27 +1733,26 @@ namespace cxon { // read, fundamental types
                         if (c32 > 0XFF)         return ctx|read_error::character_invalid,   bits::rewind(i, o), false;
             return io::consume<X>(X::string::end, i, e, ctx) ? (t = char(c32), true) : false;
         }
-    template <typename X, typename II>
-        inline bool read_value(char16_t& t, II& i, II e, rctx<X>& ctx) {
+    template <typename X, typename T, typename II>
+        inline auto read_value(T& t, II& i, II e, rctx<X>& ctx)
+            -> enable_if_t<std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t)), bool>
+        {
             if (!io::consume<X>(X::string::beg, i, e, ctx)) return false;
                 II const o = i;
                     char32_t const c32 = bits::str_to_utf32<X>(i, e, ctx);
                         if (c32 == 0xFFFFFFFF)  return                                      bits::rewind(i, o), false;
                         if (c32 > 0XFFFF)       return ctx|read_error::character_invalid,   bits::rewind(i, o), false;
-            return io::consume<X>(X::string::end, i, e, ctx) ? (t = char16_t(c32), true) : false;
+            return io::consume<X>(X::string::end, i, e, ctx) ? (t = T(c32), true) : false;
         }
-    template <typename X, typename II>
-        inline bool read_value(char32_t& t, II& i, II e, rctx<X>& ctx) {
+    template <typename X, typename T, typename II>
+        inline auto read_value(T& t, II& i, II e, rctx<X>& ctx)
+            -> enable_if_t<std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t)), bool>
+        {
             if (!io::consume<X>(X::string::beg, i, e, ctx)) return false;
                 II const o = i;
                     char32_t const c32 = bits::str_to_utf32<X>(i, e, ctx);
                         if (c32 == 0xFFFFFFFF) return bits::rewind(i, o), false;
-            return io::consume<X>(X::string::end, i, e, ctx) ? (t = c32, true) : false;
-        }
-
-    template <typename X, typename II>
-        inline bool read_value(wchar_t& t, II& i, II e, rctx<X>& ctx) {
-            return read_value<X>((wchar_type&)t, i, e, ctx);
+            return io::consume<X>(X::string::end, i, e, ctx) ? (t = T(c32), true) : false;
         }
 
 #   define CXON_READ_DEF(T)\
@@ -1859,27 +1851,31 @@ namespace cxon { namespace bits { // char arrays
                 std::copy_n(b, n, t);
             return t += n, true;
         }
-    template <typename X, typename II>
-        inline bool array_char_read(char16_t*& t, const char16_t* te, II& i, II ie, rctx<X>& ctx) {
+    template <typename X, typename T, typename II>
+        inline auto array_char_read(T*& t, const T* te, II& i, II ie, rctx<X>& ctx)
+            -> enable_if_t<std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t)), bool>
+        {
             II const o = i;
                 char32_t c32 = consume_str<X>::chr(i, ie, ctx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
-                    *t = char16_t(0xD800 | (c32 >> 10));   if (++t == te) return ctx|read_error::unexpected, rewind(i, o), false;
-                    *t = char16_t(0xDC00 | (c32 & 0x3FF));
+                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return ctx|read_error::unexpected, rewind(i, o), false;
+                    *t = T(0xDC00 | (c32 & 0x3FF));
                 }
                 else {
-                    *t = char16_t(c32);
+                    *t = T(c32);
                 }
             return ++t, true;
         }
-    template <typename X, typename II>
-        inline bool array_char_read(char32_t*& t, const char32_t*, II& i, II ie, rctx<X>& ctx) {
+    template <typename X, typename T, typename II>
+        inline auto array_char_read(T*& t, const T*, II& i, II ie, rctx<X>& ctx)
+            -> enable_if_t<std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t)), bool>
+        {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, ie, ctx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
-            return *t = c32, ++t, true;
+            return *t = T(c32), ++t, true;
         }
 
     template <typename X, typename T, typename II>
@@ -1975,13 +1971,8 @@ namespace cxon { // read, compound types
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
         CXON_ARRAY(char32_t)
+        CXON_ARRAY(wchar_t)
 #   undef CXON_ARRAY
-
-    template <typename X, size_t N>
-        struct read<X, wchar_t[N]> {
-            template <typename II>
-                static bool value(wchar_t (&t)[N], II& i, II e, rctx<X>& ctx)   { return read_value<X>((wchar_type (&)[N])t, i, e, ctx); }
-        };
 
 #   define CXON_POINTER(T)\
         template <typename X>\
@@ -1992,13 +1983,8 @@ namespace cxon { // read, compound types
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
+        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
-
-    template <typename X>
-        struct read<X, const wchar_t*> {
-            template <typename II>
-                static bool value(const wchar_t*& t, II& i, II e, rctx<X>& ctx) { return read_value<X>((wchar_type*&)t, i, e, ctx); }
-        };
 
 #   define CXON_POINTER(T)\
         template <typename X>\
@@ -2009,13 +1995,8 @@ namespace cxon { // read, compound types
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
+        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
-
-    template <typename X>
-        struct read<X, wchar_t*> {
-            template <typename II>
-                static bool value(wchar_t*& t, II& i, II e, rctx<X>& ctx)       { return bits::pointer_read<X>((wchar_type*&)t, i, e, ctx); }
-        };
 
 }   // cxon read, compound types
 
@@ -2110,8 +2091,10 @@ namespace cxon { namespace bits { // std::basic_string
                 char b[4]; t.append(b, utf32_to_utf8(b, c32));
             return true;
         }
-    template <typename X, typename ...R, typename II>
-        inline bool basic_string_char_read(std::basic_string<char16_t, R...>& t, II& i, II e, rctx<X>& ctx) {
+    template <typename X, typename T, typename ...R, typename II>
+        inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, rctx<X>& ctx)
+            -> enable_if_t<std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t)), bool>
+        {
             II const o = i;
                 char32_t c32 = consume_str<X>::chr(i, e, ctx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
@@ -2125,12 +2108,14 @@ namespace cxon { namespace bits { // std::basic_string
                 }
             return true;
         }
-    template <typename X, typename ...R, typename II>
-        inline bool basic_string_char_read(std::basic_string<char32_t, R...>& t, II& i, II e, rctx<X>& ctx) {
+    template <typename X, typename T, typename ...R, typename II>
+        inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, rctx<X>& ctx)
+            -> enable_if_t<std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t)), bool>
+        {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, e, ctx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
-            return t.push_back(c32), true;
+            return t.push_back(T(c32)), true;
         }
 
     template <typename X, typename T, typename ...R, typename II>
@@ -2163,21 +2148,6 @@ namespace cxon { // read, library types
                         bits::basic_string_read<S<X>>(t, i, e, ctx) :
                         bits::basic_string_read<S<bits::UQKEY<X>>>(t, i, e, ctx)
                     ;
-                }
-        };
-
-    template <typename X, template <typename> class T, template <typename> class A>
-        struct read<X, std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>> {
-            template <typename II>
-                static bool value(std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>& t, II& i, II e, rctx<X>& ctx) {
-                    return read_value<X>((std::basic_string<wchar_type, T<wchar_type>, A<wchar_type>>&)t, i, e, ctx);
-                }
-        };
-    template <typename X, template <typename> class S, template <typename> class T, template <typename> class A>
-        struct read<S<bits::UQKEY<X>>, std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>> {
-            template <typename II>
-                static bool value(std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>& t, II& i, II e, rctx<S<X>>& ctx) {
-                    return read_value<S<bits::UQKEY<X>>>((std::basic_string<wchar_type, T<wchar_type>, A<wchar_type>>&)t, i, e, ctx);
                 }
         };
 
@@ -2586,6 +2556,49 @@ namespace cxon { namespace bits { // fundamental type encoding
                 }
         };
 
+    template <typename X>
+        struct encode<X, wchar_t> {
+            template <typename O, typename T = wchar_t>
+                static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::value(o, char16_t(c), ctx);
+                }
+            template <typename O, typename T = wchar_t>
+                static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::value(o, char32_t(c), ctx);
+                }
+            template <typename O, typename II>
+                static bool value(O& o, II i, II, wctx<X>& ctx) {
+                    return value(o, *i, ctx);
+                }
+            template <typename O, typename II>
+                static bool range(O& o, II i, II e, wctx<X>& ctx) {
+                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
+                        return false;
+                    return true;
+                }
+        };
+    template <typename X>
+        struct encode<JSON<X>, wchar_t> {
+            template <typename O, typename T = wchar_t>
+                static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<JSON<X>, char16_t>::value(o, char16_t(c), ctx);
+                }
+            template <typename O, typename T = wchar_t>
+                static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<JSON<X>, char32_t>::value(o, char32_t(c), ctx);
+                }
+            template <typename O, typename II>
+                static bool value(O& o, II i, II, wctx<X>& ctx) {
+                    return value(o, *i, ctx);
+                }
+            template <typename O, typename II>
+                static bool range(O& o, II i, II e, wctx<X>& ctx) {
+                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
+                        return false;
+                    return true;
+                }
+        };
+
     template <typename X, typename T, typename O>
         inline bool character_write(O& o, T t, wctx<X>& ctx) {
             return  io::poke<X>(o, X::string::beg, ctx) &&
@@ -2641,9 +2654,8 @@ namespace cxon { // write, fundamental types
         inline bool write_value(O& o, char16_t t, wctx<X>& ctx)    { return bits::character_write<X>(o, t, ctx); }
     template <typename X, typename O>
         inline bool write_value(O& o, char32_t t, wctx<X>& ctx)    { return bits::character_write<X>(o, t, ctx); }
-
     template <typename X, typename O>
-        inline bool write_value(O& o, wchar_t t, wctx<X>& ctx)     { return write_value<X>(o, (wchar_type&)t, ctx); }
+        inline bool write_value(O& o, wchar_t t, wctx<X>& ctx)     { return bits::character_write<X>(o, t, ctx); }
 
 #   define CXON_WRITE_DEF(T)\
         template <typename X, typename O>\
@@ -2742,14 +2754,14 @@ namespace cxon { namespace bits { // char arrays
         struct pointer {
             template <typename O, typename T>
                 static bool write(O& o, const T* t, wctx<X>& ctx) {
-                    return bits::pointer_write<X>(o, t, ctx);
+                    return pointer_write<X>(o, t, ctx);
                 }
         };
     template <typename X, template <typename> class S>
         struct pointer<S<bits::UQKEY<X>>> {
             template <typename O, typename T>
                 static bool write(O& o, const T* t, wctx<S<X>>& ctx) {
-                    return bits::uqkey_pointer_write<S<X>>(o, t, ctx);
+                    return uqkey_pointer_write<S<X>>(o, t, ctx);
                 }
         };
 
@@ -2782,13 +2794,8 @@ namespace cxon { // write, compound types
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
         CXON_ARRAY(char32_t)
+        CXON_ARRAY(wchar_t)
 #   undef CXON_ARRAY
-
-    template <typename X, size_t N>
-        struct write<X, wchar_t[N]> {
-            template <typename O>
-                static bool value(O& o, const wchar_t (&t)[N], wctx<X>& ctx)   { return write_value<X>(o, (const wchar_type (&)[N])t, ctx); }
-        };
 
 #   define CXON_POINTER(T)\
         template <typename X>\
@@ -2799,13 +2806,8 @@ namespace cxon { // write, compound types
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
+        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
-
-    template <typename X>
-        struct write<X, const wchar_t*> {
-            template <typename O>
-                static bool value(O& o, const wchar_t* t, wctx<X>& ctx)        { return write_value<X>(o, (const wchar_type*)t, ctx); }
-        };
 
 #   define CXON_POINTER(T)\
         template <typename X>\
@@ -2816,13 +2818,8 @@ namespace cxon { // write, compound types
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
+        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
-
-    template <typename X>
-        struct write<X, wchar_t*> {
-            template <typename O>
-                static bool value(O& o, wchar_t* t, wctx<X>& ctx)              { return write_value<X>(o, (const wchar_type*)t, ctx); }
-        };
 
 }   // cxon write, compound types
 
@@ -2929,21 +2926,6 @@ namespace cxon { // write, library types
         struct write<S<bits::UQKEY<X>>, std::basic_string<T, R...>> {
             template <typename O>
                 static bool value(O& o, const std::basic_string<T, R...>& t, wctx<S<X>>& ctx)  { return bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), ctx); }
-        };
-
-    template <typename X, template <typename> class T, template <typename> class A>
-        struct write<X, std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>> {
-            template <typename O>
-                static bool value(O& o, const std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>& t, wctx<X>& ctx) {
-                    return write_value<X>(o, (const std::basic_string<wchar_type, T<wchar_type>, A<wchar_type>>&)t, ctx);
-                }
-        };
-    template <typename X, template <typename> class S, template <typename> class T, template <typename> class A>
-        struct write<S<bits::UQKEY<X>>, std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>> {
-            template <typename O>
-                static bool value(O& o, const std::basic_string<wchar_t, T<wchar_t>, A<wchar_t>>& t, wctx<X>& ctx) {
-                    return write_value<S<bits::UQKEY<X>>>(o, (const std::basic_string<wchar_type, T<wchar_type>, A<wchar_type>>&)t, ctx);
-                }
         };
 
     template <typename X, typename ...T>
