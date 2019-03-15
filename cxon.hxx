@@ -1924,7 +1924,8 @@ namespace cxon { namespace bits { // char arrays
                         T *const n = new T[2 * (be - b)];
                             std::copy_n(b, p - b, n);
                         p = n + (p - b);
-                        be = n + 2 * (be - b), b = n;
+                        be = n + 2 * (be - b);
+                        delete [] b, b = n;
                     }
                     if (!is<X>::real(io::peek(i, e)))          goto err;
                     if (is_str<X>::end(io::peek(i, e)))        return *p = '\0', t = b, consume_str<X>::end(i, e, ctx);
@@ -1948,7 +1949,8 @@ namespace cxon { // read, compound types
                         return t = nullptr, true;
                     }
                     T *const n = new T;
-                        if (!read_value<X>(*n, i, e, ctx)) return delete n, false;
+                        if (!read_value<X>(*n, i, e, ctx))
+                            return delete n, false;
                     return t = n, true;
                 }
         };
@@ -2135,7 +2137,7 @@ namespace cxon { namespace bits { // std::basic_string
         inline bool basic_string_read(std::basic_string<T, R...>& t, II& i, II e, rctx<X>& ctx) {
             if (!consume_str<X>::beg(i, e, ctx)) return false;
                 for (char c = io::peek(i, e); is<X>::real(c); c = io::peek(i, e)) {
-                    if (is_str<X>::end(c))                  return consume_str<X>::end(i, e, ctx);
+                    if (is_str<X>::end(c))                          return consume_str<X>::end(i, e, ctx);
                     if (!basic_string_char_read<X>(t, i, e, ctx))   return false;
                 }
             return ctx|read_error::unexpected, false;
