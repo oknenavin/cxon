@@ -11,6 +11,7 @@
 #include <fstream>
 #include <memory>
 #include <chrono>
+#include <cstring>
 #include <cstdio>
 #include <cassert>
 
@@ -59,9 +60,10 @@ static void cxjson_test_time(test_case& test) {
         if (!is) return test.error = "cannot be opened", void();
     std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
     {   // base
-        std::unique_ptr<char> s;
+        std::unique_ptr<char[]> s;
         test.time.base = measure([&] {
-            s = std::unique_ptr<char>(_strdup(json.c_str()));
+            s = std::unique_ptr<char[]>(new char[json.size() + 1]);
+            std::memcpy(s.get(), json.c_str(), json.size());
         });
     }
     {   // cxon
@@ -97,7 +99,8 @@ bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& time, cas
     };
     static auto const add = [](const char* v, cases& c) {
         if (*v == '@') {
-            if (std::ifstream is = std::ifstream(v + 1)) {
+            std::ifstream is(v + 1);
+            if (is) {
                     std::string l;
                     while (std::getline(is, l)) {
                         auto const f = l.find_first_not_of(" \t");
@@ -206,16 +209,22 @@ int main(int argc, char *argv[]) {
                 auto l = p.rfind('.'); if (l == p.npos) l = p.size();
                 return std::string(p, f, l - f);
             };
-            if (std::ofstream os = std::ofstream(name(c.source) + ".0.json", std::ofstream::binary)) {
-                auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
-                for (auto c : json)  *o = c;
-            }
+            std::ofstream os(name(c.source) + ".0.json", std::ofstream::binary);
+                if (!os) {
+                    c.error = name(c.source) + ".0.json" + ": cannot be opened";
+                    continue;
+                }
+            auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
+            for (auto c : json)  *o = c;
             node result;
             if (auto const r = cxon::from_chars(result, json)) {
-                if (std::ofstream os = std::ofstream(name(c.source) + ".1.json", std::ofstream::binary)) {
-                    auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
-                    auto const r = cxon::to_chars(o, result); CXON_ASSERT(r, "unexpected");
-                }
+                std::ofstream os(name(c.source) + ".1.json", std::ofstream::binary);
+                    if (!os) {
+                        c.error = name(c.source) + ".1.json" + "cannot be opened";
+                        continue;
+                    }
+                auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
+                auto const w = cxon::to_chars(o, result); CXON_ASSERT(w, "unexpected");
                 fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str());
             }
             else {
