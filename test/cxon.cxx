@@ -58,11 +58,13 @@ namespace test {
 }   // test
 
 #define R_TEST(ref, ...)\
+    fprintf(stdout, "\tcheck:%li\n", (long)__LINE__);\
     if (++TEST_A, !test::verify_read<XXON>(ref, #ref, __VA_ARGS__)) {\
         ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);\
         CXON_ASSERT(false, "check failed");\
     }
 #define W_TEST(ref, sbj)\
+    fprintf(stdout, "\tcheck:%li\n", (long)__LINE__);\
     if (++TEST_A, !test::verify_write<XXON>(ref, sbj, #ref)) {\
         ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);\
         CXON_ASSERT(false, "check failed");\
