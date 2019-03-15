@@ -398,7 +398,7 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("test"), (const char*)"test");
         W_TEST("null", (const char*)nullptr);
         R_TEST((const char*)nullptr, "nil", cxon::read_error::unexpected, 1);
-        //R_TEST((const char*)nullptr, "\"asd", cxon::read_error::unexpected, 4);
+        R_TEST((const char*)nullptr, "\"asd", cxon::read_error::unexpected, 4);
     // const char16_t*
         R_TEST((const char16_t*)u"test", QS("test"));
         W_TEST(QS("test"), (const char16_t*)u"test");

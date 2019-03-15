@@ -1930,7 +1930,7 @@ namespace cxon { namespace bits { // char arrays
                     if (is_str<X>::end(io::peek(i, e)))        return *p = '\0', t = b, consume_str<X>::end(i, e, ctx);
                     if (!array_char_read<X>(p, be, i, e, ctx)) goto err;
                 }
-            err: return delete [] b, ctx|read_error::unexpected, false;
+            err: return /*delete [] b, */ctx|read_error::unexpected, false;
         }
 
 }}  // cxon::bits char arrays
@@ -1948,7 +1948,8 @@ namespace cxon { // read, compound types
                         return t = nullptr, true;
                     }
                     T *const n = new T;
-                        if (!read_value<X>(*n, i, e, ctx)) return delete n, false;
+                        if (!read_value<X>(*n, i, e, ctx))
+                            return /*delete n, */false;
                     return t = n, true;
                 }
         };
