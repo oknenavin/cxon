@@ -145,9 +145,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(U'\0', QS("\xF0\xA8"), cxon::read_error::character_invalid, 1);
         R_TEST(U'\0', QS("\xF0"), cxon::read_error::character_invalid, 1);
         W_TEST(QS("\xF0\xA8\x91\x80"), U'\x28440');
-    // wchar_t
+    /*/ wchar_t
         R_TEST(L'a', QS("a"));
-        W_TEST(QS("a"), L'a');
+        W_TEST(QS("a"), L'a');*/
     // signed char
         R_TEST(tmin<signed char>(), smin<signed char>());
         W_TEST(smin<signed char>(), tmin<signed char>());
@@ -374,7 +374,7 @@ TEST_BEG(cxon::CXON<>) // base
             R_TEST(a, "{", cxon::read_error::unexpected, 0);
             R_TEST(a, "\"", cxon::read_error::unexpected, 1);
         }
-    // wchar_t[]
+    /*/ wchar_t[]
         R_TEST(L"", QS(""));
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\0004"));
@@ -393,7 +393,7 @@ TEST_BEG(cxon::CXON<>) // base
             R_TEST(a, "}", cxon::read_error::unexpected, 0);
             R_TEST(a, "{", cxon::read_error::unexpected, 0);
             R_TEST(a, "\"", cxon::read_error::unexpected, 1);
-        }
+        }*/
     // const char*
         R_TEST((const char*)"test", QS("test"));
         R_TEST((const char*)nullptr, "null");
@@ -407,9 +407,9 @@ TEST_BEG(cxon::CXON<>) // base
     // const char32_t*
         R_TEST((const char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (const char32_t*)U"test");
-    // const wchar_t*
+    /*/ const wchar_t*
         R_TEST((const wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (const wchar_t*)L"test");
+        W_TEST(QS("test"), (const wchar_t*)L"test");*/
     // char*
         R_TEST((char*)"test", QS("test"));
         R_TEST((char*)nullptr, "null");
@@ -421,9 +421,10 @@ TEST_BEG(cxon::CXON<>) // base
     // char32_t*
         R_TEST((char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (char32_t*)U"test");
-    // wchar_t*
+    /*/ wchar_t*
         R_TEST((wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (wchar_t*)L"test");
+        W_TEST(QS("test"), (wchar_t*)L"test");*/
+    // std::basic_string<char> / std::string
         R_TEST(std::string("test"), QS("test"));
         W_TEST(QS("test"), std::string("test"));
         R_TEST(std::string("te\nst"), QS("te\\nst"));
@@ -445,11 +446,11 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u32string({0x6D4B, 0x8BD5}));
         R_TEST(std::u32string({0x0001241D, 0x0001241C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u32string({0x0001241D, 0x0001241C}));
-    // std::basic_string<wchar_t> / std::wstring
+    /*/ std::basic_string<wchar_t> / std::wstring
         R_TEST(std::wstring({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
-        W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
+        W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));*/
 TEST_END()
 
 TEST_BEG(cxon::JSON<>) // base
@@ -502,9 +503,9 @@ TEST_BEG(cxon::JSON<>) // base
         R_TEST(U'\0', QS("\xF0\xA8"), cxon::read_error::character_invalid, 1);
         R_TEST(U'\0', QS("\xF0"), cxon::read_error::character_invalid, 1);
         W_TEST(QS("\xF0\xA8\x91\x80"), U'\x28440');
-    // wchar_t
+    /*/ wchar_t
         R_TEST(L'a', QS("a"));
-        W_TEST(QS("a"), L'a');
+        W_TEST(QS("a"), L'a');*/
     // signed char
         R_TEST(tmin<signed char>(), smin<signed char>());
         W_TEST(smin<signed char>(), tmin<signed char>());
@@ -716,7 +717,8 @@ TEST_BEG(cxon::JSON<>) // base
             R_TEST(a, QS("123\\u00004"));
             W_TEST(QS("123\\u00004"), a);
         }
-        {   char32_t a[] = {u'1', u'2', u'3'};
+        {   char32_t a[] = {U'1', U'2', U'3'};
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
             R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
@@ -730,30 +732,14 @@ TEST_BEG(cxon::JSON<>) // base
             R_TEST(a, "{", cxon::read_error::unexpected, 0);
             R_TEST(a, "\"", cxon::read_error::unexpected, 1);
         }
-    // wchar_t[]
+    /*/ wchar_t[]
         R_TEST(L"", QS(""));
-        R_TEST(L"\xD83C\xDF7A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
-        R_TEST(L"\x2764\xD83C\xDF7Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-        R_TEST(L"\x2764x\xD83C\xDF7A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-        {   wchar_t a[] = {L'\xD83C', L'\xDF7A', L'\x2764', L'x', L'\0'};
-            R_TEST(a, QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"));
-            W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"), a);
-        }
-        {   wchar_t a[] = {L'\x2764', L'\xD83C', L'\xDF7A', L'x', L'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-            W_TEST(QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"), a);
-        }
-        {   wchar_t a[] = {L'\x2764', L'x', L'\xD83C', L'\xDF7A', L'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-            W_TEST(QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"), a);
-        }
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\u00004"));
             W_TEST(QS("123\\u00004"), a);
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
             R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::unexpected, 3);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -765,7 +751,7 @@ TEST_BEG(cxon::JSON<>) // base
             R_TEST(a, "}", cxon::read_error::unexpected, 0);
             R_TEST(a, "{", cxon::read_error::unexpected, 0);
             R_TEST(a, "\"", cxon::read_error::unexpected, 1);
-        }
+        }*/
     // const char*
         R_TEST((const char*)"test", QS("test"));
         R_TEST((const char*)nullptr, "null");
@@ -779,9 +765,9 @@ TEST_BEG(cxon::JSON<>) // base
     // const char32_t*
         R_TEST((const char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (const char32_t*)U"test");
-    // const wchar_t*
+    /*/ const wchar_t*
         R_TEST((const wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (const wchar_t*)L"test");
+        W_TEST(QS("test"), (const wchar_t*)L"test");*/
     // char*
         R_TEST((char*)"test", QS("test"));
         R_TEST((char*)nullptr, "null");
@@ -793,9 +779,10 @@ TEST_BEG(cxon::JSON<>) // base
     // char32_t*
         R_TEST((char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (char32_t*)U"test");
-    // wchar_t*
+    /*/ wchar_t*
         R_TEST((wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (wchar_t*)L"test");
+        W_TEST(QS("test"), (wchar_t*)L"test");*/
+    // std::basic_string<char> / std::string
         R_TEST(std::string("test"), QS("test"));
         W_TEST(QS("test"), std::string("test"));
         R_TEST(std::string("te\nst"), QS("te\\nst"));
@@ -817,11 +804,11 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u32string({0x6D4B, 0x8BD5}));
         R_TEST(std::u32string({0x0001241D, 0x0001241C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u32string({0x0001241D, 0x0001241C}));
-    // std::basic_string<wchar_t> / std::wstring
+    /*/ std::basic_string<wchar_t> / std::wstring
         R_TEST(std::wstring({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
-        W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
+        W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));*/
 TEST_END()
 
 
