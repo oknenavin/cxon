@@ -17,11 +17,10 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-7
           packages:
-            - clang-7
+            - clang-7.0
       env:
-        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
 
 before_install:
     - eval "${MATRIX_EVAL}"
