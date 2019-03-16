@@ -1934,7 +1934,7 @@ private:
 
 STRUTL_TO_STRING_SIMPLE(Struct4);
 
-TEST_BEG(cxon::CXON<>) // static nmethod
+TEST_BEG(cxon::CXON<>) // static method
     R_TEST(Struct4(1), "1");
     W_TEST("3", Struct4(3));
 TEST_END()
