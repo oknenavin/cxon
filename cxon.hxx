@@ -1203,7 +1203,6 @@ namespace cxon { namespace bits { // fundamental type decoding
         }
 
 #   define CXON_ASS_U(t) if (!is<X>::digit16(io::next(i, e))) return 0xFFFFFFFF; t = io::peek(i, e)
-
         template <typename X>
             struct esc_to {
                 template <typename II>
@@ -1247,6 +1246,9 @@ namespace cxon { namespace bits { // fundamental type decoding
                         }
                     }
             };
+#   undef CXON_ASS_U
+
+#   define CXON_ASS_U(t) if (!is<JSON<X>>::digit16(io::next(i, e))) return 0xFFFFFFFF; t = io::peek(i, e)
         template <typename X>
             struct esc_to<JSON<X>> {
                 template <typename II>
@@ -1269,7 +1271,6 @@ namespace cxon { namespace bits { // fundamental type decoding
                         }
                     }
         };
-
 #   undef CXON_ASS_U
 
     template <typename X, typename II>
@@ -3172,7 +3173,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
             struct read<JSON<X>> {
                 template <size_t N, typename II>
                     static bool value(char (&t)[N], II& i, II e, rctx<X>& ctx) {
-                        return cxon::read_value<X>(t, i, e, ctx);
+                        return cxon::read_value<JSON<X>>(t, i, e, ctx);
                     }
             };
 
