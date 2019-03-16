@@ -502,7 +502,8 @@ namespace cxon { // interface implementation
 
                 range_write_iterator& operator =(char c) {
                     CXON_ASSERT(*this, "unexpected state");
-                    return *b_ = c, ++b_, *this;
+                    *b_ = c, ++b_;
+                    return *this;
                 }
                 void append(const char* s) {
                     CXON_ASSERT(*this, "unexpected state");
@@ -2190,7 +2191,7 @@ namespace cxon { // read, library types
                     });
                         if (!r) return false;
                     t.resize(p);
-                        for (size_t i = 0; i != p; ++i) t[i] = v[i];
+                        for (size_t j = 0; j != p; ++j) t[j] = v[j];
                     return true;
                 }
         };
