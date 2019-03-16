@@ -437,6 +437,9 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u16string({0x6D4B, 0x8BD5}));
         R_TEST(std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}));
+        R_TEST(std::u16string(), "a", cxon::read_error::unexpected, 0);
+        R_TEST(std::u16string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(std::u16string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
     // std::basic_string<char32_t> / std::u32string
         R_TEST(std::u32string({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::u32string({0x0442, 0x0435, 0x0441, 0x0442}));
@@ -444,11 +447,17 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u32string({0x6D4B, 0x8BD5}));
         R_TEST(std::u32string({0x0001241D, 0x0001241C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u32string({0x0001241D, 0x0001241C}));
+        R_TEST(std::u32string(), "a", cxon::read_error::unexpected, 0);
+        R_TEST(std::u32string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(std::u32string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
     // std::basic_string<wchar_t> / std::wstring
         R_TEST(std::wstring({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
+        R_TEST(std::wstring(), "a", cxon::read_error::unexpected, 0);
+        R_TEST(std::wstring(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(std::wstring(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
 TEST_END()
 
 TEST_BEG(cxon::JSON<>) // base
@@ -795,6 +804,9 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u16string({0x6D4B, 0x8BD5}));
         R_TEST(std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}));
+        R_TEST(std::u16string(), "a", cxon::read_error::unexpected, 0);
+        R_TEST(std::u16string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(std::u16string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
     // std::basic_string<char32_t> / std::u32string
         R_TEST(std::u32string({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::u32string({0x0442, 0x0435, 0x0441, 0x0442}));
@@ -802,11 +814,17 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u32string({0x6D4B, 0x8BD5}));
         R_TEST(std::u32string({0x0001241D, 0x0001241C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u32string({0x0001241D, 0x0001241C}));
+        R_TEST(std::u32string(), "a", cxon::read_error::unexpected, 0);
+        R_TEST(std::u32string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(std::u32string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
     // std::basic_string<wchar_t> / std::wstring
         R_TEST(std::wstring({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
+        R_TEST(std::wstring(), "a", cxon::read_error::unexpected, 0);
+        R_TEST(std::wstring(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(std::wstring(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
 TEST_END()
 
 
