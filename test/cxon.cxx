@@ -1406,8 +1406,213 @@ TEST_END()
 //    R_TEST(std::string(), "{", cxon::read_error::unexpected, 1);
 //    R_TEST(std::string(), "{}}", cxon::read_error::ok, 2); // trailing }
 //TEST_END()
-//
-//
+
+TEST_BEG(cxon::CXON<>) // cxon
+    using namespace std;
+    // escapes
+        R_TEST(std::string("\'"), std::string(QS("\\\'")));
+        //R_TEST("\"", QS("\\\""));
+        //R_TEST("\?", QS("\\\?"));
+        //R_TEST("\\", QS("\\\\"));
+        //R_TEST("\a", QS("\\a"));
+        //R_TEST("\b", QS("\\b"));
+        //R_TEST("\f", QS("\\f"));
+        //R_TEST("\n", QS("\\n"));
+        //R_TEST("\r", QS("\\r"));
+        //R_TEST("\t", QS("\\t"));
+        //R_TEST("\v", QS("\\v"));
+        //R_TEST("\7", QS("\\7"));
+        //R_TEST("\07", QS("\\07"));
+        //R_TEST("\007", QS("\\007"));
+        //R_TEST("\077", QS("\\077"));
+        //R_TEST("\117", QS("\\117"));
+        //R_TEST("\0007", QS("\\0007")); // one more
+        //R_TEST("", QS("\\ "), cxon::read_error::escape_invalid, 1); // none
+        //R_TEST(std::string(), QS("\\"), cxon::read_error::unexpected, 3); // escaped string end
+        //R_TEST("\x8", QS("\\x8"));
+        //R_TEST("\x08", QS("\\x08"));
+        //R_TEST("\x16", QS("\\x16"));
+        //R_TEST("\x3f", QS("\\x3f"));
+        //R_TEST("\000f", QS("\\x00f")); // one more
+        //R_TEST("", QS("\\x"), cxon::read_error::escape_invalid, 1); // none
+        //R_TEST("\u0008", QS("\\u0008"));
+        //R_TEST("\0008", QS("\\u00008")); // one more
+        //R_TEST("", QS("\\u008"), cxon::read_error::escape_invalid, 1); // one less
+        //R_TEST("", QS("\\u"), cxon::read_error::escape_invalid, 1); // none
+        //R_TEST("\U00000008", QS("\\U00000008"));
+        //R_TEST("\0008", QS("\\U000000008")); // one more
+        //R_TEST("", QS("\\U0000008"), cxon::read_error::escape_invalid, 1); // one less
+        //R_TEST("", QS("\\U"), cxon::read_error::escape_invalid, 1); // none
+        //R_TEST("\xf4\x8f\xbf\xbf", QS("\\udbff\\udfff")); // surrogate
+        //R_TEST("", QS("\\udbff\\ue000"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        //R_TEST("", QS("\\udbff\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        //R_TEST("", QS("\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        //W_TEST(std::string(QS("\\1")), "\1");
+        //W_TEST(QS("\\2"), "\2");
+        //W_TEST(QS("\\3"), "\3");
+        //W_TEST(QS("\\4"), "\4");
+        //W_TEST(QS("\\5"), "\5");
+        //W_TEST(QS("\\6"), "\6");
+        //W_TEST(QS("\\7"), "\7");
+        //W_TEST(QS("\\b"), "\10");
+        //W_TEST(QS("\\t"), "\11");
+        //W_TEST(QS("\\n"), "\12");
+        //W_TEST(QS("\\v"), "\13");
+        //W_TEST(QS("\\f"), "\14");
+        //W_TEST(QS("\\r"), "\15");
+        //W_TEST(QS("\\16"), "\16");
+        //W_TEST(QS("\\17"), "\17");
+        //W_TEST(QS("\\20"), "\20");
+        //W_TEST(QS("\\21"), "\21");
+        //W_TEST(QS("\\22"), "\22");
+        //W_TEST(QS("\\23"), "\23");
+        //W_TEST(QS("\\24"), "\24");
+        //W_TEST(QS("\\25"), "\25");
+        //W_TEST(QS("\\26"), "\26");
+        //W_TEST(QS("\\27"), "\27");
+        //W_TEST(QS("\\30"), "\30");
+        //W_TEST(QS("\\31"), "\31");
+        //W_TEST(QS("\\32"), "\32");
+        //W_TEST(QS("\\33"), "\33");
+        //W_TEST(QS("\\34"), "\34");
+        //W_TEST(QS("\\35"), "\35");
+        //W_TEST(QS("\\36"), "\36");
+        //W_TEST(QS("\\37"), "\37");
+        //W_TEST(QS("\\\""), "\42");
+    // std::tuple<int, double, std::string>
+        R_TEST((tuple<int, double, string>{0, 0, "0"}), "{0, 0, \"0\"}");
+        W_TEST("{0,0,\"0\"}", (tuple<int, double, string>{0, 0, "0"}));
+        R_TEST((tuple<int, double, string>{}), "{0, 0}", cxon::read_error::unexpected, 5);
+        R_TEST((tuple<int, double, string>{}), "{0, 0, \"\", 0}", cxon::read_error::unexpected, 9);
+        R_TEST((tuple<int, double, string>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((tuple<int, double, string>{}), "}", cxon::read_error::unexpected, 0);
+        R_TEST((tuple<int, double, string>{}), "{", cxon::read_error::integral_invalid, 1);
+        R_TEST((tuple<int, double, string>{}), "{0, x}", cxon::read_error::floating_point_invalid, 4);
+    // std::tuple<int, double>
+        R_TEST((tuple<int, double>{0, 0}), "{0, 0}");
+        W_TEST("{0,0}", (tuple<int, double>{0, 0}));
+        R_TEST((tuple<int, double>{}), "{0, 0, \"0\"}", cxon::read_error::unexpected, 5);
+        R_TEST((tuple<int, double>{}), "{x}", cxon::read_error::integral_invalid, 1);
+    // std::pair<int, std::string>
+        R_TEST((pair<int, string>{0, "0"}), "{0, \"0\"}");
+        W_TEST("{0,\"0\"}", (pair<int, string>{0, "0"}));
+        R_TEST((pair<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
+        R_TEST((pair<int, string>{}), "{0}", cxon::read_error::unexpected, 2);
+        R_TEST((pair<int, string>{}), "{0, \"\", 0}", cxon::read_error::unexpected, 6);
+        R_TEST((pair<int, string>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((pair<int, string>{}), "}", cxon::read_error::unexpected, 0);
+        R_TEST((pair<int, string>{}), "{", cxon::read_error::integral_invalid, 1);
+    // std::valarray<int>
+        R_TEST((valarray<int>{1, 2, 3}), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (valarray<int>{1, 2, 3}));
+        R_TEST((valarray<int>{1, 2, 3, 4}), "{1, 2, 3, 4}");
+        R_TEST((valarray<int>{1, 2, 3, 4, 5}), "{1, 2, 3, 4, 5}");
+        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8}), "{1, 2, 3, 4, 5, 6, 7, 8}");
+        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8, 9}), "{1, 2, 3, 4, 5, 6, 7, 8, 9}");
+        R_TEST((valarray<int>()), "", cxon::read_error::unexpected, 0);
+        R_TEST((valarray<int>()), "}", cxon::read_error::unexpected, 0);
+        R_TEST((valarray<int>()), "{", cxon::read_error::integral_invalid, 1);
+        R_TEST((valarray<int>()), "{x", cxon::read_error::integral_invalid, 1);
+    // std::array<int, 0>
+        R_TEST((array<int, 0>{}), "{}");
+        W_TEST("{}", (array<int, 0>{}));
+        R_TEST((array<int, 0>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((array<int, 0>{}), "}", cxon::read_error::unexpected, 0);
+        R_TEST((array<int, 0>{}), "{", cxon::read_error::unexpected, 1);
+    // std::array<int, 3>
+        R_TEST((array<int, 3>{{1, 2, 3}}), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (array<int, 3>{1, 2, 3}));
+        R_TEST((array<int, 4>{{1, 2, 3, 0}}), "{1, 2, 3}");
+        W_TEST("{1,2,3,4}", (array<int, 4>{{1, 2, 3, 4}}));
+        W_TEST("{1,2}", (array<int, 2>{1, 2}));
+        R_TEST((array<int, 2>{}), "{1, 2, 3}", cxon::read_error::unexpected, 5);
+        R_TEST((array<int, 2>{}), "{x}", cxon::read_error::integral_invalid, 1);
+        R_TEST((array<int, 2>{}), "{1, x}", cxon::read_error::integral_invalid, 4);
+    // std::queue<int>
+        R_TEST((queue<int>{}), "{}");
+        W_TEST("{}", (queue<int>{}));
+        R_TEST((queue<int>({1, 2, 3})), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (queue<int>({1, 2, 3})));
+        R_TEST(queue<int>{}, "{1, x}", cxon::read_error::integral_invalid, 4);
+    // std::priority_queue<int>
+        R_TEST((priority_queue<int>{}), "{}");
+        W_TEST("{}", (priority_queue<int>{}));
+        R_TEST(priority_queue<int>(less<int>(), {1, 2, 3}), "{1, 2, 3}");
+        W_TEST("{3,2,1}", priority_queue<int>(less<int>(), {1, 2, 3}));
+        R_TEST(priority_queue<int>{}, "{1, x}", cxon::read_error::integral_invalid, 4);
+    // std::stack<int>
+        R_TEST((stack<int>{}), "{}");
+        W_TEST("{}", (stack<int>{}));
+        R_TEST((stack<int>({1, 2, 3})), "{1, 2, 3}");
+        W_TEST("{3,2,1}", (stack<int>({1, 2, 3})));
+    // std::deque<int>
+        R_TEST((deque<int>{}), "{}");
+        W_TEST("{}", (deque<int>{}));
+        R_TEST((deque<int>({1, 2, 3})), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (deque<int>({1, 2, 3})));
+    // std::list<int>
+        R_TEST((list<int>{}), "{}");
+        W_TEST("{}", (list<int>{}));
+        R_TEST((list<int>({1, 2, 3})), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (list<int>({1, 2, 3})));
+    // std::vector<int>
+        R_TEST((vector<int>{}), "{}");
+        W_TEST("{}", (vector<int>{}));
+        R_TEST((vector<int>({1, 2, 3})), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (vector<int>({1, 2, 3})));
+        R_TEST((vector<int>()), "", cxon::read_error::unexpected, 0);
+        R_TEST((vector<int>()), "}", cxon::read_error::unexpected, 0);
+        R_TEST((vector<int>()), "{", cxon::read_error::integral_invalid, 1);
+        W_TEST("{1,2,3}", (vector<float>({1, 2, 3})));
+        R_TEST((vector<float>()), "", cxon::read_error::unexpected, 0);
+        R_TEST((vector<float>()), "}", cxon::read_error::unexpected, 0);
+        R_TEST((vector<float>()), "{", cxon::read_error::floating_point_invalid, 1);
+    // std::set<int>;
+        R_TEST((set<int>{}), "{}");
+        W_TEST("{}", (set<int>{}));
+        R_TEST((set<int>({1, 2, 3})), "{1, 1, 2, 3}");
+        W_TEST("{1,2,3}", (set<int>({1, 2, 3})));
+        R_TEST(set<int>{}, "{1, x}", cxon::read_error::integral_invalid, 4);
+    // std::multiset<int>;
+        R_TEST((multiset<int>{}), "{}");
+        W_TEST("{}", (multiset<int>{}));
+        R_TEST((multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
+        W_TEST("{1,1,2,3}", (multiset<int>({1, 1, 2, 3})));
+    // std::unordered_set<int>;
+        R_TEST((unordered_set<int>{}), "{}");
+        W_TEST("{}", (unordered_set<int>{}));
+        R_TEST((unordered_set<int>({1, 2, 3})), "{1, 1, 2, 3}");
+        //W_TEST("{1,2,3}", (unordered_set<int>({1, 2, 3})));
+        {   //coverage
+            string s;
+                cxon::to_chars<XXON>(s, unordered_set<int>({1, 2, 3}));
+        }
+    // std::unordered_multiset<int>;
+        R_TEST((unordered_multiset<int>{}), "{}");
+        W_TEST("{}", (unordered_multiset<int>{}));
+        R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
+        //W_TEST("{1,1,2,3}", (unordered_multiset<int>({1, 1, 2, 3})));
+        {   //coverage
+            string s;
+                cxon::to_chars<XXON>(s, unordered_multiset<int>({1, 2, 3}));
+        }
+    // std::vector<std::list<int>>
+        R_TEST((vector<list<int>>{}), "{}");
+        W_TEST("{}", (vector<list<int>>{}));
+        R_TEST((vector<list<int>>{{}}), "{{}}");
+        W_TEST("{{}}", (vector<list<int>>{{}}));
+        R_TEST((vector<list<int>>{{1, 2, 3}, {3, 2, 1}}), "{{1, 2, 3}, {3, 2, 1}}");
+        W_TEST("{{1,2,3},{3,2,1}}", (vector<list<int>>{{1, 2, 3}, {3, 2, 1}}));
+    // std::list<std::vector<int>>
+        R_TEST((list<vector<int>>{}), "{}");
+        W_TEST("{}", (list<vector<int>>{}));
+        R_TEST((list<vector<int>>{{}}), "{{}}");
+        W_TEST("{{}}", (list<vector<int>>{{}}));
+        R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "{{1, 2, 3}, {3, 2, 1}}");
+        W_TEST("{{1,2,3},{3,2,1}}", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
+TEST_END()
+
+
 //namespace key {
 //    template <typename X, bool Q> struct unquoted : X::traits {
 //        struct map : X::traits::map {
@@ -1418,196 +1623,6 @@ TEST_END()
 //        bool operator ()(const char* k0, const char* k1) const { return std::strcmp(k0, k1) < 0; }
 //    };
 //}
-//
-//TEST_BEG(cxon::CXON<>) // cxon
-//    using namespace std;
-//    // escapes
-//        R_TEST("\'", QS("\\\'"));
-//        R_TEST("\"", QS("\\\""));
-//        R_TEST("\?", QS("\\\?"));
-//        R_TEST("\\", QS("\\\\"));
-//        R_TEST("\a", QS("\\a"));
-//        R_TEST("\b", QS("\\b"));
-//        R_TEST("\f", QS("\\f"));
-//        R_TEST("\n", QS("\\n"));
-//        R_TEST("\r", QS("\\r"));
-//        R_TEST("\t", QS("\\t"));
-//        R_TEST("\v", QS("\\v"));
-//        R_TEST("\7", QS("\\7"));
-//        R_TEST("\07", QS("\\07"));
-//        R_TEST("\007", QS("\\007"));
-//        R_TEST("\077", QS("\\077"));
-//        R_TEST("\117", QS("\\117"));
-//        R_TEST("\0007", QS("\\0007")); // one more
-//        R_TEST("", QS("\\ "), cxon::read_error::escape_invalid, 1); // none
-//        R_TEST(std::string(), QS("\\"), cxon::read_error::unexpected, 3); // escaped string end
-//        R_TEST("\x8", QS("\\x8"));
-//        R_TEST("\x08", QS("\\x08"));
-//        R_TEST("\x16", QS("\\x16"));
-//        R_TEST("\x3f", QS("\\x3f"));
-//        R_TEST("\000f", QS("\\x00f")); // one more
-//        R_TEST("", QS("\\x"), cxon::read_error::escape_invalid, 1); // none
-//        R_TEST("\u0008", QS("\\u0008"));
-//        R_TEST("\0008", QS("\\u00008")); // one more
-//        R_TEST("", QS("\\u008"), cxon::read_error::escape_invalid, 1); // one less
-//        R_TEST("", QS("\\u"), cxon::read_error::escape_invalid, 1); // none
-//        R_TEST("\U00000008", QS("\\U00000008"));
-//        R_TEST("\0008", QS("\\U000000008")); // one more
-//        R_TEST("", QS("\\U0000008"), cxon::read_error::escape_invalid, 1); // one less
-//        R_TEST("", QS("\\U"), cxon::read_error::escape_invalid, 1); // none
-//        R_TEST("\xf4\x8f\xbf\xbf", QS("\\udbff\\udfff")); // surrogate
-//        R_TEST("", QS("\\udbff\\ue000"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-//        R_TEST("", QS("\\udbff\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-//        R_TEST("", QS("\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-//        W_TEST(QS("\\1"), "\1");
-//        W_TEST(QS("\\2"), "\2");
-//        W_TEST(QS("\\3"), "\3");
-//        W_TEST(QS("\\4"), "\4");
-//        W_TEST(QS("\\5"), "\5");
-//        W_TEST(QS("\\6"), "\6");
-//        W_TEST(QS("\\7"), "\7");
-//        W_TEST(QS("\\b"), "\10");
-//        W_TEST(QS("\\t"), "\11");
-//        W_TEST(QS("\\n"), "\12");
-//        W_TEST(QS("\\v"), "\13");
-//        W_TEST(QS("\\f"), "\14");
-//        W_TEST(QS("\\r"), "\15");
-//        W_TEST(QS("\\16"), "\16");
-//        W_TEST(QS("\\17"), "\17");
-//        W_TEST(QS("\\20"), "\20");
-//        W_TEST(QS("\\21"), "\21");
-//        W_TEST(QS("\\22"), "\22");
-//        W_TEST(QS("\\23"), "\23");
-//        W_TEST(QS("\\24"), "\24");
-//        W_TEST(QS("\\25"), "\25");
-//        W_TEST(QS("\\26"), "\26");
-//        W_TEST(QS("\\27"), "\27");
-//        W_TEST(QS("\\30"), "\30");
-//        W_TEST(QS("\\31"), "\31");
-//        W_TEST(QS("\\32"), "\32");
-//        W_TEST(QS("\\33"), "\33");
-//        W_TEST(QS("\\34"), "\34");
-//        W_TEST(QS("\\35"), "\35");
-//        W_TEST(QS("\\36"), "\36");
-//        W_TEST(QS("\\37"), "\37");
-//        W_TEST(QS("\\\""), "\42");
-//    // std::tuple<int, double, std::string>
-//        R_TEST((tuple<int, double, string>{0, 0, "0"}), "{0, 0, \"0\"}");
-//        W_TEST("{0,0,\"0\"}", (tuple<int, double, string>{0, 0, "0"}));
-//        R_TEST((tuple<int, double, string>{}), "{0, 0}", cxon::read_error::unexpected, 5);
-//        R_TEST((tuple<int, double, string>{}), "{0, 0, \"\", 0}", cxon::read_error::unexpected, 9);
-//        R_TEST((tuple<int, double, string>{}), "", cxon::read_error::unexpected, 0);
-//        R_TEST((tuple<int, double, string>{}), "}", cxon::read_error::unexpected, 0);
-//        R_TEST((tuple<int, double, string>{}), "{", cxon::read_error::integral_invalid, 1);
-//        R_TEST((tuple<int, double, string>{}), "{0, x}", cxon::read_error::floating_point_invalid, 4);
-//    // std::tuple<int, double>
-//        R_TEST((tuple<int, double>{}), "{0, 0, \"0\"}", cxon::read_error::unexpected, 5);
-//        R_TEST((tuple<int, double>{}), "{x}", cxon::read_error::integral_invalid, 1);
-//    // std::pair<int, std::string>
-//        R_TEST((pair<int, string>{0, "0"}), "{0, \"0\"}");
-//        W_TEST("{0,\"0\"}", (pair<int, string>{0, "0"}));
-//        R_TEST((pair<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
-//        R_TEST((pair<int, string>{}), "{0}", cxon::read_error::unexpected, 2);
-//        R_TEST((pair<int, string>{}), "{0, \"\", 0}", cxon::read_error::unexpected, 6);
-//        R_TEST((pair<int, string>{}), "", cxon::read_error::unexpected, 0);
-//        R_TEST((pair<int, string>{}), "}", cxon::read_error::unexpected, 0);
-//        R_TEST((pair<int, string>{}), "{", cxon::read_error::integral_invalid, 1);
-//    // std::valarray<int>
-//        R_TEST((valarray<int>{1, 2, 3}), "{1, 2, 3}");
-//        W_TEST("{1,2,3}", (valarray<int>{1, 2, 3}));
-//        R_TEST((valarray<int>{1, 2, 3, 4}), "{1, 2, 3, 4}");
-//        R_TEST((valarray<int>{1, 2, 3, 4, 5}), "{1, 2, 3, 4, 5}");
-//        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8}), "{1, 2, 3, 4, 5, 6, 7, 8}");
-//        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8, 9}), "{1, 2, 3, 4, 5, 6, 7, 8, 9}");
-//        R_TEST((valarray<int>()), "", cxon::read_error::unexpected, 0);
-//        R_TEST((valarray<int>()), "}", cxon::read_error::unexpected, 0);
-//        R_TEST((valarray<int>()), "{", cxon::read_error::integral_invalid, 1);
-//        R_TEST((valarray<int>()), "{x", cxon::read_error::integral_invalid, 1);
-//    // std::array<int, 0>
-//        R_TEST((array<int, 0>{}), "{}");
-//        W_TEST("{}", (array<int, 0>{}));
-//        R_TEST((array<int, 0>{}), "", cxon::read_error::unexpected, 0);
-//        R_TEST((array<int, 0>{}), "}", cxon::read_error::unexpected, 0);
-//        R_TEST((array<int, 0>{}), "{", cxon::read_error::unexpected, 1);
-//    // std::array<int, 3>
-//        R_TEST((array<int, 3>{{1, 2, 3}}), "{1, 2, 3}");
-//        R_TEST((array<int, 4>{{1, 2, 3, 0}}), "{1, 2, 3}");
-//        W_TEST("{1,2,3}", (array<int, 3>{{1, 2, 3}}));
-//        R_TEST((array<int, 2>{}), "{1, 2, 3}", cxon::read_error::unexpected, 5);
-//        R_TEST((array<int, 2>{}), "{x}", cxon::read_error::integral_invalid, 1);
-//        R_TEST((array<int, 2>{}), "{1, x}", cxon::read_error::integral_invalid, 4);
-//    // std::queue<int>
-//        R_TEST((queue<int>{}), "{}");
-//        W_TEST("{}", (queue<int>{}));
-//        R_TEST((queue<int>({1, 2, 3})), "{1, 2, 3}");
-//        W_TEST("{1,2,3}", (queue<int>({1, 2, 3})));
-//        R_TEST(queue<int>{}, "{1, x}", cxon::read_error::integral_invalid, 4);
-//    // std::priority_queue<int>
-//        R_TEST((priority_queue<int>{}), "{}");
-//        W_TEST("{}", (priority_queue<int>{}));
-//        R_TEST(priority_queue<int>(less<int>(), {1, 2, 3}), "{1, 2, 3}");
-//        W_TEST("{3,2,1}", priority_queue<int>(less<int>(), {1, 2, 3}));
-//    // std::stack<int>
-//        R_TEST((stack<int>{}), "{}");
-//        W_TEST("{}", (stack<int>{}));
-//        R_TEST((stack<int>({1, 2, 3})), "{1, 2, 3}");
-//        W_TEST("{3,2,1}", (stack<int>({1, 2, 3})));
-//    // std::deque<int>
-//        R_TEST((deque<int>{}), "{}");
-//        W_TEST("{}", (deque<int>{}));
-//        R_TEST((deque<int>({1, 2, 3})), "{1, 2, 3}");
-//        W_TEST("{1,2,3}", (deque<int>({1, 2, 3})));
-//    // std::list<int>
-//        R_TEST((list<int>{}), "{}");
-//        W_TEST("{}", (list<int>{}));
-//        R_TEST((list<int>({1, 2, 3})), "{1, 2, 3}");
-//        W_TEST("{1,2,3}", (list<int>({1, 2, 3})));
-//    // std::vector<int>
-//        R_TEST((vector<int>{}), "{}");
-//        W_TEST("{}", (vector<int>{}));
-//        R_TEST((vector<int>({1, 2, 3})), "{1, 2, 3}");
-//        W_TEST("{1,2,3}", (vector<int>({1, 2, 3})));
-//        R_TEST((vector<int>()), "", cxon::read_error::unexpected, 0);
-//        R_TEST((vector<int>()), "}", cxon::read_error::unexpected, 0);
-//        R_TEST((vector<int>()), "{", cxon::read_error::integral_invalid, 1);
-//        R_TEST((vector<float>()), "", cxon::read_error::unexpected, 0);
-//        R_TEST((vector<float>()), "}", cxon::read_error::unexpected, 0);
-//        R_TEST((vector<float>()), "{", cxon::read_error::floating_point_invalid, 1);
-//    // std::set<int>;
-//        R_TEST((set<int>{}), "{}");
-//        W_TEST("{}", (set<int>{}));
-//        R_TEST((set<int>({1, 2, 3})), "{1, 1, 2, 3}");
-//        W_TEST("{1,2,3}", (set<int>({1, 2, 3})));
-//    // std::multiset<int>;
-//        R_TEST((multiset<int>{}), "{}");
-//        W_TEST("{}", (multiset<int>{}));
-//        R_TEST((multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
-//        W_TEST("{1,1,2,3}", (multiset<int>({1, 1, 2, 3})));
-//    // std::unordered_set<int>;
-//        R_TEST((unordered_set<int>{}), "{}");
-//        W_TEST("{}", (unordered_set<int>{}));
-//        R_TEST((unordered_set<int>({1, 2, 3})), "{1, 1, 2, 3}");
-//        //W_TEST("{1,2,3}", (unordered_set<int>({1, 2, 3})));
-//    // std::unordered_multiset<int>;
-//        R_TEST((unordered_multiset<int>{}), "{}");
-//        W_TEST("{}", (unordered_multiset<int>{}));
-//        R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
-//        //W_TEST("{1,1,2,3}", (unordered_multiset<int>({1, 1, 2, 3})));
-//    // std::vector<std::list<int>>
-//        R_TEST((vector<list<int>>{}), "{}");
-//        W_TEST("{}", (vector<list<int>>{}));
-//        R_TEST((vector<list<int>>{{}}), "{{}}");
-//        W_TEST("{{}}", (vector<list<int>>{{}}));
-//        R_TEST((vector<list<int>>{{1, 2, 3}, {3, 2, 1}}), "{{1, 2, 3}, {3, 2, 1}}");
-//        W_TEST("{{1,2,3},{3,2,1}}", (vector<list<int>>{{1, 2, 3}, {3, 2, 1}}));
-//    // std::list<std::vector<int>>
-//        R_TEST((list<vector<int>>{}), "{}");
-//        W_TEST("{}", (list<vector<int>>{}));
-//        R_TEST((list<vector<int>>{{}}), "{{}}");
-//        W_TEST("{{}}", (list<vector<int>>{{}}));
-//        R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "{{1, 2, 3}, {3, 2, 1}}");
-//        W_TEST("{{1,2,3},{3,2,1}}", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
-//TEST_END()
 //
 //TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
 //    using namespace std;
@@ -1791,16 +1806,16 @@ TEST_END()
 //        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
 //        //W_TEST("{1:1,1:1,2:2,3:3}", (unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
 //TEST_END()
-//
-//
-//namespace js {
-//    struct strict_traits : cxon::json_format_traits {
-//        static constexpr bool strict_js = true;
-//    };
-//}
-//
-//TEST_BEG(cxon::JSON<>) // json
-//    using namespace std;
+
+
+namespace js {
+    struct strict_traits : cxon::json_format_traits {
+        static constexpr bool strict_js = true;
+    };
+}
+
+TEST_BEG(cxon::JSON<>) // json
+    using namespace std;
 //    // char
 //        R_TEST('\0', QS("\\u0000"));
 //        W_TEST(QS("\\u0000"), '\0');
@@ -1862,136 +1877,157 @@ TEST_END()
 //        W_TEST(QS("\\u001e"), "\36");
 //        W_TEST(QS("\\u001f"), "\37");
 //        W_TEST(QS("\\\""), "\42");
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<js::strict_traits>)
-//    W_TEST(QS("\\u2028"), u8"\u2028");
-//    W_TEST(QS("\\u2029"), u8"\u2029");
-//    W_TEST(QS("\\u2028"), u"\u2028");
-//    W_TEST(QS("\\u2029"), u"\u2029");
-//    W_TEST(QS("\\u2028"), U"\u2028");
-//    W_TEST(QS("\\u2029"), U"\u2029");
-//    W_TEST(QS("\\u2028"), L"\u2028");
-//    W_TEST(QS("\\u2029"), L"\u2029");
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    using namespace std;
-//    // std::nullptr_t
-//        R_TEST(nullptr, "null");
-//        W_TEST("null", nullptr);
-//    // std::tuple<int, double, std::string>
-//        R_TEST((tuple<int, double, string>{0, 0, "0"}), "[0, 0, \"0\"]");
-//        W_TEST("[0,0,\"0\"]", (tuple<int, double, string>{0, 0, "0"}));
-//        R_TEST((tuple<int, double, string>{}), "", cxon::read_error::unexpected, 0);
-//        R_TEST((tuple<int, double, string>{}), "]", cxon::read_error::unexpected, 0);
-//        R_TEST((tuple<int, double, string>{}), "[", cxon::read_error::integral_invalid, 1);
-//        R_TEST((tuple<int, double, string>{}), "[0, 0]", cxon::read_error::unexpected, 5);
-//        R_TEST((tuple<int, double, string>{}), "[0, 0, \"\", 0]", cxon::read_error::unexpected, 9);
-//    // std::tuple<int, double>
-//        R_TEST((tuple<int, double>{}), "[0, 0, \"0\"]", cxon::read_error::unexpected, 5);
-//    // std::pair<int, std::string>
-//        R_TEST((pair<int, string>{0, "0"}), "[0, \"0\"]");
-//        W_TEST("[0,\"0\"]", (pair<int, string>{0, "0"}));
-//        R_TEST((pair<int, string>{}), "", cxon::read_error::unexpected, 0);
-//        R_TEST((pair<int, string>{}), "]", cxon::read_error::unexpected, 0);
-//        R_TEST((pair<int, string>{}), "[", cxon::read_error::integral_invalid, 1);
-//        R_TEST((pair<int, string>{}), "[x]", cxon::read_error::integral_invalid, 1);
-//        R_TEST((pair<int, string>{}), "[0]", cxon::read_error::unexpected, 2);
-//        R_TEST((pair<int, string>{}), "[0, \"\", 0]", cxon::read_error::unexpected, 6);
-//    // std::valarray<int>
-//        R_TEST((valarray<int>{1, 2, 3}), "[1, 2, 3]");
-//        W_TEST("[1,2,3]", (valarray<int>{1, 2, 3}));
-//        R_TEST((valarray<int>{1, 2, 3, 4}), "[1, 2, 3, 4]");
-//        R_TEST((valarray<int>{1, 2, 3, 4, 5}), "[1, 2, 3, 4, 5]");
-//        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8}), "[1, 2, 3, 4, 5, 6, 7, 8]");
-//        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8, 9}), "[1, 2, 3, 4, 5, 6, 7, 8, 9]");
-//        R_TEST((valarray<int>()), "", cxon::read_error::unexpected, 0);
-//        R_TEST((valarray<int>()), "]", cxon::read_error::unexpected, 0);
-//        R_TEST((valarray<int>()), "[", cxon::read_error::integral_invalid, 1);
-//        R_TEST((valarray<int>()), "[x", cxon::read_error::integral_invalid, 1);
-//    // std::array<int, 0>
-//        R_TEST((array<int, 0>{}), "[]");
-//        W_TEST("[]", (array<int, 0>{}));
-//        R_TEST((array<int, 0>{}), "", cxon::read_error::unexpected, 0);
-//        R_TEST((array<int, 0>{}), "]", cxon::read_error::unexpected, 0);
-//        R_TEST((array<int, 0>{}), "[", cxon::read_error::unexpected, 1);
-//    // std::array<int, 3>
-//        R_TEST((array<int, 3>{{1, 2, 3}}), "[1, 2, 3]");
-//        R_TEST((array<int, 4>{{1, 2, 3, 0}}), "[1, 2, 3]");
-//        W_TEST("[1,2,3]", (array<int, 3>{{1, 2, 3}}));
-//        R_TEST((array<int, 2>{}), "[1, 2, 3]", cxon::read_error::unexpected, 5);
-//    // std::queue<int>
-//        R_TEST((queue<int>{}), "[]");
-//        W_TEST("[]", (queue<int>{}));
-//        R_TEST((queue<int>({1, 2, 3})), "[1, 2, 3]");
-//        W_TEST("[1,2,3]", (queue<int>({1, 2, 3})));
-//    // std::priority_queue<int>
-//        R_TEST((priority_queue<int>{}), "[]");
-//        W_TEST("[]", (priority_queue<int>{}));
-//        R_TEST(priority_queue<int>(less<int>(), {1, 2, 3}), "[1, 2, 3]");
-//        W_TEST("[3,2,1]", priority_queue<int>(less<int>(), {1, 2, 3}));
-//    // std::stack<int>
-//        R_TEST((stack<int>{}), "[]");
-//        W_TEST("[]", (stack<int>{}));
-//        R_TEST((stack<int>({1, 2, 3})), "[1, 2, 3]");
-//        W_TEST("[3,2,1]", (stack<int>({1, 2, 3})));
-//    // std::deque<int>
-//        R_TEST((deque<int>{}), "[]");
-//        W_TEST("[]", (deque<int>{}));
-//        R_TEST((deque<int>({1, 2, 3})), "[1, 2, 3]");
-//        W_TEST("[1,2,3]", (deque<int>({1, 2, 3})));
-//    // std::list<int>
-//        R_TEST((list<int>{}), "[]");
-//        W_TEST("[]", (list<int>{}));
-//        R_TEST((list<int>({1, 2, 3})), "[1, 2, 3]");
-//        W_TEST("[1,2,3]", (list<int>({1, 2, 3})));
-//        R_TEST((list<int>{}), "", cxon::read_error::unexpected, 0);
-//        R_TEST((list<int>{}), "]", cxon::read_error::unexpected, 0);
-//        R_TEST((list<int>{}), "{", cxon::read_error::unexpected, 0);
-//        R_TEST((list<int>{}), "[", cxon::read_error::integral_invalid, 1);
-//        R_TEST((list<float>{}), "[", cxon::read_error::floating_point_invalid, 1);
-//    // std::vector<int>
-//        R_TEST((vector<int>{}), "[]");
-//        W_TEST("[]", (vector<int>{}));
-//        R_TEST((vector<int>({1, 2, 3})), "[1, 2, 3]");
-//        W_TEST("[1,2,3]", (vector<int>({1, 2, 3})));
-//    // std::set<int>
-//        R_TEST((set<int>{}), "[]");
-//        W_TEST("[]", (set<int>{}));
-//        R_TEST((set<int>({1, 2, 3})), "[1, 1, 2, 3]");
-//        W_TEST("[1,2,3]", (set<int>({1, 2, 3})));
-//    // std::multiset<int>;
-//        R_TEST((multiset<int>{}), "[]");
-//        W_TEST("[]", (multiset<int>{}));
-//        R_TEST((multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
-//        W_TEST("[1,1,2,3]", (multiset<int>({1, 1, 2, 3})));
-//    // std::unordered_set<int>
-//        R_TEST((unordered_set<int>{}), "[]");
-//        W_TEST("[]", (unordered_set<int>{}));
-//        R_TEST((unordered_set<int>({1, 2, 3})), "[1, 1, 2, 3]");
-//        //W_TEST("[1,2,3]", (unordered_set<int>({1, 2, 3})));
-//    // std::unordered_multiset<int>;
-//        R_TEST((unordered_multiset<int>{}), "[]");
-//        W_TEST("[]", (unordered_multiset<int>{}));
-//        R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
-//        //W_TEST("[1,1,2,3]", (unordered_multiset<int>({1, 1, 2, 3})));
-//    // std::vector<std::list<int>>
-//        R_TEST((vector<list<int>>{}), "[]");
-//        W_TEST("[]", (vector<list<int>>{}));
-//        R_TEST((vector<list<int>>{{}}), "[[]]");
-//        W_TEST("[[]]", (vector<list<int>>{{}}));
-//        R_TEST((vector<list<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
-//        W_TEST("[[1,2,3],[3,2,1]]", (vector<list<int>>{{1, 2, 3}, {3, 2, 1}}));
-//    // std::list<std::vector<int>>
-//        R_TEST((list<vector<int>>{}), "[]");
-//        W_TEST("[]", (list<vector<int>>{}));
-//        R_TEST((list<vector<int>>{{}}), "[[]]");
-//        W_TEST("[[]]", (list<vector<int>>{{}}));
-//        R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
-//        W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
-//TEST_END()
-//
+TEST_END()
+
+TEST_BEG(cxon::JSON<js::strict_traits>)
+    W_TEST(QS("x"), u8"x");
+    W_TEST(QS("\\u2028"), u8"\u2028");
+    W_TEST(QS("\\u2029"), u8"\u2029");
+    W_TEST(QS("x"), u"x");
+    W_TEST(QS("\\u2028"), u"\u2028");
+    W_TEST(QS("\\u2029"), u"\u2029");
+    W_TEST(QS("x"), U"x");
+    W_TEST(QS("\\u2028"), U"\u2028");
+    W_TEST(QS("\\u2029"), U"\u2029");
+    W_TEST(QS("x"), L"x");
+    W_TEST(QS("\\u2028"), L"\u2028");
+    W_TEST(QS("\\u2029"), L"\u2029");
+    W_TEST(QS("\xE2\x80\xA7"), u8"\u2027");
+    W_TEST(QS("\xE2\x81\xA7"), "\xE2\x81\xA7");
+    // coverage
+    W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
+    W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    using namespace std;
+    // std::nullptr_t
+        R_TEST(nullptr, "null");
+        W_TEST("null", nullptr);
+    // std::tuple<int, double, std::string>
+        R_TEST((tuple<int, double, string>{0, 0, "0"}), "[0, 0, \"0\"]");
+        W_TEST("[0,0,\"0\"]", (tuple<int, double, string>{0, 0, "0"}));
+        R_TEST((tuple<int, double, string>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((tuple<int, double, string>{}), "]", cxon::read_error::unexpected, 0);
+        R_TEST((tuple<int, double, string>{}), "[", cxon::read_error::integral_invalid, 1);
+        R_TEST((tuple<int, double, string>{}), "[0, 0]", cxon::read_error::unexpected, 5);
+        R_TEST((tuple<int, double, string>{}), "[0, 0, \"\", 0]", cxon::read_error::unexpected, 9);
+    // std::tuple<int, double>
+        R_TEST((tuple<int, double>{}), "[0, 0, \"0\"]", cxon::read_error::unexpected, 5);
+        W_TEST("[0,0]", (tuple<int, double>{0, 0}));
+    // std::pair<int, std::string>
+        R_TEST((pair<int, string>{0, "0"}), "[0, \"0\"]");
+        W_TEST("[0,\"0\"]", (pair<int, string>{0, "0"}));
+        R_TEST((pair<int, string>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((pair<int, string>{}), "]", cxon::read_error::unexpected, 0);
+        R_TEST((pair<int, string>{}), "[", cxon::read_error::integral_invalid, 1);
+        R_TEST((pair<int, string>{}), "[x]", cxon::read_error::integral_invalid, 1);
+        R_TEST((pair<int, string>{}), "[0]", cxon::read_error::unexpected, 2);
+        R_TEST((pair<int, string>{}), "[0, \"\", 0]", cxon::read_error::unexpected, 6);
+    // std::valarray<int>
+        R_TEST((valarray<int>{1, 2, 3}), "[1, 2, 3]");
+        W_TEST("[1,2,3]", (valarray<int>{1, 2, 3}));
+        R_TEST((valarray<int>{1, 2, 3, 4}), "[1, 2, 3, 4]");
+        R_TEST((valarray<int>{1, 2, 3, 4, 5}), "[1, 2, 3, 4, 5]");
+        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8}), "[1, 2, 3, 4, 5, 6, 7, 8]");
+        R_TEST((valarray<int>{1, 2, 3, 4, 5, 6, 7, 8, 9}), "[1, 2, 3, 4, 5, 6, 7, 8, 9]");
+        R_TEST((valarray<int>()), "", cxon::read_error::unexpected, 0);
+        R_TEST((valarray<int>()), "]", cxon::read_error::unexpected, 0);
+        R_TEST((valarray<int>()), "[", cxon::read_error::integral_invalid, 1);
+        R_TEST((valarray<int>()), "[x", cxon::read_error::integral_invalid, 1);
+    // std::array<int, 0>
+        R_TEST((array<int, 0>{}), "[]");
+        W_TEST("[]", (array<int, 0>{}));
+        R_TEST((array<int, 0>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((array<int, 0>{}), "]", cxon::read_error::unexpected, 0);
+        R_TEST((array<int, 0>{}), "[", cxon::read_error::unexpected, 1);
+    // std::array<int, 3>
+        R_TEST((array<int, 3>{{1, 2, 3}}), "[1, 2, 3]");
+        W_TEST("[1,2,3]", (array<int, 3>{{1, 2, 3}}));
+        R_TEST((array<int, 4>{{1, 2, 3, 0}}), "[1, 2, 3]");
+        W_TEST("[1,2,3,4]", (array<int, 4>{{1, 2, 3, 4}}));
+        R_TEST((array<int, 2>{}), "[1, 2, 3]", cxon::read_error::unexpected, 5);
+        W_TEST("[1,2]", (array<int, 2>{{1, 2}}));
+    // std::queue<int>
+        R_TEST((queue<int>{}), "[]");
+        W_TEST("[]", (queue<int>{}));
+        R_TEST((queue<int>({1, 2, 3})), "[1, 2, 3]");
+        W_TEST("[1,2,3]", (queue<int>({1, 2, 3})));
+    // std::priority_queue<int>
+        R_TEST((priority_queue<int>{}), "[]");
+        W_TEST("[]", (priority_queue<int>{}));
+        R_TEST(priority_queue<int>(less<int>(), {1, 2, 3}), "[1, 2, 3]");
+        W_TEST("[3,2,1]", priority_queue<int>(less<int>(), {1, 2, 3}));
+    // std::stack<int>
+        R_TEST((stack<int>{}), "[]");
+        W_TEST("[]", (stack<int>{}));
+        R_TEST((stack<int>({1, 2, 3})), "[1, 2, 3]");
+        W_TEST("[3,2,1]", (stack<int>({1, 2, 3})));
+    // std::deque<int>
+        R_TEST((deque<int>{}), "[]");
+        W_TEST("[]", (deque<int>{}));
+        R_TEST((deque<int>({1, 2, 3})), "[1, 2, 3]");
+        W_TEST("[1,2,3]", (deque<int>({1, 2, 3})));
+    // std::list<int>
+        R_TEST((list<int>{}), "[]");
+        W_TEST("[]", (list<int>{}));
+        R_TEST((list<int>({1, 2, 3})), "[1, 2, 3]");
+        W_TEST("[1,2,3]", (list<int>({1, 2, 3})));
+        R_TEST((list<int>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((list<int>{}), "]", cxon::read_error::unexpected, 0);
+        R_TEST((list<int>{}), "{", cxon::read_error::unexpected, 0);
+        R_TEST((list<int>{}), "[", cxon::read_error::integral_invalid, 1);
+        W_TEST("[1,2,3]", (list<float>({1, 2, 3})));
+        R_TEST((list<float>{}), "[", cxon::read_error::floating_point_invalid, 1);
+    // std::vector<int>
+        R_TEST((vector<int>{}), "[]");
+        W_TEST("[]", (vector<int>{}));
+        R_TEST((vector<int>({1, 2, 3})), "[1, 2, 3]");
+        W_TEST("[1,2,3]", (vector<int>({1, 2, 3})));
+    // std::set<int>
+        R_TEST((set<int>{}), "[]");
+        W_TEST("[]", (set<int>{}));
+        R_TEST((set<int>({1, 2, 3})), "[1, 1, 2, 3]");
+        W_TEST("[1,2,3]", (set<int>({1, 2, 3})));
+    // std::multiset<int>;
+        R_TEST((multiset<int>{}), "[]");
+        W_TEST("[]", (multiset<int>{}));
+        R_TEST((multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
+        W_TEST("[1,1,2,3]", (multiset<int>({1, 1, 2, 3})));
+    // std::unordered_set<int>
+        R_TEST((unordered_set<int>{}), "[]");
+        W_TEST("[]", (unordered_set<int>{}));
+        R_TEST((unordered_set<int>({1, 2, 3})), "[1, 1, 2, 3]");
+        //W_TEST("[1,2,3]", (unordered_set<int>({1, 2, 3})));
+        {   //coverage
+            string s;
+                cxon::to_chars<XXON>(s, unordered_set<int>({1, 2, 3}));
+        }
+    // std::unordered_multiset<int>;
+        R_TEST((unordered_multiset<int>{}), "[]");
+        W_TEST("[]", (unordered_multiset<int>{}));
+        R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
+        //W_TEST("[1,1,2,3]", (unordered_multiset<int>({1, 1, 2, 3})));
+        {   //coverage
+            string s;
+                cxon::to_chars<XXON>(s, unordered_multiset<int>({1, 2, 3}));
+        }
+    // std::vector<std::list<int>>
+        R_TEST((vector<list<int>>{}), "[]");
+        W_TEST("[]", (vector<list<int>>{}));
+        R_TEST((vector<list<int>>{{}}), "[[]]");
+        W_TEST("[[]]", (vector<list<int>>{{}}));
+        R_TEST((vector<list<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
+        W_TEST("[[1,2,3],[3,2,1]]", (vector<list<int>>{{1, 2, 3}, {3, 2, 1}}));
+    // std::list<std::vector<int>>
+        R_TEST((list<vector<int>>{}), "[]");
+        W_TEST("[]", (list<vector<int>>{}));
+        R_TEST((list<vector<int>>{{}}), "[[]]");
+        W_TEST("[[]]", (list<vector<int>>{{}}));
+        R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
+        W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
+TEST_END()
+
 //TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
 //    using namespace std;
 //    // std::map<int, std::string>
