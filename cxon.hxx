@@ -591,8 +591,9 @@ namespace cxon { // errors
                 case read_error::boolean_invalid:           return "invalid boolean";
                 case read_error::escape_invalid:            return "invalid escape sequence";
                 case read_error::surrogate_invalid:         return "invalid surrogate";
-                default:                                    return "unknown error";
             }
+            CXON_ASSERT(0, "unexpected");
+            return "unknown error";
         }
         static read_error_category const value;
     };
@@ -610,8 +611,9 @@ namespace cxon { // errors
             switch (static_cast<write_error>(ev)) {
                 case write_error::ok:               return "no error";
                 case write_error::output_failure:   return "output cannot be written";
-                default:                            return "unknown error";
             }
+            CXON_ASSERT(0, "unexpected");
+            return "unknown error";
         }
         static write_error_category const value;
     };
@@ -2569,15 +2571,13 @@ namespace cxon { namespace bits { // fundamental type encoding
                 static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                     return encode<X, char32_t>::value(o, char32_t(c), ctx);
                 }
-            template <typename O, typename II>
-                static bool value(O& o, II i, II, wctx<X>& ctx) {
-                    return value(o, *i, ctx);
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::range(o, i, e, ctx);
                 }
-            template <typename O, typename II>
-                static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
-                        return false;
-                    return true;
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::range(o, i, e, ctx);
                 }
         };
     template <typename X>
@@ -2590,15 +2590,13 @@ namespace cxon { namespace bits { // fundamental type encoding
                 static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                     return encode<JSON<X>, char32_t>::value(o, char32_t(c), ctx);
                 }
-            template <typename O, typename II>
-                static bool value(O& o, II i, II, wctx<X>& ctx) {
-                    return value(o, *i, ctx);
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<JSON<X>, char16_t>::range(o, i, e, ctx);
                 }
-            template <typename O, typename II>
-                static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
-                        return false;
-                    return true;
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<JSON<X>, char32_t>::range(o, i, e, ctx);
                 }
         };
 
@@ -2627,11 +2625,6 @@ namespace cxon { namespace bits { // fundamental type encoding
 
     template <typename X, typename T, typename O>
         inline auto number_write(O& o, const T& t, wctx<X>& ctx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
-            if (std::isfinite(t)) {
-                char s[std::numeric_limits<T>::max_digits10 * 2];
-                auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t, std::numeric_limits<T>::max_digits10);
-                return io::poke<X>(o, s, r.ptr - s, ctx);
-            }
             if (std::isinf(t)) {
                 if (!io::poke<X>(o, opqt<X>::beg, ctx)) return false;
                 if (std::signbit(t) && !io::poke<X>(o, '-', ctx)) return false;
@@ -2639,7 +2632,10 @@ namespace cxon { namespace bits { // fundamental type encoding
             }
             if (std::isnan(t))
                 return io::poke<X>(o, opqt<X>::beg, ctx) && io::poke<X>(o, "nan", ctx) && io::poke<X>(o, opqt<X>::end, ctx);
-            return false;
+            CXON_ASSERT(std::isfinite(t), "unexpected");
+            char s[std::numeric_limits<T>::max_digits10 * 2];
+            auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t, std::numeric_limits<T>::max_digits10);
+            return io::poke<X>(o, s, r.ptr - s, ctx);
         }
 
 }}  // cxon::bits fundamental type encoding
