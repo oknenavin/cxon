@@ -2572,6 +2572,14 @@ namespace cxon { namespace bits { // fundamental type encoding
                     return encode<X, char32_t>::value(o, char32_t(c), ctx);
                 }
             template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::value(o, i, e, ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::value(o, i, e, ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
                 static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
                     return encode<X, char16_t>::range(o, i, e, ctx);
                 }
@@ -2589,6 +2597,14 @@ namespace cxon { namespace bits { // fundamental type encoding
             template <typename O, typename T = wchar_t>
                 static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                     return encode<JSON<X>, char32_t>::value(o, char32_t(c), ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<JSON<X>, char16_t>::value(o, i, e, ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<JSON<X>, char32_t>::value(o, i, e, ctx);
                 }
             template <typename O, typename T = wchar_t, typename II>
                 static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
