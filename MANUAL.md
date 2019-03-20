@@ -232,7 +232,7 @@ int main() {
 --------------------------------------------------------------------------------
 #### Implementation Bridge
 
-The interface communicate the implementation via the so-called *implementation bridge*.  
+The interface communicates the implementation via the so-called *implementation bridge*.  
 Read/write interface instantiates the context, defined in the [*format traits*](#format-traits),
 with `CtxPrm` parameters (if any) and then calls the *implementation bridge* with it:
 
@@ -360,8 +360,7 @@ for binding of enumerations and compound types:
     #define CXON_STRUCT_FIELD_NAME(Name, Field)
     // defines field Field, which will be serialized as ##Field
     #define CXON_STRUCT_FIELD_ASIS(Field)
-    // defines the key Name, which will be skipped during serialization
-    //  (only meaningful for reading)
+    // defines the key Name, which will be skipped during serialization (only meaningful for reading)
     #define CXON_STRUCT_FIELD_SKIP(Name)
     ```
 
@@ -399,8 +398,8 @@ for binding of enumerations and compound types:
 #### Format Traits
 
 `Traits` template parameter has two roles:
-  - to keep configuration, related to the definition of given serialization format
-  - to keep configuration parameters for given serialization format
+  - to keep configuration, related to the definition of a given serialization format
+  - to keep configuration parameters for a given serialization format
 
 The implementation requires *format traits* to provide one mandatory trait to support the 
 [*implementation bridge*](#implementation-bridge) - a context:
@@ -414,7 +413,7 @@ struct format_traits {
 };
 ```
 
-The implementation requires these types to provide mandatory member `ec` of type
+The implementation requires these types to provide a mandatory member `ec` of type
 [`std::error_condition`][url-err-cnd].
 
 Although `JSON` is the default format, `CXON` defines a fall-back format called the same - `CXON`.  
@@ -525,7 +524,7 @@ namespace cxon {
 }
 ```
 
-will work with arbitrary *format traits*.
+will work with an arbitrary *format traits*.
 
 *Here, the helper type `cxon::enable_for_t` is a convenience typedef similar to 
 [`std::enable_if`][url-cpp-enab-if].*
