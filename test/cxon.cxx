@@ -1451,14 +1451,14 @@ TEST_BEG(cxon::CXON<>) // cxon
         W_TEST("{1,1,2,3}", (multiset<int>({1, 1, 2, 3})));
     // std::unordered_set<int>;
         R_TEST((unordered_set<int>{}), "{}");
-        //W_TEST("{}", (unordered_set<int>{}));
+        W_TEST("{}", (unordered_set<int>{}));
         R_TEST((unordered_set<int>({1, 2, 3})), "{1, 1, 2, 3}");
-        //W_TEST("{1,2,3}", (unordered_set<int>({1, 2, 3})));
+        W_TEST("{1}", (unordered_set<int>({1})));
     // std::unordered_multiset<int>;
         R_TEST((unordered_multiset<int>{}), "{}");
-        //W_TEST("{}", (unordered_multiset<int>{}));
+        W_TEST("{}", (unordered_multiset<int>{}));
         R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
-        //W_TEST("{1,1,2,3}", (unordered_multiset<int>({1, 1, 2, 3})));
+        W_TEST("{1,1}", (unordered_multiset<int>({1, 1})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "{}");
         W_TEST("{}", (vector<list<int>>{}));
@@ -1475,189 +1475,320 @@ TEST_BEG(cxon::CXON<>) // cxon
         W_TEST("{{1,2,3},{3,2,1}}", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
 TEST_END()
 
-//
-//TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
-//    using namespace std;
-//    // std::map<int, std::string>
-//        R_TEST((map<int, string>{}), "{}");
-//        W_TEST("{}", (map<int, string>{}));
-//        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        R_TEST((map<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
-//        R_TEST((map<int, string>{}), "{1: x}", cxon::read_error::unexpected, 4);
-//    // std::map<std::string, int>
-//        R_TEST((map<string, int>{}), "{}");
-//        W_TEST("{}", (map<string, int>{}));
-//        R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
-//        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<int, int>
-//        R_TEST((map<int, int>{}), "{}");
-//        W_TEST("{}", (map<int, int>{}));
-//        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-//    // std::multimap<int, int>
-//        R_TEST((multimap<int, int>{}), "{}");
-//        W_TEST("{}", (multimap<int, int>{}));
-//        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
-//    // std::unordered_map<int, int>
-//        R_TEST((unordered_map<int, int>{}), "{}");
-//        W_TEST("{}", (unordered_map<int, int>{}));
-//        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        //W_TEST("{1:1,2:2,3:3}", (unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-//    // std::unordered_multimap<int, int>
-//        R_TEST((unordered_multimap<int, int>{}), "{}");
-//        W_TEST("{}", (unordered_multimap<int, int>{}));
-//        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        //W_TEST("{1:1,1:1,2:2,3:3}", (unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
-//TEST_END()
-//
-//TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
-//    using namespace std;
-//    // std::map<int, std::string>
-//        R_TEST((map<int, string>{}), "{}");
-//        W_TEST("{}", (map<int, string>{}));
-//        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        R_TEST((map<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
-//        R_TEST((map<int, string>{}), "{1: x}", cxon::read_error::unexpected, 4);
-//    // std::map<std::string, int>
-//        R_TEST((map<string, int>{}), "{}");
-//        W_TEST("{}", (map<string, int>{}));
-//        R_TEST((map<string, int>{{"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<string, int>{{"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<string, int>{{"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<std::u16string, int>
-//        R_TEST((map<u16string, int>{}), "{}");
-//        W_TEST("{}", (map<u16string, int>{}));
-//        R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<u16string, int>{{u"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<u16string, int>{{u"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<u16string, int>{{u"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<u16string, int>{{u"1", 1}, {u"2", 2}, {u"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<std::u32string, int>
-//        R_TEST((map<u32string, int>{}), "{}");
-//        W_TEST("{}", (map<u32string, int>{}));
-//        R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<u32string, int>{{U"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<u32string, int>{{U"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<u32string, int>{{U"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<u32string, int>{{U"1", 1}, {U"2", 2}, {U"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<std::wstring, int>
-//        R_TEST((map<wstring, int>{}), "{}");
-//        W_TEST("{}", (map<wstring, int>{}));
-//        R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<wstring, int>{{L"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<wstring, int>{{L"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<wstring, int>{{L"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<wstring, int>{{L"1", 1}, {L"2", 2}, {L"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<int, int>
-//        R_TEST((map<int, int>{}), "{}");
-//        W_TEST("{}", (map<int, int>{}));
-//        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
-//    using namespace std;
-//    // std::map<int, std::string>
-//        R_TEST((map<int, string>{}), "{}");
-//        W_TEST("{}", (map<int, string>{}));
-//        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        R_TEST((map<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
-//        R_TEST((map<int, string>{}), "{1: x}", cxon::read_error::unexpected, 4);
-//    // std::map<std::string, int>
-//        R_TEST((map<string, int>{}), "{}");
-//        W_TEST("{}", (map<string, int>{}));
-//        R_TEST((map<string, int>{{"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<string, int>{{"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<string, int>{{"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<std::u16string, int>
-//        R_TEST((map<u16string, int>{}), "{}");
-//        W_TEST("{}", (map<u16string, int>{}));
-//        R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<u16string, int>{{u"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<u16string, int>{{u"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<u16string, int>{{u"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<u16string, int>{{u"1", 1}, {u"2", 2}, {u"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<std::u32string, int>
-//        R_TEST((map<u32string, int>{}), "{}");
-//        W_TEST("{}", (map<u32string, int>{}));
-//        R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<u32string, int>{{U"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<u32string, int>{{U"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<u32string, int>{{U"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<u32string, int>{{U"1", 1}, {U"2", 2}, {U"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<std::wstring, int>
-//        R_TEST((map<wstring, int>{}), "{}");
-//        W_TEST("{}", (map<wstring, int>{}));
-//        R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
-//        R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
-//        R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-//        R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-//        W_TEST("{1\\:1:1}", (map<wstring, int>{{L"1:1", 1}})); // ':'
-//        W_TEST("{1\"1:1}", (map<wstring, int>{{L"1\"1", 1}})); // '"'
-//        W_TEST("{1\\ 1:1}", (map<wstring, int>{{L"1 1", 1}})); // ' '
-//        W_TEST("{1:1,2:2,3:3}", (map<wstring, int>{{L"1", 1}, {L"2", 2}, {L"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<int, int>
-//        R_TEST((map<int, int>{}), "{}");
-//        W_TEST("{}", (map<int, int>{}));
-//        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-//    // std::multimap<int, int>
-//        R_TEST((multimap<int, int>{}), "{}");
-//        W_TEST("{}", (multimap<int, int>{}));
-//        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
-//    // std::unordered_map<int, int>
-//        R_TEST((unordered_map<int, int>{}), "{}");
-//        W_TEST("{}", (unordered_map<int, int>{}));
-//        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        //W_TEST("{1:1,2:2,3:3}", (unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-//    // std::unordered_multimap<int, int>
-//        R_TEST((unordered_multimap<int, int>{}), "{}");
-//        W_TEST("{}", (unordered_multimap<int, int>{}));
-//        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        //W_TEST("{1:1,1:1,2:2,3:3}", (unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
-//TEST_END()
+
+TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
+    using namespace std;
+    // std::map<int, std::string>
+        R_TEST((map<int, string>{}), "{}");
+        W_TEST("{}", (map<int, string>{}));
+        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
+        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        R_TEST((map<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
+        R_TEST((map<int, string>{}), "{1: x}", cxon::read_error::unexpected, 4);
+    // std::map<std::string, int>
+        R_TEST((map<string, int>{}), "{}");
+        W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<int, int>
+        R_TEST((map<int, int>{}), "{}");
+        W_TEST("{}", (map<int, int>{}));
+        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::multimap<int, int>
+        R_TEST((multimap<int, int>{}), "{}");
+        W_TEST("{}", (multimap<int, int>{}));
+        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_map<int, int>
+        R_TEST((unordered_map<int, int>{}), "{}");
+        W_TEST("{}", (unordered_map<int, int>{}));
+        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1}", (unordered_map<int, int>{{1, 1}, {1, 1}}));
+    // std::unordered_multimap<int, int>
+        R_TEST((unordered_multimap<int, int>{}), "{}");
+        W_TEST("{}", (unordered_multimap<int, int>{}));
+        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
+    // coverage
+        R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        R_TEST(vector<int>{0, 1, 2, 3}, "{0, 01, 0x2, 0b11}");
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
+TEST_END()
+
+TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
+    using namespace std;
+    // std::map<int, std::string>
+        R_TEST((map<int, string>{}), "{}");
+        W_TEST("{}", (map<int, string>{}));
+        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
+        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        R_TEST((map<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
+        R_TEST((map<int, string>{}), "{1: x}", cxon::read_error::unexpected, 4);
+    // std::map<std::string, int>
+        R_TEST((map<string, int>{}), "{}");
+        W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<string, int>{{"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<string, int>{{"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<string, int>{{"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<std::u16string, int>
+        R_TEST((map<u16string, int>{}), "{}");
+        W_TEST("{}", (map<u16string, int>{}));
+        R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u16string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<u16string, int>{{u"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<u16string, int>{{u"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u16string, int>{{u"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<u16string, int>{{u"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<u16string, int>{{u"1", 1}, {u"2", 2}, {u"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<std::u32string, int>
+        R_TEST((map<u32string, int>{}), "{}");
+        W_TEST("{}", (map<u32string, int>{}));
+        R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u32string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<u32string, int>{{U"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<u32string, int>{{U"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u32string, int>{{U"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<u32string, int>{{U"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<u32string, int>{{U"1", 1}, {U"2", 2}, {U"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<std::wstring, int>
+        R_TEST((map<wstring, int>{}), "{}");
+        W_TEST("{}", (map<wstring, int>{}));
+        R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<wstring, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<wstring, int>{{L"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<wstring, int>{{L"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<wstring, int>{{L"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<wstring, int>{{L"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<wstring, int>{{L"1", 1}, {L"2", 2}, {L"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<int, int>
+        R_TEST((map<int, int>{}), "{}");
+        W_TEST("{}", (map<int, int>{}));
+        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // coverage
+        R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(wstring(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u16string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
+        R_TEST(u32string(U"\U0010ffff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u32string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(wstring(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"), u"\xD83C\xDF7A\x2764x\x3B1");
+        R_TEST(vector<int>{0, 1, 2, 3}, "{0, 01, 0x2, 0b11}");
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
+        R_TEST((map<u16string, int>{{u"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<u32string, int>{{U"\U0010ffff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<wstring, int>{{L"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
+TEST_END()
+
+
+TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
+    using namespace std;
+    // std::map<int, std::string>
+        R_TEST((map<int, string>{}), "{}");
+        W_TEST("{}", (map<int, string>{}));
+        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{\"1\" : \"1\" , \"1\" : \"1\" , \"2\" : \"2\" , \"3\" : \"3\"}");
+        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        R_TEST((map<int, string>{}), "{\"x\"}", cxon::read_error::integral_invalid, 2);
+        R_TEST((map<int, string>{}), "{\"1\": x}", cxon::read_error::unexpected, 6);
+    // std::map<std::string, int>
+        R_TEST((map<string, int>{}), "{}");
+        W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<int, int>
+        R_TEST((map<int, int>{}), "{}");
+        W_TEST("{}", (map<int, int>{}));
+        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::multimap<int, int>
+        R_TEST((multimap<int, int>{}), "{}");
+        W_TEST("{}", (multimap<int, int>{}));
+        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1,\"1\":1,\"2\":2,\"3\":3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_map<int, int>
+        R_TEST((unordered_map<int, int>{}), "{}");
+        W_TEST("{}", (unordered_map<int, int>{}));
+        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1}", (unordered_map<int, int>{{1, 1}, {1, 1}}));
+    // std::unordered_multimap<int, int>
+        R_TEST((unordered_multimap<int, int>{}), "{}");
+        W_TEST("{}", (unordered_multimap<int, int>{}));
+        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1,\"1\":1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
+    // coverage
+        R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
+TEST_END()
+
+TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
+    using namespace std;
+    // std::map<int, std::string>
+        R_TEST((map<int, string>{}), "{}");
+        W_TEST("{}", (map<int, string>{}));
+        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
+        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        R_TEST((map<int, string>{}), "{x}", cxon::read_error::integral_invalid, 1);
+        R_TEST((map<int, string>{}), "{1: x}", cxon::read_error::unexpected, 4);
+    // std::map<std::string, int>
+        R_TEST((map<string, int>{}), "{}");
+        W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<string, int>{{"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<string, int>{{"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<string, int>{{"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<std::u16string, int>
+        R_TEST((map<u16string, int>{}), "{}");
+        W_TEST("{}", (map<u16string, int>{}));
+        R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u16string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<u16string, int>{{u"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<u16string, int>{{u"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u16string, int>{{u"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<u16string, int>{{u"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<u16string, int>{{u"1", 1}, {u"2", 2}, {u"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<std::u32string, int>
+        R_TEST((map<u32string, int>{}), "{}");
+        W_TEST("{}", (map<u32string, int>{}));
+        R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u32string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<u32string, int>{{U"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<u32string, int>{{U"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u32string, int>{{U"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<u32string, int>{{U"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<u32string, int>{{U"1", 1}, {U"2", 2}, {U"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<std::wstring, int>
+        R_TEST((map<wstring, int>{}), "{}");
+        W_TEST("{}", (map<wstring, int>{}));
+        R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
+        R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
+        R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<wstring, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
+        W_TEST("{1\\:1:1}", (map<wstring, int>{{L"1:1", 1}})); // ':'
+        W_TEST("{1\"1:1}", (map<wstring, int>{{L"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<wstring, int>{{L"1\'1", 1}})); // '\''
+        W_TEST("{1\\ 1:1}", (map<wstring, int>{{L"1 1", 1}})); // ' '
+        W_TEST("{1:1,2:2,3:3}", (map<wstring, int>{{L"1", 1}, {L"2", 2}, {L"3", 3}}));
+        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<int, int>
+        R_TEST((map<int, int>{}), "{}");
+        W_TEST("{}", (map<int, int>{}));
+        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::multimap<int, int>
+        R_TEST((multimap<int, int>{}), "{}");
+        W_TEST("{}", (multimap<int, int>{}));
+        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_map<int, int>
+        R_TEST((unordered_map<int, int>{}), "{}");
+        W_TEST("{}", (unordered_map<int, int>{}));
+        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1}", (unordered_map<int, int>{{1, 1}}));
+    // std::unordered_multimap<int, int>
+        R_TEST((unordered_multimap<int, int>{}), "{}");
+        W_TEST("{}", (unordered_multimap<int, int>{}));
+        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
+        W_TEST("{1:1,1:1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
+    // coverage
+        R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(wstring(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u16string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
+        R_TEST(u32string(U"\U0010ffff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u32string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(wstring(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"), u"\xD83C\xDF7A\x2764x\x3B1");
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
+        R_TEST((map<u16string, int>{{u"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<u32string, int>{{U"\U0010ffff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<wstring, int>{{L"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
+TEST_END()
 
 
 namespace js {
@@ -1850,20 +1981,12 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((unordered_set<int>{}), "[]");
         W_TEST("[]", (unordered_set<int>{}));
         R_TEST((unordered_set<int>({1, 2, 3})), "[1, 1, 2, 3]");
-        //W_TEST("[1,2,3]", (unordered_set<int>({1, 2, 3})));
-        {   //coverage
-            string s;
-                cxon::to_chars<XXON>(s, unordered_set<int>({1, 2, 3}));
-        }
+        W_TEST("[1]", (unordered_set<int>({1})));
     // std::unordered_multiset<int>;
         R_TEST((unordered_multiset<int>{}), "[]");
         W_TEST("[]", (unordered_multiset<int>{}));
         R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
-        //W_TEST("[1,1,2,3]", (unordered_multiset<int>({1, 1, 2, 3})));
-        {   //coverage
-            string s;
-                cxon::to_chars<XXON>(s, unordered_multiset<int>({1, 2, 3}));
-        }
+        W_TEST("[1,1]", (unordered_multiset<int>({1, 1})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "[]");
         W_TEST("[]", (vector<list<int>>{}));
@@ -1880,49 +2003,7 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
 TEST_END()
 
-//TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
-//    using namespace std;
-//    // std::map<int, std::string>
-//        R_TEST((map<int, string>{}), "{}");
-//        W_TEST("{}", (map<int, string>{}));
-//        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{\"1\" : \"1\" , \"1\" : \"1\" , \"2\" : \"2\" , \"3\" : \"3\"}");
-//        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//    // std::map<std::string, int>
-//        R_TEST((map<string, int>{}), "{}");
-//        W_TEST("{}", (map<string, int>{}));
-//        R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
-//        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<int, int>
-//        R_TEST((map<int, int>{}), "{}");
-//        W_TEST("{}", (map<int, int>{}));
-//        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
-//        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
-//    using namespace std;
-//    // std::map<int, std::string>
-//        R_TEST((map<int, string>{}), "{}");
-//        W_TEST("{}", (map<int, string>{}));
-//        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-//    // std::map<std::string, int>
-//        R_TEST((map<string, int>{}), "{}");
-//        W_TEST("{}", (map<string, int>{}));
-//        R_TEST((map<string, int>{{" 1:", 1}, {"2", 2}, {" 3 ", 3}}), "{\\ 1\\:: 1, 2: 2, \\ 3\\ : 3}");
-//        W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-//    // std::map<int, int>
-//        R_TEST((map<int, int>{}), "{}");
-//        W_TEST("{}", (map<int, int>{}));
-//        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-//        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-//TEST_END()
-//
-//
+
 //enum Enum1 { one, two, three };
 //
 //CXON_ENUM(Enum1,
@@ -2294,171 +2375,171 @@ TEST_END()
 //    R_TEST(Struct10(1), "{\"skip6\": [\"}\", 10], \"a\": 1}");
 //    W_TEST("{\"a\":1}", Struct10(1));
 //TEST_END()
-//
-//TEST_BEG(cxon::CXON<>) // interface/read
-//    // iterator
-//    {   ++TEST_A;
-//        int r; char const i[] = "1";
-//        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        int r; std::string const i = "1";
-//        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        int r; std::vector<char> const i = {'1'};
-//        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    // container
-//    {   ++TEST_A;
-//        int r; char const i[] = "1";
-//        if (!cxon::from_chars(r, i) || r != 1) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        int r; std::string const i = "1";
-//        if (!cxon::from_chars(r, i) || r != 1) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        int r; std::vector<char> const i = {'1'};
-//        if (!cxon::from_chars(r, i) || r != 1) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//TEST_END()
-//
-//TEST_BEG(cxon::CXON<>) // interface/write
-//    // output iterator
-//    {   ++TEST_A;
-//        std::string r; std::string const e = QS("1");
-//        if (!cxon::to_chars<XXON>(std::back_inserter(r), "1") || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        std::string r; std::string const e = "1";
-//        if (!cxon::to_chars<XXON>(std::back_inserter(r), 1) || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        std::string r; std::string const e = "true";
-//        if (!cxon::to_chars<XXON>(std::back_inserter(r), true) || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    // range
-//    {   ++TEST_A;
-//        char o[16]; char const e[] = QS("1");
-//        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
-//        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//        {   ++TEST_A;
-//            char o[1];
-//            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
-//            if (r.ec != cxon::write_error::output_failure) {
-//                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//                CXON_ASSERT(false, "check failed");
-//            }
-//        }
-//    {   ++TEST_A;
-//        char o[16]; char const e[] = "1";
-//        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 1);
-//        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//        {   ++TEST_A;
-//            char o[1];
-//            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 42);
-//            if (r.ec != cxon::write_error::output_failure) {
-//                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//                CXON_ASSERT(false, "check failed");
-//            }
-//        }
-//    {   ++TEST_A;
-//        char o[16]; char const e[] = "true";
-//        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
-//        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//        {   ++TEST_A;
-//            char o[1];
-//            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
-//            if (r.ec != cxon::write_error::output_failure) {
-//                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//                CXON_ASSERT(false, "check failed");
-//            }
-//        }
-//    // container/std::string (push_back, append)
-//    {   ++TEST_A;
-//        std::string r; std::string const e = QS("1");
-//        if (!cxon::to_chars<XXON>(r, "1") || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        std::string r; std::string const e = "1";
-//        if (!cxon::to_chars<XXON>(r, 1) || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        std::string r; std::string const e = "true";
-//        if (!cxon::to_chars<XXON>(r, true) || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    // container/std::vector (push_back)
-//    {   ++TEST_A;
-//        std::vector<char> r; std::vector<char> const e = {'"', '1', '"'};
-//        if (!cxon::to_chars<XXON>(r, "1") || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        std::vector<char> r; std::vector<char> const e = {'1'};
-//        if (!cxon::to_chars<XXON>(r, 1) || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//    {   ++TEST_A;
-//        std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
-//        if (!cxon::to_chars<XXON>(r, true) || r != e) {
-//            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
-//            CXON_ASSERT(false, "check failed");
-//        }
-//    }
-//TEST_END()
+
+TEST_BEG(cxon::CXON<>) // interface/read
+    // iterator
+    {   ++TEST_A;
+        int r; char const i[] = "1";
+        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        int r; std::string const i = "1";
+        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        int r; std::vector<char> const i = {'1'};
+        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    // container
+    {   ++TEST_A;
+        int r; char const i[] = "1";
+        if (!cxon::from_chars(r, i) || r != 1) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        int r; std::string const i = "1";
+        if (!cxon::from_chars(r, i) || r != 1) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        int r; std::vector<char> const i = {'1'};
+        if (!cxon::from_chars(r, i) || r != 1) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+TEST_END()
+
+TEST_BEG(cxon::CXON<>) // interface/write
+    // output iterator
+    {   ++TEST_A;
+        std::string r; std::string const e = QS("1");
+        if (!cxon::to_chars<XXON>(std::back_inserter(r), "1") || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        std::string r; std::string const e = "1";
+        if (!cxon::to_chars<XXON>(std::back_inserter(r), 1) || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        std::string r; std::string const e = "true";
+        if (!cxon::to_chars<XXON>(std::back_inserter(r), true) || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    // range
+    {   ++TEST_A;
+        char o[16]; char const e[] = QS("1");
+        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
+        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+        {   ++TEST_A;
+            char o[1];
+            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
+            if (r.ec != cxon::write_error::output_failure) {
+                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+                CXON_ASSERT(false, "check failed");
+            }
+        }
+    {   ++TEST_A;
+        char o[16]; char const e[] = "1";
+        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 1);
+        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+        {   ++TEST_A;
+            char o[1];
+            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 42);
+            if (r.ec != cxon::write_error::output_failure) {
+                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+                CXON_ASSERT(false, "check failed");
+            }
+        }
+    {   ++TEST_A;
+        char o[16]; char const e[] = "true";
+        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
+        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+        {   ++TEST_A;
+            char o[1];
+            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
+            if (r.ec != cxon::write_error::output_failure) {
+                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+                CXON_ASSERT(false, "check failed");
+            }
+        }
+    // container/std::string (push_back, append)
+    {   ++TEST_A;
+        std::string r; std::string const e = QS("1");
+        if (!cxon::to_chars<XXON>(r, "1") || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        std::string r; std::string const e = "1";
+        if (!cxon::to_chars<XXON>(r, 1) || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        std::string r; std::string const e = "true";
+        if (!cxon::to_chars<XXON>(r, true) || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    // container/std::vector (push_back)
+    {   ++TEST_A;
+        std::vector<char> r; std::vector<char> const e = {'"', '1', '"'};
+        if (!cxon::to_chars<XXON>(r, "1") || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        std::vector<char> r; std::vector<char> const e = {'1'};
+        if (!cxon::to_chars<XXON>(r, 1) || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
+        if (!cxon::to_chars<XXON>(r, true) || r != e) {
+            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+TEST_END()
 
 TEST_BEG(cxon::CXON<>) // errors
     using namespace cxon;
