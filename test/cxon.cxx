@@ -118,6 +118,7 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("\x8f"), '\x8f');
         R_TEST('\xff', QS("\\xff")); // invalid utf-8
         W_TEST(QS("\xff"), '\xff'); // invalid utf-8
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
         R_TEST('\0', QS("\\u1111"), cxon::read_error::character_invalid, 1);
     // char16_t
         R_TEST(u'a', QS("a"));
@@ -525,6 +526,7 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("\x8f"), '\x8f');
         R_TEST('\xff', QS("\\u00ff")); // invalid utf-8
         W_TEST(QS("\xff"), '\xff'); // invalid utf-8
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
         R_TEST('\0', QS("\\z"), cxon::read_error::escape_invalid, 1);
         R_TEST('\0', QS("\\u1111"), cxon::read_error::character_invalid, 1);
     // char16_t
@@ -1269,6 +1271,10 @@ TEST_BEG(cxon::CXON<string_quote::single_traits>) // cxon string quoting
     W_TEST("'\xF0\x92\x90\x9D\xF0\x92\x90\x9C'", std::u32string({0x0001241D, 0x0001241C}));
     R_TEST(std::u32string(), "a", cxon::read_error::unexpected, 0);
     R_TEST(std::u32string(), "'\\u001'", cxon::read_error::escape_invalid, 1);
+    // coverage
+    R_TEST('x', "'x'");
+    R_TEST('\0', "'\\u0100'", cxon::read_error::character_invalid, 1);
+    R_TEST('\0', "'\xff'", cxon::read_error::character_invalid, 1); // invalid utf-8
 TEST_END()
 
 
@@ -1516,6 +1522,10 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
         R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
         R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
         R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
         R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
         R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
@@ -1602,6 +1612,10 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
         R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
         R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
         R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
@@ -1667,6 +1681,10 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
         R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
         R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
         R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
         R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
         R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
@@ -1767,6 +1785,10 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
         R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
         R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
         R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
@@ -2004,377 +2026,420 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-//enum Enum1 { one, two, three };
-//
-//CXON_ENUM(Enum1,
-//    CXON_ENUM_VALUE_ASIS(one),
-//    CXON_ENUM_VALUE_NAME("Two (2)", two),
-//    CXON_ENUM_VALUE_ASIS(three)
-//)
-//STRUTL_TO_STRING_SIMPLE(Enum1);
-//
-//TEST_BEG(cxon::CXON<>) // enum
-//    R_TEST(Enum1::one, "one");
-//    W_TEST("one", Enum1::one);
-//    R_TEST(Enum1::two, "Two (2)");
-//    W_TEST("Two (2)", Enum1::two);
-//    R_TEST(Enum1::one, "", cxon::read_error::unexpected, 0);
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    R_TEST(Enum1::one, QS("one"));
-//    W_TEST(QS("one"), Enum1::one);
-//    R_TEST(Enum1::two, QS("Two (2)"));
-//    W_TEST(QS("Two (2)"), Enum1::two);
-//    R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 0);
-//TEST_END()
-//
-//
-//struct Struct1 {
-//    int a;
-//    Enum1 b;
-//    int c;
-//    Struct1(int a = 0, Enum1 b = Enum1::one, int c = 0) : a(a), b(b), c(c) {}
-//    bool operator ==(const Struct1& t) const { return a == t.a && b == t.b && c == t.c; }
-//};
-//
-//struct Struct2 {
-//    int a;
-//    int b;
-//    Struct2(int a = 0, int b = 0) : a(a), b(b) {}
-//    bool operator ==(const Struct2& t) const { return a == t.a && b == t.b; }
-//};
-//
-//CXON_STRUCT_READ(Struct1,
-//    CXON_STRUCT_FIELD_NAME("A", a),
-//    CXON_STRUCT_FIELD_ASIS(b)
-//)
-//CXON_STRUCT_WRITE(Struct1,
-//    CXON_STRUCT_FIELD_NAME("A", a),
-//    CXON_STRUCT_FIELD_ASIS(b)
-//)
-//
-//CXON_STRUCT(Struct2,
-//    CXON_STRUCT_FIELD_ASIS(a),
-//    CXON_STRUCT_FIELD_NAME("B", b)
-//)
-//
-//STRUTL_TO_STRING_SIMPLE(Struct1);
-//STRUTL_TO_STRING_SIMPLE(Struct2);
-//
-//TEST_BEG(cxon::CXON<>) // struct macros
-//    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: one}");
-//    R_TEST(Struct1(0, Enum1::two), "{b: Two (2), A: 0}");
-//    R_TEST(Struct1(0, Enum1::three), "{b: three}");
-//    W_TEST("{A:0,b:one}", Struct1(0, Enum1::one));
-//    R_TEST(Struct2(0, 1), "{a: 0, B: 1}");
-//    W_TEST("{a:0,B:1}", Struct2(0, 1));
-//    R_TEST(Struct2(), "", cxon::read_error::unexpected, 0);
-//    R_TEST(Struct2(), "}", cxon::read_error::unexpected, 0);
-//    R_TEST(Struct2(), "{", cxon::read_error::unexpected, 1);
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"b\": \"one\"}");
-//    R_TEST(Struct1(0, Enum1::two), "{\"b\": \"Two (2)\", \"A\": 0}");
-//    R_TEST(Struct1(0, Enum1::three), "{\"b\": \"three\"}");
-//    W_TEST("{\"A\":0,\"b\":\"one\"}", Struct1(0, Enum1::one));
-//    R_TEST(Struct2(0, 1), "{\"a\": 0, \"B\": 1}");
-//    W_TEST("{\"a\":0,\"B\":1}", Struct2(0, 1));
-//    R_TEST(Struct1(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
-//    R_TEST(Struct1(), "{\"b\": \"one\", \"A\": x}", cxon::read_error::integral_invalid, 18);
-//TEST_END()
-//
-//
-//struct Struct3 {
-//    int a;
-//    Struct3* b;
-//    Struct3(int a = 0, Struct3* b = nullptr) : a(a), b(b) {}
-//    bool operator ==(const Struct3& t) const { return a == t.a && ((!b && !t.b) || (b && t.b && *b == *t.b)); }
-//};
-//
-//CXON_STRUCT(Struct3,
-//    CXON_STRUCT_FIELD_ASIS(a),
-//    CXON_STRUCT_FIELD_ASIS(b)
-//)
-//
-//STRUTL_TO_STRING_SIMPLE(Struct3);
-//
-//TEST_BEG(cxon::CXON<>)
-//    R_TEST(Struct3(1, new Struct3(2, nullptr)), "{a: 1, b: {a: 2}}");
-//    R_TEST(Struct3(1, nullptr), "{a: 1, b: null}");
-//    W_TEST("{a:1,b:{a:2,b:null}}", Struct3(1, new Struct3(2, nullptr)));
-//    R_TEST(Struct3(), "{a: 1, b: nil}", cxon::read_error::unexpected, 10);
-//    R_TEST(Struct3(), "{a: 1, b: {a: x}}", cxon::read_error::integral_invalid, 14);
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    R_TEST(Struct3(1, new Struct3(2, nullptr)), "{\"a\": 1, \"b\": {\"a\": 2}}");
-//    R_TEST(Struct3(1, nullptr), "{\"a\": 1, \"b\": null}");
-//    W_TEST("{\"a\":1,\"b\":{\"a\":2,\"b\":null}}", Struct3(1, new Struct3(2, nullptr)));
-//TEST_END()
-//
-//
-//struct Struct4 {
-//    Struct4(int a = 0) : a(a) {}
-//    bool operator ==(const Struct4& t) const { return a == t.a; }
-//
-//    template <typename X, typename II>
-//        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
-//            return cxon::read_value<X>(t.a, b, e, ctx);
-//        }
-//    template <typename X, typename II>
-//        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
-//            return cxon::read_value<X>(t.a, b, e, ctx);
-//        }
-//    template <typename X, typename OI>
-//        static bool write_value(OI& o, const Struct4& t, cxon::wctx<X>& ctx) {
-//            return cxon::write_value<X>(o, t.a, ctx);
-//        }
-//
-//private:
-//    int a;
-//};
-//
-//STRUTL_TO_STRING_SIMPLE(Struct4);
-//
-//TEST_BEG(cxon::CXON<>) // static method
-//    R_TEST(Struct4(1), "1");
-//    W_TEST("3", Struct4(3));
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    R_TEST(Struct4(1), "1");
-//    W_TEST("3", Struct4(3));
-//TEST_END()
-//
-//
-//struct Struct5 {
-//    Struct5(int a = 0) : a(a) {}
-//    bool operator ==(const Struct5& t) const { return a == t.a; }
-//
-//    template <typename X, typename II>
-//        bool read_value(II& b, II e, cxon::rctx<X>& ctx) {
-//            return cxon::read_value<X>(a, b, e, ctx);
-//        }
-//    template <typename X, typename OI>
-//        auto write_value(OI& o, typename cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::CXON, bool> {
-//            return cxon::write_value<X>(o, a, ctx);
-//        }
-//    template <typename X, typename OI>
-//        auto write_value(OI& o, cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
-//            return cxon::write_value<X>(o, a, ctx);
-//        }
-//
-//private:
-//    int a;
-//};
-//
-//STRUTL_TO_STRING_SIMPLE(Struct5);
-//
-//TEST_BEG(cxon::CXON<>) // method
-//    R_TEST(Struct5(1), "1");
-//    W_TEST("3", Struct5(3));
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    R_TEST(Struct5(1), "1");
-//    W_TEST("3", Struct5(3));
-//TEST_END()
-//
-//
-//struct Struct6 {
-//    int a;
-//    Struct6(int a = 0) : a(a) {}
-//    bool operator ==(const Struct6& t) const { return a == t.a; }
-//};
-//
-//namespace cxon {
-//    template <typename X, typename II>
-//        inline  enable_for_t<X, CXON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
-//            return read_value<X>(t.a, b, e, ctx);
-//        }
-//    template <typename X, typename II>
-//        inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
-//            return read_value<X>(t.a, b, e, ctx);
-//        }
-//    template <typename X, typename OI>
-//        inline bool write_value(OI& o, const Struct6& t, wctx<X>& ctx) {
-//            return write_value<X>(o, t.a, ctx);
-//        }
-//}
-//
-//STRUTL_TO_STRING_SIMPLE(Struct6);
-//
-//TEST_BEG(cxon::CXON<>) // function
-//    R_TEST(Struct6(1), "1");
-//    W_TEST("3", Struct6(3));
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    R_TEST(Struct6(1), "1");
-//    W_TEST("3", Struct6(3));
-//TEST_END()
-//
-//
-//struct Struct7 {
-//    Struct7(int a = 0, int b = 0) : a(a), b(b) {}
-//    bool operator ==(const Struct7& t) const { return a == t.a && b == t.b; }
-//
-//    CXON_STRUCT_MEMBER(Struct7,
-//        CXON_STRUCT_FIELD_ASIS(a),
-//        CXON_STRUCT_FIELD_ASIS(b)
-//    )
-//
-//private:
-//    int a;
-//    int b;
-//};
-//
-//STRUTL_TO_STRING_SIMPLE(Struct7);
-//
-//TEST_BEG(cxon::CXON<>) // macros inside
-//    R_TEST(Struct7(1, 2), "{a: 1, b: 2}");
-//    R_TEST(Struct7(3, 0), "{a: 3}");
-//    R_TEST(Struct7(0, 6), "{b: 6}");
-//    W_TEST("{a:9,b:10}", Struct7(9, 10));
-//    R_TEST(Struct7(), "{x: 0}", cxon::read_error::unexpected, 1);
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>) // macros inside
-//    R_TEST(Struct7(1, 2), "{\"a\": 1, \"b\": 2}");
-//    R_TEST(Struct7(3, 0), "{\"a\": 3}");
-//    R_TEST(Struct7(0, 6), "{\"b\": 6}");
-//    W_TEST("{\"a\":9,\"b\":10}", Struct7(9, 10));
-//    R_TEST(Struct7(), "{\"x\": 0}", cxon::read_error::unexpected, 1);
-//TEST_END()
-//
-//
-//struct Struct8 {
-//    Struct8(int a = 0, int b = 0) : a(a), b(b) {}
-//    bool operator ==(const Struct8& t) const { return a == t.a && b == t.b; }
-//
-//    template <typename X, typename II>
-//        static bool read_value(Struct8& t, II& i, II e, cxon::rctx<X>& ctx) {
-//            using namespace cxon::structs;
-//            static constexpr auto f = make_fields(
-//                make_field("a", &Struct8::a),
-//                make_field("b", &Struct8::b)
-//            );
-//            return read_fields<X>(t, f, i, e, ctx);
-//        }
-//    template <typename X, typename OI>
-//        static bool write_value(OI& o, const Struct8& t, cxon::wctx<X>& ctx) {
-//            using namespace cxon::structs;
-//            static constexpr auto f = make_fields(
-//                make_field("a", &Struct8::a),
-//                make_field("b", &Struct8::b)
-//            );
-//            return write_fields<X>(o, t, f, ctx);
-//        }
-//
-//private:
-//    int a;
-//    int b;
-//};
-//
-//STRUTL_TO_STRING_SIMPLE(Struct8);
-//
-//TEST_BEG(cxon::CXON<>)
-//    R_TEST(Struct8(1, 2), "{a: 1, \"b\": 2}");
-//    W_TEST("{a:3,b:4}", Struct8(3, 4));
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>)
-//    R_TEST(Struct8(1, 2), "{\"a\": 1, \"b\": 2}");
-//    W_TEST("{\"a\":3,\"b\":4}", Struct8(3, 4));
-//TEST_END()
-//
-//
-//struct Struct9 {
-//    static int a;
-//    static int const b;
-//
-//    bool operator ==(const Struct9&) const { return true; }
-//
-//    CXON_STRUCT_READ_MEMBER(Struct9,
-//        CXON_STRUCT_FIELD_ASIS(a)
-//    )
-//    CXON_STRUCT_WRITE_MEMBER(Struct9,
-//        CXON_STRUCT_FIELD_ASIS(a),
-//        CXON_STRUCT_FIELD_ASIS(b)
-//    )
-//};
-//int Struct9::a = 0;
-//int const Struct9::b = 3;
-//
-//STRUTL_TO_STRING_SIMPLE(Struct9);
-//
-//TEST_BEG(cxon::CXON<>) // static field
-//    R_TEST(Struct9(), "{}");
-//    W_TEST("{a:0,b:3}", Struct9());
-//    R_TEST(Struct9(), "{a: 1}");
-//    W_TEST("{a:1,b:3}", Struct9());
-//    R_TEST(Struct9(), "{}");
-//    W_TEST("{a:1,b:3}", Struct9());
-//    R_TEST(Struct9(), "{a: 3}");
-//    W_TEST("{a:3,b:3}", Struct9());
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>) // static field
-//    R_TEST(Struct9(), "{\"a\":0}");
-//    W_TEST("{\"a\":0,\"b\":3}", Struct9());
-//    R_TEST(Struct9(), "{\"a\": 1}");
-//    W_TEST("{\"a\":1,\"b\":3}", Struct9());
-//    R_TEST(Struct9(), "{}");
-//    W_TEST("{\"a\":1,\"b\":3}", Struct9());
-//    R_TEST(Struct9(), "{\"a\": 3}");
-//    W_TEST("{\"a\":3,\"b\":3}", Struct9());
-//TEST_END()
-//
-//
-//struct Struct10 {
-//    int a;
-//    Struct10(int a = 0) : a(a) {}
-//    bool operator ==(const Struct10& t) const { return a == t.a; }
-//};
-//
-//CXON_STRUCT_READ(Struct10,
-//    CXON_STRUCT_FIELD_ASIS(a),
-//    CXON_STRUCT_FIELD_SKIP("skip1"),
-//    CXON_STRUCT_FIELD_SKIP("skip2"),
-//    CXON_STRUCT_FIELD_SKIP("skip3"),
-//    CXON_STRUCT_FIELD_SKIP("skip4"),
-//    CXON_STRUCT_FIELD_SKIP("skip5"),
-//    CXON_STRUCT_FIELD_SKIP("skip6")
-//)
-//CXON_STRUCT_WRITE(Struct10,
-//    CXON_STRUCT_FIELD_ASIS(a)
-//)
-//
-//STRUTL_TO_STRING_SIMPLE(Struct10);
-//
-//TEST_BEG(cxon::CXON<>) // skip field
-//    R_TEST(Struct10(1), "{skip1: true, a: 1}");
-//    R_TEST(Struct10(1), "{skip2: 1, a: 1}");
-//    R_TEST(Struct10(1), "{skip3: \"2\", a: 1}");
-//    R_TEST(Struct10(1), "{skip4: {3, 4}, a: 1}");
-//    R_TEST(Struct10(1), "{skip6: {\"}\": 5}, a: 1}");
-//    W_TEST("{a:1}", Struct10(1));
-//TEST_END()
-//
-//TEST_BEG(cxon::JSON<>) // skip field
-//    R_TEST(Struct10(1), "{\"skip1\": true, \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip2\": 1, \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip3\": \"2\", \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip4\": [3, 4], \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip5\": {5, 6}, \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip6\": {\"}\": 7}, \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip6\": {\"]\": 8}, \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip6\": [\"]\", 9], \"a\": 1}");
-//    R_TEST(Struct10(1), "{\"skip6\": [\"}\", 10], \"a\": 1}");
-//    W_TEST("{\"a\":1}", Struct10(1));
-//TEST_END()
+enum Enum1 { one, two, three, four };
+
+CXON_ENUM(Enum1,
+    CXON_ENUM_VALUE_ASIS(one),
+    CXON_ENUM_VALUE_NAME("Two (2)", two),
+    CXON_ENUM_VALUE_ASIS(three)
+)
+STRUTL_TO_STRING_SIMPLE(Enum1);
+
+TEST_BEG(cxon::CXON<>) // enum
+    R_TEST(Enum1::one, "one");
+    W_TEST("one", Enum1::one);
+    R_TEST(Enum1::two, "Two (2)");
+    W_TEST("Two (2)", Enum1::two);
+    R_TEST(Enum1::one, "", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "o", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{", cxon::read_error::unexpected, 1);
+    R_TEST(Enum1::one, "{}", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{{}}", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{\"}", cxon::read_error::unexpected, 3);
+    R_TEST(Enum1::one, "{\"\"}", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{\"\\x\"}", cxon::read_error::unexpected, 0);
+    // coverage
+#   ifdef NDEBUG
+        W_TEST("", Enum1::four);
+#   endif
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    R_TEST(Enum1::one, QS("one"));
+    W_TEST(QS("one"), Enum1::one);
+    R_TEST(Enum1::two, QS("Two (2)"));
+    W_TEST(QS("Two (2)"), Enum1::two);
+    R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 0);
+    // coverage
+#   ifdef NDEBUG
+        W_TEST("", Enum1::four);
+#   endif
+TEST_END()
+
+
+struct Struct1 {
+    int a;
+    Enum1 b;
+    int c;
+    Struct1(int a = 0, Enum1 b = Enum1::one, int c = 0) : a(a), b(b), c(c) {}
+    bool operator ==(const Struct1& t) const { return a == t.a && b == t.b && c == t.c; }
+};
+
+struct Struct2 {
+    int a;
+    int b;
+    Struct2(int a = 0, int b = 0) : a(a), b(b) {}
+    bool operator ==(const Struct2& t) const { return a == t.a && b == t.b; }
+};
+
+CXON_STRUCT_READ(Struct1,
+    CXON_STRUCT_FIELD_NAME("A", a),
+    CXON_STRUCT_FIELD_ASIS(b)
+)
+CXON_STRUCT_WRITE(Struct1,
+    CXON_STRUCT_FIELD_NAME("A", a),
+    CXON_STRUCT_FIELD_ASIS(b)
+)
+
+CXON_STRUCT(Struct2,
+    CXON_STRUCT_FIELD_ASIS(a),
+    CXON_STRUCT_FIELD_NAME("B", b)
+)
+
+STRUTL_TO_STRING_SIMPLE(Struct1);
+STRUTL_TO_STRING_SIMPLE(Struct2);
+
+TEST_BEG(cxon::CXON<>) // struct macros
+    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: one}");
+    R_TEST(Struct1(0, Enum1::two), "{b: Two (2), A: 0}");
+    R_TEST(Struct1(0, Enum1::three), "{b: three}");
+    W_TEST("{A:0,b:one}", Struct1(0, Enum1::one));
+    R_TEST(Struct2(0, 1), "{a: 0, B: 1}");
+    W_TEST("{a:0,B:1}", Struct2(0, 1));
+    R_TEST(Struct2(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: eno}", cxon::read_error::unexpected, 10);
+    R_TEST(Struct1(0, Enum1::one), "{A: 0, x: eno}", cxon::read_error::unexpected, 7);
+    R_TEST(Struct2(), "", cxon::read_error::unexpected, 0);
+    R_TEST(Struct2(), "}", cxon::read_error::unexpected, 0);
+    R_TEST(Struct2(), "{", cxon::read_error::unexpected, 1);
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"b\": \"one\"}");
+    R_TEST(Struct1(0, Enum1::two), "{\"b\": \"Two (2)\", \"A\": 0}");
+    R_TEST(Struct1(0, Enum1::three), "{\"b\": \"three\"}");
+    W_TEST("{\"A\":0,\"b\":\"one\"}", Struct1(0, Enum1::one));
+    R_TEST(Struct2(0, 1), "{\"a\": 0, \"B\": 1}");
+    R_TEST(Struct2(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
+    W_TEST("{\"a\":0,\"B\":1}", Struct2(0, 1));
+    R_TEST(Struct1(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct1(), "{\"b\": \"one\", \"A\": x}", cxon::read_error::integral_invalid, 18);
+TEST_END()
+
+
+struct Struct3 {
+    int a;
+    Struct3* b;
+    Struct3(int a = 0, Struct3* b = nullptr) : a(a), b(b) {}
+    bool operator ==(const Struct3& t) const { return a == t.a && ((!b && !t.b) || (b && t.b && *b == *t.b)); }
+};
+
+CXON_STRUCT(Struct3,
+    CXON_STRUCT_FIELD_ASIS(a),
+    CXON_STRUCT_FIELD_ASIS(b)
+)
+
+STRUTL_TO_STRING_SIMPLE(Struct3);
+
+TEST_BEG(cxon::CXON<>)
+    R_TEST(Struct3(1, new Struct3(2, nullptr)), "{a: 1, b: {a: 2}}");
+    R_TEST(Struct3(1, nullptr), "{a: 1, b: null}");
+    W_TEST("{a:1,b:{a:2,b:null}}", Struct3(1, new Struct3(2, nullptr)));
+    R_TEST(Struct3(), "{a: 1, x: nil}", cxon::read_error::unexpected, 7);
+    R_TEST(Struct3(), "{a: 1, b: nil}", cxon::read_error::unexpected, 10);
+    R_TEST(Struct3(), "{a: 1, b: {a: x}}", cxon::read_error::integral_invalid, 14);
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    R_TEST(Struct3(1, new Struct3(2, nullptr)), "{\"a\": 1, \"b\": {\"a\": 2}}");
+    R_TEST(Struct3(1, nullptr), "{\"a\": 1, \"b\": null}");
+    W_TEST("{\"a\":1,\"b\":{\"a\":2,\"b\":null}}", Struct3(1, new Struct3(2, nullptr)));
+    R_TEST(Struct3(), "{\"a\": 1, \"x\": nil}", cxon::read_error::unexpected, 9);
+    R_TEST(Struct3(), "{\"a\": 1, \"b\": nil}", cxon::read_error::unexpected, 14);
+    R_TEST(Struct3(), "{\"a\": 1, \"b\": {\"a\": x}}", cxon::read_error::integral_invalid, 20);
+TEST_END()
+
+
+struct Struct4 {
+    Struct4(int a = 0) : a(a) {}
+    bool operator ==(const Struct4& t) const { return a == t.a; }
+
+    template <typename X, typename II>
+        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
+            return cxon::read_value<X>(t.a, b, e, ctx);
+        }
+    template <typename X, typename II>
+        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
+            return cxon::read_value<X>(t.a, b, e, ctx);
+        }
+    template <typename X, typename OI>
+        static bool write_value(OI& o, const Struct4& t, cxon::wctx<X>& ctx) {
+            return cxon::write_value<X>(o, t.a, ctx);
+        }
+
+private:
+    int a;
+};
+
+STRUTL_TO_STRING_SIMPLE(Struct4);
+
+TEST_BEG(cxon::CXON<>) // static method
+    R_TEST(Struct4(1), "1");
+    W_TEST("3", Struct4(3));
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    R_TEST(Struct4(1), "1");
+    W_TEST("3", Struct4(3));
+TEST_END()
+
+
+struct Struct5 {
+    Struct5(int a = 0) : a(a) {}
+    bool operator ==(const Struct5& t) const { return a == t.a; }
+
+    template <typename X, typename II>
+        bool read_value(II& b, II e, cxon::rctx<X>& ctx) {
+            return cxon::read_value<X>(a, b, e, ctx);
+        }
+    template <typename X, typename OI>
+        auto write_value(OI& o, typename cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::CXON, bool> {
+            return cxon::write_value<X>(o, a, ctx);
+        }
+    template <typename X, typename OI>
+        auto write_value(OI& o, cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
+            return cxon::write_value<X>(o, a, ctx);
+        }
+
+private:
+    int a;
+};
+
+STRUTL_TO_STRING_SIMPLE(Struct5);
+
+TEST_BEG(cxon::CXON<>) // method
+    R_TEST(Struct5(1), "1");
+    W_TEST("3", Struct5(3));
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    R_TEST(Struct5(1), "1");
+    W_TEST("3", Struct5(3));
+TEST_END()
+
+
+struct Struct6 {
+    int a;
+    Struct6(int a = 0) : a(a) {}
+    bool operator ==(const Struct6& t) const { return a == t.a; }
+};
+
+namespace cxon {
+    template <typename X, typename II>
+        inline  enable_for_t<X, CXON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
+            return read_value<X>(t.a, b, e, ctx);
+        }
+    template <typename X, typename II>
+        inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
+            return read_value<X>(t.a, b, e, ctx);
+        }
+    template <typename X, typename OI>
+        inline bool write_value(OI& o, const Struct6& t, wctx<X>& ctx) {
+            return write_value<X>(o, t.a, ctx);
+        }
+}
+
+STRUTL_TO_STRING_SIMPLE(Struct6);
+
+TEST_BEG(cxon::CXON<>) // function
+    R_TEST(Struct6(1), "1");
+    W_TEST("3", Struct6(3));
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    R_TEST(Struct6(1), "1");
+    W_TEST("3", Struct6(3));
+TEST_END()
+
+
+struct Struct7 {
+    Struct7(int a = 0, int b = 0) : a(a), b(b) {}
+    bool operator ==(const Struct7& t) const { return a == t.a && b == t.b; }
+
+    CXON_STRUCT_MEMBER(Struct7,
+        CXON_STRUCT_FIELD_ASIS(a),
+        CXON_STRUCT_FIELD_ASIS(b)
+    )
+
+private:
+    int a;
+    int b;
+};
+
+STRUTL_TO_STRING_SIMPLE(Struct7);
+
+TEST_BEG(cxon::CXON<>) // macros inside
+    R_TEST(Struct7(1, 2), "{a: 1, b: 2}");
+    R_TEST(Struct7(3, 0), "{a: 3}");
+    R_TEST(Struct7(0, 6), "{b: 6}");
+    W_TEST("{a:9,b:10}", Struct7(9, 10));
+    R_TEST(Struct7(), "{x: 0}", cxon::read_error::unexpected, 1);
+TEST_END()
+
+TEST_BEG(cxon::JSON<>) // macros inside
+    R_TEST(Struct7(1, 2), "{\"a\": 1, \"b\": 2}");
+    R_TEST(Struct7(3, 0), "{\"a\": 3}");
+    R_TEST(Struct7(0, 6), "{\"b\": 6}");
+    W_TEST("{\"a\":9,\"b\":10}", Struct7(9, 10));
+    R_TEST(Struct7(), "{\"x\": 0}", cxon::read_error::unexpected, 1);
+TEST_END()
+
+
+struct Struct8 {
+    Struct8(int a = 0, int b = 0) : a(a), b(b) {}
+    bool operator ==(const Struct8& t) const { return a == t.a && b == t.b; }
+
+    template <typename X, typename II>
+        static bool read_value(Struct8& t, II& i, II e, cxon::rctx<X>& ctx) {
+            using namespace cxon::structs;
+            static constexpr auto f = make_fields(
+                make_field("a", &Struct8::a),
+                make_field("b", &Struct8::b)
+            );
+            return read_fields<X>(t, f, i, e, ctx);
+        }
+    template <typename X, typename OI>
+        static bool write_value(OI& o, const Struct8& t, cxon::wctx<X>& ctx) {
+            using namespace cxon::structs;
+            static constexpr auto f = make_fields(
+                make_field("a", &Struct8::a),
+                make_field("b", &Struct8::b)
+            );
+            return write_fields<X>(o, t, f, ctx);
+        }
+
+private:
+    int a;
+    int b;
+};
+
+STRUTL_TO_STRING_SIMPLE(Struct8);
+
+TEST_BEG(cxon::CXON<>)
+    R_TEST(Struct8(1, 2), "{a: 1, \"b\": 2}");
+    R_TEST(Struct8(1, 2), "{a: 1, x: 2}", cxon::read_error::unexpected, 7);
+    W_TEST("{a:3,b:4}", Struct8(3, 4));
+TEST_END()
+
+TEST_BEG(cxon::JSON<>)
+    R_TEST(Struct8(1, 2), "{\"a\": 1, \"b\": 2}");
+    R_TEST(Struct8(1, 2), "{\"a\": 1, \"x\": 2}", cxon::read_error::unexpected, 9);
+    W_TEST("{\"a\":3,\"b\":4}", Struct8(3, 4));
+TEST_END()
+
+
+struct Struct9 {
+    static int a;
+    static int const b;
+
+    bool operator ==(const Struct9&) const { return true; }
+
+    CXON_STRUCT_READ_MEMBER(Struct9,
+        CXON_STRUCT_FIELD_ASIS(a)
+    )
+    CXON_STRUCT_WRITE_MEMBER(Struct9,
+        CXON_STRUCT_FIELD_ASIS(a),
+        CXON_STRUCT_FIELD_ASIS(b)
+    )
+};
+int Struct9::a = 0;
+int const Struct9::b = 3;
+
+STRUTL_TO_STRING_SIMPLE(Struct9);
+
+TEST_BEG(cxon::CXON<>) // static field
+    R_TEST(Struct9(), "{}");
+    W_TEST("{a:0,b:3}", Struct9());
+    R_TEST(Struct9(), "{a: 1}");
+    W_TEST("{a:1,b:3}", Struct9());
+    R_TEST(Struct9(), "{}");
+    W_TEST("{a:1,b:3}", Struct9());
+    R_TEST(Struct9(), "{a: 3}");
+    W_TEST("{a:3,b:3}", Struct9());
+    R_TEST(Struct9(), "{a: 1, x: 3}", cxon::read_error::unexpected, 7);
+TEST_END()
+
+TEST_BEG(cxon::JSON<>) // static field
+    R_TEST(Struct9(), "{\"a\":0}");
+    W_TEST("{\"a\":0,\"b\":3}", Struct9());
+    R_TEST(Struct9(), "{\"a\": 1}");
+    W_TEST("{\"a\":1,\"b\":3}", Struct9());
+    R_TEST(Struct9(), "{}");
+    W_TEST("{\"a\":1,\"b\":3}", Struct9());
+    R_TEST(Struct9(), "{\"a\": 3}");
+    W_TEST("{\"a\":3,\"b\":3}", Struct9());
+    R_TEST(Struct9(), "{\"a\": 1, \"x\": 3}", cxon::read_error::unexpected, 9);
+TEST_END()
+
+
+struct Struct10 {
+    int a;
+    int b;
+    Struct10(int a = 0, int b = 0) : a(a), b(b) {}
+    bool operator ==(const Struct10& t) const { return a == t.a && b == t.b; }
+};
+
+CXON_STRUCT_READ(Struct10,
+    CXON_STRUCT_FIELD_ASIS(a),
+    CXON_STRUCT_FIELD_SKIP("skip1"),
+    CXON_STRUCT_FIELD_SKIP("skip2"),
+    CXON_STRUCT_FIELD_SKIP("skip3"),
+    CXON_STRUCT_FIELD_SKIP("skip4"),
+    CXON_STRUCT_FIELD_SKIP("skip5"),
+    CXON_STRUCT_FIELD_SKIP("skip6")
+)
+CXON_STRUCT_WRITE(Struct10,
+    CXON_STRUCT_FIELD_ASIS(a),
+    CXON_STRUCT_FIELD_NAME("* \"':*", b)
+)
+
+STRUTL_TO_STRING_SIMPLE(Struct10);
+
+TEST_BEG(cxon::CXON<>) // skip field
+    R_TEST(Struct10(1), "{skip1: true, a: 1}");
+    R_TEST(Struct10(1), "{skip2: 1, a: 1}");
+    R_TEST(Struct10(1), "{skip3: \"2\", a: 1}");
+    R_TEST(Struct10(1), "{skip3: \"\\x\", a: 1}");
+    R_TEST(Struct10(1), "{skip4: {3, 4}, a: 1}");
+    R_TEST(Struct10(1), "{skip4: {{}}, a: 1}");
+    R_TEST(Struct10(1), "{skip6: {\"}\": 5}, a: 1}");
+    R_TEST(Struct10(), "{x: 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct10(), "{x\\ x: 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct10(), "{skip6: {", cxon::read_error::unexpected, 9);
+    R_TEST(Struct10(), "{skip6: \"", cxon::read_error::unexpected, 9);
+    W_TEST("{a:1,*\\ \"'\\:*:2}", Struct10(1, 2));
+TEST_END()
+
+TEST_BEG(cxon::JSON<>) // skip field
+    R_TEST(Struct10(1), "{\"skip1\": true, \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip2\": 1, \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip3\": \"2\", \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip3\": \"\\x\", \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip4\": [3, 4], \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip4\": [[]], \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip5\": {5, 6}, \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip5\": {{}}, \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip6\": {\"}\": 7}, \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip6\": {\"]\": 8}, \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip6\": [\"]\", 9], \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip6\": [\"}\", 10], \"a\": 1}");
+    R_TEST(Struct10(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct10(), "{\"skip1\": {", cxon::read_error::unexpected, 11);
+    R_TEST(Struct10(), "{\"skip1\": [", cxon::read_error::unexpected, 11);
+    R_TEST(Struct10(), "{\"skip1\": \"", cxon::read_error::unexpected, 11);
+    W_TEST("{\"a\":1,\"* \\\"':*\":2}", Struct10(1, 2));
+TEST_END()
+
 
 TEST_BEG(cxon::CXON<>) // interface/read
     // iterator
@@ -2562,6 +2627,11 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
             ec = read_error::surrogate_invalid;
                 CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
+            // coverage
+#           ifdef NDEBUG
+                ec = read_error(255);
+                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
+#           endif
     }
     {   std::error_condition ec;
             ec = write_error::ok;
@@ -2570,6 +2640,11 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "no error", "check failed");
             ec = write_error::output_failure;
                 CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
+            // coverage
+#           ifdef NDEBUG
+                ec = write_error(255);
+                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
+#           endif
     }
 TEST_END()
 
