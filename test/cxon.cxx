@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: MIT
 
 #include "../cxon.hxx"
-#include "strutl.hxx"
 
 #include <cstdio>
 
@@ -48,23 +47,25 @@ namespace test {
         inline std::string to_string(const T& t);
 
     template <typename X, typename T>
-        static bool verify_read(const T& ref, const char* sref, const std::string& sbj);
+        static bool verify_read(const T& ref, const std::string& sbj);
     template <typename X, typename T>
-        static bool verify_read(const T& ref, const char* sref, const std::string& sbj, cxon::read_error err, int pos = -1);
+        static bool verify_read(const T& ref, const std::string& sbj, cxon::read_error err, int pos = -1);
 
     template <typename X, typename T>
-        static bool verify_write(const std::string& ref, const T& sbj, const char* sref);
+        static bool verify_write(const std::string& ref, const T& sbj);
+    template <typename X, typename T>
+        static bool verify_write(const std::string& ref, const T& sbj, cxon::write_error err);
 
 }   // test
 
 #define R_TEST(ref, ...)\
-    if (++TEST_A, !test::verify_read<XXON>(ref, #ref, __VA_ARGS__)) {\
-        ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);\
+    if (++TEST_A, !test::verify_read<XXON>(ref, __VA_ARGS__)) {\
+        ++TEST_F, fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr);\
         CXON_ASSERT(false, "check failed");\
     }
-#define W_TEST(ref, sbj)\
-    if (++TEST_A, !test::verify_write<XXON>(ref, sbj, #ref)) {\
-        ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);\
+#define W_TEST(ref, ...)\
+    if (++TEST_A, !test::verify_write<XXON>(ref, __VA_ARGS__)) {\
+        ++TEST_F, fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr);\
         CXON_ASSERT(false, "check failed");\
     }
 
@@ -118,6 +119,7 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("\x8f"), '\x8f');
         R_TEST('\xff', QS("\\xff")); // invalid utf-8
         W_TEST(QS("\xff"), '\xff'); // invalid utf-8
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
         R_TEST('\0', QS("\\u1111"), cxon::read_error::character_invalid, 1);
     // char16_t
         R_TEST(u'a', QS("a"));
@@ -147,6 +149,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(L'a', QS("a"));
         W_TEST(QS("a"), L'a');
     // signed char
+        R_TEST((signed char)42, "0b101010");
+        R_TEST((signed char)052, "052");
+        R_TEST((signed char)0x2A, "0x2A");
         R_TEST(tmin<signed char>(), smin<signed char>());
         W_TEST(smin<signed char>(), tmin<signed char>());
         R_TEST((signed char)0, "0");
@@ -156,6 +161,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmin<signed char>(), omin<signed char>(), cxon::read_error::integral_invalid, 0);
         R_TEST(tmax<signed char>(), omax<signed char>(), cxon::read_error::integral_invalid, 0);
     // unsigned char
+        R_TEST((unsigned char)42, "0b101010");
+        R_TEST((unsigned char)052, "052");
+        R_TEST((unsigned char)0x2A, "0x2A");
         R_TEST(tmin<unsigned char>(), smin<unsigned char>());
         W_TEST(smin<unsigned char>(), tmin<unsigned char>());
         R_TEST((unsigned char)0x7F, "0x7F");
@@ -165,6 +173,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmax<unsigned char>(), omax<unsigned char>(), cxon::read_error::integral_invalid, 0);
         R_TEST(tmax<unsigned char>(), omax<unsigned char>(), cxon::read_error::integral_invalid, 0);
     // short
+        R_TEST((short)42, "0b101010");
+        R_TEST((short)052, "052");
+        R_TEST((short)0x2A, "0x2A");
         R_TEST(tmin<short>(), smin<short>());
         W_TEST(smin<short>(), tmin<short>());
         R_TEST((short)0, "0");
@@ -174,6 +185,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmin<short>(), omin<short>(), cxon::read_error::integral_invalid, 0);
         R_TEST(tmax<short>(), omax<short>(), cxon::read_error::integral_invalid, 0);
     // unsigned short
+        R_TEST((unsigned short)42, "0b101010");
+        R_TEST((unsigned short)052, "052");
+        R_TEST((unsigned short)0x2A, "0x2A");
         R_TEST(tmin<unsigned short>(), smin<unsigned short>());
         W_TEST(smin<unsigned short>(), tmin<unsigned short>());
         R_TEST((unsigned short)0xFF, "0xFF");
@@ -183,6 +197,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmax<unsigned short>(), omax<unsigned short>(), cxon::read_error::integral_invalid, 0);
         R_TEST(tmax<unsigned short>(), omax<unsigned short>(), cxon::read_error::integral_invalid, 0);
     // int
+        R_TEST((int)42, "0b101010");
+        R_TEST((int)052, "052");
+        R_TEST((int)0x2A, "0x2A");
         R_TEST(tmin<int>(), smin<int>());
         W_TEST(smin<int>(), tmin<int>());
         R_TEST((int)0, "0");
@@ -192,6 +209,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmin<int>(), omin<int>(), cxon::read_error::integral_invalid, 0);
         R_TEST(tmax<int>(), omax<int>(), cxon::read_error::integral_invalid, 0);
     // unsigned int
+        R_TEST((unsigned int)42, "0b101010");
+        R_TEST((unsigned int)052, "052");
+        R_TEST((unsigned int)0x2A, "0x2A");
         R_TEST(tmin<unsigned int>(), smin<unsigned int>());
         W_TEST(smin<unsigned int>(), tmin<unsigned int>());
         R_TEST((unsigned int)0xFFFF, "0xFFFF");
@@ -200,6 +220,9 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(smax<unsigned int>(), tmax<unsigned int>());
         R_TEST(tmax<unsigned int>(), omax<unsigned int>(), cxon::read_error::integral_invalid, 0);
     // long
+        R_TEST((long)42, "0b101010");
+        R_TEST((long)052, "052");
+        R_TEST((long)0x2A, "0x2A");
         R_TEST(tmin<long>(), smin<long>());
         W_TEST(smin<long>(), tmin<long>());
         R_TEST((long)0, "0");
@@ -209,6 +232,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmin<long>(), omin<long>(), cxon::read_error::integral_invalid, 0);
         R_TEST(tmax<long>(), omax<long>(), cxon::read_error::integral_invalid, 0);
     // unsigned long
+        R_TEST((unsigned long)42, "0b101010");
+        R_TEST((unsigned long)052, "052");
+        R_TEST((unsigned long)0x2A, "0x2A");
         R_TEST(tmin<unsigned long>(), smin<unsigned long>());
         W_TEST(smin<unsigned long>(), tmin<unsigned long>());
         R_TEST((unsigned long)0xFFFF, "0xFFFF");
@@ -217,6 +243,9 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(smax<unsigned long>(), tmax<unsigned long>());
         R_TEST(tmax<unsigned long>(), omax<unsigned long>(), cxon::read_error::integral_invalid, 0);
     // long long
+        R_TEST((long long)42, "0b101010");
+        R_TEST((long long)052, "052");
+        R_TEST((long long)0x2A, "0x2A");
         R_TEST(tmin<long long>(), smin<long long>());
         W_TEST(smin<long long>(), tmin<long long>());
         R_TEST((long long)0, "0");
@@ -226,6 +255,9 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmin<long long>(), omin<long long>(), cxon::read_error::integral_invalid, 0);
         R_TEST(tmax<long long>(), omax<long long>(), cxon::read_error::integral_invalid, 0);
     // unsigned long long
+        R_TEST((unsigned long long)42, "0b101010");
+        R_TEST((unsigned long long)052, "052");
+        R_TEST((unsigned long long)0x2A, "0x2A");
         R_TEST(tmin<unsigned long long>(), smin<unsigned long long>());
         W_TEST(smin<unsigned long long>(), tmin<unsigned long long>());
         R_TEST((unsigned long long)0xFFFFFFFF, "0xFFFFFFFF");
@@ -279,6 +311,7 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST("123", QS("123"));
         {   char a[] = {'1', '2', '3', '\0'};
             R_TEST(a, QS("123"));
+            R_TEST(a, QS("123\\0"));
             W_TEST(QS("123"), a);
         }
         {   char a[] = {'1', '2', '3', '\0', '4', '\0'};
@@ -374,6 +407,8 @@ TEST_BEG(cxon::CXON<>) // base
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
+        R_TEST(L"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\0004"));
             W_TEST(QS("123\\04"), a);
@@ -398,20 +433,23 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("test"), (const char*)"test");
         W_TEST("null", (const char*)nullptr);
         R_TEST((const char*)nullptr, "nil", cxon::read_error::unexpected, 1);
-        R_TEST((const char*)nullptr, "\"asd", cxon::read_error::unexpected, 4);
+        R_TEST((const char*)nullptr, "\"nil", cxon::read_error::unexpected, 4);
     // const char16_t*
         R_TEST((const char16_t*)u"test", QS("test"));
         W_TEST(QS("test"), (const char16_t*)u"test");
+        R_TEST((const char16_t*)nullptr, "\"", cxon::read_error::unexpected, 1);
     // const char32_t*
         R_TEST((const char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (const char32_t*)U"test");
+        R_TEST((const char32_t*)nullptr, "\"", cxon::read_error::unexpected, 1);
     // const wchar_t*
         R_TEST((const wchar_t*)L"test", QS("test"));
         W_TEST(QS("test"), (const wchar_t*)L"test");
+        R_TEST((const wchar_t*)nullptr, "\"", cxon::read_error::unexpected, 1);
     // char*
         R_TEST((char*)"test", QS("test"));
-        R_TEST((char*)nullptr, "null");
         W_TEST(QS("test"), (char*)"test");
+        R_TEST((char*)nullptr, "null");
         W_TEST("null", (char*)nullptr);
     // char16_t*
         R_TEST((char16_t*)u"test", QS("test"));
@@ -430,13 +468,15 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(std::string(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
-    // std::basic_string<char16_t> / std::u32string
+    // std::basic_string<char16_t> / std::u16string
         R_TEST(std::u16string({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::u16string({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::u16string({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u16string({0x6D4B, 0x8BD5}));
         R_TEST(std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}));
+        R_TEST(std::u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), std::u16string(u"\xdbff\xdfff")); // surrogate
         R_TEST(std::u16string(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::u16string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::u16string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
@@ -455,6 +495,8 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
+        R_TEST(std::wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), std::wstring(L"\xdbff\xdfff")); // surrogate
         R_TEST(std::wstring(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::wstring(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::wstring(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
@@ -480,11 +522,13 @@ TEST_BEG(cxon::JSON<>) // base
         R_TEST('\'', QS("'"));
         W_TEST(QS("'"), '\'');
         R_TEST('\x7f', QS("\\u007f"));
-        W_TEST(QS("\x7f"), '\u007f');
+        W_TEST(QS("\x7f"), '\x7f');
         R_TEST('\x8f', QS("\\u008f"));
         W_TEST(QS("\x8f"), '\x8f');
         R_TEST('\xff', QS("\\u00ff")); // invalid utf-8
         W_TEST(QS("\xff"), '\xff'); // invalid utf-8
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST('\0', QS("\\z"), cxon::read_error::escape_invalid, 1);
         R_TEST('\0', QS("\\u1111"), cxon::read_error::character_invalid, 1);
     // char16_t
         R_TEST(u'a', QS("a"));
@@ -493,6 +537,7 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("\xCE\xB1"), u'\x3B1');
         R_TEST(u'\xFFFF', QS("\xEF\xBF\xBF"));
         W_TEST(QS("\xEF\xBF\xBF"), u'\xFFFF');
+        R_TEST(u'\0', QS("\xFF"), cxon::read_error::character_invalid, 1);
         R_TEST(u'\0', QS("\xF0\x90\x80\x80"), cxon::read_error::character_invalid, 1);
     // char32_t
         R_TEST(U'a', QS("a"));
@@ -506,10 +551,13 @@ TEST_BEG(cxon::JSON<>) // base
         R_TEST(U'\0', QS("\xE3"), cxon::read_error::character_invalid, 1);
         W_TEST(QS("\xE3\xA2\x9A"), U'\x389A');
         R_TEST(U'\x28440', QS("\xF0\xA8\x91\x80"));
+        R_TEST(U'\0', QS("\\udbff\\ue000"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(U'\0', QS("\\udbff\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
         R_TEST(U'\0', QS("\xF0\xA8\x91"), cxon::read_error::character_invalid, 1);
         R_TEST(U'\0', QS("\xF0\xA8"), cxon::read_error::character_invalid, 1);
         R_TEST(U'\0', QS("\xF0"), cxon::read_error::character_invalid, 1);
         W_TEST(QS("\xF0\xA8\x91\x80"), U'\x28440');
+        W_TEST(QS(""), U'\x200000');
     // wchar_t
         R_TEST(L'a', QS("a"));
         W_TEST(QS("a"), L'a');
@@ -646,6 +694,7 @@ TEST_BEG(cxon::JSON<>) // base
         R_TEST("123", QS("123"));
         {   char a[] = {'1', '2', '3', '\0'};
             R_TEST(a, QS("123"));
+            R_TEST(a, QS("123\\u0000"));
             W_TEST(QS("123"), a);
         }
         {   char a[] = {'1', '2', '3', '\0', '4', '\0'};
@@ -669,6 +718,8 @@ TEST_BEG(cxon::JSON<>) // base
         }
     // char16_t[]
         R_TEST(u"", QS(""));
+        R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
         R_TEST(u"\xD83C\xDF7A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
         R_TEST(u"\x2764\xD83C\xDF7Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
         R_TEST(u"\x2764x\xD83C\xDF7A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
@@ -741,6 +792,8 @@ TEST_BEG(cxon::JSON<>) // base
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
+        R_TEST(L"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\u00004"));
             W_TEST(QS("123\\u00004"), a);
@@ -765,16 +818,19 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("test"), (const char*)"test");
         W_TEST("null", (const char*)nullptr);
         R_TEST((const char*)nullptr, "nil", cxon::read_error::unexpected, 1);
-        R_TEST((const char*)nullptr, "\"asd", cxon::read_error::unexpected, 4);
+        R_TEST((const char*)nullptr, "\"nil", cxon::read_error::unexpected, 4);
     // const char16_t*
         R_TEST((const char16_t*)u"test", QS("test"));
         W_TEST(QS("test"), (const char16_t*)u"test");
+        R_TEST((const char16_t*)nullptr, "\"", cxon::read_error::unexpected, 1);
     // const char32_t*
         R_TEST((const char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (const char32_t*)U"test");
+        R_TEST((const char32_t*)nullptr, "\"", cxon::read_error::unexpected, 1);
     // const wchar_t*
         R_TEST((const wchar_t*)L"test", QS("test"));
         W_TEST(QS("test"), (const wchar_t*)L"test");
+        R_TEST((const wchar_t*)nullptr, "\"", cxon::read_error::unexpected, 1);
     // char*
         R_TEST((char*)"test", QS("test"));
         R_TEST((char*)nullptr, "null");
@@ -797,13 +853,15 @@ TEST_BEG(cxon::JSON<>) // base
         R_TEST(std::string(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
-    // std::basic_string<char16_t> / std::u32string
+    // std::basic_string<char16_t> / std::u16string
         R_TEST(std::u16string({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::u16string({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::u16string({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::u16string({0x6D4B, 0x8BD5}));
         R_TEST(std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), std::u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}));
+        R_TEST(std::u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), std::u16string(u"\xdbff\xdfff")); // surrogate
         R_TEST(std::u16string(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::u16string(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::u16string(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
@@ -822,6 +880,8 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
+        R_TEST(std::wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), std::wstring(L"\xdbff\xdfff")); // surrogate
         R_TEST(std::wstring(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::wstring(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::wstring(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
@@ -862,10 +922,10 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", bfp<float>(0x7fffffff));
         W_TEST( "nan", bfp<float>(0x7f80ffff));
         W_TEST( "nan", bfp<float>(0xffc00000));
-        W_TEST( "nan", 0.0 /  zero<float>());
-        W_TEST( "nan", 0.0 / -zero<float>());
-        W_TEST( "nan", 0.0 *  inf<float>());
-        W_TEST( "nan", 0.0 * -inf<float>());
+        W_TEST( "nan", float(0.0 /  zero<float>()));
+        W_TEST( "nan", float(0.0 / -zero<float>()));
+        W_TEST( "nan", float(0.0 *  inf<float>()));
+        W_TEST( "nan", float(0.0 * -inf<float>()));
         W_TEST( "nan", inf<float>() + -inf<float>());
     // double
         R_TEST( -inf<double>(), omin<double>());
@@ -907,14 +967,6 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", 0.0 *  inf<long double>());
         W_TEST( "nan", 0.0 * -inf<long double>());
         W_TEST( "nan", inf<long double>() + -inf<long double>());
-TEST_END()
-
-TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // special numbers
-    using namespace special;
-    R_TEST(-inf<double>(), "-inf");
-    R_TEST( inf<double>(), "inf");
-    R_TEST( inf<double>(), "+inf", cxon::read_error::floating_point_invalid, 0);
-    R_TEST( nan<double>(), "nan");
 TEST_END()
 
 TEST_BEG(cxon::JSON<>) // special numbers
@@ -981,12 +1033,39 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), inf<long double>() + -inf<long double>());
 TEST_END()
 
+TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // special numbers
+    using namespace special;
+    R_TEST(0.0, ".0");
+    W_TEST("0", 0.0);
+    R_TEST(10.0, "10");
+    R_TEST(10.0, "10.0");
+    R_TEST(10.0e+10, "10.0e+10");
+    R_TEST(-inf<double>(), "-inf");
+    W_TEST("-inf", -inf<double>());
+    R_TEST(inf<double>(), "inf");
+    W_TEST("inf", inf<double>());
+    R_TEST(inf<double>(), "+inf", cxon::read_error::floating_point_invalid, 0);
+    R_TEST(nan<double>(), "nan");
+    W_TEST("nan", nan<double>());
+TEST_END()
+
 TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // special numbers
     using namespace special;
+    R_TEST(0.0, "0");
+    R_TEST(0.0, "0.0");
+    W_TEST("0", 0.0);
+    R_TEST(10.0, "10");
+    R_TEST(10.0, "10.0");
+    R_TEST(10.0e+10, "10.0e+10");
     R_TEST(-inf<double>(), QS("-inf"));
-    R_TEST( inf<double>(), QS("inf"));
-    R_TEST( inf<double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 1);
-    R_TEST( nan<double>(), QS("nan"));
+    W_TEST(QS("-inf"), -inf<double>());
+    R_TEST(inf<double>(), QS("inf"));
+    W_TEST(QS("inf"), inf<double>());
+    R_TEST(inf<double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 1);
+    R_TEST(nan<double>(), QS("nan"));
+    W_TEST(QS("nan"), nan<double>());
+    R_TEST(nan<double>(), QS("-nan"));
+    W_TEST(QS("nan"), -nan<double>());
 TEST_END()
 
 
@@ -1023,22 +1102,30 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((signed)0, "0b0");
         R_TEST((signed)2, "0b10");
         R_TEST((signed)-2, "-0b10");
+        R_TEST((unsigned)0, "0b0");
+        R_TEST((unsigned)2, "0b10");
         // oct
         R_TEST((signed)0, "0");
         R_TEST((signed)8, "010");
         R_TEST((signed)-8, "-010");
         R_TEST((signed)7, "07");
         R_TEST((signed)-7, "-07");
+        R_TEST((unsigned)0, "0");
+        R_TEST((unsigned)8, "010");
         // dec
         R_TEST((signed)0, "0");
         R_TEST((signed)10, "10");
         R_TEST((signed)-10, "-10");
+        R_TEST((unsigned)0, "0");
+        R_TEST((unsigned)10, "10");
         // hex
         R_TEST((signed)0, "0x0");
         R_TEST((signed)16, "0x10");
         R_TEST((signed)-16, "-0x10");
         R_TEST((signed)255, "0xff");
         R_TEST((signed)-255, "-0xff");
+        R_TEST((unsigned)0, "0x0");
+        R_TEST((unsigned)16, "0x10");
         // invalid
         R_TEST((signed)0, "", cxon::read_error::unexpected, 0);
         R_TEST((signed)0, "+0", cxon::read_error::integral_invalid, 0);
@@ -1076,6 +1163,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((double)0, "0e", cxon::read_error::ok, 1);
         R_TEST((double)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::floating_point_invalid, XXON::buffer::max_number);
     // integral
+        W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
         R_TEST((signed)10, "10");
         R_TEST((signed)-10, "-10");
@@ -1095,7 +1183,9 @@ TEST_END()
 
 TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
     // floating point
+        W_TEST("0", (double)0);
         R_TEST((double)0, "0");
+        R_TEST((double)10, "10");
         R_TEST((double)0, "-0");
         R_TEST((double)0, "0.0");
         R_TEST((double)1000, "1e3");
@@ -1117,7 +1207,11 @@ TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
         R_TEST( inf<double>(), QS("inf"));
         R_TEST( inf<double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
         R_TEST( nan<double>(), QS("nan"));
+        R_TEST( nan<double>(), QS("-nan"));
+        W_TEST(QS("inf"), inf<double>());
+        W_TEST(QS("nan"), nan<double>());
     // integral
+        W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
         R_TEST((signed)10, "10");
         R_TEST((signed)-10, "-10");
@@ -1142,34 +1236,46 @@ namespace string_quote {
             static constexpr char end = '\'';
         };
     };
-    struct brace_traits : cxon::format_traits {
-        struct string {
-            static constexpr char beg = '{';
-            static constexpr char end = '}';
-        };
-    };
 }
 
 TEST_BEG(cxon::CXON<string_quote::single_traits>) // cxon string quoting
-    R_TEST(std::string("test"), "'test'");
-    W_TEST("'test'", std::string("test"));
-    R_TEST(std::string("'test'"), "'\\\'test\\\''");
-    W_TEST("'\\\'test\\\''", std::string("'test'"));
-    R_TEST(std::string("\"test\""), "'\"test\"'");
-    W_TEST("'\"test\"'", std::string("\"test\""));
-    R_TEST(std::string(), "'", cxon::read_error::unexpected, 1);
-    R_TEST(std::string(), "'''", cxon::read_error::ok, 2); // trailing '
-TEST_END()
-
-TEST_BEG(cxon::CXON<string_quote::brace_traits>) // cxon string quoting
-    R_TEST(std::string("test"), "{test}");
-    W_TEST("{test}", std::string("test"));
-    R_TEST(std::string("'test'"), "{'test'}");
-    W_TEST("{'test'}", std::string("'test'"));
-    R_TEST(std::string("\"test\""), "{\"test\"}");
-    W_TEST("{\"test\"}", std::string("\"test\""));
-    R_TEST(std::string(), "{", cxon::read_error::unexpected, 1);
-    R_TEST(std::string(), "{}}", cxon::read_error::ok, 2); // trailing }
+    R_TEST(std::u32string(U"\x2Atest\052"), "'\\x2Atest\\052'");
+    W_TEST("'test\u002A\\\\'", std::u32string(U"test\U0000002A\\"));
+    R_TEST(std::u32string(U"'test'"), "'\\\'test\\\''");
+    W_TEST("'\\\'test\\\''", std::u32string(U"'test'"));
+    R_TEST(std::u32string(U"\"test\""), "'\"test\"'");
+    W_TEST("'\"test\"'", std::u32string(U"\"test\""));
+    R_TEST(std::u32string(U"\'"), "'\\''");
+    R_TEST(std::u32string(U"\""), "'\\\"'");
+    R_TEST(std::u32string(U"?"), "'\\?'");
+    R_TEST(std::u32string(U"\\"), "'\\\\'");
+    R_TEST(std::u32string(U"\a"), "'\\a'");
+    R_TEST(std::u32string(U"\b"), "'\\b'");
+    R_TEST(std::u32string(U"\f"), "'\\f'");
+    R_TEST(std::u32string(U"\n"), "'\\n'");
+    R_TEST(std::u32string(U"\r"), "'\\r'");
+    R_TEST(std::u32string(U"\t"), "'\\t'");
+    R_TEST(std::u32string(U"\v"), "'\\v'");
+    R_TEST(std::u32string(U"\u002A"), "'\\u002A'");
+    R_TEST(std::u32string(U"\U0000002A"), "'\\U0000002A'");
+    R_TEST(std::u32string(U"\U0010ffff"), "'\\udbff\\udfff'"); // surrogate
+    R_TEST(std::u32string(), "'\\udbff\\uffff'", cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+    R_TEST(std::u32string(), "'\\z'", cxon::read_error::escape_invalid, 1);
+    R_TEST(std::u32string(), "'", cxon::read_error::unexpected, 1);
+    R_TEST(std::u32string(), "x", cxon::read_error::unexpected, 0);
+    R_TEST(std::u32string(), "'''", cxon::read_error::ok, 2); // trailing '
+    R_TEST(std::u32string({0x0442, 0x0435, 0x0441, 0x0442}), "'\xD1\x82\xD0\xB5\xD1\x81\xD1\x82'");
+    W_TEST("'\xD1\x82\xD0\xB5\xD1\x81\xD1\x82'", std::u32string({0x0442, 0x0435, 0x0441, 0x0442}));
+    R_TEST(std::u32string({0x6D4B, 0x8BD5}), "'\xE6\xB5\x8B\xE8\xAF\x95'");
+    W_TEST("'\xE6\xB5\x8B\xE8\xAF\x95'", std::u32string({0x6D4B, 0x8BD5}));
+    R_TEST(std::u32string({0x0001241D, 0x0001241C}), "'\xF0\x92\x90\x9D\xF0\x92\x90\x9C'");
+    W_TEST("'\xF0\x92\x90\x9D\xF0\x92\x90\x9C'", std::u32string({0x0001241D, 0x0001241C}));
+    R_TEST(std::u32string(), "a", cxon::read_error::unexpected, 0);
+    R_TEST(std::u32string(), "'\\u001'", cxon::read_error::escape_invalid, 1);
+    // coverage
+    R_TEST('x', "'x'");
+    R_TEST('\0', "'\\u0100'", cxon::read_error::character_invalid, 1);
+    R_TEST('\0', "'\xff'", cxon::read_error::character_invalid, 1); // invalid utf-8
 TEST_END()
 
 
@@ -1296,8 +1402,8 @@ TEST_BEG(cxon::CXON<>) // cxon
         R_TEST((array<int, 0>{}), "{", cxon::read_error::unexpected, 1);
     // std::array<int, 3>
         R_TEST((array<int, 3>{{1, 2, 3}}), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (array<int, 3>{1, 2, 3}));
         R_TEST((array<int, 4>{{1, 2, 3, 0}}), "{1, 2, 3}");
-        W_TEST("{1,2,3}", (array<int, 3>{{1, 2, 3}}));
         R_TEST((array<int, 2>{}), "{1, 2, 3}", cxon::read_error::unexpected, 5);
         R_TEST((array<int, 2>{}), "{x}", cxon::read_error::integral_invalid, 1);
         R_TEST((array<int, 2>{}), "{1, x}", cxon::read_error::integral_invalid, 4);
@@ -1312,6 +1418,7 @@ TEST_BEG(cxon::CXON<>) // cxon
         W_TEST("{}", (priority_queue<int>{}));
         R_TEST(priority_queue<int>(less<int>(), {1, 2, 3}), "{1, 2, 3}");
         W_TEST("{3,2,1}", priority_queue<int>(less<int>(), {1, 2, 3}));
+        R_TEST(priority_queue<int>{}, "{1, x}", cxon::read_error::integral_invalid, 4);
     // std::stack<int>
         R_TEST((stack<int>{}), "{}");
         W_TEST("{}", (stack<int>{}));
@@ -1343,6 +1450,7 @@ TEST_BEG(cxon::CXON<>) // cxon
         W_TEST("{}", (set<int>{}));
         R_TEST((set<int>({1, 2, 3})), "{1, 1, 2, 3}");
         W_TEST("{1,2,3}", (set<int>({1, 2, 3})));
+        R_TEST(set<int>{}, "{1, x}", cxon::read_error::integral_invalid, 4);
     // std::multiset<int>;
         R_TEST((multiset<int>{}), "{}");
         W_TEST("{}", (multiset<int>{}));
@@ -1352,12 +1460,12 @@ TEST_BEG(cxon::CXON<>) // cxon
         R_TEST((unordered_set<int>{}), "{}");
         W_TEST("{}", (unordered_set<int>{}));
         R_TEST((unordered_set<int>({1, 2, 3})), "{1, 1, 2, 3}");
-        //W_TEST("{1,2,3}", (unordered_set<int>({1, 2, 3})));
+        W_TEST("{1}", (unordered_set<int>({1})));
     // std::unordered_multiset<int>;
         R_TEST((unordered_multiset<int>{}), "{}");
         W_TEST("{}", (unordered_multiset<int>{}));
         R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "{1, 1, 2, 3}");
-        //W_TEST("{1,1,2,3}", (unordered_multiset<int>({1, 1, 2, 3})));
+        W_TEST("{1,1}", (unordered_multiset<int>({1, 1})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "{}");
         W_TEST("{}", (vector<list<int>>{}));
@@ -1373,6 +1481,7 @@ TEST_BEG(cxon::CXON<>) // cxon
         R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "{{1, 2, 3}, {3, 2, 1}}");
         W_TEST("{{1,2,3},{3,2,1}}", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
 TEST_END()
+
 
 TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
     using namespace std;
@@ -1404,12 +1513,29 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
         R_TEST((unordered_map<int, int>{}), "{}");
         W_TEST("{}", (unordered_map<int, int>{}));
         R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        //W_TEST("{1:1,2:2,3:3}", (unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+        W_TEST("{1:1}", (unordered_map<int, int>{{1, 1}, {1, 1}}));
     // std::unordered_multimap<int, int>
         R_TEST((unordered_multimap<int, int>{}), "{}");
         W_TEST("{}", (unordered_multimap<int, int>{}));
         R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        //W_TEST("{1:1,1:1,2:2,3:3}", (unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+        W_TEST("{1:1,1:1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
+    // coverage
+        R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        R_TEST(vector<int>{0, 1, 2, 3}, "{0, 01, 0x2, 0b11}");
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
 TEST_END()
 
 TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
@@ -1429,8 +1555,10 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<string, int>{{"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<string, int>{{"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<string, int>{{"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1441,8 +1569,10 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u16string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<u16string, int>{{u"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<u16string, int>{{u"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u16string, int>{{u"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<u16string, int>{{u"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<u16string, int>{{u"1", 1}, {u"2", 2}, {u"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1453,8 +1583,10 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u32string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<u32string, int>{{U"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<u32string, int>{{U"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u32string, int>{{U"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<u32string, int>{{U"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<u32string, int>{{U"1", 1}, {U"2", 2}, {U"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1465,8 +1597,10 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<wstring, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<wstring, int>{{L"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<wstring, int>{{L"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<wstring, int>{{L"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<wstring, int>{{L"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<wstring, int>{{L"1", 1}, {L"2", 2}, {L"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1475,6 +1609,91 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         W_TEST("{}", (map<int, int>{}));
         R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // coverage
+        R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(wstring(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u16string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
+        R_TEST(u32string(U"\U0010ffff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u32string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(wstring(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"), u"\xD83C\xDF7A\x2764x\x3B1");
+        R_TEST(vector<int>{0, 1, 2, 3}, "{0, 01, 0x2, 0b11}");
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
+        R_TEST((map<u16string, int>{{u"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<u32string, int>{{U"\U0010ffff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<wstring, int>{{L"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
+TEST_END()
+
+
+TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
+    using namespace std;
+    // std::map<int, std::string>
+        R_TEST((map<int, string>{}), "{}");
+        W_TEST("{}", (map<int, string>{}));
+        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{\"1\" : \"1\" , \"1\" : \"1\" , \"2\" : \"2\" , \"3\" : \"3\"}");
+        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
+        R_TEST((map<int, string>{}), "{\"x\"}", cxon::read_error::integral_invalid, 2);
+        R_TEST((map<int, string>{}), "{\"1\": x}", cxon::read_error::unexpected, 6);
+    // std::map<std::string, int>
+        R_TEST((map<string, int>{}), "{}");
+        W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+    // std::map<int, int>
+        R_TEST((map<int, int>{}), "{}");
+        W_TEST("{}", (map<int, int>{}));
+        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+    // std::multimap<int, int>
+        R_TEST((multimap<int, int>{}), "{}");
+        W_TEST("{}", (multimap<int, int>{}));
+        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1,\"1\":1,\"2\":2,\"3\":3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+    // std::unordered_map<int, int>
+        R_TEST((unordered_map<int, int>{}), "{}");
+        W_TEST("{}", (unordered_map<int, int>{}));
+        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1}", (unordered_map<int, int>{{1, 1}, {1, 1}}));
+    // std::unordered_multimap<int, int>
+        R_TEST((unordered_multimap<int, int>{}), "{}");
+        W_TEST("{}", (unordered_multimap<int, int>{}));
+        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
+        W_TEST("{\"1\":1,\"1\":1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
+    // coverage
+        R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
 TEST_END()
 
 TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
@@ -1494,8 +1713,10 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<string, int>{{"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<string, int>{{"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<string, int>{{"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1506,8 +1727,10 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u16string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<u16string, int>{{u"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<u16string, int>{{u"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u16string, int>{{u"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<u16string, int>{{u"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<u16string, int>{{u"1", 1}, {u"2", 2}, {u"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1518,8 +1741,10 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<u32string, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<u32string, int>{{U"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<u32string, int>{{U"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<u32string, int>{{U"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<u32string, int>{{U"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<u32string, int>{{U"1", 1}, {U"2", 2}, {U"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1530,8 +1755,10 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
+        R_TEST((map<wstring, int>{}), "{\0: 1}", cxon::read_error::unexpected, 1);
         W_TEST("{1\\:1:1}", (map<wstring, int>{{L"1:1", 1}})); // ':'
         W_TEST("{1\"1:1}", (map<wstring, int>{{L"1\"1", 1}})); // '"'
+        W_TEST("{1'1:1}", (map<wstring, int>{{L"1\'1", 1}})); // '\''
         W_TEST("{1\\ 1:1}", (map<wstring, int>{{L"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<wstring, int>{{L"1", 1}, {L"2", 2}, {L"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -1549,12 +1776,41 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((unordered_map<int, int>{}), "{}");
         W_TEST("{}", (unordered_map<int, int>{}));
         R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        //W_TEST("{1:1,2:2,3:3}", (unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
+        W_TEST("{1:1}", (unordered_map<int, int>{{1, 1}}));
     // std::unordered_multimap<int, int>
         R_TEST((unordered_multimap<int, int>{}), "{}");
         W_TEST("{}", (unordered_multimap<int, int>{}));
         R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        //W_TEST("{1:1,1:1,2:2,3:3}", (unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
+        W_TEST("{1:1,1:1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
+    // coverage
+        R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
+        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
+        R_TEST("", "\"", cxon::read_error::unexpected, 1);
+        R_TEST('x', QS("x"));
+        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
+        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(wstring(), "\"", cxon::read_error::unexpected, 1);
+        R_TEST(u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u16string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
+        R_TEST(u32string(U"\U0010ffff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(u32string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
+        R_TEST(wstring(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
+        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
+        W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"), u"\xD83C\xDF7A\x2764x\x3B1");
+        W_TEST("true", true);
+        {   char16_t a[2] = {u'x', u'x'};
+            R_TEST(a, QS("xx"));
+        }
+        R_TEST((map<u16string, int>{{u"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<u32string, int>{{U"\U0010ffff", 1}}), "{\\udbff\\udfff: 1}");
+        R_TEST((map<wstring, int>{{L"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
 TEST_END()
 
 
@@ -1630,14 +1886,23 @@ TEST_BEG(cxon::JSON<>) // json
 TEST_END()
 
 TEST_BEG(cxon::JSON<js::strict_traits>)
+    W_TEST(QS("x"), u8"x");
     W_TEST(QS("\\u2028"), u8"\u2028");
     W_TEST(QS("\\u2029"), u8"\u2029");
+    W_TEST(QS("x"), u"x");
     W_TEST(QS("\\u2028"), u"\u2028");
     W_TEST(QS("\\u2029"), u"\u2029");
+    W_TEST(QS("x"), U"x");
     W_TEST(QS("\\u2028"), U"\u2028");
     W_TEST(QS("\\u2029"), U"\u2029");
+    W_TEST(QS("x"), L"x");
     W_TEST(QS("\\u2028"), L"\u2028");
     W_TEST(QS("\\u2029"), L"\u2029");
+    W_TEST(QS("\xE2\x80\xA7"), u8"\u2027");
+    W_TEST(QS("\xE2\x81\xA7"), "\xE2\x81\xA7");
+    // coverage
+    W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
+    W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
 TEST_END()
 
 TEST_BEG(cxon::JSON<>)
@@ -1655,6 +1920,7 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((tuple<int, double, string>{}), "[0, 0, \"\", 0]", cxon::read_error::unexpected, 9);
     // std::tuple<int, double>
         R_TEST((tuple<int, double>{}), "[0, 0, \"0\"]", cxon::read_error::unexpected, 5);
+        W_TEST("[0,0]", (tuple<int, double>{0, 0}));
     // std::pair<int, std::string>
         R_TEST((pair<int, string>{0, "0"}), "[0, \"0\"]");
         W_TEST("[0,\"0\"]", (pair<int, string>{0, "0"}));
@@ -1683,9 +1949,11 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((array<int, 0>{}), "[", cxon::read_error::unexpected, 1);
     // std::array<int, 3>
         R_TEST((array<int, 3>{{1, 2, 3}}), "[1, 2, 3]");
-        R_TEST((array<int, 4>{{1, 2, 3, 0}}), "[1, 2, 3]");
         W_TEST("[1,2,3]", (array<int, 3>{{1, 2, 3}}));
+        R_TEST((array<int, 4>{{1, 2, 3, 0}}), "[1, 2, 3]");
+        W_TEST("[1,2,3,4]", (array<int, 4>{{1, 2, 3, 4}}));
         R_TEST((array<int, 2>{}), "[1, 2, 3]", cxon::read_error::unexpected, 5);
+        W_TEST("[1,2]", (array<int, 2>{{1, 2}}));
     // std::queue<int>
         R_TEST((queue<int>{}), "[]");
         W_TEST("[]", (queue<int>{}));
@@ -1715,6 +1983,7 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((list<int>{}), "]", cxon::read_error::unexpected, 0);
         R_TEST((list<int>{}), "{", cxon::read_error::unexpected, 0);
         R_TEST((list<int>{}), "[", cxon::read_error::integral_invalid, 1);
+        W_TEST("[1,2,3]", (list<float>({1, 2, 3})));
         R_TEST((list<float>{}), "[", cxon::read_error::floating_point_invalid, 1);
     // std::vector<int>
         R_TEST((vector<int>{}), "[]");
@@ -1735,12 +2004,12 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((unordered_set<int>{}), "[]");
         W_TEST("[]", (unordered_set<int>{}));
         R_TEST((unordered_set<int>({1, 2, 3})), "[1, 1, 2, 3]");
-        //W_TEST("[1,2,3]", (unordered_set<int>({1, 2, 3})));
+        W_TEST("[1]", (unordered_set<int>({1})));
     // std::unordered_multiset<int>;
         R_TEST((unordered_multiset<int>{}), "[]");
         W_TEST("[]", (unordered_multiset<int>{}));
         R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
-        //W_TEST("[1,1,2,3]", (unordered_multiset<int>({1, 1, 2, 3})));
+        W_TEST("[1,1]", (unordered_multiset<int>({1, 1})));
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "[]");
         W_TEST("[]", (vector<list<int>>{}));
@@ -1757,57 +2026,14 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
 TEST_END()
 
-TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
-    using namespace std;
-    // std::map<int, std::string>
-        R_TEST((map<int, string>{}), "{}");
-        W_TEST("{}", (map<int, string>{}));
-        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{\"1\" : \"1\" , \"1\" : \"1\" , \"2\" : \"2\" , \"3\" : \"3\"}");
-        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-    // std::map<std::string, int>
-        R_TEST((map<string, int>{}), "{}");
-        W_TEST("{}", (map<string, int>{}));
-        R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
-        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-    // std::map<int, int>
-        R_TEST((map<int, int>{}), "{}");
-        W_TEST("{}", (map<int, int>{}));
-        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
-        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-TEST_END()
 
-TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
-    using namespace std;
-    // std::map<int, std::string>
-        R_TEST((map<int, string>{}), "{}");
-        W_TEST("{}", (map<int, string>{}));
-        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
-        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-    // std::map<std::string, int>
-        R_TEST((map<string, int>{}), "{}");
-        W_TEST("{}", (map<string, int>{}));
-        R_TEST((map<string, int>{{" 1:", 1}, {"2", 2}, {" 3 ", 3}}), "{\\ 1\\:: 1, 2: 2, \\ 3\\ : 3}");
-        W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-    // std::map<int, int>
-        R_TEST((map<int, int>{}), "{}");
-        W_TEST("{}", (map<int, int>{}));
-        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-TEST_END()
-
-
-enum Enum1 { one, two, three };
+enum Enum1 { one, two, three, four };
 
 CXON_ENUM(Enum1,
     CXON_ENUM_VALUE_ASIS(one),
     CXON_ENUM_VALUE_NAME("Two (2)", two),
     CXON_ENUM_VALUE_ASIS(three)
 )
-STRUTL_TO_STRING_SIMPLE(Enum1);
 
 TEST_BEG(cxon::CXON<>) // enum
     R_TEST(Enum1::one, "one");
@@ -1815,6 +2041,17 @@ TEST_BEG(cxon::CXON<>) // enum
     R_TEST(Enum1::two, "Two (2)");
     W_TEST("Two (2)", Enum1::two);
     R_TEST(Enum1::one, "", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "o", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{", cxon::read_error::unexpected, 1);
+    R_TEST(Enum1::one, "{}", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{{}}", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{\"}", cxon::read_error::unexpected, 3);
+    R_TEST(Enum1::one, "{\"\"}", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "{\"\\x\"}", cxon::read_error::unexpected, 0);
+    // coverage
+#   ifdef NDEBUG
+        W_TEST("", Enum1::four);
+#   endif
 TEST_END()
 
 TEST_BEG(cxon::JSON<>)
@@ -1823,6 +2060,10 @@ TEST_BEG(cxon::JSON<>)
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
     R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 0);
+    // coverage
+#   ifdef NDEBUG
+        W_TEST("", Enum1::four);
+#   endif
 TEST_END()
 
 
@@ -1855,9 +2096,6 @@ CXON_STRUCT(Struct2,
     CXON_STRUCT_FIELD_NAME("B", b)
 )
 
-STRUTL_TO_STRING_SIMPLE(Struct1);
-STRUTL_TO_STRING_SIMPLE(Struct2);
-
 TEST_BEG(cxon::CXON<>) // struct macros
     R_TEST(Struct1(0, Enum1::one), "{A: 0, b: one}");
     R_TEST(Struct1(0, Enum1::two), "{b: Two (2), A: 0}");
@@ -1865,6 +2103,9 @@ TEST_BEG(cxon::CXON<>) // struct macros
     W_TEST("{A:0,b:one}", Struct1(0, Enum1::one));
     R_TEST(Struct2(0, 1), "{a: 0, B: 1}");
     W_TEST("{a:0,B:1}", Struct2(0, 1));
+    R_TEST(Struct2(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: eno}", cxon::read_error::unexpected, 10);
+    R_TEST(Struct1(0, Enum1::one), "{A: 0, x: eno}", cxon::read_error::unexpected, 7);
     R_TEST(Struct2(), "", cxon::read_error::unexpected, 0);
     R_TEST(Struct2(), "}", cxon::read_error::unexpected, 0);
     R_TEST(Struct2(), "{", cxon::read_error::unexpected, 1);
@@ -1876,6 +2117,7 @@ TEST_BEG(cxon::JSON<>)
     R_TEST(Struct1(0, Enum1::three), "{\"b\": \"three\"}");
     W_TEST("{\"A\":0,\"b\":\"one\"}", Struct1(0, Enum1::one));
     R_TEST(Struct2(0, 1), "{\"a\": 0, \"B\": 1}");
+    R_TEST(Struct2(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
     W_TEST("{\"a\":0,\"B\":1}", Struct2(0, 1));
     R_TEST(Struct1(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
     R_TEST(Struct1(), "{\"b\": \"one\", \"A\": x}", cxon::read_error::integral_invalid, 18);
@@ -1894,12 +2136,11 @@ CXON_STRUCT(Struct3,
     CXON_STRUCT_FIELD_ASIS(b)
 )
 
-STRUTL_TO_STRING_SIMPLE(Struct3);
-
 TEST_BEG(cxon::CXON<>)
     R_TEST(Struct3(1, new Struct3(2, nullptr)), "{a: 1, b: {a: 2}}");
     R_TEST(Struct3(1, nullptr), "{a: 1, b: null}");
     W_TEST("{a:1,b:{a:2,b:null}}", Struct3(1, new Struct3(2, nullptr)));
+    R_TEST(Struct3(), "{a: 1, x: nil}", cxon::read_error::unexpected, 7);
     R_TEST(Struct3(), "{a: 1, b: nil}", cxon::read_error::unexpected, 10);
     R_TEST(Struct3(), "{a: 1, b: {a: x}}", cxon::read_error::integral_invalid, 14);
 TEST_END()
@@ -1908,6 +2149,9 @@ TEST_BEG(cxon::JSON<>)
     R_TEST(Struct3(1, new Struct3(2, nullptr)), "{\"a\": 1, \"b\": {\"a\": 2}}");
     R_TEST(Struct3(1, nullptr), "{\"a\": 1, \"b\": null}");
     W_TEST("{\"a\":1,\"b\":{\"a\":2,\"b\":null}}", Struct3(1, new Struct3(2, nullptr)));
+    R_TEST(Struct3(), "{\"a\": 1, \"x\": nil}", cxon::read_error::unexpected, 9);
+    R_TEST(Struct3(), "{\"a\": 1, \"b\": nil}", cxon::read_error::unexpected, 14);
+    R_TEST(Struct3(), "{\"a\": 1, \"b\": {\"a\": x}}", cxon::read_error::integral_invalid, 20);
 TEST_END()
 
 
@@ -1932,9 +2176,7 @@ private:
     int a;
 };
 
-STRUTL_TO_STRING_SIMPLE(Struct4);
-
-TEST_BEG(cxon::CXON<>) // static nmethod
+TEST_BEG(cxon::CXON<>) // static method
     R_TEST(Struct4(1), "1");
     W_TEST("3", Struct4(3));
 TEST_END()
@@ -1965,8 +2207,6 @@ struct Struct5 {
 private:
     int a;
 };
-
-STRUTL_TO_STRING_SIMPLE(Struct5);
 
 TEST_BEG(cxon::CXON<>) // method
     R_TEST(Struct5(1), "1");
@@ -2000,8 +2240,6 @@ namespace cxon {
         }
 }
 
-STRUTL_TO_STRING_SIMPLE(Struct6);
-
 TEST_BEG(cxon::CXON<>) // function
     R_TEST(Struct6(1), "1");
     W_TEST("3", Struct6(3));
@@ -2026,8 +2264,6 @@ private:
     int a;
     int b;
 };
-
-STRUTL_TO_STRING_SIMPLE(Struct7);
 
 TEST_BEG(cxon::CXON<>) // macros inside
     R_TEST(Struct7(1, 2), "{a: 1, b: 2}");
@@ -2074,15 +2310,15 @@ private:
     int b;
 };
 
-STRUTL_TO_STRING_SIMPLE(Struct8);
-
 TEST_BEG(cxon::CXON<>)
     R_TEST(Struct8(1, 2), "{a: 1, \"b\": 2}");
+    R_TEST(Struct8(1, 2), "{a: 1, x: 2}", cxon::read_error::unexpected, 7);
     W_TEST("{a:3,b:4}", Struct8(3, 4));
 TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct8(1, 2), "{\"a\": 1, \"b\": 2}");
+    R_TEST(Struct8(1, 2), "{\"a\": 1, \"x\": 2}", cxon::read_error::unexpected, 9);
     W_TEST("{\"a\":3,\"b\":4}", Struct8(3, 4));
 TEST_END()
 
@@ -2104,8 +2340,6 @@ struct Struct9 {
 int Struct9::a = 0;
 int const Struct9::b = 3;
 
-STRUTL_TO_STRING_SIMPLE(Struct9);
-
 TEST_BEG(cxon::CXON<>) // static field
     R_TEST(Struct9(), "{}");
     W_TEST("{a:0,b:3}", Struct9());
@@ -2115,6 +2349,7 @@ TEST_BEG(cxon::CXON<>) // static field
     W_TEST("{a:1,b:3}", Struct9());
     R_TEST(Struct9(), "{a: 3}");
     W_TEST("{a:3,b:3}", Struct9());
+    R_TEST(Struct9(), "{a: 1, x: 3}", cxon::read_error::unexpected, 7);
 TEST_END()
 
 TEST_BEG(cxon::JSON<>) // static field
@@ -2126,13 +2361,15 @@ TEST_BEG(cxon::JSON<>) // static field
     W_TEST("{\"a\":1,\"b\":3}", Struct9());
     R_TEST(Struct9(), "{\"a\": 3}");
     W_TEST("{\"a\":3,\"b\":3}", Struct9());
+    R_TEST(Struct9(), "{\"a\": 1, \"x\": 3}", cxon::read_error::unexpected, 9);
 TEST_END()
 
 
 struct Struct10 {
     int a;
-    Struct10(int a = 0) : a(a) {}
-    bool operator ==(const Struct10& t) const { return a == t.a; }
+    int b;
+    Struct10(int a = 0, int b = 0) : a(a), b(b) {}
+    bool operator ==(const Struct10& t) const { return a == t.a && b == t.b; }
 };
 
 CXON_STRUCT_READ(Struct10,
@@ -2145,32 +2382,45 @@ CXON_STRUCT_READ(Struct10,
     CXON_STRUCT_FIELD_SKIP("skip6")
 )
 CXON_STRUCT_WRITE(Struct10,
-    CXON_STRUCT_FIELD_ASIS(a)
+    CXON_STRUCT_FIELD_ASIS(a),
+    CXON_STRUCT_FIELD_NAME("* \"':*", b)
 )
-
-STRUTL_TO_STRING_SIMPLE(Struct10);
 
 TEST_BEG(cxon::CXON<>) // skip field
     R_TEST(Struct10(1), "{skip1: true, a: 1}");
     R_TEST(Struct10(1), "{skip2: 1, a: 1}");
     R_TEST(Struct10(1), "{skip3: \"2\", a: 1}");
+    R_TEST(Struct10(1), "{skip3: \"\\x\", a: 1}");
     R_TEST(Struct10(1), "{skip4: {3, 4}, a: 1}");
+    R_TEST(Struct10(1), "{skip4: {{}}, a: 1}");
     R_TEST(Struct10(1), "{skip6: {\"}\": 5}, a: 1}");
-    W_TEST("{a:1}", Struct10(1));
+    R_TEST(Struct10(), "{x: 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct10(), "{x\\ x: 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct10(), "{skip6: {", cxon::read_error::unexpected, 9);
+    R_TEST(Struct10(), "{skip6: \"", cxon::read_error::unexpected, 9);
+    W_TEST("{a:1,*\\ \"'\\:*:2}", Struct10(1, 2));
 TEST_END()
 
 TEST_BEG(cxon::JSON<>) // skip field
     R_TEST(Struct10(1), "{\"skip1\": true, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip2\": 1, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip3\": \"2\", \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip3\": \"\\x\", \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip4\": [3, 4], \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip4\": [[]], \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip5\": {5, 6}, \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip5\": {{}}, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": {\"}\": 7}, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": {\"]\": 8}, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": [\"]\", 9], \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": [\"}\", 10], \"a\": 1}");
-    W_TEST("{\"a\":1}", Struct10(1));
+    R_TEST(Struct10(), "{\"x\": 1}", cxon::read_error::unexpected, 1);
+    R_TEST(Struct10(), "{\"skip1\": {", cxon::read_error::unexpected, 11);
+    R_TEST(Struct10(), "{\"skip1\": [", cxon::read_error::unexpected, 11);
+    R_TEST(Struct10(), "{\"skip1\": \"", cxon::read_error::unexpected, 11);
+    W_TEST("{\"a\":1,\"* \\\"':*\":2}", Struct10(1, 2));
 TEST_END()
+
 
 TEST_BEG(cxon::CXON<>) // interface/read
     // iterator
@@ -2337,6 +2587,48 @@ TEST_BEG(cxon::CXON<>) // interface/write
     }
 TEST_END()
 
+TEST_BEG(cxon::CXON<>) // errors
+    using namespace cxon;
+    {   std::error_condition ec;
+            ec = read_error::ok;
+                CXON_ASSERT(ec.category() == read_error_category::value, "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/read") == 0, "check failed");
+                CXON_ASSERT(ec.message() == "no error", "check failed");
+            ec = read_error::unexpected;
+                CXON_ASSERT(ec.message() == "unexpected input", "check failed");
+            ec = read_error::character_invalid;
+                CXON_ASSERT(ec.message() == "invalid character", "check failed");
+            ec = read_error::integral_invalid;
+                CXON_ASSERT(ec.message() == "invalid integral or value out of range", "check failed");
+            ec = read_error::floating_point_invalid;
+                CXON_ASSERT(ec.message() == "invalid floating point", "check failed");
+            ec = read_error::boolean_invalid;
+                CXON_ASSERT(ec.message() == "invalid boolean", "check failed");
+            ec = read_error::escape_invalid;
+                CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
+            ec = read_error::surrogate_invalid;
+                CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
+            // coverage
+#           ifdef NDEBUG
+                ec = read_error(255);
+                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
+#           endif
+    }
+    {   std::error_condition ec;
+            ec = write_error::ok;
+                CXON_ASSERT(ec.category() == write_error_category::value, "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/write") == 0, "check failed");
+                CXON_ASSERT(ec.message() == "no error", "check failed");
+            ec = write_error::output_failure;
+                CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
+            // coverage
+#           ifdef NDEBUG
+                ec = write_error(255);
+                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
+#           endif
+    }
+TEST_END()
+
 ////////////////////////////////////////////////////////////////////// tests //
 
 namespace test {
@@ -2485,46 +2777,39 @@ namespace test {
         }
 
     template <typename X, typename T>
-        static bool verify_read(const T& ref, const char* sref, const std::string& sbj) {
+        static bool verify_read(const T& ref, const std::string& sbj) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
             if (!r || r.end != sbj.end() || !match<T>::values(res, ref)) {
-                fprintf(stderr, "cxon::from_chars<%s>(\"%s\") == %s: must pass, but failed as %s\n",
-                        strutl::to_string(ref).c_str(),
-                        sbj.c_str(),
-                        sref,
-                        to_string<X>(res).c_str()
-                );
-                fflush(stdout);
-                return false;
+                return fprintf(stderr, "must pass, but failed: "), false;
             }
             return true;
         }
     template <typename X, typename T>
-        static bool verify_read(const T& ref, const char*, const std::string& sbj, cxon::read_error err, int pos) {
+        static bool verify_read(const T&, const std::string& sbj, cxon::read_error err, int pos) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
             if (r.ec.value() != (int)err || (pos != -1 && std::distance(sbj.begin(), r.end) != pos)) {
-                fprintf(stderr, "cxon::from_chars<%s>(\"%s\") == \"%s\" at %i: must fail, but passed as %s\n",
-                        strutl::to_string(ref).c_str(),
-                        sbj.c_str(),
-                        cxon::make_error_condition(err).message().c_str(),
-                        pos != std::numeric_limits<int>::max() ? pos : 0,
-                        to_string<X>(res).c_str()
-                );
-                fflush(stdout);
-                return false;
+                return fprintf(stderr, "must fail, but passed: "), false;
             }
             return true;
         }
 
     template <typename X, typename T>
-        static bool verify_write(const std::string& ref, const T& sbj, const char* sref) {
-            std::string const res = to_string<X>(sbj);
-            if (ref != res) {
-                fprintf(stderr, "cxon::to_chars<%s>(%s) == \"%s\": %s\n", strutl::to_string(sbj).c_str(), sref, res.c_str(), "failed");
-                fflush(stdout);
-                return false;
+        static bool verify_write(const std::string& ref, const T& sbj) {
+            std::string res;
+                auto const r = cxon::to_chars<X>(res, sbj);
+            if (!r || ref != res) {
+                return fprintf(stderr, "must pass, but failed: "), false;
+            }
+            return true;
+        }
+    template <typename X, typename T>
+        static bool verify_write(const std::string& ref, const T& sbj, cxon::write_error err) {
+            std::string res;
+                auto const r = cxon::to_chars<X>(res, sbj);
+            if (r.ec.value() != (int)err) {
+                return fprintf(stderr, "must fail, but passed: "), false;
             }
             return true;
         }
