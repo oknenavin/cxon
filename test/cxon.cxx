@@ -54,6 +54,8 @@ namespace test {
 
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj);
+    template <typename X, typename T>
+        static bool verify_write(const std::string& ref, const T& sbj, cxon::write_error err);
 
 }   // test
 
@@ -62,8 +64,8 @@ namespace test {
         ++TEST_F, fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr);\
         CXON_ASSERT(false, "check failed");\
     }
-#define W_TEST(ref, sbj)\
-    if (++TEST_A, !test::verify_write<XXON>(ref, sbj)) {\
+#define W_TEST(ref, ...)\
+    if (++TEST_A, !test::verify_write<XXON>(ref, __VA_ARGS__)) {\
         ++TEST_F, fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr);\
         CXON_ASSERT(false, "check failed");\
     }
@@ -2816,9 +2818,19 @@ namespace test {
 
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj) {
-            std::string const res = to_string<X>(sbj);
-            if (ref != res) {
+            std::string res;
+                auto const r = cxon::to_chars<X>(res, sbj);
+            if (!r || ref != res) {
                 return fprintf(stderr, "must pass, but failed: "), false;
+            }
+            return true;
+        }
+    template <typename X, typename T>
+        static bool verify_write(const std::string& ref, const T& sbj, cxon::write_error err) {
+            std::string res;
+                auto const r = cxon::to_chars<X>(res, sbj);
+            if (r.ec.value() != (int)err) {
+                return fprintf(stderr, "must fail, but passed: "), false;
             }
             return true;
         }
