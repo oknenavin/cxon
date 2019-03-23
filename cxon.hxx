@@ -2477,29 +2477,6 @@ namespace cxon { namespace bits { // fundamental type encoding
                     return i == e;
                 }
         };
-    template <typename X>
-        struct encode<JSON<X>, char16_t> {
-            template <typename O>
-                static bool value(O& o, char16_t c, wctx<X>& ctx) {
-                    CXON_ASSERT(c < 0xD800 || c > 0xDBFF, "unexpected surrogate");
-                    return encode<JSON<X>, char32_t>::value(o, c, ctx);
-                }
-            template <typename O, typename II>
-                static bool value(O& o, II& i, II e, wctx<X>& ctx) {
-                    char32_t c32 = *i;
-                        if (c32 >= 0xD800 && c32 <= 0xDBFF) { // surrogate
-                            ++i;                        CXON_ASSERT(i != e, "invalid surrogate");
-                            char32_t const s32 = *i;    CXON_ASSERT(s32 >= 0xDC00 && s32 <= 0xDFFF, "invalid surrogate");
-                            c32 = char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
-                        }
-                    return encode<JSON<X>, char32_t>::value(o, c32, ctx);
-                }
-            template <typename O, typename II>
-                static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e && value(o, i, e, ctx); ++i) ;
-                    return i == e;
-                }
-        };
 
     template <typename X>
         struct encode<X, char32_t> {
@@ -2577,33 +2554,6 @@ namespace cxon { namespace bits { // fundamental type encoding
             template <typename O, typename T = wchar_t, typename II>
                 static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                     return encode<X, char32_t>::range(o, i, e, ctx);
-                }
-        };
-    template <typename X>
-        struct encode<JSON<X>, wchar_t> {
-            template <typename O, typename T = wchar_t>
-                static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
-                    return encode<JSON<X>, char16_t>::value(o, char16_t(c), ctx);
-                }
-            template <typename O, typename T = wchar_t>
-                static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
-                    return encode<JSON<X>, char32_t>::value(o, char32_t(c), ctx);
-                }
-            template <typename O, typename T = wchar_t, typename II>
-                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
-                    return encode<JSON<X>, char16_t>::value(o, i, e, ctx);
-                }
-            template <typename O, typename T = wchar_t, typename II>
-                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
-                    return encode<JSON<X>, char32_t>::value(o, i, e, ctx);
-                }
-            template <typename O, typename T = wchar_t, typename II>
-                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
-                    return encode<JSON<X>, char16_t>::range(o, i, e, ctx);
-                }
-            template <typename O, typename T = wchar_t, typename II>
-                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
-                    return encode<JSON<X>, char32_t>::range(o, i, e, ctx);
                 }
         };
 
