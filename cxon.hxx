@@ -389,10 +389,10 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
             return { name, value };
         }
 
-    template <typename X, typename E, typename V, size_t N, typename II>
-        inline bool read_value(E& t, const V (&vs)[N], II& i, II e, rctx<X>& ctx);
-    template <typename X, typename E, typename V, size_t N, typename O>
-        inline bool write_value(O& o, E t, const V (&vs)[N], wctx<X>& ctx);
+    template <typename X, typename E, typename V, typename II>
+        inline bool read_value(E& t, V vb, V ve, II& i, II e, rctx<X>& ctx);
+    template <typename X, typename E, typename V, typename O>
+        inline bool write_value(O& o, E t, V vb, V ve, wctx<X>& ctx);
 
 }}  // cxon::enums enum reader/writer construction helpers
 
@@ -591,8 +591,9 @@ namespace cxon { // errors
                 case read_error::boolean_invalid:           return "invalid boolean";
                 case read_error::escape_invalid:            return "invalid escape sequence";
                 case read_error::surrogate_invalid:         return "invalid surrogate";
-                default:                                    return "unknown error";
             }
+            CXON_ASSERT(0, "unexpected");
+            return "unknown error";
         }
         static read_error_category const value;
     };
@@ -610,8 +611,9 @@ namespace cxon { // errors
             switch (static_cast<write_error>(ev)) {
                 case write_error::ok:               return "no error";
                 case write_error::output_failure:   return "output cannot be written";
-                default:                            return "unknown error";
             }
+            CXON_ASSERT(0, "unexpected");
+            return "unknown error";
         }
         static write_error_category const value;
     };
@@ -1164,46 +1166,43 @@ namespace cxon { namespace bits { // <charconv>
 
 namespace cxon { namespace bits { // fundamental type decoding
 
-    template <unsigned N, typename II, typename IsX>
-        inline unsigned consume(char (&d)[N], II& i, II e, IsX is_x) {
+    template <typename II, typename IsX>
+        inline unsigned consume(char* f, const char* l, II& i, II e, IsX is_x) {
             unsigned n = 0;
-                for (char c = io::peek(i, e); n < N && is_x(c); c = io::next(i, e), ++n) d[n] = c;
+                for (char c = io::peek(i, e); f != l && is_x(c); c = io::next(i, e), ++f, ++n) *f = c;
             return n;
         }
 
-    template <unsigned N>
-        inline char32_t oct_to_utf32(char const (&h)[N], unsigned l) noexcept {
-            static constexpr char32_t oct_to_utf32_[] = { 
-                /*  0*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                /* 16*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                /* 32*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                /* 48*/ 00, 1, 2, 3, 4, 5, 6, 7,00,00,00,00,00,00,00,00
-            };
-            CXON_ASSERT(l <= N, "array size invalid");
-            char32_t c = 0; 
-                for (unsigned i = 0; i != l; ++i) c = (c << 3) | oct_to_utf32_[(unsigned char)h[i]];
-            return c; 
-        }
+    inline char32_t oct_to_utf32(const char* b, const char* e) noexcept {
+        static constexpr char32_t oct_to_utf32_[] = { 
+            /*  0*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            /* 16*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            /* 32*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            /* 48*/ 00, 1, 2, 3, 4, 5, 6, 7,00,00,00,00,00,00,00,00
+        };
+        CXON_ASSERT(b && b < e, "unexpected");
+        char32_t c = 0; 
+            for ( ; b != e; ++b) c = (c << 3) | oct_to_utf32_[(unsigned char)*b];
+        return c; 
+    }
 
-    template <unsigned N>
-        inline char32_t hex_to_utf32(char const (&h)[N], unsigned l) noexcept {
-            static constexpr char32_t hex_to_utf32_[] = { 
-                /*  0*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                /* 16*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                /* 32*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                /* 48*/ 00, 1, 2, 3, 4, 5, 6, 7, 8, 9,00,00,00,00,00,00,
-                /* 64*/ 00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00,
-                /* 80*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                /* 96*/ 00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00
-            };
-            CXON_ASSERT(l <= N, "array size invalid");
-            char32_t c = 0; 
-                for (unsigned i = 0; i != l; ++i) c = (c << 4) | hex_to_utf32_[(unsigned char)h[i]];
-            return c; 
-        }
+    inline char32_t hex_to_utf32(const char* b, const char* e) noexcept {
+        static constexpr char32_t hex_to_utf32_[] = { 
+            /*  0*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            /* 16*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            /* 32*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            /* 48*/ 00, 1, 2, 3, 4, 5, 6, 7, 8, 9,00,00,00,00,00,00,
+            /* 64*/ 00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00,
+            /* 80*/ 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            /* 96*/ 00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00
+        };
+        CXON_ASSERT(b && b < e, "unexpected");
+        char32_t c = 0; 
+            for ( ; b != e; ++b) c = (c << 4) | hex_to_utf32_[(unsigned char)*b];
+        return c; 
+    }
 
 #   define CXON_ASS_U(t) if (!is<X>::digit16(io::next(i, e))) return 0xFFFFFFFF; t = io::peek(i, e)
-
         template <typename X>
             struct esc_to {
                 template <typename II>
@@ -1222,31 +1221,34 @@ namespace cxon { namespace bits { // fundamental type decoding
                             case 'v' : return ++i, '\v';
                             case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
                                 char h[3]; // arbitrary length
-                                    unsigned const w = consume(h, i, e, is<X>::digit8);
+                                    unsigned const w = consume(&h[0], &h[0] + sizeof(h), i, e, is<X>::digit8);
                                         if (!w) return 0xFFFFFFFF;
-                                return oct_to_utf32(h, w);
+                                return oct_to_utf32(&h[0], &h[0] + w);
                             }
                             case 'x' : {
                                 char h[2]; // arbitrary length
-                                    unsigned const w = consume(h, ++i, e, is<X>::digit16);
+                                    unsigned const w = consume(&h[0], &h[0] + sizeof(h), ++i, e, is<X>::digit16);
                                         if (!w) return 0xFFFFFFFF;
-                                return hex_to_utf32(h, w);
+                                return hex_to_utf32(&h[0], &h[0] + w);
                             }
                             case 'u' : {
                                 char h[4];
                                     CXON_ASS_U(h[0]); CXON_ASS_U(h[1]); CXON_ASS_U(h[2]); CXON_ASS_U(h[3]);
-                                return ++i, hex_to_utf32(h, sizeof(h));
+                                return ++i, hex_to_utf32(&h[0], &h[0] + sizeof(h));
                             }
                             case 'U' : {
                                 char h[8];
                                     CXON_ASS_U(h[0]); CXON_ASS_U(h[1]); CXON_ASS_U(h[2]); CXON_ASS_U(h[3]);
                                     CXON_ASS_U(h[4]); CXON_ASS_U(h[5]); CXON_ASS_U(h[6]); CXON_ASS_U(h[7]);
-                                return ++i, hex_to_utf32(h, sizeof(h));
+                                return ++i, hex_to_utf32(&h[0], &h[0] + sizeof(h));
                             }
                             default: return 0xFFFFFFFF;
                         }
                     }
             };
+#   undef CXON_ASS_U
+
+#   define CXON_ASS_U(t) if (!is<JSON<X>>::digit16(io::next(i, e))) return 0xFFFFFFFF; t = io::peek(i, e)
         template <typename X>
             struct esc_to<JSON<X>> {
                 template <typename II>
@@ -1263,13 +1265,12 @@ namespace cxon { namespace bits { // fundamental type decoding
                             case 'u' : {
                                 char h[4];
                                     CXON_ASS_U(h[0]); CXON_ASS_U(h[1]); CXON_ASS_U(h[2]); CXON_ASS_U(h[3]);
-                                return ++i, hex_to_utf32(h, sizeof(h));
+                                return ++i, hex_to_utf32(&h[0], &h[0] + sizeof(h));
                             }
                             default: return 0xFFFFFFFF;
                         }
                     }
         };
-
 #   undef CXON_ASS_U
 
     template <typename X, typename II>
@@ -1315,32 +1316,33 @@ namespace cxon { namespace bits { // fundamental type decoding
 
 #   undef CXON_EXPECT
 
-    static int utf32_to_utf8(char (&t)[4], char32_t c32) noexcept {
-        if (c32 < 0x80)  // 0XXX XXXX
-            return t[0] = char(c32), 1;
-        if (c32 < 0x800) { // 110XXXXX
-            t[0] = char(0xC0 | (c32 >> 6));
-            t[1] = char(0x80 | (0x3F & c32));
-            return 2;
+    template <typename = void> // instantiate only if used
+        static int utf32_to_utf8(char (&t)[4], char32_t c32) noexcept {
+            if (c32 < 0x80)  // 0XXX XXXX
+                return t[0] = char(c32), 1;
+            if (c32 < 0x800) { // 110XXXXX
+                t[0] = char(0xC0 | (c32 >> 6));
+                t[1] = char(0x80 | (0x3F & c32));
+                return 2;
+            }
+            if (c32 < 0x10000) { // 1110XXXX
+                // error: 0xFFFE || 0xFFFF // not a char?
+                    if (c32 >= 0xD800 && c32 <= 0xDBFF) return 0;
+                t[0] = char(0xE0 | (c32 >> 12));
+                t[1] = char(0x80 | (0x3F & (c32 >> 6)));
+                t[2] = char(0x80 | (0x3F & c32));
+                return 3;
+            }
+            if (c32 < 0x200000) { // 11110XXX
+                    if (c32 > 0x10FFFF) return 0;
+                t[0] = char(0xF0 | (c32 >> 18));
+                t[1] = char(0x80 | (0x3F & (c32 >> 12)));
+                t[2] = char(0x80 | (0x3F & (c32 >> 6)));
+                t[3] = char(0x80 | (0x3F & c32));
+                return 4;
+            }
+            return 0;
         }
-        if (c32 < 0x10000) { // 1110XXXX
-            // error: 0xFFFE || 0xFFFF // not a char?
-                if (c32 >= 0xD800 && c32 <= 0xDBFF) return 0;
-            t[0] = char(0xE0 | (c32 >> 12));
-            t[1] = char(0x80 | (0x3F & (c32 >> 6)));
-            t[2] = char(0x80 | (0x3F & c32));
-            return 3;
-        }
-        if (c32 < 0x200000) { // 11110XXX
-                if (c32 > 0x10FFFF) return 0;
-            t[0] = char(0xF0 | (c32 >> 18));
-            t[1] = char(0x80 | (0x3F & (c32 >> 12)));
-            t[2] = char(0x80 | (0x3F & (c32 >> 6)));
-            t[3] = char(0x80 | (0x3F & c32));
-            return 4;
-        }
-        return 0;
-    }
 
     template <typename T>
         inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool> {
@@ -1654,7 +1656,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                                 if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<N>::infinity(),
                                     charconv::from_chars_result{ b + 6, std::errc() } : charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
-                                if (b[2] == 'n') return b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
+                                return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
                                     charconv::from_chars_result{ b + 6, std::errc() } : charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                             }
@@ -1662,11 +1664,10 @@ namespace cxon { namespace bits { // fundamental type decoding
                                 if (b[1] == 'i') return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ? t =  std::numeric_limits<N>::infinity(),
                                     charconv::from_chars_result{ b + 5, std::errc() } : charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
-                                if (b[1] == 'n') return b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
+                                return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
                                     charconv::from_chars_result{ b + 5, std::errc() } : charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                             }
-                            return { b, std::errc::invalid_argument };
                         }
                         auto const r = bits::from_chars(b, e, t);
                         return { r.ptr, r.ec };
@@ -2409,9 +2410,8 @@ namespace cxon { namespace bits { // fundamental type encoding
                 }
             template <typename O, typename II>
                 static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
-                        return false;
-                    return true;
+                    for ( ; i != e && value(o, *i, ctx); ++i) ;
+                    return i == e;
                 }
         };
     template <typename X>
@@ -2449,9 +2449,8 @@ namespace cxon { namespace bits { // fundamental type encoding
                 }
             template <typename O, typename II>
                 static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, i, e, ctx))
-                        return false;
-                    return true;
+                    for ( ; i != e && value(o, i, e, ctx); ++i) ;
+                    return i == e;
                 }
         };
 
@@ -2474,9 +2473,8 @@ namespace cxon { namespace bits { // fundamental type encoding
                 }
             template <typename O, typename II>
                 static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, i, e, ctx))
-                        return false;
-                    return true;
+                    for ( ; i != e && value(o, i, e, ctx); ++i) ;
+                    return i == e;
                 }
         };
     template <typename X>
@@ -2498,9 +2496,8 @@ namespace cxon { namespace bits { // fundamental type encoding
                 }
             template <typename O, typename II>
                 static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, i, e, ctx))
-                        return false;
-                    return true;
+                    for ( ; i != e && value(o, i, e, ctx); ++i) ;
+                    return i == e;
                 }
         };
 
@@ -2520,9 +2517,8 @@ namespace cxon { namespace bits { // fundamental type encoding
                 }
             template <typename O, typename II>
                 static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
-                        return false;
-                    return true;
+                    for ( ; i != e && value(o, *i, ctx); ++i) ;
+                    return i == e;
                 }
         };
     template <typename X>
@@ -2551,9 +2547,8 @@ namespace cxon { namespace bits { // fundamental type encoding
                 }
             template <typename O, typename II>
                 static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
-                        return false;
-                    return true;
+                    for ( ; i != e && value(o, *i, ctx); ++i) ;
+                    return i == e;
                 }
         };
 
@@ -2567,15 +2562,21 @@ namespace cxon { namespace bits { // fundamental type encoding
                 static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                     return encode<X, char32_t>::value(o, char32_t(c), ctx);
                 }
-            template <typename O, typename II>
-                static bool value(O& o, II i, II, wctx<X>& ctx) {
-                    return value(o, *i, ctx);
+            template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::value(o, i, e, ctx);
                 }
-            template <typename O, typename II>
-                static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
-                        return false;
-                    return true;
+            template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::value(o, i, e, ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::range(o, i, e, ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::range(o, i, e, ctx);
                 }
         };
     template <typename X>
@@ -2588,15 +2589,21 @@ namespace cxon { namespace bits { // fundamental type encoding
                 static auto value(O& o, T c, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                     return encode<JSON<X>, char32_t>::value(o, char32_t(c), ctx);
                 }
-            template <typename O, typename II>
-                static bool value(O& o, II i, II, wctx<X>& ctx) {
-                    return value(o, *i, ctx);
+            template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<JSON<X>, char16_t>::value(o, i, e, ctx);
                 }
-            template <typename O, typename II>
-                static bool range(O& o, II i, II e, wctx<X>& ctx) {
-                    for ( ; i != e; ++i) if (!value(o, *i, ctx))
-                        return false;
-                    return true;
+            template <typename O, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<JSON<X>, char32_t>::value(o, i, e, ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<JSON<X>, char16_t>::range(o, i, e, ctx);
+                }
+            template <typename O, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, wctx<X>& ctx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<JSON<X>, char32_t>::range(o, i, e, ctx);
                 }
         };
 
@@ -2625,11 +2632,6 @@ namespace cxon { namespace bits { // fundamental type encoding
 
     template <typename X, typename T, typename O>
         inline auto number_write(O& o, const T& t, wctx<X>& ctx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
-            if (std::isfinite(t)) {
-                char s[std::numeric_limits<T>::max_digits10 * 2];
-                auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t, std::numeric_limits<T>::max_digits10);
-                return io::poke<X>(o, s, r.ptr - s, ctx);
-            }
             if (std::isinf(t)) {
                 if (!io::poke<X>(o, opqt<X>::beg, ctx)) return false;
                 if (std::signbit(t) && !io::poke<X>(o, '-', ctx)) return false;
@@ -2637,7 +2639,10 @@ namespace cxon { namespace bits { // fundamental type encoding
             }
             if (std::isnan(t))
                 return io::poke<X>(o, opqt<X>::beg, ctx) && io::poke<X>(o, "nan", ctx) && io::poke<X>(o, opqt<X>::end, ctx);
-            return false;
+            CXON_ASSERT(std::isfinite(t), "unexpected");
+            char s[std::numeric_limits<T>::max_digits10 * 2];
+            auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t, std::numeric_limits<T>::max_digits10);
+            return io::poke<X>(o, s, r.ptr - s, ctx);
         }
 
 }}  // cxon::bits fundamental type encoding
@@ -3078,45 +3083,43 @@ namespace cxon { namespace unquoted { // unquoted value
             struct value {
                 template <typename BA, typename II>
                     static bool skip(BA& o, II& i, II e) {
-                        if (o.add(*i)) {
-                            for (++i; i != e; ++i) {
-                                switch (*i)  {
-                                    case '\\':              if (!o.add(*i)) return false;
-                                                            if (++i == e)   return false;
-                                                            break;
-                                    case X::string::end:    return o.add(*i);
-                                }
+                        if (!o.add(*i)) return false;
+                        for (++i; i != e; ++i) {
+                            switch (*i)  {
+                                case '\\':              if (!o.add(*i)) return false;
+                                                        if (++i == e)   return false;
+                                                        break;
+                                case X::string::end:    return o.add(*i);
                             }
                         }
                         return false;
                     }
-                template <typename C, typename BA, typename II>
+                template <char CB, char CE, typename BA, typename II>
                     static bool skip(BA& o, II& i, II e) {
-                        if (o.add(*i)) {
-                            unsigned r = 0;
-                            for (++i; i != e; ++i) {
-                                switch (*i) {
-                                    case C::beg:            if (!o.add(*i))     return false;
-                                                            ++r; break;
-                                    case C::end:            if (!o.add(*i))     return false;
-                                                            if (r == 0)         return true;
-                                                            --r; break;
-                                    case X::string::beg:    if (!skip(o, i, e)) return false;
-                                }
+                        if (!o.add(*i)) return false;
+                        unsigned r = 0;
+                        for (++i; i != e; ++i) {
+                            switch (*i) {
+                                case CB:                if (!o.add(*i))     return false;
+                                                        ++r; break;
+                                case CE:                if (!o.add(*i))     return false;
+                                                        if (r == 0)         return true;
+                                                        --r; break;
+                                case X::string::beg:    if (!skip(o, i, e)) return false;
                             }
                         }
                         return false;
                     }
                 template <typename BA, typename II>
                     static bool read(BA o, II& i, II e) {
-                        io::consume<X>(i, e);
                         for (char c = *i; i != e; c = *++i) {
-                                 if (c == X::map::beg)      { if (!skip<map<X>>(o, i, e))  return false; }
-                            else if (c == X::list::beg)     { if (!skip<list<X>>(o, i, e)) return false; }
-                            else if (c == X::string::beg)   { if (!skip(o, i, e))          return false; }
-                            else if (c == X::map::sep)      break;
-                            else if (c == X::map::end)      break;
-                            else                            { if (!o.add(*i)) return false; }
+                                 if (c == X::map::beg)      { if (!skip<map<X>::beg, map<X>::end>(o, i, e))     return false; }
+                            else if (c == X::list::beg)     { if (!skip<list<X>::beg, list<X>::end>(o, i, e))   return false; }
+                            else if (c == X::string::beg)   { if (!skip(o, i, e))                               return false; }
+                            else if (c == X::map::sep)                                                          break;
+                            else if (c == X::map::end)                                                          break;
+                            else if (c == X::list::end)                                                         break;
+                            else                            { if (!o.add(*i))                                   return false; }
                         }
                         return o.add('\0');
                     }
@@ -3139,20 +3142,16 @@ namespace cxon { namespace unquoted { // unquoted value
 
     template <typename X, typename T, size_t N, typename II>
         inline bool read_value(T (&t)[N], II& i, II e, rctx<X>& ctx) {
-            II const o = i;
             return !bits::value<X>::read(bits::array_adder<T>(t), i, e) ?
-                (ctx|read_error::unexpected, cxon::bits::rewind(i, o), false) :
+                (ctx|read_error::unexpected, false) :
                 true
             ;
         }
 
     template <typename X, typename II>
         inline bool read_value(II& i, II e, rctx<X>& ctx) {
-            II const o = i;
             return !bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) ?
-                (ctx|read_error::unexpected, cxon::bits::rewind(i, o), false) :
-                true
-            ;
+                (ctx|read_error::unexpected, false) : true;
         }
 
 }}  // cxon::unquoted value
@@ -3172,26 +3171,27 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
             struct read<JSON<X>> {
                 template <size_t N, typename II>
                     static bool value(char (&t)[N], II& i, II e, rctx<X>& ctx) {
-                        return cxon::read_value<X>(t, i, e, ctx);
+                        return cxon::read_value<JSON<X>>(t, i, e, ctx);
                     }
             };
 
     }
 
-    template <typename X, typename E, typename V, size_t N, typename II>
-        inline bool read_value(E& t, const V (&vs)[N], II& i, II e, rctx<X>& ctx) {
+    template <typename X, typename E, typename V, typename II>
+        inline bool read_value(E& t, V vb, V ve, II& i, II e, rctx<X>& ctx) {
+            io::consume<X>(i, e);
             II const o = i;
                 char id[X::buffer::max_id];
                     if (!bits::read<X>::value(id, i, e, ctx)) return false;
-                for (auto& v : vs) if (std::strcmp(v.name, id) == 0)
-                    return t = v.value, true;
+                for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
+                    return t = vb->value, true;
             return ctx|read_error::unexpected, cxon::bits::rewind(i, o), false;
         }
 
-    template <typename X, typename E, typename V, size_t N, typename O>
-        inline bool write_value(O& o, E t, const V (&vs)[N], wctx<X>& ctx) {
-            for (auto& v : vs) if (t == v.value)
-                return io::poke<X>(o, cxon::bits::opqt<X>::beg, ctx) && io::poke<X>(o, v.name, ctx) && io::poke<X>(o, cxon::bits::opqt<X>::end, ctx);
+    template <typename X, typename E, typename V, typename O>
+        inline bool write_value(O& o, E t, V vb, V ve, wctx<X>& ctx) {
+            for ( ; vb != ve; ++vb) if (t == vb->value)
+                return io::poke<X>(o, cxon::bits::opqt<X>::beg, ctx) && io::poke<X>(o, vb->name, ctx) && io::poke<X>(o, cxon::bits::opqt<X>::end, ctx);
             return false;
         }
 
@@ -3209,7 +3209,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
                 inline bool read_value(Type& t, II& i, II e, rctx<X>& ctx) {\
                     using T = Type;\
                     static constexpr enums::value<Type> v[] = { __VA_ARGS__ };\
-                    return enums::read_value<X>(t, v, i, e, ctx);\
+                    return enums::read_value<X>(t, std::begin(v), std::end(v), i, e, ctx);\
                 }\
         }
 #   define CXON_ENUM_WRITE(Type, ...)\
@@ -3218,7 +3218,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
                 inline bool write_value(O& o, const Type& t, wctx<X>& ctx) {\
                     using T = Type;\
                     static constexpr enums::value<Type> v[] = { __VA_ARGS__ };\
-                    return enums::write_value<X>(o, t, v, ctx);\
+                    return enums::write_value<X>(o, t, std::begin(v), std::end(v), ctx);\
                 }\
         }
 #   define CXON_ENUM(Type, ...)\
@@ -3311,6 +3311,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             if (!io::consume<X>(X::map::beg, i, e, ctx)) return false;
             if ( io::consume<X>(X::map::end, i, e)) return true;
             for (char id[X::buffer::max_id]; ; ) {
+                io::consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, ctx)) return cxon::bits::rewind(i, o), false;
                     if (!bits::read<X, S, F...>::fields(s, id, f, i, e, ctx)) return !ctx.ec ?
