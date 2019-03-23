@@ -407,8 +407,6 @@ TEST_BEG(cxon::CXON<>) // base
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
-        R_TEST(L"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\0004"));
             W_TEST(QS("123\\04"), a);
@@ -495,8 +493,6 @@ TEST_BEG(cxon::CXON<>) // base
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
-        R_TEST(std::wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), std::wstring(L"\xdbff\xdfff")); // surrogate
         R_TEST(std::wstring(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::wstring(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::wstring(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
@@ -792,8 +788,6 @@ TEST_BEG(cxon::JSON<>) // base
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
-        R_TEST(L"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\u00004"));
             W_TEST(QS("123\\u00004"), a);
@@ -880,8 +874,6 @@ TEST_BEG(cxon::JSON<>) // base
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), std::wstring({0x0442, 0x0435, 0x0441, 0x0442}));
         R_TEST(std::wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), std::wstring({0x6D4B, 0x8BD5}));
-        R_TEST(std::wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), std::wstring(L"\xdbff\xdfff")); // surrogate
         R_TEST(std::wstring(), "a", cxon::read_error::unexpected, 0);
         R_TEST(std::wstring(), "\"", cxon::read_error::unexpected, 1);
         R_TEST(std::wstring(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
@@ -1272,10 +1264,6 @@ TEST_BEG(cxon::CXON<string_quote::single_traits>) // cxon string quoting
     W_TEST("'\xF0\x92\x90\x9D\xF0\x92\x90\x9C'", std::u32string({0x0001241D, 0x0001241C}));
     R_TEST(std::u32string(), "a", cxon::read_error::unexpected, 0);
     R_TEST(std::u32string(), "'\\u001'", cxon::read_error::escape_invalid, 1);
-    // coverage
-    R_TEST('x', "'x'");
-    R_TEST('\0', "'\\u0100'", cxon::read_error::character_invalid, 1);
-    R_TEST('\0', "'\xff'", cxon::read_error::character_invalid, 1); // invalid utf-8
 TEST_END()
 
 
@@ -1519,23 +1507,6 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
         W_TEST("{}", (unordered_multimap<int, int>{}));
         R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,1:1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
-    // coverage
-        R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
-        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
-        R_TEST("", "\"", cxon::read_error::unexpected, 1);
-        R_TEST('x', QS("x"));
-        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
-        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
-        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
-        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
-        R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
-        R_TEST(vector<int>{0, 1, 2, 3}, "{0, 01, 0x2, 0b11}");
-        W_TEST("true", true);
-        {   char16_t a[2] = {u'x', u'x'};
-            R_TEST(a, QS("xx"));
-        }
 TEST_END()
 
 TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
@@ -1609,36 +1580,6 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         W_TEST("{}", (map<int, int>{}));
         R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-    // coverage
-        R_TEST("**'\"?\\\a\b\f\n\r\t\v**", QS("\\052\\x2A\\'\\\"\\?\\\\\\a\\b\\f\\n\\r\\t\\v\\u002A\\U0000002A"));
-        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
-        R_TEST("", "\"", cxon::read_error::unexpected, 1);
-        R_TEST('x', QS("x"));
-        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
-        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
-        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
-        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(wstring(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
-        R_TEST(u16string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
-        R_TEST(u32string(U"\U0010ffff"), QS("\\udbff\\udfff")); // surrogate
-        R_TEST(u32string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
-        R_TEST(wstring(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
-        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
-        W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"), u"\xD83C\xDF7A\x2764x\x3B1");
-        R_TEST(vector<int>{0, 1, 2, 3}, "{0, 01, 0x2, 0b11}");
-        W_TEST("true", true);
-        {   char16_t a[2] = {u'x', u'x'};
-            R_TEST(a, QS("xx"));
-        }
-        R_TEST((map<u16string, int>{{u"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
-        R_TEST((map<u32string, int>{{U"\U0010ffff", 1}}), "{\\udbff\\udfff: 1}");
-        R_TEST((map<wstring, int>{{L"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
 TEST_END()
 
 
@@ -1678,22 +1619,6 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
         W_TEST("{}", (unordered_multimap<int, int>{}));
         R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
         W_TEST("{\"1\":1,\"1\":1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
-    // coverage
-        R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
-        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
-        R_TEST("", "\"", cxon::read_error::unexpected, 1);
-        R_TEST('x', QS("x"));
-        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
-        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
-        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
-        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
-        R_TEST(u"", QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
-        W_TEST("true", true);
-        {   char16_t a[2] = {u'x', u'x'};
-            R_TEST(a, QS("xx"));
-        }
 TEST_END()
 
 TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
@@ -1782,35 +1707,6 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         W_TEST("{}", (unordered_multimap<int, int>{}));
         R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
         W_TEST("{1:1,1:1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
-    // coverage
-        R_TEST("\"\\/\b\f\n\r\t*", QS("\\\"\\\\\\/\\b\\f\\n\\r\\t\\u002A"));
-        R_TEST("", QS("\\zztop"), cxon::read_error::escape_invalid, 1);
-        R_TEST("", "\"", cxon::read_error::unexpected, 1);
-        R_TEST('x', QS("x"));
-        R_TEST('\0', QS("\\u0100"), cxon::read_error::character_invalid, 1);
-        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
-        R_TEST("", QS("\xff"), cxon::read_error::unexpected, 1); // invalid utf-8
-        R_TEST(string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u16string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u32string(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(wstring(), "\"", cxon::read_error::unexpected, 1);
-        R_TEST(u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
-        R_TEST(u16string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
-        R_TEST(u32string(U"\U0010ffff"), QS("\\udbff\\udfff")); // surrogate
-        R_TEST(u32string(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(wstring(L"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
-        R_TEST(wstring(), QS("\\udbff\\uffff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
-        R_TEST(u"\xD83C\xDF7A\x2764x\x3B1", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"));
-        W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x\xCE\xB1"), u"\xD83C\xDF7A\x2764x\x3B1");
-        W_TEST("true", true);
-        {   char16_t a[2] = {u'x', u'x'};
-            R_TEST(a, QS("xx"));
-        }
-        R_TEST((map<u16string, int>{{u"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
-        R_TEST((map<u32string, int>{{U"\U0010ffff", 1}}), "{\\udbff\\udfff: 1}");
-        R_TEST((map<wstring, int>{{L"\xdbff\xdfff", 1}}), "{\\udbff\\udfff: 1}");
 TEST_END()
 
 
@@ -1900,9 +1796,7 @@ TEST_BEG(cxon::JSON<js::strict_traits>)
     W_TEST(QS("\\u2029"), L"\u2029");
     W_TEST(QS("\xE2\x80\xA7"), u8"\u2027");
     W_TEST(QS("\xE2\x81\xA7"), "\xE2\x81\xA7");
-    // coverage
     W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
-    W_TEST(QS("\xf4\x8f\xbf\xbf"), L"\xdbff\xdfff"); // surrogate
 TEST_END()
 
 TEST_BEG(cxon::JSON<>)
@@ -2048,7 +1942,6 @@ TEST_BEG(cxon::CXON<>) // enum
     R_TEST(Enum1::one, "{\"}", cxon::read_error::unexpected, 3);
     R_TEST(Enum1::one, "{\"\"}", cxon::read_error::unexpected, 0);
     R_TEST(Enum1::one, "{\"\\x\"}", cxon::read_error::unexpected, 0);
-    // coverage
 #   ifdef NDEBUG
         W_TEST("", Enum1::four);
 #   endif
@@ -2060,7 +1953,6 @@ TEST_BEG(cxon::JSON<>)
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
     R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 0);
-    // coverage
 #   ifdef NDEBUG
         W_TEST("", Enum1::four);
 #   endif
@@ -2608,7 +2500,6 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
             ec = read_error::surrogate_invalid;
                 CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
-            // coverage
 #           ifdef NDEBUG
                 ec = read_error(255);
                     CXON_ASSERT(ec.message() == "unknown error", "check failed");
@@ -2621,7 +2512,6 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "no error", "check failed");
             ec = write_error::output_failure;
                 CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
-            // coverage
 #           ifdef NDEBUG
                 ec = write_error(255);
                     CXON_ASSERT(ec.message() == "unknown error", "check failed");
