@@ -1274,7 +1274,7 @@ namespace key {
         };
     };
     struct less_cstr {
-        bool operator ()(const char* k0, const char* k1) const { return std::strcmp(k0, k1) < 0; }
+        bool operator ()(const char* k0, const char* k1) const { return (!k0 && k1) || (k0 && k1 && std::strcmp(k0, k1) < 0); }
     };
 }
 
@@ -1533,6 +1533,7 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
         W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
         W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
         W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
+        W_TEST("{null:0,1:1,2:2}", (map<const char*, int, key::less_cstr>{{nullptr, 0}, {"1", 1}, {"2", 2}}));
     // std::map<std::u16string, int>
         R_TEST((map<u16string, int>{}), "{}");
         W_TEST("{}", (map<u16string, int>{}));
