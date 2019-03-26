@@ -6,13 +6,13 @@ cache:
 matrix:
   include:
     - os: linux
-      env: CC=gcc-4.9 CXX=g++-4.9
+      env: CC=gcc-6 CXX=g++-6
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-4.9
+            - g++-6
 
     - os: linux
       env: CC=gcc-8 CXX=g++-8
