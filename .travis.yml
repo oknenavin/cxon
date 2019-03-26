@@ -1,4 +1,4 @@
-language: cpp
+language: generic
 
 cache:
     apt: true
@@ -6,7 +6,7 @@ cache:
 matrix:
   include:
     - os: linux
-      env: CC=gcc-8 CXX=g++-8
+      env: CXX=g++-8
       addons:
         apt:
           sources:
@@ -15,12 +15,14 @@ matrix:
             - g++-8
 
     - os: linux
-      env: CC=clang-7 CXX=clang++-7
+      env: CXX=clang++-7
       addons:
         apt:
           sources:
             - llvm-toolchain-trusty-7
+            - ubuntu-toolchain-r-test
           packages:
+            - g++-8 # libstdc++ but why!?
             - clang-7
 
 script:
