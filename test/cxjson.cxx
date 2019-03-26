@@ -61,8 +61,8 @@ static void cxjson_test_time(test_case& test) {
     std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
     {   // base
         std::unique_ptr<char[]> s;
-        test.time.base = measure([&] {
-            s = std::unique_ptr<char[]>(new char[json.size() + 1]);
+        test.time.base = measure([&] { // something like strdup
+            s = std::unique_ptr<char[]>(new char[strlen(json.c_str()) + 1]);
             std::memcpy(s.get(), json.c_str(), json.size());
         });
     }
