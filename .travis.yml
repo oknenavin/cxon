@@ -1,0 +1,29 @@
+sudo: false
+
+language: cpp
+
+cache:
+	apt: true
+
+matrix:
+  include:
+    - os: linux
+      env: CC=gcc-8 CXX=g++-8
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+
+    - os: linux
+      env: CC=clang-7 CXX=clang++-7
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-7
+          packages:
+            - clang-7
+
+script:
+  - make test
