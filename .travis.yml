@@ -1,7 +1,7 @@
 language: generic
 
 cache:
-    apt: true
+  apt: true
 
 matrix:
   include:
@@ -24,6 +24,19 @@ matrix:
           packages:
             - g++-8 # libstdc++ but why!?
             - clang-7
+
+    - os: linux
+      env: CXX=g++-8 CXXFLAGS=--coverage
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+          before_script:
+            - pip install --user cpp-coveralls
+          after_success:
+            - coveralls --dryrun -b . -i .. -e cxon.cxx -e cxjson.cxx --gcov 'gcov-4.9' --gcov-options '\-lp'
 
 script:
   - make test
