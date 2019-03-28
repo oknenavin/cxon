@@ -36,7 +36,7 @@ matrix:
       before_script:
         - pip install --user cpp-coveralls
       after_success:
-        - coveralls -i cxon.hxx -b test --gcov 'gcov-8' --gcov-options '\-mr'
+        - coveralls -i cxon.hxx -b test --gcov 'gcov-8' --gcov-options '\-mr cxon.hxx'
 
 script:
   - make test
