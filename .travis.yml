@@ -33,10 +33,10 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-          before_script:
-            - pip install --user cpp-coveralls
-          after_success:
-            - coveralls -b . -i .. -e cxon.cxx -e cxjson.cxx --gcov 'gcov-4.9' --gcov-options '\-lp'
+      before_script:
+        - pip install --user cpp-coveralls
+      after_success:
+        - coveralls -b . -i .. -e cxon.cxx -e cxjson.cxx --gcov 'gcov-4.9' --gcov-options '\-lp'
 
 script:
   - make test
