@@ -22,18 +22,5 @@ matrix:
             - g++-8 # libstdc++ but why!?
             - clang-7
 
-    - os: linux
-      env: CXX=g++-8 CXXFLAGS=--coverage TARGET=test-cxon
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-      before_script:
-        - pip install --user cpp-coveralls
-      after_success:
-        - coveralls -i cxon.hxx -b test --gcov 'gcov-8' --gcov-options '\-mr'
-
 script:
   - make $TARGET
