@@ -23,7 +23,7 @@ matrix:
             - clang-7
 
     - os: linux
-      env: CXX=g++-8 CXXFLAGS=--coverage TARGET=test-cxon CODECOV_TOKEN="79c30bdd-6e85-4d38-9c08-0ee3cc12953e"
+      env: CXX=g++-8 CXXFLAGS=--coverage TARGET=test-cxon
       addons:
         apt:
           sources:
@@ -32,7 +32,8 @@ matrix:
             - g++-8
             - lcov
       after_success:
-            - lcov -c -d . -o cov.info
+            - lcov --version
+            - lcov --gcov-tool gcov-8 -c -d . -o cov.info
             - lcov -r cov.info '/usr/*' -o cov.info
             - lcov -l cov.info
             - bash <(curl -s https://codecov.io/bash) -f cov.info || echo "Codecov did not collect coverage reports"
