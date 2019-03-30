@@ -30,7 +30,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-            - lcov
+            - lcov-1.13.4
       after_success:
             - lcov --version
             - lcov --gcov-tool gcov-8 -c -d . -o cov.info
