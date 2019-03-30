@@ -1,12 +1,9 @@
 language: generic
 
-cache:
-  apt: true
-
 matrix:
   include:
     - os: linux
-      env: CXX=g++-8
+      env: CXX=g++-8 TARGET=test
       addons:
         apt:
           sources:
@@ -15,7 +12,7 @@ matrix:
             - g++-8
 
     - os: linux
-      env: CXX=clang++-7
+      env: CXX=clang++-7 TARGET=test
       addons:
         apt:
           sources:
@@ -26,17 +23,21 @@ matrix:
             - clang-7
 
     - os: linux
-      env: CXX=g++-8 CXXFLAGS=--coverage
+      env: CXX=g++-8 CXXFLAGS=--coverage TARGET=test
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-      before_script:
-        - pip install --user cpp-coveralls
       after_success:
-        - coveralls -i cxon.hxx -b test --gcov 'gcov-8' --gcov-options '\-lp'
+            - wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+            - tar xvfz lcov-1.14.tar.gz
+            - make -C lcov-1.14
+            - lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
+            - lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
+            - lcov-1.14/bin/lcov -l cxon.info
+            - bash <(curl -s https://codecov.io/bash) -f cxon.info || echo "upload failed"
 
 script:
-  - make test
+  - make $TARGET
