@@ -35,7 +35,7 @@ struct test_case {
 };
 
 template <typename B>
-    double measure(B block) {
+    static double measure(B block) {
         using clock = std::chrono::steady_clock;
         using std::chrono::duration_cast;
         using std::chrono::nanoseconds;
@@ -90,7 +90,7 @@ static void cxjson_test_time(test_case& test) {
 
 using cases = std::vector<test_case>;
 
-bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& time, cases& diff) {
+static bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& time, cases& diff) {
     if (argc < 2) return false;
     static auto const key = [](const char* v) {
         return  std::strcmp("pass", v) == 0 || std::strcmp("fail", v) == 0 ||
@@ -135,7 +135,74 @@ bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& time, cas
     return true;
 }
 
+static unsigned coverage() {
+    unsigned a = 0;
+    unsigned f = 0;
+#   define CHECK(c) ++a; if (!(c))\
+        fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr), ++f;\
+        CXON_ASSERT((c), "check failed");
+    {
+        //using node = cxjson::node;
+
+        char const s[] = "{\"array0\":[{\"1\":1},{\"2\":2}],\"array1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"number\":4}";
+        node jns;
+        {   // from/to string
+            cxon::from_chars(jns, s);
+            std::string r; cxon::to_chars(std::back_inserter(r), jns);
+            CHECK(r == s);
+        }
+        node jno;
+        {   // from object
+            jno = node::object {
+                {"array0", node::array {
+                    node::object {{"1", 1}},
+                    node::object {{"2", 2}}
+                }},
+                {"array1", node::array {
+                    "string",
+                    3,
+                    node::object {
+                        {"bool", true},
+                        {"null", nullptr}
+                    },
+                    nullptr
+                }},
+                {"number", 4}
+            };
+            std::string r; cxon::to_chars(r, jno);
+            CHECK(r == s);
+        }
+        {   // pretty
+            std::string s0; cxon::to_chars(cxon::make_indenter(s0), jns);
+            auto const s = cxjson::pretty<cxon::JSON<>, std::vector<char>>(jno);
+            std::string const s1 = cxjson::pretty(jno);
+            CHECK(s0 == s1);
+        }
+        {   using namespace cxjson;
+            std::error_condition ec;
+            ec = error::ok;
+                CXON_ASSERT(ec.category() == error_category::value, "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxjson") == 0, "check failed");
+                CXON_ASSERT(ec.message() == "no error", "check failed");
+            ec = error::invalid;
+                CXON_ASSERT(ec.message() == "invalid json", "check failed");
+            ec = error::recursion_depth_exceeded;
+                CXON_ASSERT(ec.message() == "recursion depth limit exceeded", "check failed");
+#           ifdef NDEBUG
+                ec = error(255);
+                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
+#           endif
+        }
+    }
+#   undef CHECK
+    if (f) fprintf(stdout, "cxjson: %u of %u failed\n", f, a);
+    return f;
+}
+
 int main(int argc, char *argv[]) {
+    if (coverage() != 0u) {
+        return 1;
+    }
     cases pass, fail, time, diff;
     if (!cl_parse(argc, argv, pass, fail, time, diff)) {
         return fprintf(stderr, "usage: cxjson ((pass|fail|diff|time) (file|@file)+)+\n"), 1;

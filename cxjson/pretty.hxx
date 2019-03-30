@@ -25,67 +25,66 @@ namespace cxjson {
             struct pretty {
                 template <typename Tr>
                     static bool value(O o, const basic_node<Tr>& n, unsigned tab, char pad, unsigned lvl = 0) {
-#                       define CXJSON_CHECK(e) if (!(e)) return false
                         using namespace cxon;
                         using json = basic_node<Tr>;
                         static wctx<X> ctx;
-                        switch (n.type()) {
-                            case node_type::object: {
-                                auto& j = n.template get<typename json::object>();
-                                if (j.empty()) return io::poke(o, "{}");
-                                auto i = std::begin(j);
-                                CXJSON_CHECK((
-                                    io::poke(o, "{\n") &&
-                                    io::poke(o, lvl + 1, pad) &&
-                                        write_key<X>(o, i->first, ctx), io::poke(o, ' ') &&
-                                        pretty<X, O>::value(o, i->second, tab, pad, lvl + 1)
-                                ));
-                                if (j.size() > 1) {
-                                    auto const e = std::end(j);
-                                    while (++i != e) {
-                                        CXJSON_CHECK((
-                                            io::poke(o, ",\n") &&
-                                            io::poke(o, lvl + 1, pad) &&
-                                                write_key<X>(o, i->first, ctx), io::poke(o, ' ') &&
-                                                pretty<X, O>::value(o, i->second, tab, pad, lvl + 1)
-                                        ));
+#                       define CXJSON_CHECK(e) if (!(e)) return false
+                            switch (n.type()) {
+                                case node_type::object: {
+                                    auto& j = n.template get<typename json::object>();
+                                    if (j.empty()) return io::poke(o, "{}");
+                                    auto i = std::begin(j);
+                                    CXJSON_CHECK((
+                                        io::poke(o, "{\n") &&
+                                        io::poke(o, lvl + 1, pad) &&
+                                            write_key<X>(o, i->first, ctx), io::poke(o, ' ') &&
+                                            pretty<X, O>::value(o, i->second, tab, pad, lvl + 1)
+                                    ));
+                                    if (j.size() > 1) {
+                                        auto const e = std::end(j);
+                                        while (++i != e) {
+                                            CXJSON_CHECK((
+                                                io::poke(o, ",\n") &&
+                                                io::poke(o, lvl + 1, pad) &&
+                                                    write_key<X>(o, i->first, ctx), io::poke(o, ' ') &&
+                                                    pretty<X, O>::value(o, i->second, tab, pad, lvl + 1)
+                                            ));
+                                        }
                                     }
+                                    return io::poke(o, '\n') && io::poke(o, lvl, pad) && io::poke(o, '}');
                                 }
-                                return io::poke(o, '\n') && io::poke(o, lvl, pad) && io::poke(o, '}');
-                            }
-                            case node_type::array: {
-                                auto& j = n.template get<typename json::array>();
-                                if (j.empty()) return io::poke(o, "[]");
-                                auto i = std::begin(j);
-                                CXJSON_CHECK((
-                                    io::poke(o, "[\n") &&
-                                    io::poke(o, lvl + 1, pad) &&
-                                        pretty<X, O>::value(o, *i, tab, pad, lvl + 1)
-                                ));
-                                if (j.size() > 1) {
-                                    auto const e = std::end(j);
-                                    while (++i != e) {
-                                        CXJSON_CHECK((
-                                            io::poke(o, ",\n") &&
-                                            io::poke(o, lvl + 1, pad) &&
-                                                pretty<X, O>::value(o, *i, tab, pad, lvl + 1)
-                                        ));
+                                case node_type::array: {
+                                    auto& j = n.template get<typename json::array>();
+                                    if (j.empty()) return io::poke(o, "[]");
+                                    auto i = std::begin(j);
+                                    CXJSON_CHECK((
+                                        io::poke(o, "[\n") &&
+                                        io::poke(o, lvl + 1, pad) &&
+                                            pretty<X, O>::value(o, *i, tab, pad, lvl + 1)
+                                    ));
+                                    if (j.size() > 1) {
+                                        auto const e = std::end(j);
+                                        while (++i != e) {
+                                            CXJSON_CHECK((
+                                                io::poke(o, ",\n") &&
+                                                io::poke(o, lvl + 1, pad) &&
+                                                    pretty<X, O>::value(o, *i, tab, pad, lvl + 1)
+                                            ));
+                                        }
                                     }
+                                    return io::poke(o, '\n') && io::poke(o, lvl, pad) && io::poke(o, ']');
                                 }
-                                return io::poke(o, '\n') && io::poke(o, lvl, pad) && io::poke(o, ']');
+                                case node_type::string:
+                                    return write_value<X>(o, n.template get<typename json::string>(), ctx);
+                                case node_type::number:
+                                    return write_value<X>(o, n.template get<typename json::number>(), ctx);
+                                case node_type::boolean:
+                                    return write_value<X>(o, n.template get<typename json::boolean>(), ctx);
+                                case node_type::null:
+                                    return write_value<X>(o, n.template get<typename json::null>(), ctx);
                             }
-                            case node_type::string:
-                                return write_value<X>(o, n.template get<typename json::string>(), ctx);
-                            case node_type::number:
-                                return write_value<X>(o, n.template get<typename json::number>(), ctx);
-                            case node_type::boolean:
-                                return write_value<X>(o, n.template get<typename json::boolean>(), ctx);
-                            case node_type::null:
-                                return write_value<X>(o, n.template get<typename json::null>(), ctx);
-                            default:
-                                return true;
-                        }
 #                       undef CXJSON_CHECK
+                        return true;
                     }
             };
 
