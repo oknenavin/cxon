@@ -7,6 +7,7 @@
 [![License][url-image-license]](../LICENSE)
 
 [![Build][url-image-build]](https://travis-ci.org/oknenavin/cxon)
+[![Coverage][url-image-coverage]](https://codecov.io/gh/oknenavin/cxon)
 
 --------------------------------------------------------------------------------
 
@@ -160,6 +161,7 @@ Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more informat
 [url-image-format]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [url-image-license]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
 [url-image-build]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
+[url-image-coverage]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
 [url-github]: https://github.com/oknenavin/cxon
 [url-cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
 [url-cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
