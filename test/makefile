@@ -29,6 +29,5 @@ $(out)/cxjson-test: cxjson.cxx ../cxon.hxx ../cxjson/cxjson.hxx ../cxjson/pretty
     
 clean:
 	@rm -fr $(out)
-	@rm -f *.gc??
 
 .PHONY: test test-cxon test-cxjson clean
