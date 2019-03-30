@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "../cxon.hxx"
+#include "../pretty.hxx"
 
 #include <cstdio>
 
@@ -2320,21 +2321,21 @@ TEST_BEG(cxon::CXON<>) // interface/read
     {   ++TEST_A;
         int r; char const i[] = "1";
         if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         int r; std::string const i = "1";
         if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         int r; std::vector<char> const i = {'1'};
         if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2342,21 +2343,21 @@ TEST_BEG(cxon::CXON<>) // interface/read
     {   ++TEST_A;
         int r; char const i[] = "1";
         if (!cxon::from_chars(r, i) || r != 1) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         int r; std::string const i = "1";
         if (!cxon::from_chars(r, i) || r != 1) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         int r; std::vector<char> const i = {'1'};
         if (!cxon::from_chars(r, i) || r != 1) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2367,21 +2368,21 @@ TEST_BEG(cxon::CXON<>) // interface/write
     {   ++TEST_A;
         std::string r; std::string const e = QS("1");
         if (!cxon::to_chars<XXON>(std::back_inserter(r), "1") || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         std::string r; std::string const e = "1";
         if (!cxon::to_chars<XXON>(std::back_inserter(r), 1) || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         std::string r; std::string const e = "true";
         if (!cxon::to_chars<XXON>(std::back_inserter(r), true) || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2390,7 +2391,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
         char o[16]; char const e[] = QS("1");
         auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
         if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2398,7 +2399,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
             char o[1];
             auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
             if (r.ec != cxon::write_error::output_failure) {
-                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+                ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
                 CXON_ASSERT(false, "check failed");
             }
         }
@@ -2406,7 +2407,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
         char o[16]; char const e[] = "1";
         auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 1);
         if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2414,7 +2415,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
             char o[1];
             auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 42);
             if (r.ec != cxon::write_error::output_failure) {
-                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+                ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
                 CXON_ASSERT(false, "check failed");
             }
         }
@@ -2422,7 +2423,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
         char o[16]; char const e[] = "true";
         auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
         if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2430,7 +2431,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
             char o[1];
             auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
             if (r.ec != cxon::write_error::output_failure) {
-                ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+                ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
                 CXON_ASSERT(false, "check failed");
             }
         }
@@ -2438,21 +2439,21 @@ TEST_BEG(cxon::CXON<>) // interface/write
     {   ++TEST_A;
         std::string r; std::string const e = QS("1");
         if (!cxon::to_chars<XXON>(r, "1") || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         std::string r; std::string const e = "1";
         if (!cxon::to_chars<XXON>(r, 1) || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         std::string r; std::string const e = "true";
         if (!cxon::to_chars<XXON>(r, true) || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2460,21 +2461,21 @@ TEST_BEG(cxon::CXON<>) // interface/write
     {   ++TEST_A;
         std::vector<char> r; std::vector<char> const e = {'"', '1', '"'};
         if (!cxon::to_chars<XXON>(r, "1") || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         std::vector<char> r; std::vector<char> const e = {'1'};
         if (!cxon::to_chars<XXON>(r, 1) || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
     {   ++TEST_A;
         std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
         if (!cxon::to_chars<XXON>(r, true) || r != e) {
-            ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
@@ -2517,6 +2518,45 @@ TEST_BEG(cxon::CXON<>) // errors
                 ec = write_error(255);
                     CXON_ASSERT(ec.message() == "unknown error", "check failed");
 #           endif
+    }
+TEST_END()
+
+TEST_BEG(cxon::CXON<>) // pretty
+    {   ++TEST_A;
+        using map = std::map<std::string, std::vector<int>>;
+        char const p[] =
+            "{\n"
+            "\teven: {\n"
+            "\t\t2,\n"
+            "\t\t4,\n"
+            "\t\t6\n"
+            "\t},\n"
+            "\todd: {\n"
+            "\t\t1,\n"
+            "\t\t3,\n"
+            "\t\t5\n"
+            "\t}\n"
+            "}"
+        ;
+        std::string s;
+            cxon::to_chars<XXON>(cxon::make_indenter<XXON>(s), map{{"even", {2, 4, 6}}, {"odd", {1, 3, 5}}});
+        if (s != p) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        char const p[] =
+            "{\n"
+            "\tala: \"ba\\\"la\",\n"
+            "\tbl\\ ah: \"blah\"\n"
+            "}"
+        ;
+        std::string const s = cxon::pretty("{ala: \"ba\\\"la\", bl\\ ah: \"blah\"}");
+        if (/*s != p*/std::strcmp(s.c_str(), p) != 0) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
     }
 TEST_END()
 
