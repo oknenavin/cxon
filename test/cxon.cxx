@@ -2552,8 +2552,9 @@ TEST_BEG(cxon::CXON<>) // pretty
             "\tbl\\ ah: \"blah\"\n"
             "}"
         ;
-        std::string const s = cxon::pretty("{ala: \"ba\\\"la\", bl\\ ah: \"blah\"}");
-        if (/*s != p*/std::strcmp(s.c_str(), p) != 0) {
+        std::string s = "{ala: \"ba\\\"la\", bl\\ ah: \"blah\"}";
+            s = cxon::pretty<XXON>(s);
+        if (s != p) {
             ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
