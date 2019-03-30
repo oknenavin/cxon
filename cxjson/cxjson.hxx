@@ -405,10 +405,9 @@ namespace cxon {
                                                         :               return CXON_READ(number);
                                 case 't': case 'f'      :               return CXON_READ(boolean);
                                 case 'n'                :               return CXON_READ(null);
-                                default                 :               return ctx|error::invalid, false;
 #                           undef CXON_READ
                         }
-                        return false;
+                        return ctx|error::invalid, false;
                     }
             };
 
@@ -427,7 +426,7 @@ namespace cxon {
                                 case node_type::null    :               return CXON_WRITE(null);
 #                           undef CXON_WRITE
                         }
-                        return false;
+                        return false; // LCOV_EXCL_LINE
                     }
             };
 

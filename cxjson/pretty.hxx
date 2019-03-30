@@ -84,7 +84,7 @@ namespace cxjson {
                                     return write_value<X>(o, n.template get<typename json::null>(), ctx);
                             }
 #                       undef CXJSON_CHECK
-                        return true;
+                        return true; // LCOV_EXCL_LINE
                     }
             };
 
