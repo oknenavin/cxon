@@ -22,5 +22,20 @@ matrix:
             - g++-8 # libstdc++ but why!?
             - clang-7
 
+    - os: linux
+      env: CXX=g++-8 CXXFLAGS=--coverage TARGET=test-cxon
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - lcov
+      after_success:
+            - lcov -c -d . -o cov.info
+            - lcov -r cov.info '/usr/*' -o cov.info
+            - lcov -l cov.info
+            - bash <(curl -s https://codecov.io/bash) -f cov.info || echo "Codecov did not collect coverage reports"
+
 script:
   - make $TARGET
