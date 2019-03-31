@@ -48,7 +48,7 @@ TEST_END()
 
 Is a utility that accepts command and a list of inputs (or a `@file`, see below):
 
-    cxjson ((pass|fail|diff) (file|@file)+)+
+    cxjson ((pass|fail|diff) (file|@file)+)*
 
 - `pass`  - the input is a list of files that must be read successfully
 - `fail`  - the input is a list of files that must fail to read
@@ -59,6 +59,7 @@ Is a utility that accepts command and a list of inputs (or a `@file`, see below)
 - `@file` - is a new-line separated list of files. The files must be relative to the
             current directory. Lines starting with `#` are ignored.
 
+If no parameters are provided, self tests will be performed.  
 For example of its usage, see `test-cxjson` rule in the [makefile](makefile).
 
 ###### Suites
