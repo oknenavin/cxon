@@ -115,7 +115,8 @@ In both cases `my_type` is bound to the same `JSON`:
 
 #### Compilation
 
-`CXON` requires [`C++11`][url-cpp-comp-support] compliant compiler.
+`CXON` requires [`C++11`][url-cpp-comp-support] compliant compiler, tested with `g++-5`,
+`clang++-3.5` and `msvc++ 14.1`.
 
 #### Installation
 
