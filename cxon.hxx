@@ -3180,38 +3180,52 @@ namespace cxon { namespace structs { // structured types reader/writer construct
 
     template <typename D>
         struct field {
+            using type = D;
             char const*const name;
             D mptr;
-            template <typename X, typename S, typename II, typename F = D>
-                auto read(S& s, II& i, II e, rctx<X>& ctx) const    -> enable_if_t< std::is_member_pointer<F>::value, bool> {
-                    return read_value<X>(s.*mptr, i, e, ctx);
-                }
-            template <typename X, typename S, typename II, typename F = D>
-                auto read(S&, II& i, II e, rctx<X>& ctx) const      -> enable_if_t<!std::is_member_pointer<F>::value, bool> {
-                    return read_value<X>(*mptr, i, e, ctx);
-                }
-            template <typename X, typename S, typename O, typename F = D>
-                auto write(O& o, const S& s, wctx<X>& ctx) const    -> enable_if_t< std::is_member_pointer<F>::value, bool> {
-                    return write_key<X>(o, name, ctx) && write_value<X>(o, s.*mptr, ctx);
-                }
-            template <typename X, typename S, typename O, typename F = D>
-                auto write(O& o, const S&, wctx<X>& ctx) const      -> enable_if_t<!std::is_member_pointer<F>::value, bool> {
-                    return write_key<X>(o, name, ctx) && write_value<X>(o, *mptr, ctx);
-                }
         };
+        template <typename X, typename S, typename F, typename II>
+            static auto read_field(S& s, F f, II& i, II e, rctx<X>& ctx)
+                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return read_value<X>(s.*f.mptr, i, e, ctx);
+            }
+        template <typename X, typename S, typename F, typename II>
+            static auto read_field(S&, F f, II& i, II e, rctx<X>& ctx)
+                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return read_value<X>(*f.mptr, i, e, ctx);
+            }
+        template <typename X, typename O, typename S, typename F>
+            static auto write_field(O& o, const S& s, F f, wctx<X>& ctx)
+                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return write_key<X>(o, f.name, ctx) && write_value<X>(o, s.*f.mptr, ctx);
+            }
+        template <typename X, typename O, typename S, typename F>
+            static auto write_field(O& o, const S&, F f, wctx<X>& ctx)
+                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return write_key<X>(o, f.name, ctx) && write_value<X>(o, *f.mptr, ctx);
+            }
     template <>
         struct field<skip_type> {
+            using type = skip_type;
             char const*const name;
             skip_type const _;
-            template <typename X, typename S, typename II>
-                bool read(S&, II& i, II e, rctx<X>& ctx) const {
-                    return unquoted::read_value<X>(i, e, ctx);
-                }
-            template <typename X, typename S, typename O>
-                bool write(O&, const S&, wctx<X>&) const {
-                    return true;
-                }
         };
+        template <typename X, typename S, typename F, typename II>
+            static auto read_field(S&, F, II& i, II e, rctx<X>& ctx)
+                -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
+            {
+                return unquoted::read_value<X>(i, e, ctx);
+            }
+        template <typename X, typename O, typename S, typename F>
+            static auto write_field(O&, const S&, F, wctx<X>&)
+                -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
+            {
+                return true;
+            }
 
     // fields
 
@@ -3245,7 +3259,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
                 template <typename II>
                     static bool fields(S& t, const char* name, const fields<H, T...>& f, II& i, II e, rctx<X>& ctx) {
                         return std::strcmp(f.field.name, name) == 0 ?
-                            f.field.template read<X>(t, i, e, ctx) :
+                            read_field<X>(t, f.field, i, e, ctx) :
                             read<X, S, T...>::fields(t, name, f.next, i, e, ctx)
                         ;
                     }
@@ -3279,7 +3293,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             struct write {
                 template <typename O>
                     static bool fields(O& o, const S& t, const fields<H, T...>& f, wctx<X>& ctx) {
-                        return  f.field.template write<X>(o, t, ctx) && io::poke<X>(o, X::map::sep, ctx) &&
+                        return  write_field<X>(o, t, f.field, ctx) && io::poke<X>(o, X::map::sep, ctx) &&
                                 write<X, S, T...>::fields(o, t, f.next, ctx)
                         ;
                     }
@@ -3288,7 +3302,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             struct write<X, S, F> {
                 template <typename O>
                     static bool fields(O& o, const S& t, const fields<F>& f, wctx<X>& ctx) {
-                        return f.field.template write<X>(o, t, ctx);
+                        return write_field<X>(o, t, f.field, ctx);
                     }
             };
 

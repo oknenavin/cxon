@@ -135,11 +135,21 @@ static bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& ti
     return true;
 }
 
+struct my_type {
+    std::vector<int> even;
+    std::list<int> odd;
+    bool operator ==(const my_type& v) const { return even == v.even && odd == v.odd; }
+};
+CXON_STRUCT(my_type,
+    CXON_STRUCT_FIELD_ASIS(even),
+    CXON_STRUCT_FIELD_ASIS(odd)
+)
+
 static unsigned coverage() {
-    unsigned a = 0;
-    unsigned f = 0;
-#   define CHECK(c) ++a; if (!(c))\
-        fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr), ++f;\
+    unsigned a_ = 0;
+    unsigned f_ = 0;
+#   define CHECK(c) ++a_; if (!(c))\
+        fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr), ++f_;\
         CXON_ASSERT((c), "check failed");
     {
         //using node = cxjson::node;
@@ -193,10 +203,150 @@ static unsigned coverage() {
                     CXON_ASSERT(ec.message() == "unknown error", "check failed");
 #           endif
         }
+        {   // ex1
+            using my_type = std::map<std::string, std::vector<int>>;
+
+            my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
+                    mv2;
+            std::string json;
+                cxon::to_chars(json, mv1);
+                cxon::from_chars(mv2, json);
+            CHECK(mv1 == mv2);
+
+            std::string const pretty_json = cxon::pretty(json);
+        }
+        {   // ex2
+            my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
+                    mv2;
+            std::string json;
+                cxon::to_chars(json, mv1);
+                cxon::from_chars(mv2, json);
+            CHECK(mv1 == mv2);
+        }
+        {   // ex3
+            using node = cxjson::node;
+        
+            char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
+            node const n0 = node::object {
+                { "even", node::array { 2, 4, 6 } },
+                { "odd", node::array { 1, 3, 5 } }
+            };
+
+            node n1; // read
+                cxon::from_chars(n1, s0);
+            CHECK(n1 == n0);
+
+            std::string s1; // write
+                cxon::to_chars(s1, n0);
+            CHECK(s1 == s0);
+        }
+        {   // ex4
+            using node = cxjson::node;
+
+            // build using initializer lists
+            node n1 = node::object {
+                { "object", node::object { {"object", 0} } },
+                { "array", node::array {
+                        node::object { {"object", 0} }, // objects and
+                        node::array { 1, 2, 3 },        // arrays must be explicit
+                        "4",        // string
+                        5,          // number
+                        true,       // boolean
+                        nullptr     // null
+                    }
+                },
+                { "string", "string" }, // "key": value
+                { "number", 3.14 },
+                { "boolean", false },
+                { "null", nullptr }
+            };
+
+            // build using node's methods
+            node n2;
+                CHECK(n2.is<node::null>()); // default node type is node_type::null
+                auto& o = n2.imbue<node::object>(); // change the type and return its value
+                    CHECK(n2.is<node::object>());
+                    o["object"] = node::object {};      CHECK(o["object"].is<node::object>());
+                    o["array"] = node::array {};        CHECK(o["array"].is<node::array>());
+                    o["string"] = "string";             CHECK(o["string"].is<node::string>());
+                    o["number"] = 3.14;                 CHECK(o["number"].is<node::number>());
+                    o["boolean"] = false;               CHECK(o["boolean"].is<node::boolean>());
+                    o["null"] = nullptr;                CHECK(o["null"].is<node::null>());
+                auto& o1 = o["object"].get<node::object>(); // get value reference, the type is known
+                    o1["object"] = 0;
+                auto& a = o["array"].get<node::array>();    // get value reference, the type is known
+                    a.push_back(node::object {});       CHECK(a.back().is<node::object>());
+                    a.push_back(node::array {1, 2, 3}); CHECK(a.back().is<node::array>());
+                    a.push_back("4");                   CHECK(a.back().is<node::string>());
+                    a.push_back(5);                     CHECK(a.back().is<node::number>());
+                    a.push_back(true);                  CHECK(a.back().is<node::boolean>());
+                    a.push_back(nullptr);               CHECK(a.back().is<node::null>());
+                auto* o2 = a[0].get_if<node::object>(); // get value pointer if the type match
+                    (*o2)["object"] = 0;
+            CHECK(n1 == n2);
+
+            std::string s1;
+                cxon::to_chars(s1, n1);
+            std::string s2;
+                cxon::to_chars(s2, n2);
+            CHECK(s1 == s2);
+
+            std::string const pretty_json = cxon::pretty(s1);
+        }
+        {   // ex5
+            using node = cxjson::node;
+            {   // (1)
+                node n; CHECK(n.is<node::null>());
+            }
+            {   // (2)
+                node o = true; CHECK(o.is<node::boolean>());
+                node n(o); CHECK(n.is<node::boolean>() && n.get<node::boolean>());
+            }
+            {   // (3)
+                node n(42.0); CHECK(n.is<node::number>() && n.get<node::number>() == 42.0);
+            }
+            {   // (3)
+                node::object const o = { {"key", "value"} };
+                node n(o); CHECK(n.is<node::object>() && n.get<node::object>() == o);
+            }
+            {   // (3)
+                node::array const a = { 1, "string" };
+                node n(a); CHECK(n.is<node::array>() && n.get<node::array>() == a);
+            }
+            {   // (4)
+                node n(42); CHECK(n.is<node::number>() && n.get<node::number>() == 42);
+            }
+            {   // (4)
+                node n("string"); CHECK(n.is<node::string>() && n.get<node::string>() == "string");
+            }
+        }
+        {   // ex6
+            {   // T is the same
+                cxjson::node n = "string";
+                cxjson::node::string& v = n.imbue<cxjson::node::string>(); CHECK(v == "string");
+            }
+            {   // T is not the same
+                cxjson::node n = "string";
+                cxjson::node::number& v = n.imbue<cxjson::node::number>(); CHECK(v == 0.0);
+            }
+        }
+        {   // ex7
+            cxjson::node n = "one";
+                n.get<cxjson::node::string>() = "another";
+            CHECK(n.get<cxjson::node::string>() == "another");
+        }
+        {   // ex8
+            cxjson::node n = "one";
+                auto *v = n.get_if<cxjson::node::string>(); CHECK(v != nullptr);
+            CHECK(n.get_if<cxjson::node::array>() == nullptr);
+        }
+        {   // ex9
+            cxjson::node const n; CHECK(n.type() == cxjson::node_type::null);
+        }
     }
 #   undef CHECK
-    if (f) fprintf(stdout, "cxjson: %u of %u failed\n", f, a);
-    return f;
+    if (f_) fprintf(stdout, "cxjson: %u of %u failed\n", f_, a_);
+    return f_;
 }
 
 int main(int argc, char *argv[]) {
@@ -212,7 +362,7 @@ int main(int argc, char *argv[]) {
         for (auto& c : pass) {
             std::ifstream is(c.source, std::ifstream::binary);
                 if (!is) {
-                    ++err, c.error = c.source + ": cannot be opened";
+                    ++err, c.error = "cannot be opened";
                     continue;
                 }
             std::string const s = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
@@ -224,7 +374,7 @@ int main(int argc, char *argv[]) {
         size_t fc = 0;
             for (auto& c : pass) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s\n", c.error.c_str());
+                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str());
                 }
             }
         fc ?
@@ -236,7 +386,7 @@ int main(int argc, char *argv[]) {
         for (auto& c : fail) {
             std::ifstream is(c.source, std::ifstream::binary);
                 if (!is) {
-                    ++err, c.error = c.source + ": cannot be opened";
+                    ++err, c.error = "cannot be opened";
                     continue;
                 }
             node result;
@@ -252,7 +402,7 @@ int main(int argc, char *argv[]) {
         size_t fc = 0;
             for (auto& c : fail) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s\n", c.error.c_str());
+                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str());
                 }
             }
         fc ?
