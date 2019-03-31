@@ -145,7 +145,7 @@ CXON_STRUCT(my_type,
     CXON_STRUCT_FIELD_ASIS(odd)
 )
 
-static unsigned coverage() {
+static unsigned self() {
     unsigned a_ = 0;
     unsigned f_ = 0;
 #   define CHECK(c) ++a_; if (!(c))\
@@ -343,15 +343,59 @@ static unsigned coverage() {
         {   // ex9
             cxjson::node const n; CHECK(n.type() == cxjson::node_type::null);
         }
+        {   // ex10
+            {   node a = nullptr, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = true, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = 42, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = "blah", b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = node::array {4, 2}, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = node::object {{"q", "?"}, {"a", 42}}, b;
+                b = a; CHECK(a == b);
+            }
+        }
+        {   // ex11
+            using node = cxjson::node;
+            {   node a = nullptr, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = true, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = 42, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = "blah", b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = node::array {4, 2}, b;
+                b = a; CHECK(a == b);
+            }
+            {   node a = node::object {{"q", "?"}, {"a", 42}}, b;
+                b = a; CHECK(a == b);
+            }
+        }
     }
 #   undef CHECK
-    if (f_) fprintf(stdout, "cxjson: %u of %u failed\n", f_, a_);
+    f_ ?
+        fprintf(stdout, "cxjson/self: %u of %u failed\n", f_, a_) :
+        fprintf(stdout, "cxjson/self: %u of %u passed\n", a_, a_)
+    ;
     return f_;
 }
 
 int main(int argc, char *argv[]) {
-    if (coverage() != 0u) {
-        return 1;
+    if (argc == 1) {
+        return self();
     }
     cases pass, fail, time, diff;
     if (!cl_parse(argc, argv, pass, fail, time, diff)) {

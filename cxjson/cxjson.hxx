@@ -233,8 +233,8 @@ namespace cxjson {
                         CXJSON_DEF(boolean);
                         CXJSON_DEF(null);
 #                   undef CXJSON_DEF
-                    default: return false;
                 }
+                return false; // LCOV_EXCL_LINE
             }
             bool operator != (const basic_node& n) const {
                 return !operator ==(n);
