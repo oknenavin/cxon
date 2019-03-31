@@ -26,7 +26,7 @@
 #define TEST_CAT_(x, y) x##y
 #define TEST_CAT(x, y)  TEST_CAT_(x, y)
 #define TEST_BEG(...)   static struct : tst_struct_ { using XXON = __VA_ARGS__; void test() const override {
-#define TEST_END()      } } const TEST_CAT(TEST_, __COUNTER__); 
+#define TEST_END()      } } const TEST_CAT(TEST_, __COUNTER__){}; 
 
 TEST_INIT()
 
@@ -281,12 +281,14 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(tmax<double>(), smax<double>());
         W_TEST(smax<double>(), tmax<double>());
     // long double
+#   if !defined(__clang__) // some older versions (ex. 3.8) crash
         R_TEST(tmin<long double>(), smin<long double>());
         W_TEST(smin<long double>(), tmin<long double>());
         R_TEST((long double)0, "0");
         W_TEST("0", (long double)0);
         R_TEST(tmax<long double>(), smax<long double>());
         W_TEST(smax<long double>(), tmax<long double>());
+#   endif
     // nullptr_t
         R_TEST(nullptr, "null");
         W_TEST("null", nullptr);
@@ -660,12 +662,14 @@ TEST_BEG(cxon::JSON<>) // base
         R_TEST(tmax<double>(), smax<double>());
         W_TEST(smax<double>(), tmax<double>());
     // long double
+#   if !defined(__clang__) // some older versions (ex. 3.8) crash
         R_TEST(tmin<long double>(), smin<long double>());
         W_TEST(smin<long double>(), tmin<long double>());
         R_TEST((long double)0, "0");
         W_TEST("0", (long double)0);
         R_TEST(tmax<long double>(), smax<long double>());
         W_TEST(smax<long double>(), tmax<long double>());
+#   endif
     // nullptr_t
         R_TEST(nullptr, "null");
         W_TEST("null", nullptr);
@@ -941,6 +945,7 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", 0.0 * -inf<double>());
         W_TEST( "nan", inf<double>() + -inf<double>());
     // long double
+#   if !defined(__clang__) // some older versions (ex. 3.8) crash
         R_TEST( -inf<long double>(), omin<long double>());
         R_TEST( -inf<long double>(), "-inf");
         W_TEST("-inf", -inf<long double>());
@@ -960,6 +965,7 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", 0.0 *  inf<long double>());
         W_TEST( "nan", 0.0 * -inf<long double>());
         W_TEST( "nan", inf<long double>() + -inf<long double>());
+#   endif
 TEST_END()
 
 TEST_BEG(cxon::JSON<>) // special numbers
@@ -1005,6 +1011,7 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), 0.0 * -inf<double>());
         W_TEST(QS("nan"), inf<double>() + -inf<double>());
     // long double
+#   if !defined(__clang__) // some older versions (ex. 3.8) crash
         R_TEST( -inf<long double>(), omin<long double>());
         R_TEST( -inf<long double>(), QS("-inf"));
         W_TEST(QS("-inf"), -inf<long double>());
@@ -1024,6 +1031,7 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), 0.0 *  inf<long double>());
         W_TEST(QS("nan"), 0.0 * -inf<long double>());
         W_TEST(QS("nan"), inf<long double>() + -inf<long double>());
+#   endif
 TEST_END()
 
 TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // special numbers

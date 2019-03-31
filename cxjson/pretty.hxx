@@ -31,7 +31,7 @@ namespace cxjson {
 #                       define CXJSON_CHECK(e) if (!(e)) return false
                             switch (n.type()) {
                                 case node_type::object: {
-                                    auto& j = n.template get<typename json::object>();
+                                    auto& j = get<json, typename json::object>::it(n);
                                     if (j.empty()) return io::poke(o, "{}");
                                     auto i = std::begin(j);
                                     CXJSON_CHECK((
@@ -54,7 +54,7 @@ namespace cxjson {
                                     return io::poke(o, '\n') && io::poke(o, lvl, pad) && io::poke(o, '}');
                                 }
                                 case node_type::array: {
-                                    auto& j = n.template get<typename json::array>();
+                                    auto& j = get<json, typename json::array>::it(n);
                                     if (j.empty()) return io::poke(o, "[]");
                                     auto i = std::begin(j);
                                     CXJSON_CHECK((
@@ -75,13 +75,13 @@ namespace cxjson {
                                     return io::poke(o, '\n') && io::poke(o, lvl, pad) && io::poke(o, ']');
                                 }
                                 case node_type::string:
-                                    return write_value<X>(o, n.template get<typename json::string>(), ctx);
+                                    return write_value<X>(o, get<json, typename json::string>::it(n), ctx);
                                 case node_type::number:
-                                    return write_value<X>(o, n.template get<typename json::number>(), ctx);
+                                    return write_value<X>(o, get<json, typename json::number>::it(n), ctx);
                                 case node_type::boolean:
-                                    return write_value<X>(o, n.template get<typename json::boolean>(), ctx);
+                                    return write_value<X>(o, get<json, typename json::boolean>::it(n), ctx);
                                 case node_type::null:
-                                    return write_value<X>(o, n.template get<typename json::null>(), ctx);
+                                    return write_value<X>(o, get<json, typename json::null>::it(n), ctx);
                             }
 #                       undef CXJSON_CHECK
                         return true; // LCOV_EXCL_LINE

@@ -233,8 +233,8 @@ namespace cxjson {
                         CXJSON_DEF(boolean);
                         CXJSON_DEF(null);
 #                   undef CXJSON_DEF
-                    default: return false;
                 }
+                return false; // LCOV_EXCL_LINE
             }
             bool operator != (const basic_node& n) const {
                 return !operator ==(n);
@@ -440,7 +440,8 @@ namespace cxon {
 
         template <typename K, typename V, typename ...R>
             struct object : std::vector<std::pair<K, V>, R...> {
-                using std::vector<std::pair<K, V>, R...>::vector;
+                object() : std::vector<std::pair<K, V>, R...>() {}
+                object(std::initializer_list<std::pair<K, V>> l) : std::vector<std::pair<K, V>, R...>(l) {}
             };
 
     }}  // cxjson::ordered
