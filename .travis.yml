@@ -3,13 +3,13 @@ language: generic
 matrix:
   include:
     - os: linux
-      env: CXX=g++-4.9 TARGET=test
+      env: CXX=g++-5 TARGET=test
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-4.9
+            - g++-5
 
     - os: linux
       env: CXX=g++-8 TARGET=test
