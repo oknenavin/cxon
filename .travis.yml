@@ -12,15 +12,15 @@ matrix:
             - g++-8
 
     - os: linux
-      env: CXX=clang++-3.3 TARGET=test
+      env: CXX=clang++-3.5 TARGET=test
       addons:
         apt:
           sources:
-            - llvm-toolchain-precise-3.3
+            - llvm-toolchain-precise-3.5
             - ubuntu-toolchain-r-test
           packages:
             - g++-6
-            - clang-3.3
+            - clang-3.5
 
     - os: linux
       env: CXX=clang++-7 TARGET=test
