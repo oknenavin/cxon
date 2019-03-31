@@ -265,7 +265,7 @@ namespace cxjson {
             inline V& imbue_it(N& n, node_type& nt, node_type t, V& v) {
                 if (n.type() != t) {
                     n.reset(), nt = t;
-                    new (&v) V;
+                    new (&v) V();
                 }
                 return v;
             }
