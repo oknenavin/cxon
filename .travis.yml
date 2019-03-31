@@ -12,6 +12,16 @@ matrix:
             - g++-8
 
     - os: linux
+      env: CXX=clang++-3.8 TARGET=test
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - clang-3.8
+
+    - os: linux
       env: CXX=clang++-7 TARGET=test
       addons:
         apt:
