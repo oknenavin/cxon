@@ -54,8 +54,8 @@ Member type |Definition
 - [`imbue`](#imbue) - resets node's value type; returns value reference  
 - [`get`](#get) - returns value reference  
 - [`get_if`](#get_if) - returns value pointer if node's value type matches  
-- [`operator ==`](#comparison-operators) - assigns values to the node  
-- [`operator !=`](#comparison-operators) - assigns values to the node  
+- [`operator ==`](#comparison-operators) - compare for equality  
+- [`operator !=`](#comparison-operators) - compare for inequality  
 
 
 --------------------------------------------------------------------------------
