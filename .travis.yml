@@ -65,7 +65,7 @@ matrix:
         - CMAKE_PATH="/c/Program Files/CMake/bin"
       script:
         - export PATH=$CMAKE_PATH:$PATH
-        - mkdir .bld && cd .bld
+        - cd test && mkdir .bld && cd .bld
         - cmake ..
         - cmake --build . -- config Release
         - ctest -V
