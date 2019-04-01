@@ -67,7 +67,7 @@ matrix:
         - export PATH=$CMAKE_PATH:$PATH
         - cd test && mkdir .bld && cd .bld
         - cmake ..
-        - cmake --build . -- config Release
+        - cmake --build . --config Release
         - ctest -V
 
 script:
