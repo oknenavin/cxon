@@ -51,23 +51,23 @@ matrix:
           packages:
             - g++-8
       after_success:
-            - wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
-            - tar xvfz lcov-1.14.tar.gz
-            - make -C lcov-1.14
-            - lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
-            - lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
-            - lcov-1.14/bin/lcov -l cxon.info
-            - bash <(curl -s https://codecov.io/bash) -f cxon.info || echo "upload failed"
+        - wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+        - tar xvfz lcov-1.14.tar.gz
+        - make -C lcov-1.14
+        - lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
+        - lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
+        - lcov-1.14/bin/lcov -l cxon.info
+        - bash <(curl -s https://codecov.io/bash) -f cxon.info || echo "upload failed"
 
     - os: windows
-        env:
-            - CMAKE_PATH="/c/Program Files/CMake/bin"
-        script:
-            - export PATH=$CMAKE_PATH:$PATH
-            - mkdir .bld && cd .bld
-            - cmake ..
-            - cmake --build . -- config Release
-            - ctest -V
+      env:
+        - CMAKE_PATH="/c/Program Files/CMake/bin"
+      script:
+        - export PATH=$CMAKE_PATH:$PATH
+        - mkdir .bld && cd .bld
+        - cmake ..
+        - cmake --build . -- config Release
+        - ctest -V
 
 script:
   - make $TARGET
