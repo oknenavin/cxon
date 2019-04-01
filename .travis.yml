@@ -1,4 +1,4 @@
-language: generic
+language: bash
 
 matrix:
   include:
@@ -60,7 +60,6 @@ matrix:
             - bash <(curl -s https://codecov.io/bash) -f cxon.info || echo "upload failed"
 
     - os: windows
-      language: bash
       env:
         - CMAKE_PATH="/c/Program Files/CMake/bin"
       script:
