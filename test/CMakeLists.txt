@@ -4,12 +4,14 @@ project (test)
  
 
 set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_CXX_EXTENSIONS OFF)
 
 if (MSVC)
     if (MSVC_VERSION GREATER 1910)
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Za -permissive-")
-    endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Za -Zc:rvalueCast")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -permissive-")
+    endif ()
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Za -Zc:rvalueCast")
 endif()
 
 
