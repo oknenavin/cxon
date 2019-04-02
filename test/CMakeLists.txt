@@ -15,24 +15,35 @@ if (MSVC)
 endif()
 
 
+set (CXON_OUT ${PROJECT_SOURCE_DIR}/.out)
+
 include_directories (..)
 
 add_executable (cxon
     cxon.cxx)
-set_target_properties (cxon PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out)
+add_custom_command (TARGET cxon POST_BUILD 
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:cxon> ${CXON_OUT})
 
 add_executable (cxjson
     cxjson.cxx)
-set_target_properties (cxjson PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out)
+add_custom_command (TARGET cxjson POST_BUILD 
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:cxjson> ${CXON_OUT})
  
 
 enable_testing()
 
 add_test (cxon/self
-    ${PROJECT_SOURCE_DIR}/.out/cxon)
+    ${CXON_OUT}/cxon)
 add_test (cxjson/self
-    ${PROJECT_SOURCE_DIR}/.out/cxjson)
+    ${CXON_OUT}/cxjson)
 add_test (cxjson/pass|fail
-    ${PROJECT_SOURCE_DIR}/.out/cxjson pass @../data/set.1-pass.in @../data/set.2-pass.in fail @../data/set.1-fail.in @../data/set.2-fail.in)
+    ${CXON_OUT}/cxjson pass @../data/set.1-pass.in @../data/set.2-pass.in fail @../data/set.1-fail.in @../data/set.2-fail.in)
+
+find_program (CMAKE_SH sh)
+find_program (CMAKE_DIFF diff)
+find_program (CMAKE_XARGS xargs)
+
+if (CMAKE_SH AND CMAKE_DIFF AND CMAKE_XARGS)
+    add_test (cxjson/diff
+        ${CMAKE_SH} -c "${CXON_OUT}/cxjson diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | ${CMAKE_XARGS} -n2 ${CMAKE_DIFF} -q")
+endif ()
