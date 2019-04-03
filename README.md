@@ -6,6 +6,7 @@
 [![Format][url-image-format]](http://json.org)  
 [![License][url-image-license]](LICENSE)
 
+![Linux](.rc/linux.png)![OS X](.rc/osx.png)![Windows](.rc/windows.png)
 [![Build][url-image-build]](https://travis-ci.org/oknenavin/cxon)
 [![Coverage][url-image-coverage]](https://codecov.io/gh/oknenavin/cxon)
 
