@@ -59,6 +59,14 @@ matrix:
         - lcov-1.14/bin/lcov -l cxon.info
         - bash <(curl -s https://codecov.io/bash) -f cxon.info || echo "upload failed"
 
+    - os: osx
+      osx_image: xcode8.3
+      script:
+        - cd test && mkdir .bld && cd .bld
+        - cmake ..
+        - cmake --build .
+        - ctest -V
+
     - os: windows
       env: CMAKE_PATH="/c/Program Files/CMake/bin"
       script:
