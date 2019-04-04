@@ -1,13 +1,13 @@
 ## `CXON/CXJSON` library
 
-[![cxon][url-image-cxon]](https://github.com/libcxon/cxon)
-[![Version][url-image-version]](https://github.com/libcxon/cxon)  
-[![Language][url-image-language]](https://isocpp.org/wiki/faq/cpp11)
-[![Format][url-image-format]](http://json.org)  
-[![License][url-image-license]](../LICENSE)
+[![Library][img-lib]](https://github.com/libcxon/cxon)
+[![Version][img-ver]](https://github.com/libcxon/cxon)  
+[![Language][img-lng]](https://isocpp.org/wiki/faq/cpp11)
+[![Format][img-fmt]](http://json.org)  
+[![License][img-lic]](../LICENSE)
 
-[![Build][url-image-build]](https://travis-ci.org/oknenavin/cxon)
-[![Coverage][url-image-coverage]](https://codecov.io/gh/oknenavin/cxon)
+[![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.org/oknenavin/cxon)
+[![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 
 --------------------------------------------------------------------------------
 
@@ -19,12 +19,12 @@
 
 `CXJSON` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
-  - `object` - [`std::map`][url-cpp-map]
-  - `array` - [`std::vector`][url-cpp-vect]
-  - `string` - [`std::string`][url-cpp-bstr]
-  - `number` - [`double`][url-cpp-types]
-  - `true|false` - [`bool`][url-cpp-types]
-  - `null` - [`std::nullptr_t`][url-cpp-types]
+  - `object` - [`std::map`][cpp-map]
+  - `array` - [`std::vector`][cpp-vect]
+  - `string` - [`std::string`][cpp-bstr]
+  - `number` - [`double`][cpp-types]
+  - `true|false` - [`bool`][cpp-types]
+  - `null` - [`std::nullptr_t`][cpp-types]
 
 ###### Example 1
 
@@ -145,25 +145,28 @@ See the [MANUAL](MANUAL.md).
 #### Contributing
 
 Any kind of contribution (feedback, suggestions, code, tests, documentation, etc.) is welcome.  
-Contact via [GitHub][url-github] (create an issue even it's just a question or comment) or
+Contact via [GitHub][GitHub] (create an issue even it's just a question or comment) or
 via [mail](mailto:oknenavin@outlook.com).
 
 
 --------------------------------------------------------------------------------
 Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.  
-[GitHub](https://github.com/oknenavin/cxon)  
+[GitHub][GitHub]
 
 
 <!-- links -->
-[url-image-cxon]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[url-image-version]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
-[url-image-language]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
-[url-image-format]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
-[url-image-license]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
-[url-image-build]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
-[url-image-coverage]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
-[url-github]: https://github.com/oknenavin/cxon
-[url-cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
-[url-cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
-[url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
-[url-cpp-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
+[img-ver]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[img-lng]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
+[img-fmt]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
+[img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[img-lnx]: ../.rc/linux.png
+[img-osx]: ../.rc/osx.png
+[img-win]: ../.rc/windows.png
+[img-bld]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
+[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[GitHub]: https://github.com/oknenavin/cxon
+[cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
+[cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
+[cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[cpp-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124

@@ -1,14 +1,13 @@
 ## `CXON` library
 
-[![cxon][url-image-cxon]](https://github.com/libcxon/cxon)
-[![Version][url-image-version]](https://github.com/libcxon/cxon)  
-[![Language][url-image-language]](https://isocpp.org/wiki/faq/cpp11)
-[![Format][url-image-format]](http://json.org)  
-[![License][url-image-license]](LICENSE)
+[![Library][img-lib]](https://github.com/libcxon/cxon)
+[![Version][img-ver]](https://github.com/libcxon/cxon)  
+[![Language][img-lng]](https://isocpp.org/wiki/faq/cpp11)
+[![Format][img-fmt]](http://json.org)  
+[![License][img-lic]](LICENSE)
 
-![Linux](.rc/linux.png)![OS X](.rc/osx.png)![Windows](.rc/windows.png)
-[![Build][url-image-build]](https://travis-ci.org/oknenavin/cxon)
-[![Coverage][url-image-coverage]](https://codecov.io/gh/oknenavin/cxon)
+[![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.org/oknenavin/cxon)
+[![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 
 --------------------------------------------------------------------------------
 
@@ -19,12 +18,12 @@
 > `CXON` is `C++11` compliant, self contained, header-only library  
 > `CXON` core library consist of one header
 
-`CXON/JSON` strictly complies with [`RFC7159`](https://www.ietf.org/rfc/rfc7159.txt) / [`ECMA-404`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+`CXON/JSON` strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
 
 #### Introduction
 
 `CXON` defines and implements an interface, which is a generalization of C++17's
-[`<charconv>`][url-cpp-charconv] interface.
+[`<charconv>`][cpp-charconv] interface.
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it `DOM`, `DOM`-like, etc. refering to popular `XML` libraries.  
@@ -34,7 +33,7 @@ which is part of `CXON`, is an implementation of such a type, and also an exampl
 
 `CXON` implements good part of `C++`'s fundamental and standard library types including:
 
-- [fundamental types][url-cpp-fund-types]
+- [fundamental types][cpp-fund-types]
     - `nullptr_t`
     - `bool`
     - character types - `char`, `wchar_t`, `char16_t` and `char32_t`
@@ -42,10 +41,10 @@ which is part of `CXON`, is an implementation of such a type, and also an exampl
     - floating-point types - `float`, `double`, `long double`
 - arrays and pointers of arbitrary types
 - standard library types
-    - [`std::basic_string`][url-cpp-bstr]
-    - [`std::tuple`][url-cpp-tuple]
-    - [`std::pair`][url-cpp-pair]
-    - [containers library][url-cpp-container] - in its entirety
+    - [`std::basic_string`][cpp-bstr]
+    - [`std::tuple`][cpp-tuple]
+    - [`std::pair`][cpp-pair]
+    - [containers library][cpp-container] - in its entirety
 
 `CXON` can easily be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](MANUAL.md#implementation-bridge) for details).
@@ -116,7 +115,7 @@ In both cases `my_type` is bound to the same `JSON`:
 
 #### Compilation
 
-`CXON` requires [`C++11`][url-cpp-comp-support] compliant compiler, tested with `g++-5`,
+`CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`,
 `clang++-3.5` and `msvc++ 14.1`.
 
 #### Installation
@@ -144,28 +143,33 @@ See the [MANUAL](MANUAL.md).
 #### Contributing
 
 Any kind of contribution (feedback, suggestions, code, tests, documentation, etc.) is welcome.  
-Contact via [GitHub][url-github] (create an issue even it's just a question or comment) or
+Contact via [GitHub][GitHub] (create an issue even it's just a question or comment) or
 via [mail](mailto:oknenavin@outlook.com).
 
 
 -------------------------------------------------------------------------------
 Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.  
-[GitHub](https://github.com/oknenavin/cxon)  
+[GitHub][GitHub]  
 
 
 <!-- links -->
-[url-image-cxon]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[url-image-version]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
-[url-image-language]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
-[url-image-format]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
-[url-image-license]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
-[url-image-build]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
-[url-image-coverage]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
-[url-github]: https://github.com/oknenavin/cxon
-[url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
-[url-cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
-[url-cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
-[url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
-[url-cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
-[url-cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
-[url-cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
+[img-ver]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[img-lng]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
+[img-fmt]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
+[img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
+[img-lnx]: .rc/linux.png
+[img-osx]: .rc/osx.png
+[img-win]: .rc/windows.png
+[img-bld]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
+[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
+[ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+[GitHub]: https://github.com/oknenavin/cxon
+[cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
+[cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
+[cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
+[cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
