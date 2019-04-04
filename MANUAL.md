@@ -1,7 +1,7 @@
 ## `CXON` library
 
-[![cxon][url-cxon-image]](https://github.com/libcxon/cxon)
-[![cxon][url-version-image]](https://github.com/libcxon/cxon)
+[![cxon][img-lib]](https://github.com/libcxon/cxon)
+[![cxon][img-ver]](https://github.com/libcxon/cxon)
 
 
 --------------------------------------------------------------------------------
@@ -17,11 +17,11 @@
 #### Introduction
 
 `CXON` defines and implements an interface, which is a generalization of C++17's
-[`<charconv>`][url-cpp-charconv] interface.
+[`<charconv>`][cpp-charconv] interface.
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
 types is as follow:
-- [fundamental types][url-cpp-fund-types]
+- [fundamental types][cpp-fund-types]
     - `nullptr_t` -> `null`
     - `bool` -> `true` or `false`
     - character types (`char`, `wchar_t`, `char16_t` and `char32_t`) -> `JSON` `string`
@@ -29,16 +29,16 @@ types is as follow:
       `JSON` `number`
     - floating-point types (`float`, `double`, `long double`) -> `JSON` `number`
 - `enum` -> `JSON` `string`
-- [compound types][url-cpp-struct] -> `JSON` `object`
+- [compound types][cpp-struct] -> `JSON` `object`
 - arrays -> `JSON` `array`
 - pointers are represented as their value or `JSON` `null`
 - standard library types
-    - [`std::basic_string`][url-cpp-bstr] -> `JSON` `string`
-    - [`std::tuple`][url-cpp-tuple] -> `JSON` `array`
-    - [`std::pair`][url-cpp-pair] -> `JSON` `array`
-    - [containers library][url-cpp-container]
-      - maps ([std::map][url-cpp-map], [std:: unordered_map][url-cpp-umap],
-              [std::multimap][url-cpp-mmap], [std:: unordered_multimap][url-cpp-ummap]) ->
+    - [`std::basic_string`][cpp-bstr] -> `JSON` `string`
+    - [`std::tuple`][cpp-tuple] -> `JSON` `array`
+    - [`std::pair`][cpp-pair] -> `JSON` `array`
+    - [containers library][cpp-container]
+      - maps ([std::map][cpp-map], [std:: unordered_map][cpp-umap],
+              [std::multimap][cpp-mmap], [std:: unordered_multimap][cpp-ummap]) ->
         `JSON` `object` `(1)`
       - others -> `JSON` `array`
 
@@ -80,7 +80,7 @@ namespace cxon {
 ###### Template parameters
 - [`Traits`](#format-traits) - traits class specifying given serialization format
 - `T` - the type of the value to serialize
-- `InIt` - the type of the iterator, must meet [InputIterator][url-cpp-init] requirements
+- `InIt` - the type of the iterator, must meet [InputIterator][cpp-init] requirements
 - `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
 - `It` - an iterator
   - `(1)` `InIt`
@@ -97,7 +97,7 @@ namespace cxon {
 On success, returns a value of type `from_chars_result`, such that `end` is one-past-the-end iterator of
 the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
 On failure, returns a value of type `from_chars_result`, such that `end` is an iterator pointing to
-the non-matching input, and `ec` contains the [error condition][url-err-cnd]. The value is in valid, but unspecified
+the non-matching input, and `ec` contains the [error condition][err-cnd]. The value is in valid, but unspecified
 state.
 
 Error code                         | Message
@@ -172,9 +172,9 @@ namespace cxon {
 ###### Template parameters
 - [`Traits`](#format-traits) - traits class specifying given serialization format
 - `T` - the type of the value to serialize
-- `OutIt` - the type of the iterator, must meet [OutputIterator][url-cpp-outit] requirements
+- `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
 - `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
-- `FwIt` - the type of the iterator, must meet [ForwardIterator][url-cpp-fwit] requirements
+- `FwIt` - the type of the iterator, must meet [ForwardIterator][cpp-fwit] requirements
 - `It` - an iterator
   - `(1)` `OutIt`
   - `(2)` `decltype(std::begin(i))`
@@ -307,7 +307,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 For convenience, core library also provides a set of simple, non-intrusive and intrusive macros
 for binding of enumerations and compound types:
 
-- [enumerations][url-cpp-enum]
+- [enumerations][cpp-enum]
     ``` c++
     // implements the read interface for enum Type
     #define CXON_ENUM_READ(Type, ...)
@@ -343,7 +343,7 @@ for binding of enumerations and compound types:
         cxon::from_chars(v1, s0);
     assert(v1 == v0);
     ```
-- [compound types][url-cpp-struct]
+- [compound types][cpp-struct]
     ``` c++
     // implements the read interface for type Type
     #define CXON_STRUCT_READ(Type, ...)
@@ -414,7 +414,7 @@ struct format_traits {
 ```
 
 The implementation requires these types to provide a mandatory member `ec` of type
-[`std::error_condition`][url-err-cnd].
+[`std::error_condition`][err-cnd].
 
 Although `JSON` is the default format, `CXON` defines a fall-back format called the same - `CXON`.  
 It is like somewhat relaxed `JSON` (e.g. object keys may not be quoted) and its traits are
@@ -527,7 +527,7 @@ namespace cxon {
 will work with an arbitrary *format traits*.
 
 *Here, the helper type `cxon::enable_for_t` is a convenience typedef similar to 
-[`std::enable_if`][url-cpp-enab-if].*
+[`std::enable_if`][cpp-enab-if].*
 
 
 --------------------------------------------------------------------------------
@@ -654,22 +654,22 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 
 
 <!-- links -->
-[url-cxon-image]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[url-version-image]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
-[url-cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
-[url-cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
-[url-cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
-[url-cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
-[url-cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
-[url-cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=106277
-[url-cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
-[url-cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
-[url-cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
-[url-cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
-[url-cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
-[url-cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
-[url-cpp-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
-[url-cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
-[url-cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
-[url-cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
-[url-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
+[img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
+[img-ver]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
+[cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
+[cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
+[cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=106277
+[cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
+[cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
+[cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
+[cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
+[cpp-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
+[cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
+[cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
+[cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
+[err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
