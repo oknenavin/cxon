@@ -378,7 +378,7 @@ namespace cxon {
 
 #   define CXJSON_RG()\
         bits::scinc const RG__(ctx.depth);\
-        if (ctx.depth == X::max_depth) { ctx|error::recursion_depth_exceeded; break; }
+        if (ctx.depth == X::max_depth) return ctx|error::recursion_depth_exceeded, false
 
         using cxjson::error;
 
@@ -398,13 +398,13 @@ namespace cxon {
                         io::consume<X>(i, e);
                         switch (io::peek(i, e)) {
 #                           define CXON_READ(T) read_value<X>(t.template imbue<typename basic_node<Tr>::T>(), i, e, ctx)
-                                case '{'                : { CXJSON_RG() return CXON_READ(object); }
-                                case '['                : { CXJSON_RG() return CXON_READ(array);  }
-                                case '\"'               :               return CXON_READ(string);
+                                case '{'                : { CXJSON_RG();    return CXON_READ(object); }
+                                case '['                : { CXJSON_RG();    return CXON_READ(array);  }
+                                case '\"'               :                   return CXON_READ(string);
                                 case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
-                                                        :               return CXON_READ(number);
-                                case 't': case 'f'      :               return CXON_READ(boolean);
-                                case 'n'                :               return CXON_READ(null);
+                                                        :                   return CXON_READ(number);
+                                case 't': case 'f'      :                   return CXON_READ(boolean);
+                                case 'n'                :                   return CXON_READ(null);
 #                           undef CXON_READ
                         }
                         return ctx|error::invalid, false;
@@ -418,12 +418,12 @@ namespace cxon {
                         using cxjson::node_type;
                         switch (t.type()) {
 #                           define CXON_WRITE(T) write_value<X>(o, t.template get<typename basic_node<Tr>::T>(), ctx)
-                                case node_type::object  : { CXJSON_RG() return CXON_WRITE(object); }
-                                case node_type::array   : { CXJSON_RG() return CXON_WRITE(array); }
-                                case node_type::string  :               return CXON_WRITE(string);
-                                case node_type::number  :               return CXON_WRITE(number);
-                                case node_type::boolean :               return CXON_WRITE(boolean);
-                                case node_type::null    :               return CXON_WRITE(null);
+                                case node_type::object  : { CXJSON_RG();    return CXON_WRITE(object); }
+                                case node_type::array   : { CXJSON_RG();    return CXON_WRITE(array); }
+                                case node_type::string  :                   return CXON_WRITE(string);
+                                case node_type::number  :                   return CXON_WRITE(number);
+                                case node_type::boolean :                   return CXON_WRITE(boolean);
+                                case node_type::null    :                   return CXON_WRITE(null);
 #                           undef CXON_WRITE
                         }
                         return false; // LCOV_EXCL_LINE
