@@ -148,8 +148,9 @@ namespace cxon { // errors
     };
 
     enum class write_error : int {
-        ok,             // no error
-        output_failure  // output cannot be written
+        ok,                     // no error
+        output_failure,         // output cannot be written
+        argument_invalid        // argument invalid
     };
 
 }   // cxon errors
@@ -611,6 +612,7 @@ namespace cxon { // errors
             switch (static_cast<write_error>(ev)) {
                 case write_error::ok:               return "no error";
                 case write_error::output_failure:   return "output cannot be written";
+                case write_error::argument_invalid: return "invalid argument";
             }
             CXON_ASSERT(0, "unexpected");
             return "unknown error";
@@ -1125,7 +1127,12 @@ namespace cxon { namespace bits { // <charconv>
             inline auto to_chars(char* f, char* l, T t, int precision) noexcept
                 -> enable_if_t< has_to_chars_p<T>::value, std::to_chars_result>
             {
-                return std::to_chars(f, l, t, general<std::chars_format>::value, precision);
+#               if defined(_MSC_VER) && _MSC_VER <= 1920
+                    auto const r = charconv::to_chars(f, l, t, precision);
+                    return { r.ptr, r.ec };
+#               else
+                    return std::to_chars(f, l, t, general<std::chars_format>::value, precision);
+#               endif
             }
         template <typename T> // (!) default precision < std::numeric_limits<T>::max_digits10
             inline auto to_chars(char* f, char* l, T t, int) noexcept
@@ -2574,6 +2581,7 @@ namespace cxon { namespace bits { // fundamental type encoding
         inline auto number_write(O& o, const T& t, wctx<X>& ctx) -> enable_if_t<std::is_integral<T>::value, bool> {
             char s[std::numeric_limits<T>::digits10 + 3];
             auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t);
+                if (r.ec != std::errc()) return ctx|write_error::argument_invalid, false;
             return io::poke<X>(o, s, r.ptr - s, ctx);
         }
 
@@ -2589,6 +2597,7 @@ namespace cxon { namespace bits { // fundamental type encoding
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
             auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t, std::numeric_limits<T>::max_digits10);
+                if (r.ec != std::errc()) return ctx|write_error::argument_invalid, false;
             return io::poke<X>(o, s, r.ptr - s, ctx);
         }
 
