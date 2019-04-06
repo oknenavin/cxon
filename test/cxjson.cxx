@@ -191,6 +191,10 @@ static unsigned self() {
             auto const r = cxon::from_chars(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
+        {   node jn;
+            auto const r = cxon::from_chars(jn, "~");
+            CHECK(!r && r.ec == cxjson::error::invalid);
+        }
         {   using namespace cxjson;
             std::error_condition ec;
             ec = error::ok;
