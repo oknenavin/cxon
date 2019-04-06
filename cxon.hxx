@@ -2576,7 +2576,7 @@ namespace cxon { namespace bits { // fundamental type encoding
         inline auto number_write(O& o, const T& t, wctx<X>& ctx) -> enable_if_t<std::is_integral<T>::value, bool> {
             char s[std::numeric_limits<T>::digits10 + 3];
             auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t);
-                if (r.ec != std::errc()) return ctx | write_error::argument_invalid, false;
+                if (r.ec != std::errc()) return ctx|write_error::argument_invalid, false;
             return io::poke<X>(o, s, r.ptr - s, ctx);
         }
 
@@ -2592,7 +2592,7 @@ namespace cxon { namespace bits { // fundamental type encoding
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
             auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t, std::numeric_limits<T>::max_digits10);
-                if (r.ec != std::errc()) return ctx | write_error::argument_invalid, false;
+                if (r.ec != std::errc()) return ctx|write_error::argument_invalid, false;
             return io::poke<X>(o, s, r.ptr - s, ctx);
         }
 
