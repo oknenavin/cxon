@@ -2522,6 +2522,8 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "no error", "check failed");
             ec = write_error::output_failure;
                 CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
+            ec = write_error::argument_invalid;
+                CXON_ASSERT(ec.message() == "invalid argument", "check failed");
 #           ifdef NDEBUG
                 ec = write_error(255);
                     CXON_ASSERT(ec.message() == "unknown error", "check failed");
