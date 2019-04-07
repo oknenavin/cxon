@@ -2341,7 +2341,7 @@ TEST_BEG(cxon::CXON<>) // interface/read
         }
     }
     {   ++TEST_A;
-        int r; std::vector<char> const i = {'1'};
+        int r; std::vector<char> const i = {'1', '\0'};
         if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
             ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
@@ -2363,7 +2363,7 @@ TEST_BEG(cxon::CXON<>) // interface/read
         }
     }
     {   ++TEST_A;
-        int r; std::vector<char> const i = {'1'};
+        int r; std::vector<char> const i = {'1', '\0'};
         if (!cxon::from_chars(r, i) || r != 1) {
             ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
