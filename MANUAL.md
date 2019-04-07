@@ -1,7 +1,7 @@
 ## `CXON` library
 
-[![cxon][img-lib]](https://github.com/libcxon/cxon)
-[![cxon][img-ver]](https://github.com/libcxon/cxon)
+[![Library][img-lib]](https://github.com/oknenavin/cxon)
+[![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
 
 
 --------------------------------------------------------------------------------
@@ -656,7 +656,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[img-ver]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
 [cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
 [cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
