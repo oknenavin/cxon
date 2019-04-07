@@ -16,7 +16,7 @@
 --------------------------------------------------------------------------------
 #### Introduction
 
-`CXON` defines and implements an interface, which is a generalization of C++17's
+`CXON` defines and implements an interface, which is a generalization of `C++17`'s
 [`<charconv>`][cpp-charconv] interface.
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
@@ -179,7 +179,7 @@ namespace cxon {
   - `(1)` `OutIt`
   - `(2)` `decltype(std::begin(i))`
   - `(3)` `FwIt`
-- `CtxPrm` - the types of the remaining parameters (see [TODO]())
+- `CtxPrm` - the types of the remaining parameters (see [Implementation Bridge](#implementation-bridge))
 
 ###### Parameters
 - `o` - an output iterator to write to
@@ -201,6 +201,7 @@ Error code                         | Message
 -----------------------------------|---------------------------------
 read_error::ok                     | no error
 read_error::output_failure         | output cannot be written
+read_error::argument_invalid       | invalid argument
 
 ###### Exceptions
 Does not throw by itself, however writing to the output may throw (e.g. adding to a container).
