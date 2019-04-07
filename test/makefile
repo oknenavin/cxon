@@ -20,7 +20,7 @@ test-cxjson: $(out)/cxjson-test
                                     @../data/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
-$(out)/cxon-test: cxon.cxx ../cxon.hxx
+$(out)/cxon-test: cxon.cxx ../cxon.hxx ../pretty.hxx
 	@mkdir -p $(out)
 	$(CXX) -I.. -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
 
