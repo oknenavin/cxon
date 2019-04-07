@@ -1,7 +1,7 @@
 ## `CXON/CXJSON` library
 
-[![Library][img-lib]](https://github.com/libcxon/cxon)
-[![Version][img-ver]](https://github.com/libcxon/cxon)  
+[![Library][img-lib]](https://github.com/oknenavin/cxon)
+[![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
 [![Language][img-lng]](https://isocpp.org/wiki/faq/cpp11)
 [![Format][img-fmt]](http://json.org)  
 [![License][img-lic]](../LICENSE)
@@ -156,7 +156,7 @@ Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more informat
 
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[img-ver]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
 [img-lng]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
 [img-fmt]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
