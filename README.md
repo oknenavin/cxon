@@ -22,14 +22,14 @@
 
 #### Introduction
 
-`CXON` defines and implements an interface, which is a generalization of C++17's
+`CXON` defines and implements an interface, which is a generalization of `C++17`'s
 [`<charconv>`][cpp-charconv] interface.
 
 Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
 `JSON` - many call it `DOM`, `DOM`-like, etc. refering to popular `XML` libraries.  
-In contrast, `CXON` binds `JSON` to any suitable `C++` type (though [`CXJSON`](cxjson/README.md),
-which is part of `CXON`, is an implementation of such a type, and also an example of how
-`CXON` can be used).
+In contrast, `CXON` binds `JSON` to any suitable `C++` type.  
+*[`CXJSON`](cxjson/README.md), which is part of `CXON`, is an implementation of such a polymorphic
+type, and also an example of how `CXON` can be used.*
 
 `CXON` implements good part of `C++`'s fundamental and standard library types including:
 
@@ -116,7 +116,7 @@ In both cases `my_type` is bound to the same `JSON`:
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`,
-`clang++-3.5` and `msvc++ 14.1`.
+`clang++-3.5` and `msvc++ 14.1` (see [builds](https://travis-ci.org/oknenavin/cxon)).
 
 #### Installation
 
