@@ -1,7 +1,7 @@
 ## `CXON/CXJSON` library
 
-[![cxon][img-lib]](https://github.com/libcxon/cxon)
-[![cxon][img-ver]](https://github.com/libcxon/cxon)
+[![Library][img-lib]](https://github.com/oknenavin/cxon)
+[![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
 
 
 --------------------------------------------------------------------------------
@@ -353,4 +353,4 @@ Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more informat
 
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[img-ver]: https://img.shields.io/badge/version-0.42.0-608060.svg?style=plastic
+[img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
