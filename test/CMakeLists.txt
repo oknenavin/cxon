@@ -22,7 +22,7 @@ add_executable (
 )
 set_target_properties (
     cxon PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
 
 add_executable (
@@ -31,7 +31,7 @@ add_executable (
 )
 set_target_properties (
     cxjson PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
  
 
@@ -39,16 +39,16 @@ enable_testing()
 
 add_test (
     NAME cxon/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon
+    COMMAND cxon
 )
 add_test (
     NAME cxjson/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson
+    COMMAND cxjson
 )
 add_test (
     NAME cxjson/pass|fail
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson pass @../data/set.1-pass.in @../data/set.2-pass.in fail @../data/set.1-fail.in @../data/set.2-fail.in
+    COMMAND cxjson pass @../data/set.1-pass.in @../data/set.2-pass.in fail @../data/set.1-fail.in @../data/set.2-fail.in
 )
 
 find_program (CMAKE_BASH bash)
@@ -59,9 +59,6 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxjson/diff
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c
-            "${PROJECT_SOURCE_DIR}/.out/cxjson${CMAKE_EXECUTABLE_SUFFIX} \
-            diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \
-            \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxjson diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
