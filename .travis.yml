@@ -65,7 +65,7 @@ matrix:
         - cd test && mkdir .bld && cd .bld
         - cmake ..
         - cmake --build . --config Release
-        - ctest -V
+        - ctest -V -C Release
 
     - os: windows
       env: CMAKE_PATH="/c/Program Files/CMake/bin"
@@ -74,7 +74,7 @@ matrix:
         - cd test && mkdir .bld && cd .bld
         - cmake ..
         - cmake --build . --config Release
-        - ctest -V
+        - ctest -V -C Release
 
 script:
   - make $TARGET
