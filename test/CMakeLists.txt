@@ -55,7 +55,7 @@ find_program (CMAKE_BASH bash)
 find_program (CMAKE_XARGS xargs)
 find_program (CMAKE_DIFF diff)
 
-if (CMAKE_SH AND CMAKE_XARGS AND CMAKE_DIFF)
+if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxjson/diff
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
