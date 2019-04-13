@@ -59,6 +59,9 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxjson/diff
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxjson diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c
+            "${PROJECT_SOURCE_DIR}/.out/cxjson${CMAKE_EXECUTABLE_SUFFIX} \
+            diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \
+            \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
