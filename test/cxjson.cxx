@@ -18,7 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using node = cxjson::ordered_node;
-using JSON = cxon::JSON<cxjson::format_traits>;
+using JSON = cxon::JSON<>;
 
 struct test_time {
     double base = 0;
@@ -233,7 +233,7 @@ static unsigned self() {
     }
     {   // ex3
         using node = cxjson::node;
-        
+    
         char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
         node const n0 = node::object {
             { "even", node::array { 2, 4, 6 } },

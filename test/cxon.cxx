@@ -2061,16 +2061,16 @@ struct Struct4 {
     Struct4(int a = 0) : a(a) {}
     bool operator ==(const Struct4& t) const { return a == t.a; }
 
-    template <typename X, typename II>
-        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
+    template <typename X, typename II, typename C>
+        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
             return cxon::read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename II>
-        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
+    template <typename X, typename II, typename C>
+        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
             return cxon::read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename OI>
-        static bool write_value(OI& o, const Struct4& t, cxon::wctx<X>& ctx) {
+    template <typename X, typename OI, typename C>
+        static bool write_value(OI& o, const Struct4& t, C& ctx) {
             return cxon::write_value<X>(o, t.a, ctx);
         }
 
@@ -2093,16 +2093,16 @@ struct Struct5 {
     Struct5(int a = 0) : a(a) {}
     bool operator ==(const Struct5& t) const { return a == t.a; }
 
-    template <typename X, typename II>
-        bool read_value(II& b, II e, cxon::rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        bool read_value(II& b, II e, C& ctx) {
             return cxon::read_value<X>(a, b, e, ctx);
         }
-    template <typename X, typename OI>
-        auto write_value(OI& o, typename cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::CXON, bool> {
+    template <typename X, typename OI, typename C>
+        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::CXON, bool> {
             return cxon::write_value<X>(o, a, ctx);
         }
-    template <typename X, typename OI>
-        auto write_value(OI& o, cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
+    template <typename X, typename OI, typename C>
+        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
             return cxon::write_value<X>(o, a, ctx);
         }
 
@@ -2128,16 +2128,16 @@ struct Struct6 {
 };
 
 namespace cxon {
-    template <typename X, typename II>
-        inline  enable_for_t<X, CXON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        inline  enable_for_t<X, CXON, bool> read_value(Struct6& t, II& b, II e, C& ctx) {
             return read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename II>
-        inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, C& ctx) {
             return read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename OI>
-        inline bool write_value(OI& o, const Struct6& t, wctx<X>& ctx) {
+    template <typename X, typename OI, typename C>
+        inline bool write_value(OI& o, const Struct6& t, C& ctx) {
             return write_value<X>(o, t.a, ctx);
         }
 }
@@ -2188,8 +2188,8 @@ struct Struct8 {
     Struct8(int a = 0, int b = 0) : a(a), b(b) {}
     bool operator ==(const Struct8& t) const { return a == t.a && b == t.b; }
 
-    template <typename X, typename II>
-        static bool read_value(Struct8& t, II& i, II e, cxon::rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        static bool read_value(Struct8& t, II& i, II e, C& ctx) {
             using namespace cxon::structs;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
@@ -2197,8 +2197,8 @@ struct Struct8 {
             );
             return read_fields<X>(t, f, i, e, ctx);
         }
-    template <typename X, typename OI>
-        static bool write_value(OI& o, const Struct8& t, cxon::wctx<X>& ctx) {
+    template <typename X, typename OI, typename C>
+        static bool write_value(OI& o, const Struct8& t, C& ctx) {
             using namespace cxon::structs;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
@@ -2483,6 +2483,16 @@ TEST_BEG(cxon::CXON<>) // interface/write
     {   ++TEST_A;
         std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
         if (!cxon::to_chars<XXON>(r, true) || r != e) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+TEST_END()
+
+TEST_BEG(cxon::CXON<>) // interface/parameters
+    {   ++TEST_A;
+        std::string r; std::string const e = "3.14";
+        if (!cxon::to_chars<XXON>(r, 3.1415926, cxon::prms::set<cxon::fp_precision>(3)) || r != e) {
             ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
