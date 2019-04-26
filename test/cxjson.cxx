@@ -18,7 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using node = cxjson::ordered_node;
-using JSON = cxon::JSON<cxjson::format_traits>;
+using JSON = cxon::JSON<>;
 
 struct test_time {
     double base = 0;
