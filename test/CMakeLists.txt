@@ -23,6 +23,8 @@ add_executable (
 set_target_properties (
     cxon PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
 
 add_executable (
@@ -32,6 +34,8 @@ add_executable (
 set_target_properties (
     cxjson PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
  
 
@@ -59,6 +63,6 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxjson/diff
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxjson diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | ${CMAKE_XARGS} -n2 ${CMAKE_DIFF} -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxjson diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
