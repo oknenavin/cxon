@@ -45,11 +45,11 @@ namespace cxjson { // node traits
 
 namespace cxjson { // context parameters
 
-    struct recursion_depth_check {
+    struct recursion_depth_guard {
         using type = unsigned;
     };
-    struct max_depth {
-        using type = recursion_depth_check::type;
+    struct recursion_depth_max {
+        using type = recursion_depth_guard::type;
         static constexpr type dflt = 64;
     };
 
@@ -59,17 +59,17 @@ namespace cxon {
 
     using cxjson::basic_node;
 
-    template <typename X = JSON<>, typename Tr, typename InIt, typename ...CxAs>
-        inline auto     from_chars(basic_node<Tr>& t, InIt b, InIt e, CxAs... p)      -> from_chars_result<InIt>;
-    template <typename X = JSON<>, typename Tr, typename Iterable, typename ...CxAs>
-        inline auto     from_chars(basic_node<Tr>& t, const Iterable& i, CxAs... p)   -> from_chars_result<decltype(std::begin(i))>;
+    template <typename X = JSON<>, typename Tr, typename InIt, typename ...CxPs>
+        inline auto     from_chars(basic_node<Tr>& t, InIt b, InIt e, CxPs... p)      -> from_chars_result<InIt>;
+    template <typename X = JSON<>, typename Tr, typename Iterable, typename ...CxPs>
+        inline auto     from_chars(basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_chars_result<decltype(std::begin(i))>;
 
-    template <typename X = JSON<>, typename OutIt, typename Tr, typename ...CxAs>
-        inline auto     to_chars(OutIt o, const basic_node<Tr>& t, CxAs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
-    template <typename X = JSON<>, typename Insertable, typename Tr, typename ...CxAs>
-        inline auto     to_chars(Insertable& i, const basic_node<Tr>& t, CxAs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
-    template <typename X = JSON<>, typename FwIt, typename Tr, typename ...CxAs>
-        inline auto     to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxAs... p)  -> to_chars_result<FwIt>;
+    template <typename X = JSON<>, typename OutIt, typename Tr, typename ...CxPs>
+        inline auto     to_chars(OutIt o, const basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
+    template <typename X = JSON<>, typename Insertable, typename Tr, typename ...CxPs>
+        inline auto     to_chars(Insertable& i, const basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
+    template <typename X = JSON<>, typename FwIt, typename Tr, typename ...CxPs>
+        inline auto     to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p)  -> to_chars_result<FwIt>;
 
 }   // cxon
 
@@ -354,26 +354,26 @@ namespace cxon {
 
     using cxjson::basic_node;
 
-    template <typename X, typename Tr, typename II, typename ...CxAs>
-        inline auto from_chars(basic_node<Tr>& t, II b, II e, CxAs... p) -> from_chars_result<II> {
-            return interface::from_chars<X>(t, b, e, args::set<cxjson::recursion_depth_check>(), p...);
+    template <typename X, typename Tr, typename II, typename ...CxPs>
+        inline auto from_chars(basic_node<Tr>& t, II b, II e, CxPs... p) -> from_chars_result<II> {
+            return interface::from_chars<X>(t, b, e, prms::set<cxjson::recursion_depth_guard>(), p...);
         }
-    template <typename X, typename Tr, typename I, typename ...CxAs>
-        inline auto from_chars(basic_node<Tr>& t, const I& i, CxAs... p) -> from_chars_result<decltype(std::begin(i))> {
-            return interface::from_chars<X>(t, i, args::set<cxjson::recursion_depth_check>(), p...);
+    template <typename X, typename Tr, typename I, typename ...CxPs>
+        inline auto from_chars(basic_node<Tr>& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
+            return interface::from_chars<X>(t, i, prms::set<cxjson::recursion_depth_guard>(), p...);
         }
 
-    template <typename X, typename OI, typename Tr, typename ...CxAs>
-        inline auto to_chars(OI o, const basic_node<Tr>& t, CxAs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
-            return interface::to_chars<X>(o, t, args::set<cxjson::recursion_depth_check>(), p...);
+    template <typename X, typename OI, typename Tr, typename ...CxPs>
+        inline auto to_chars(OI o, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
+            return interface::to_chars<X>(o, t, prms::set<cxjson::recursion_depth_guard>(), p...);
         }
-    template <typename X, typename I, typename Tr, typename ...CxAs>
-        inline auto to_chars(I& i, const basic_node<Tr>& t, CxAs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
-            return interface::to_chars<X>(i, t, args::set<cxjson::recursion_depth_check>(), p...);
+    template <typename X, typename I, typename Tr, typename ...CxPs>
+        inline auto to_chars(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
+            return interface::to_chars<X>(i, t, prms::set<cxjson::recursion_depth_guard>(), p...);
         }
-    template <typename X, typename FwIt, typename Tr, typename ...CxAs>
-        inline auto to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxAs... p) -> to_chars_result<FwIt> {
-            return interface::to_chars<X>(b, e, t, args::set<cxjson::recursion_depth_check>(), p...);
+    template <typename X, typename FwIt, typename Tr, typename ...CxPs>
+        inline auto to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FwIt> {
+            return interface::to_chars<X>(b, e, t, prms::set<cxjson::recursion_depth_guard>(), p...);
         }
 
 #   define CXJSON_RG()\
@@ -383,11 +383,11 @@ namespace cxon {
         using cxjson::error;
 
         namespace bits {
-            template <typename Cx, bool D = args::has_tag<cxjson::recursion_depth_check, typename Cx::args_type>::value>
+            template <typename Cx, bool D = prms::has_tag<cxjson::recursion_depth_guard, typename Cx::prms_type>::value>
                 struct scinc {
-                    scinc(Cx& cx) : cx(cx) { ++args::ref<cxjson::recursion_depth_check>(cx.as); }
-                    ~scinc() { --args::ref<cxjson::recursion_depth_check>(cx.as); }
-                    bool check() const { return args::val<cxjson::recursion_depth_check>(cx.as) < args::val<cxjson::max_depth>(cx.as); }
+                    scinc(Cx& cx) : cx(cx) { ++prms::ref<cxjson::recursion_depth_guard>(cx.ps); }
+                    ~scinc() { --prms::ref<cxjson::recursion_depth_guard>(cx.ps); }
+                    bool check() const { return prms::val<cxjson::recursion_depth_guard>(cx.ps) < prms::val<cxjson::recursion_depth_max>(cx.ps); }
                     Cx& cx;
                 };
             template <typename Cx>

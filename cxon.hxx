@@ -111,10 +111,10 @@ namespace cxon { // interface
             operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X = JSON<>, typename T, typename InIt, typename ...CxAs>
-        inline auto     from_chars(T& t, InIt b, InIt e, CxAs... p)       -> from_chars_result<InIt>;
-    template <typename X = JSON<>, typename T, typename Iterable, typename ...CxAs>
-        inline auto     from_chars(T& t, const Iterable& i, CxAs... p)    -> from_chars_result<decltype(std::begin(i))>;
+    template <typename X = JSON<>, typename T, typename InIt, typename ...CxPs>
+        inline auto     from_chars(T& t, InIt b, InIt e, CxPs... p)       -> from_chars_result<InIt>;
+    template <typename X = JSON<>, typename T, typename Iterable, typename ...CxPs>
+        inline auto     from_chars(T& t, const Iterable& i, CxPs... p)    -> from_chars_result<decltype(std::begin(i))>;
 
     // write
 
@@ -125,12 +125,12 @@ namespace cxon { // interface
             operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X = JSON<>, typename OutIt, typename T, typename ...CxAs>
-        inline auto     to_chars(OutIt o, const T& t, CxAs... p)          -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
-    template <typename X = JSON<>, typename Insertable, typename T, typename ...CxAs>
-        inline auto     to_chars(Insertable& i, const T& t, CxAs... p)    -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
-    template <typename X = JSON<>, typename FwIt, typename T, typename ...CxAs>
-        inline auto     to_chars(FwIt b, FwIt e, const T& t, CxAs... p)   -> to_chars_result<FwIt>;
+    template <typename X = JSON<>, typename OutIt, typename T, typename ...CxPs>
+        inline auto     to_chars(OutIt o, const T& t, CxPs... p)          -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
+    template <typename X = JSON<>, typename Insertable, typename T, typename ...CxPs>
+        inline auto     to_chars(Insertable& i, const T& t, CxPs... p)    -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
+    template <typename X = JSON<>, typename FwIt, typename T, typename ...CxPs>
+        inline auto     to_chars(FwIt b, FwIt e, const T& t, CxPs... p)   -> to_chars_result<FwIt>;
 
 }   // cxon interface
 
@@ -211,9 +211,17 @@ namespace cxon { // format traits
 
 }   // cxon format traits
 
+namespace cxon { // parameters
+
+    struct fp_precision {
+        using type = int;
+    };
+
+}   // cxon parameters
+
 namespace cxon { // contexts
 
-    namespace args {
+    namespace prms {
 
         // struct tag {
         //     using type = ...;
@@ -221,13 +229,13 @@ namespace cxon { // contexts
         // };
 
         template <typename T>
-            struct arg {
-                using tag = T;
-                using type = typename T::type;
+            struct prm {
+                using tag   = T;
+                using type  = typename T::type;
                 type value;
-                constexpr arg() : value() {}
-                constexpr arg(type&& v) : value(std::move(v)) {}
-                constexpr arg(const type& v) : value(v) {}
+                constexpr prm()                 : value() {}
+                constexpr prm(type&& v)         : value(std::move(v)) {}
+                constexpr prm(const type& v)    : value(v) {}
             };
 
         template <typename ...>
@@ -292,13 +300,13 @@ namespace cxon { // contexts
             template <typename T, typename S>
                 struct pack_get<T, S, false> {
                     using tag = typename S::tag;
-                    using arg_type = typename T::type;
+                    using prm_type = typename T::type;
                     template <typename R = T>
-                        static constexpr auto ref(S& s) -> typename std::enable_if<!std::is_same<tag, R>::value, arg_type&>::type {
+                        static constexpr auto ref(S& s) -> typename std::enable_if<!std::is_same<tag, R>::value, prm_type&>::type {
                             return pack_get<R, typename S::head_type>::ref(s);
                         }
                     template <typename R = T>
-                        static constexpr auto ref(S& s) -> typename std::enable_if< std::is_same<tag, R>::value, arg_type&>::type {
+                        static constexpr auto ref(S& s) -> typename std::enable_if< std::is_same<tag, R>::value, prm_type&>::type {
                             return s.value;
                         }
                 };
@@ -306,15 +314,15 @@ namespace cxon { // contexts
         }
 
         template <typename T>
-            constexpr arg<T> set() {
+            constexpr prm<T> set() {
                 return {};
             }
         template <typename T>
-            constexpr arg<T> set(typename T::type&& a) {
+            constexpr prm<T> set(typename T::type&& a) {
                 return { std::forward<typename T::type>(a) };
             }
         template <typename T>
-            constexpr arg<T> set(const typename T::type& a) {
+            constexpr prm<T> set(const typename T::type& a) {
                 return { a };
             }
 
@@ -343,16 +351,24 @@ namespace cxon { // contexts
             constexpr auto val(const S& s) -> cxon::enable_if_t<!has_tag<T, S>::value, typename T::type> {
                 return T::dflt;
             }
+        template <typename T, typename S>
+            constexpr auto val(const S& s, typename T::type) -> cxon::enable_if_t< has_tag<T, S>::value, typename T::type> {
+                return ref<T>(s);
+            }
+        template <typename T, typename S>
+            constexpr auto val(const S& s, typename T::type dflt) -> cxon::enable_if_t<!has_tag<T, S>::value, typename T::type> {
+                return dflt;
+            }
 
-    }   // args
+    }   // prms
 
-    template <typename ...A> // args
+    template <typename ...P> // prms
         struct context {
-            using args_type = args::pack<A...>;
+            using prms_type = prms::pack<P...>;
             std::error_condition    ec;
-            args_type               as;
+            prms_type               ps;
 
-            context(A&&... as) : ec(), as(std::forward<A>(as)...) {}
+            context(P&&... ps) : ec(), ps(std::forward<P>(ps)...) {}
 
             template <typename E>
                 auto operator |(E e) noexcept -> enable_if_t<std::is_enum<E>::value, context&> {
@@ -360,10 +376,10 @@ namespace cxon { // contexts
                 }
         };
 
-    template <typename ...A>
-        using read_context  = context<A...>;
-    template <typename ...A>
-        using write_context = context<A...>;
+    template <typename ...P>
+        using read_context  = context<P...>;
+    template <typename ...P>
+        using write_context = context<P...>;
 
 }   // cxon contexts
 
@@ -583,27 +599,27 @@ namespace cxon { // interface implementation
 
     namespace interface {
 
-        template <typename X, typename T, typename II, typename ...CxAs>
-            CXON_FORCE_INLINE auto from_chars(T& t, II b, II e, CxAs... p) -> from_chars_result<II> {
+        template <typename X, typename T, typename II, typename ...CxPs>
+            CXON_FORCE_INLINE auto from_chars(T& t, II b, II e, CxPs... p) -> from_chars_result<II> {
                     if (b == e) return { read_error::unexpected, b };
-                read_context<CxAs...> cx(std::forward<CxAs>(p)...);
+                read_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto g = continuous_range(b, e); auto const o = g.first;
                     bool const r = read_value<X>(t, g.first, g.second, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, (std::advance(b, std::distance(o, g.first)), b) };
             }
-        template <typename X, typename T, typename I, typename ...CxAs>
-            CXON_FORCE_INLINE auto from_chars(T& t, const I& i, CxAs... p) -> from_chars_result<decltype(std::begin(i))> {
+        template <typename X, typename T, typename I, typename ...CxPs>
+            CXON_FORCE_INLINE auto from_chars(T& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
                 return from_chars<X>(t, std::begin(i), std::end(i), p...);
             }
 
     }
 
-    template <typename X, typename T, typename II, typename ...CxAs>
-        inline auto from_chars(T& t, II b, II e, CxAs... p) -> from_chars_result<II> {
+    template <typename X, typename T, typename II, typename ...CxPs>
+        inline auto from_chars(T& t, II b, II e, CxPs... p) -> from_chars_result<II> {
             return interface::from_chars<X>(t, b, e, p...);
         }
-    template <typename X, typename T, typename I, typename ...CxAs>
-        inline auto from_chars(T& t, const I& i, CxAs... p) -> from_chars_result<decltype(std::begin(i))> {
+    template <typename X, typename T, typename I, typename ...CxPs>
+        inline auto from_chars(T& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
             return interface::from_chars<X>(t, i, p...);
         }
 
@@ -666,23 +682,23 @@ namespace cxon { // interface implementation
 
     namespace interface {
 
-        template <typename X, typename OI, typename T, typename ...CxAs>
-            CXON_FORCE_INLINE auto to_chars(OI o, const T& t, CxAs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
-                write_context<CxAs...> cx(std::forward<CxAs>(p)...);
+        template <typename X, typename OI, typename T, typename ...CxPs>
+            CXON_FORCE_INLINE auto to_chars(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
+                write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
-        template <typename X, typename I, typename T, typename ...CxAs>
-            CXON_FORCE_INLINE auto to_chars(I& i, const T& t, CxAs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
-                write_context<CxAs...> cx(std::forward<CxAs>(p)...);
+        template <typename X, typename I, typename T, typename ...CxPs>
+            CXON_FORCE_INLINE auto to_chars(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
+                write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto const s = std::distance(std::begin(i), std::end(i));
                     bool const r = write_value<X>(i, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                     auto b = std::begin(i); std::advance(b, s);
                 return { cx.ec, b };
             }
-        template <typename X, typename FwIt, typename T, typename ...CxAs>
-            CXON_FORCE_INLINE auto to_chars(FwIt b, FwIt e, const T& t, CxAs... p) -> to_chars_result<FwIt> {
-                write_context<CxAs...> cx(std::forward<CxAs>(p)...);
+        template <typename X, typename FwIt, typename T, typename ...CxPs>
+            CXON_FORCE_INLINE auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
+                write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto o = bits::make_range_writer(b, e);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
@@ -690,16 +706,16 @@ namespace cxon { // interface implementation
 
     }
 
-    template <typename X, typename OI, typename T, typename ...CxAs>
-        inline auto to_chars(OI o, const T& t, CxAs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
+    template <typename X, typename OI, typename T, typename ...CxPs>
+        inline auto to_chars(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
             return interface::to_chars<X>(o, t, p...);
         }
-    template <typename X, typename I, typename T, typename ...CxAs>
-        inline auto to_chars(I& i, const T& t, CxAs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
+    template <typename X, typename I, typename T, typename ...CxPs>
+        inline auto to_chars(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
             return interface::to_chars<X>(i, t, p...);
         }
-    template <typename X, typename FwIt, typename T, typename ...CxAs>
-        inline auto to_chars(FwIt b, FwIt e, const T& t, CxAs... p) -> to_chars_result<FwIt> {
+    template <typename X, typename FwIt, typename T, typename ...CxPs>
+        inline auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
             return interface::to_chars<X>(b, e, t, p...);
         }
 
@@ -2724,7 +2740,8 @@ namespace cxon { namespace bits { // fundamental type encoding
                 return io::poke<X>(o, opqt<X>::beg, cx) && io::poke<X>(o, "nan", cx) && io::poke<X>(o, opqt<X>::end, cx);
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
-            auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t, std::numeric_limits<T>::max_digits10);
+            auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t,
+                                            prms::val<fp_precision>(cx.ps, std::numeric_limits<T>::max_digits10));
                 if (r.ec != std::errc()) return cx|write_error::argument_invalid, false;
             return io::poke<X>(o, s, r.ptr - s, cx);
         }

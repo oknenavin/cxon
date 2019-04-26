@@ -2489,6 +2489,16 @@ TEST_BEG(cxon::CXON<>) // interface/write
     }
 TEST_END()
 
+TEST_BEG(cxon::CXON<>) // interface/parameters
+    {   ++TEST_A;
+        std::string r; std::string const e = "3.14";
+        if (!cxon::to_chars<XXON>(r, 3.1415926, cxon::prms::set<cxon::fp_precision>(3)) || r != e) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+TEST_END()
+
 TEST_BEG(cxon::CXON<>) // errors
     using namespace cxon;
     {   std::error_condition ec;
