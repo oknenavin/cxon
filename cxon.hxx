@@ -326,6 +326,7 @@ namespace cxon { // contexts
 namespace cxon { // context parameters
 
     CXON_PARAMETER(fp_precision); // float, double, long double: int
+    CXON_PARAMETER(allocator); // T*: Allocator (https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869)
 
 }   // cxon context parameters
 
@@ -555,7 +556,7 @@ namespace cxon { // interface implementation
             }
         template <typename X, typename T, typename I, typename ...CxPs>
             CXON_FORCE_INLINE auto from_chars(T& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
-                return from_chars<X>(t, std::begin(i), std::end(i), p...);
+                return interface::from_chars<X>(t, std::begin(i), std::end(i), p...);
             }
 
     }
@@ -2006,24 +2007,26 @@ namespace cxon { namespace bits { // char arrays
         };
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool pointer_read(T*& t, II& i, II e, Cx& cx) { // NB: new
+        inline bool pointer_read(T*& t, II& i, II e, Cx& cx) {
             io::consume<X>(i, e);
             if (io::peek(i, e) == *X::id::nil && io::consume<X>(X::id::nil, i, e)) return true;
-            if (!consume_str<X>::beg(i, e, cx)) return false;
-                T *b = new T[4], *p = b; T* be = b + 4;
-                for ( ; ; ) {
-                    if (p + 4 > be) {
-                        T *const n = new T[2 * (be - b)];
-                            std::copy_n(b, p - b, n);
-                        p = n + (p - b);
-                        be = n + 2 * (be - b);
-                        delete [] b, b = n;
-                    }
-                    if (!is<X>::real(io::peek(i, e)))          goto err;
-                    if (is_str<X>::end(io::peek(i, e)))        return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
-                    if (!array_char_read<X>(p, be, i, e, cx)) goto err;
+                if (!consume_str<X>::beg(i, e, cx)) return false;
+            auto a = prms::val<allocator>(cx.ps, std::allocator<T>());
+                using al = std::allocator_traits<decltype(a)>;
+            T *b = al::allocate(a, 4), *p = b; T* be = b + 4;
+            for ( ; ; ) {
+                if (p + 4 > be) {
+                    T *const n = al::allocate(a, 2 * (be - b));
+                        std::copy_n(b, p - b, n);
+                    p = n + (p - b);
+                    al::deallocate(a, b, be - b);
+                    be = n + 2 * (be - b), b = n;
                 }
-            err: return delete [] b, cx|read_error::unexpected, false;
+                if (!is<X>::real(io::peek(i, e)))           goto err;
+                if (is_str<X>::end(io::peek(i, e)))         return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
+                if (!array_char_read<X>(p, be, i, e, cx))   goto err;
+            }
+            err: return al::deallocate(a, b, be - b), cx|read_error::unexpected, false;
         }
 
 }}  // cxon::bits char arrays
@@ -2033,16 +2036,18 @@ namespace cxon { // read, compound types
     template <typename X, typename T>
         struct read<X, T*> {
             template <typename II, typename Cx>
-                static bool value(T*& t, II& i, II e, Cx& cx) { // NB: new
+                static bool value(T*& t, II& i, II e, Cx& cx) {
                     io::consume<X>(i, e);
                     if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
                             if (!io::consume<X>(X::id::nil, i, e)) return cx|read_error::unexpected, bits::rewind(i, o), false;
                         return t = nullptr, true;
                     }
-                    T *const n = new T;
+                    auto a = prms::val<allocator>(cx.ps, std::allocator<T>());
+                        using al = std::allocator_traits<decltype(a)>;
+                    T *const n = al::allocate(a, 1); al::construct(a, n);
                         if (!read_value<X>(*n, i, e, cx))
-                            return delete n, false;
+                            return al::destroy(a, n), al::deallocate(a, n, 1), false;
                     return t = n, true;
                 }
         };

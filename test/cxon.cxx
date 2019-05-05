@@ -2497,6 +2497,13 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
             CXON_ASSERT(false, "check failed");
         }
     }
+    {   ++TEST_A;
+        int *r = nullptr;
+        if (!cxon::from_chars<XXON>(r, "42", cxon::allocator::set(std::allocator<char>())) || *r != 42) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
 TEST_END()
 
 TEST_BEG(cxon::CXON<>) // errors
