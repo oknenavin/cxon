@@ -253,23 +253,15 @@ namespace cxon { // contexts
         namespace bits {
 
             template <typename T, typename P, bool L = std::is_same<typename P::head_type, void>::value, bool M = std::is_same<typename P::tag, T>::value>
-                struct pack_has {
-                    static constexpr bool value = std::is_same<typename P::tag, T>::value;
-                };
+                struct pack_has                     { static constexpr bool value = std::is_same<typename P::tag, T>::value; };
             template <typename T, typename P>
-                struct pack_has<T, P, false, false> {
-                    static constexpr bool value = pack_has<T, typename P::head_type>::value;
-                };
+                struct pack_has<T, P, false, false> { static constexpr bool value = pack_has<T, typename P::head_type>::value; };
 
             template <typename T, typename P, bool L = std::is_same<typename P::head_type, void>::value, bool M = std::is_same<typename P::tag, T>::value>
-                struct pack {
-                    static_assert(std::is_same<typename P::tag, T>::value, "tag unknown");
-                    using type = P;
-                };
+                struct pack                         { static_assert(std::is_same<typename P::tag, T>::value, "tag unknown");
+                                                      using type = P; };
             template <typename T, typename P>
-                struct pack<T, P, false, false> {
-                    using type = typename pack<T, typename P::head_type>::type;
-                };
+                struct pack<T, P, false, false>     { using type = typename pack<T, typename P::head_type>::type; };
 
         }
 
