@@ -211,154 +211,84 @@ namespace cxon { // format traits
 
 }   // cxon format traits
 
-namespace cxon { // parameters
-
-    struct fp_precision {
-        using type = int;
-    };
-
-}   // cxon parameters
-
 namespace cxon { // contexts
 
     namespace prms {
 
-        // struct tag {
-        //     using type = ...;
-        //     static constexpr dflt = ...;
-        // };
-
-        template <typename T>
+        template <typename P, typename T>
             struct prm {
-                using tag   = T;
-                using type  = typename T::type;
+                using tag   = P;
+                using type  = T;
                 type value;
-                constexpr prm()                 : value() {}
-                constexpr prm(type&& v)         : value(std::move(v)) {}
-                constexpr prm(const type& v)    : value(v) {}
+                prm()               : value() {}
+                prm(type&& v)       : value(std::move(v)) {}
+                prm(const type& v)  : value(v) {}
             };
 
         template <typename ...>
             struct pack {
                 using head_type = void;
                 using tag       = void;
+                using type      = void;
             };
-        template <typename C>
-            struct pack<C> : pack<> {
+        template <typename P>
+            struct pack<P> : pack<> {
                 using head_type = pack<>;
-                using tag = typename C::tag;
-                using type = typename C::type;
+                using tag       = typename P::tag;
+                using type      = typename P::type;
                 type value;
-                constexpr pack(C&& c) : value(std::forward<type>(c.value)) {}
-                constexpr pack(const C& c) : value(c.value) {}
+                constexpr pack(P&& p)       : value(std::forward<type>(p.value)) {}
+                constexpr pack(const P& p)  : value(p.value) {}
             };
-        template <typename C, typename ...T>
-            struct pack<C, T...> : pack<T...> {
+        template <typename P, typename ...T>
+            struct pack<P, T...> : pack<T...> {
                 using head_type = pack<T...>;
-                using tag = typename C::tag;
-                using type = typename C::type;
+                using tag       = typename P::tag;
+                using type      = typename P::type;
                 type value;
-                constexpr pack(C&& c, T&&... t) : head_type(std::forward<T>(t)...), value(std::forward<type>(c.value)) {}
-                constexpr pack(const C& c, T&&... t) : head_type(std::forward<T>(t)...), value(c.value) {}
+                constexpr pack(P&& p, T&&... t)         : head_type(std::forward<T>(t)...), value(std::forward<type>(p.value)) {}
+                constexpr pack(const P& p, T&&... t)    : head_type(std::forward<T>(t)...), value(p.value) {}
             };
 
         namespace bits {
 
-            template <typename T>
-                struct unwrap_reference                             { using type = T; };
-            template <typename T>
-                struct unwrap_reference<std::reference_wrapper<T>>  { using type = T&; };
- 
-            template <typename T>
-                using unwrap_ref_decay = unwrap_reference<typename std::decay<T>::type>;
-            template <typename T>
-                using unwrap_ref_decay_t = typename unwrap_ref_decay<T>::type;
+            template <typename T, typename P, bool L = std::is_same<typename P::head_type, void>::value, bool M = std::is_same<typename P::tag, T>::value>
+                struct pack_has                     { static constexpr bool value = std::is_same<typename P::tag, T>::value; };
+            template <typename T, typename P>
+                struct pack_has<T, P, false, false> { static constexpr bool value = pack_has<T, typename P::head_type>::value; };
 
-            template <typename T, typename S, bool L = std::is_same<typename S::head_type, void>::value>
-                struct pack_has {
-                    static constexpr bool value = std::is_same<typename S::tag, T>::value;
-                };
-            template <typename T, typename S>
-                struct pack_has<T, S, false> {
-                    using tag = typename S::tag;
-                    template <typename R = T>
-                        static constexpr auto val() -> typename std::enable_if<!std::is_same<tag, R>::value, bool>::type
-                            { return pack_has<R, typename S::head_type>::value; }
-                    template <typename R = T>
-                        static constexpr auto val() -> typename std::enable_if< std::is_same<tag, R>::value, bool>::type
-                            { return true; }
-                    static constexpr bool value = val();
-                };
-
-            template <typename T, typename S, bool L = std::is_same<typename S::head_type, void>::value>
-                struct pack_get {
-                    static_assert(std::is_same<typename S::tag, T>::value, "tag unknown");
-                    static constexpr typename T::type& ref(S& s) {
-                        return s.value;
-                    }
-                };
-            template <typename T, typename S>
-                struct pack_get<T, S, false> {
-                    using tag = typename S::tag;
-                    using prm_type = typename T::type;
-                    template <typename R = T>
-                        static constexpr auto ref(S& s) -> typename std::enable_if<!std::is_same<tag, R>::value, prm_type&>::type {
-                            return pack_get<R, typename S::head_type>::ref(s);
-                        }
-                    template <typename R = T>
-                        static constexpr auto ref(S& s) -> typename std::enable_if< std::is_same<tag, R>::value, prm_type&>::type {
-                            return s.value;
-                        }
-                };
+            template <typename T, typename P, bool L = std::is_same<typename P::head_type, void>::value, bool M = std::is_same<typename P::tag, T>::value>
+                struct pack                         { static_assert(std::is_same<typename P::tag, T>::value, "tag unknown");
+                                                      using type = P; };
+            template <typename T, typename P>
+                struct pack<T, P, false, false>     { using type = typename pack<T, typename P::head_type>::type; };
 
         }
 
-        template <typename T>
-            constexpr prm<T> set() {
-                return {};
-            }
-        template <typename T>
-            constexpr prm<T> set(typename T::type&& a) {
-                return { std::forward<typename T::type>(a) };
-            }
-        template <typename T>
-            constexpr prm<T> set(const typename T::type& a) {
-                return { a };
-            }
+        template <typename P>
+            struct tag {
+                template <typename T>
+                    static constexpr prm<P, T> set(T&& v)       { return prm<P, T>(std::forward<T>(v)); }
+                template <typename T>
+                    static constexpr prm<P, T> set(const T& v)  { return prm<P, T>(v); }
+            };
 
-        template <typename ...C>
-            constexpr auto make(C&&... c) -> pack<bits::unwrap_ref_decay_t<C>...> {
-                return pack<bits::unwrap_ref_decay_t<C>...>(std::forward<C>(c)...);
-            }
+        template <typename T, typename P>
+            using has_tag = bits::pack_has<T, P>;
 
-        template <typename T, typename S>
-            using has_tag = bits::pack_has<T, S>;
+        template <typename T, typename P>
+            constexpr auto ref(P& p) -> typename bits::pack<T, P>::type::type&
+                { return static_cast<typename bits::pack<T, P>::type&>(p).value; }
+        template <typename T, typename P>
+            constexpr auto val(P& p) -> typename bits::pack<T, P>::type::type
+                { return static_cast<typename bits::pack<T, P>::type&>(p).value; }
 
-        template <typename T, typename S>
-            constexpr const typename T::type& ref(const S& s) {
-                return bits::pack_get<T, S>::ref(const_cast<S&>(s));
-            }
-        template <typename T, typename S>
-            constexpr typename T::type& ref(S& s) {
-                return bits::pack_get<T, S>::ref(s);
-            }
-
-        template <typename T, typename S>
-            constexpr auto val(const S& s) -> cxon::enable_if_t< has_tag<T, S>::value, typename T::type> {
-                return ref<T>(s);
-            }
-        template <typename T, typename S>
-            constexpr auto val(const S& s) -> cxon::enable_if_t<!has_tag<T, S>::value, typename T::type> {
-                return T::dflt;
-            }
-        template <typename T, typename S>
-            constexpr auto val(const S& s, typename T::type) -> cxon::enable_if_t< has_tag<T, S>::value, typename T::type> {
-                return ref<T>(s);
-            }
-        template <typename T, typename S>
-            constexpr auto val(const S& s, typename T::type dflt) -> cxon::enable_if_t<!has_tag<T, S>::value, typename T::type> {
-                return dflt;
-            }
+        template <typename T, typename V, typename P>
+            constexpr auto val(P& p, V)         -> cxon::enable_if_t< has_tag<T, P>::value, V>
+                { return static_cast<typename bits::pack<T, P>::type&>(p).value; }
+        template <typename T, typename V, typename P>
+            constexpr auto val(P& p, V dflt)    -> cxon::enable_if_t<!has_tag<T, P>::value, V>
+                { return dflt; }
 
     }   // prms
 
@@ -382,6 +312,15 @@ namespace cxon { // contexts
         using write_context = context<P...>;
 
 }   // cxon contexts
+
+#define CXON_PARAMETER(P) struct P : cxon::prms::tag<P> {}
+
+namespace cxon { // context parameters
+
+    CXON_PARAMETER(fp_precision); // float, double, long double: int
+    CXON_PARAMETER(allocator); // T*: Allocator (https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869)
+
+}   // cxon context parameters
 
 namespace cxon { // implementation bridge
 
@@ -609,7 +548,7 @@ namespace cxon { // interface implementation
             }
         template <typename X, typename T, typename I, typename ...CxPs>
             CXON_FORCE_INLINE auto from_chars(T& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
-                return from_chars<X>(t, std::begin(i), std::end(i), p...);
+                return interface::from_chars<X>(t, std::begin(i), std::end(i), p...);
             }
 
     }
@@ -2060,24 +1999,26 @@ namespace cxon { namespace bits { // char arrays
         };
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool pointer_read(T*& t, II& i, II e, Cx& cx) { // NB: new
+        inline bool pointer_read(T*& t, II& i, II e, Cx& cx) {
             io::consume<X>(i, e);
             if (io::peek(i, e) == *X::id::nil && io::consume<X>(X::id::nil, i, e)) return true;
-            if (!consume_str<X>::beg(i, e, cx)) return false;
-                T *b = new T[4], *p = b; T* be = b + 4;
-                for ( ; ; ) {
-                    if (p + 4 > be) {
-                        T *const n = new T[2 * (be - b)];
-                            std::copy_n(b, p - b, n);
-                        p = n + (p - b);
-                        be = n + 2 * (be - b);
-                        delete [] b, b = n;
-                    }
-                    if (!is<X>::real(io::peek(i, e)))          goto err;
-                    if (is_str<X>::end(io::peek(i, e)))        return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
-                    if (!array_char_read<X>(p, be, i, e, cx)) goto err;
+                if (!consume_str<X>::beg(i, e, cx)) return false;
+            auto a = prms::val<allocator>(cx.ps, std::allocator<T>());
+                using al = std::allocator_traits<decltype(a)>;
+            T *b = al::allocate(a, 4), *p = b; T* be = b + 4;
+            for ( ; ; ) {
+                if (p + 4 > be) {
+                    T *const n = al::allocate(a, 2 * (be - b));
+                        std::copy_n(b, p - b, n);
+                    p = n + (p - b);
+                    al::deallocate(a, b, be - b);
+                    be = n + 2 * (be - b), b = n;
                 }
-            err: return delete [] b, cx|read_error::unexpected, false;
+                if (!is<X>::real(io::peek(i, e)))           goto err;
+                if (is_str<X>::end(io::peek(i, e)))         return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
+                if (!array_char_read<X>(p, be, i, e, cx))   goto err;
+            }
+            err: return al::deallocate(a, b, be - b), cx|read_error::unexpected, false;
         }
 
 }}  // cxon::bits char arrays
@@ -2087,16 +2028,18 @@ namespace cxon { // read, compound types
     template <typename X, typename T>
         struct read<X, T*> {
             template <typename II, typename Cx>
-                static bool value(T*& t, II& i, II e, Cx& cx) { // NB: new
+                static bool value(T*& t, II& i, II e, Cx& cx) {
                     io::consume<X>(i, e);
                     if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
                             if (!io::consume<X>(X::id::nil, i, e)) return cx|read_error::unexpected, bits::rewind(i, o), false;
                         return t = nullptr, true;
                     }
-                    T *const n = new T;
+                    auto a = prms::val<allocator>(cx.ps, std::allocator<T>());
+                        using al = std::allocator_traits<decltype(a)>;
+                    T *const n = al::allocate(a, 1); al::construct(a, n);
                         if (!read_value<X>(*n, i, e, cx))
-                            return delete n, false;
+                            return al::destroy(a, n), al::deallocate(a, n, 1), false;
                     return t = n, true;
                 }
         };

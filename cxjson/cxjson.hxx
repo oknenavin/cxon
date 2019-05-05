@@ -45,13 +45,8 @@ namespace cxjson { // node traits
 
 namespace cxjson { // context parameters
 
-    struct recursion_depth_guard {
-        using type = unsigned;
-    };
-    struct recursion_depth_max {
-        using type = recursion_depth_guard::type;
-        static constexpr type dflt = 64;
-    };
+    CXON_PARAMETER(recursion_depth_guard);  // unsigned
+    CXON_PARAMETER(recursion_depth_max);    // unsigned
 
 }   // cxjson contexts
 
@@ -353,48 +348,50 @@ namespace std { // cxjson errors
 namespace cxon {
 
     using cxjson::basic_node;
+    using cxjson::recursion_depth_guard;
 
     template <typename X, typename Tr, typename II, typename ...CxPs>
         inline auto from_chars(basic_node<Tr>& t, II b, II e, CxPs... p) -> from_chars_result<II> {
-            return interface::from_chars<X>(t, b, e, prms::set<cxjson::recursion_depth_guard>(), p...);
+            return interface::from_chars<X>(t, b, e, recursion_depth_guard::set(0U), p...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
         inline auto from_chars(basic_node<Tr>& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
-            return interface::from_chars<X>(t, i, prms::set<cxjson::recursion_depth_guard>(), p...);
+            return interface::from_chars<X>(t, i, recursion_depth_guard::set(0U), p...);
         }
 
     template <typename X, typename OI, typename Tr, typename ...CxPs>
         inline auto to_chars(OI o, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
-            return interface::to_chars<X>(o, t, prms::set<cxjson::recursion_depth_guard>(), p...);
+            return interface::to_chars<X>(o, t, recursion_depth_guard::set(0U), p...);
         }
     template <typename X, typename I, typename Tr, typename ...CxPs>
         inline auto to_chars(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
-            return interface::to_chars<X>(i, t, prms::set<cxjson::recursion_depth_guard>(), p...);
+            return interface::to_chars<X>(i, t, recursion_depth_guard::set(0U), p...);
         }
     template <typename X, typename FwIt, typename Tr, typename ...CxPs>
         inline auto to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FwIt> {
-            return interface::to_chars<X>(b, e, t, prms::set<cxjson::recursion_depth_guard>(), p...);
+            return interface::to_chars<X>(b, e, t, recursion_depth_guard::set(0U), p...);
         }
 
 #   define CXJSON_RG()\
-        bits::scinc<Cx> const RG__(cx);\
+        bits::scinc<Cx> RG__(cx);\
         if (!RG__.check()) return cx|error::recursion_depth_exceeded, false
 
         using cxjson::error;
+        using cxjson::recursion_depth_max;
 
         namespace bits {
-            template <typename Cx, bool D = prms::has_tag<cxjson::recursion_depth_guard, typename Cx::prms_type>::value>
+            template <typename Cx, bool G = prms::has_tag<recursion_depth_guard, typename Cx::prms_type>::value>
                 struct scinc {
-                    scinc(Cx& cx) : cx(cx) { ++prms::ref<cxjson::recursion_depth_guard>(cx.ps); }
-                    ~scinc() { --prms::ref<cxjson::recursion_depth_guard>(cx.ps); }
-                    bool check() const { return prms::val<cxjson::recursion_depth_guard>(cx.ps) < prms::val<cxjson::recursion_depth_max>(cx.ps); }
                     Cx& cx;
+                    scinc(Cx& cx) : cx(cx)  { ++prms::ref<recursion_depth_guard>(cx.ps); }
+                    ~scinc()                { --prms::ref<recursion_depth_guard>(cx.ps); }
+                    bool check() const      { return prms::val<recursion_depth_guard>(cx.ps) < prms::val<recursion_depth_max>(cx.ps, 64U); }
                 };
             template <typename Cx>
                 struct scinc<Cx, false> {
-                    scinc(Cx& cx) {}
-                    ~scinc() {}
-                    bool check() const { return true; }
+                    scinc(Cx&)              {}
+                    ~scinc()                {}
+                    bool check() const      { return true; }
                 };
         }
 
