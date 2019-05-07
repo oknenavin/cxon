@@ -380,12 +380,12 @@ namespace cxon {
         using cxjson::recursion_depth_max;
 
         namespace bits {
-            template <typename Cx, bool G = prms::has_tag<recursion_depth_guard, typename Cx::prms_type>::value>
+            template <typename Cx, bool G = recursion_depth_guard::in<typename Cx::prms_type>::value>
                 struct scinc {
                     Cx& cx;
-                    scinc(Cx& cx) : cx(cx)  { ++prms::ref<recursion_depth_guard>(cx.ps); }
-                    ~scinc()                { --prms::ref<recursion_depth_guard>(cx.ps); }
-                    bool check() const      { return prms::val<recursion_depth_guard>(cx.ps) < prms::val<recursion_depth_max>(cx.ps, 64U); }
+                    scinc(Cx& cx) : cx(cx)  { ++recursion_depth_guard::ref(cx.ps); }
+                    ~scinc()                { --recursion_depth_guard::ref(cx.ps); }
+                    bool check() const      { return recursion_depth_guard::val(cx.ps) < recursion_depth_max::val(cx.ps, 64U); }
                 };
             template <typename Cx>
                 struct scinc<Cx, false> {
