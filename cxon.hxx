@@ -285,6 +285,8 @@ namespace cxon { // contexts
                 template <typename Pa>
                     using in = bits::pack_has<Ta, Pa>;
 
+                    static constexpr prm<Ta, bool> set()
+                        { return { true }; }
                 template <typename Ty>
                     static constexpr prm<Ta, Ty> set(Ty&& v)
                         { return prm<Ta, Ty>(std::forward<Ty>(v)); }
@@ -309,13 +311,13 @@ namespace cxon { // contexts
 
     }   // prms
 
-    template <typename ...P> // prms
+    template <typename ...Ps> // prms
         struct context {
-            using prms_type         = prms::pack<P...>;
+            using prms_type         = prms::pack<Ps...>;
             std::error_condition    ec;
             prms_type               ps;
 
-            context(P&&... ps)      : ec(), ps(prms::make(std::forward<P>(ps)...)) {}
+            context(Ps&&... ps)      : ec(), ps(prms::make(std::forward<Ps>(ps)...)) {}
 
             template <typename E>
                 auto operator |(E e) noexcept -> enable_if_t<std::is_enum<E>::value, context&> {
@@ -334,8 +336,8 @@ namespace cxon { // contexts
 
 namespace cxon { // context parameters
 
-    CXON_PARAMETER(fp_precision); // float, double, long double: int
-    CXON_PARAMETER(allocator); // T*: Allocator (https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869)
+    CXON_PARAMETER(fp_precision);   // write: float, double, long double: int
+    CXON_PARAMETER(allocator);      // read: T*: Allocator (https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869)
 
 }   // cxon context parameters
 
@@ -2140,7 +2142,7 @@ namespace cxon {  // key read
             struct key_read<S<X>> {
                 template <typename T, typename II, typename Cx, typename E = S<X>>
                     static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<is_quoted<T>::value && E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                     {
                         return read_value<S<UQKEY<X>>>(t, i, e, cx);
                     }
@@ -2155,19 +2157,19 @@ namespace cxon {  // key read
             struct key_read<JSON<X>> {
                 template <typename T, typename II, typename Cx, typename E = JSON<X>>
                     static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<is_quoted<T>::value && E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                     {
                         return read_value<JSON<UQKEY<X>>>(t, i, e, cx);
                     }
                 template <typename T, typename II, typename Cx, typename E = JSON<X>>
                     static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<is_quoted<T>::value && !E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
                     {
                         return read_value<E>(t, i, e, cx);
                     }
                 template <typename T, typename II, typename Cx, typename E = JSON<X>>
                     static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!is_quoted<T>::value && E::map::unquoted_keys, bool>
+                        -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                     {
                         return read_value<E>(t, i, e, cx);
                     }
@@ -2931,7 +2933,7 @@ namespace cxon { // key write
             struct key_write<S<X>> {
                 template <typename T, typename O, typename Cx, typename E = S<X>>
                     static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<is_quoted<T>::value && E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                     {
                         return write_value<S<UQKEY<X>>>(o, t, cx);
                     }
@@ -2946,19 +2948,19 @@ namespace cxon { // key write
             struct key_write<JSON<X>> {
                 template <typename T, typename O, typename Cx, typename E = JSON<X>>
                     static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<is_quoted<T>::value && E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                     {
                         return write_value<JSON<UQKEY<X>>>(o, t, cx);
                     }
                 template <typename T, typename O, typename Cx, typename E = JSON<X>>
                     static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<is_quoted<T>::value && !E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
                     {
                         return write_value<E>(o, t, cx);
                     }
                 template <typename T, typename O, typename Cx, typename E = JSON<X>>
                     static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<!is_quoted<T>::value && E::map::unquoted_keys, bool>
+                        -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                     {
                         return write_value<E>(o, t, cx);
                     }

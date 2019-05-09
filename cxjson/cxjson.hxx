@@ -45,8 +45,8 @@ namespace cxjson { // node traits
 
 namespace cxjson { // context parameters
 
-    CXON_PARAMETER(recursion_depth_guard);  // unsigned
-    CXON_PARAMETER(recursion_depth_max);    // unsigned
+    CXON_PARAMETER(recursion_depth_guard);  // read/write: unsigned
+    CXON_PARAMETER(recursion_depth_max);    // read/write: unsigned
 
 }   // cxjson contexts
 
