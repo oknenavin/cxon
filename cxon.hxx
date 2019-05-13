@@ -271,8 +271,7 @@ namespace cxon { // contexts
                 struct pack_has<Ta, Pa, false, false>   { static constexpr bool value = pack_has<Ta, typename Pa::head_type>::value; };
 
             template <typename Ta, typename Pa, bool V = std::is_same<typename Pa::head_type, void>::value, bool T = std::is_same<typename Pa::tag, Ta>::value>
-                struct pack_sbt                         { static_assert(std::is_same<typename Pa::tag, Ta>::value, "tag unknown");
-                                                          using type = Pa; };
+                struct pack_sbt                         { using type = Pa; static_assert(T, "tag unknown"); };
             template <typename Ta, typename Pa>
                 struct pack_sbt <Ta, Pa, false, false>  { using type = typename pack_sbt<Ta, typename Pa::head_type>::type; };
 
@@ -296,45 +295,38 @@ namespace cxon { // contexts
                     using in = bits::pack_has<Ta, Pa>;
 
                 template <typename Ty, Ty c>
-                    static constexpr ctt<Ta, Ty, c> set()
+                    static constexpr auto set() -> ctt<Ta, Ty, c>
                         { return {}; }
 
                 template <typename Ty>
-                    static constexpr stt<Ta, Ty> set(Ty&& v)
+                    static constexpr auto set(Ty&& v) -> stt<Ta, Ty>
                         { return stt<Ta, Ty>(std::forward<Ty>(v)); }
                 template <typename Ty>
-                    static constexpr stt<Ta, Ty> set(const Ty& v)
+                    static constexpr auto set(const Ty& v) -> stt<Ta, Ty>
                         { return stt<Ta, Ty>(v); }
 
                 template <typename Pa>
                     using pack_of_tag = typename bits::pack_sbt<Ta, Pa>::type;
 
                 template <typename Pa, typename Ty>
-                    static constexpr auto cex(const Pa&, Ty)        -> cxon::enable_if_t< in<Pa>::value, Ty>
+                    static constexpr auto constant(Ty)      -> cxon::enable_if_t< in<Pa>::value, Ty>
                         { return pack_of_tag<Pa>::type::value; }
                 template <typename Pa, typename Ty>
-                    static constexpr auto cex(const Pa&, Ty dflt)   -> cxon::enable_if_t<!in<Pa>::value, Ty>
-                        { return dflt; }
-
-                template <typename Pa, typename Ty>
-                    static constexpr auto cex(Ty)                   -> cxon::enable_if_t< in<Pa>::value, Ty>
-                        { return pack_of_tag<Pa>::type::value; }
-                template <typename Pa, typename Ty>
-                    static constexpr auto cex(Ty dflt)              -> cxon::enable_if_t<!in<Pa>::value, Ty>
+                    static constexpr auto constant(Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>
                         { return dflt; }
 
                 template <typename Pa>
-                    static constexpr auto ref(Pa& p)                -> typename pack_of_tag<Pa>::type::type&
+                    static constexpr auto reference(Pa& p)      -> typename pack_of_tag<Pa>::type::type&
                         { return static_cast<pack_of_tag<Pa>&>(p).prm.value; }
                 template <typename Pa>
-                    static constexpr auto val(const Pa& p)          -> typename pack_of_tag<Pa>::type::type
+                    static constexpr auto value(const Pa& p)    -> typename pack_of_tag<Pa>::type::type
                         { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
 
                 template <typename Pa, typename Ty>
-                    static constexpr auto val(const Pa& p, Ty)      -> cxon::enable_if_t< in<Pa>::value, Ty>
+                    static constexpr auto value(const Pa& p, Ty)        -> cxon::enable_if_t< in<Pa>::value, Ty>
                         { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
                 template <typename Pa, typename Ty>
-                    static constexpr auto val(const Pa& p, Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>
+                    static constexpr auto value(const Pa& p, Ty dflt)   -> cxon::enable_if_t<!in<Pa>::value, Ty>
                         { return dflt; }
             };
 
@@ -372,10 +364,10 @@ namespace cxon { // contexts
 
 namespace cxon { // context parameters
 
-    CXON_PARAMETER(fp_precision);   // write: float, double, long double: int
-    CXON_PARAMETER(allocator);      // read: T*: Allocator (https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869)
-    CXON_PARAMETER(number_len_max); // read: numbers: unsigned
-    CXON_PARAMETER(id_len_max);     // read: map, object key: unsigned
+    CXON_PARAMETER(fp_precision);   // write: float, double, long double: int, default = std::numeric_limits<T>::max_digits10)
+    CXON_PARAMETER(allocator);      // read: T*: std::Allocator, default = std::allocator<T>()
+    CXON_PARAMETER(number_len_max); // read: numbers: unsigned, default = 32U (integral), 64U (floating point)
+    CXON_PARAMETER(id_len_max);     // read: map, object key: unsigned, default = 64U
 
 }   // cxon context parameters
 
@@ -1731,7 +1723,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::cex<prms_type<Cx>>(32U)]; // MSVC error: number_len_max::cex(cx.ps, 32U)
+                            char s[number_len_max::constant<prms_type<Cx>>(32U)];
                             unsigned const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             if (b && bits::from_chars(s, s + sizeof(s), t, b).ec == std::errc()) return true;
                         return cx|read_error::integral_invalid, rewind(i, o), false;
@@ -1743,7 +1735,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<!std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::cex<prms_type<Cx>>(64U)]; // MSVC error: number_len_max::cex(cx.ps, 64U)
+                            char s[number_len_max::constant<prms_type<Cx>>(64U)];
                             if (number_consumer<X, T>::consume(s, s + sizeof(s), i, e) &&
                                 bits::from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
                         return cx|read_error::floating_point_invalid, rewind(i, o), false;
@@ -1766,7 +1758,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::cex<prms_type<Cx>>(32U)]; // MSVC error: number_len_max::cex(cx.ps, 32U)
+                            char s[number_len_max::constant<prms_type<Cx>>(32U)];
                             if (number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e) && 
                                 bits::from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
                         return cx|read_error::integral_invalid, rewind(i, o), false;
@@ -1822,7 +1814,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<!std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::cex<prms_type<Cx>>(64U)]; // MSVC error: number_len_max::cex(cx.ps, 64U)
+                            char s[number_len_max::constant<prms_type<Cx>>(64U)];
                             if (number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e) &&
                                 from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
                         return cx|read_error::floating_point_invalid, rewind(i, o), false;
@@ -2060,7 +2052,7 @@ namespace cxon { namespace bits { // char arrays
             io::consume<X>(i, e);
             if (io::peek(i, e) == *X::id::nil && io::consume<X>(X::id::nil, i, e)) return true;
                 if (!consume_str<X>::beg(i, e, cx)) return false;
-            auto a = allocator::val(cx.ps, std::allocator<T>());
+            auto a = allocator::value(cx.ps, std::allocator<T>());
                 using al = std::allocator_traits<decltype(a)>;
             T *b = al::allocate(a, 4), *p = b; T* be = b + 4;
             for ( ; ; ) {
@@ -2092,7 +2084,7 @@ namespace cxon { // read, compound types
                             if (!io::consume<X>(X::id::nil, i, e)) return cx|read_error::unexpected, bits::rewind(i, o), false;
                         return t = nullptr, true;
                     }
-                    auto a = allocator::val(cx.ps, std::allocator<T>());
+                    auto a = allocator::value(cx.ps, std::allocator<T>());
                         using al = std::allocator_traits<decltype(a)>;
                     T *const n = al::allocate(a, 1); al::construct(a, n);
                         if (!read_value<X>(*n, i, e, cx))
@@ -2741,7 +2733,7 @@ namespace cxon { namespace bits { // fundamental type encoding
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
             auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t,
-                                            fp_precision::val(cx.ps, std::numeric_limits<T>::max_digits10));
+                                            fp_precision::value(cx.ps, std::numeric_limits<T>::max_digits10));
                 if (r.ec != std::errc()) return cx|write_error::argument_invalid, false;
             return io::poke<X>(o, s, r.ptr - s, cx);
         }
@@ -3282,7 +3274,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
             io::consume<X>(i, e);
             II const o = i;
-                char id[id_len_max::cex<prms_type<Cx>>(64U)]; // MSVC error: id_len_max::cex(cx.ps, 64U)
+                char id[id_len_max::constant<prms_type<Cx>>(64U)];
                     if (!bits::read<X>::value(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;
@@ -3425,7 +3417,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
             if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
             if ( io::consume<X>(X::map::end, i, e)) return true;
-            for (char id[id_len_max::cex<prms_type<Cx>>(64U)]; ; ) { // MSVC error: id_len_max::cex(cx.ps, 64U)
+            for (char id[id_len_max::constant<prms_type<Cx>>(64U)]; ; ) {
                 io::consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return cxon::bits::rewind(i, o), false;

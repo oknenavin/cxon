@@ -383,9 +383,9 @@ namespace cxon {
             template <typename Cx, bool G = recursion_depth_guard::in<prms_type<Cx>>::value>
                 struct scinc {
                     Cx& cx;
-                    scinc(Cx& cx) : cx(cx)  { ++recursion_depth_guard::ref(cx.ps); }
-                    ~scinc()                { --recursion_depth_guard::ref(cx.ps); }
-                    bool check() const      { return recursion_depth_guard::val(cx.ps) < recursion_depth_max::val(cx.ps, 64U); }
+                    scinc(Cx& cx) : cx(cx)  { ++recursion_depth_guard::reference(cx.ps); }
+                    ~scinc()                { --recursion_depth_guard::reference(cx.ps); }
+                    bool check() const      { return recursion_depth_guard::value(cx.ps) < recursion_depth_max::constant<prms_type<Cx>>(64U); }
                 };
             template <typename Cx>
                 struct scinc<Cx, false> {
