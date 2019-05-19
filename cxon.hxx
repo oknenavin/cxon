@@ -323,10 +323,10 @@ namespace cxon { // contexts
                         { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
 
                 template <typename Pa, typename Ty>
-                    static constexpr auto value(const Pa& p, Ty)        -> cxon::enable_if_t< in<Pa>::value, Ty>
+                    static constexpr auto value(const Pa& p, Ty)    -> cxon::enable_if_t< in<Pa>::value, Ty>
                         { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
                 template <typename Pa, typename Ty>
-                    static constexpr auto value(const Pa& p, Ty dflt)   -> cxon::enable_if_t<!in<Pa>::value, Ty>
+                    static constexpr auto value(const Pa&, Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>
                         { return dflt; }
             };
 
@@ -366,8 +366,8 @@ namespace cxon { // context parameters
 
     CXON_PARAMETER(fp_precision);   // write: float, double, long double: int, default = std::numeric_limits<T>::max_digits10)
     CXON_PARAMETER(allocator);      // read: T*: std::Allocator, default = std::allocator<T>()
-    CXON_PARAMETER(number_len_max); // read: numbers: unsigned, default = 32U (integral), 64U (floating point)
-    CXON_PARAMETER(id_len_max);     // read: map, object key: unsigned, default = 64U
+    CXON_PARAMETER(num_len_max);    // read: numbers: unsigned, default = 32U (integral), 64U (floating point)
+    CXON_PARAMETER(ids_len_max);    // read: map, object key: unsigned, default = 64U
 
 }   // cxon context parameters
 
@@ -1723,7 +1723,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::constant<prms_type<Cx>>(32U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(32U)];
                             unsigned const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             if (b && bits::from_chars(s, s + sizeof(s), t, b).ec == std::errc()) return true;
                         return cx|read_error::integral_invalid, rewind(i, o), false;
@@ -1735,7 +1735,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<!std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::constant<prms_type<Cx>>(64U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(64U)];
                             if (number_consumer<X, T>::consume(s, s + sizeof(s), i, e) &&
                                 bits::from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
                         return cx|read_error::floating_point_invalid, rewind(i, o), false;
@@ -1758,7 +1758,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::constant<prms_type<Cx>>(32U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(32U)];
                             if (number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e) && 
                                 bits::from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
                         return cx|read_error::integral_invalid, rewind(i, o), false;
@@ -1814,7 +1814,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<!std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[number_len_max::constant<prms_type<Cx>>(64U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(64U)];
                             if (number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e) &&
                                 from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
                         return cx|read_error::floating_point_invalid, rewind(i, o), false;
@@ -3274,7 +3274,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
             io::consume<X>(i, e);
             II const o = i;
-                char id[id_len_max::constant<prms_type<Cx>>(64U)];
+                char id[ids_len_max::constant<prms_type<Cx>>(64U)];
                     if (!bits::read<X>::value(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;
@@ -3417,7 +3417,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
             if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
             if ( io::consume<X>(X::map::end, i, e)) return true;
-            for (char id[id_len_max::constant<prms_type<Cx>>(64U)]; ; ) {
+            for (char id[ids_len_max::constant<prms_type<Cx>>(64U)]; ; ) {
                 io::consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return cxon::bits::rewind(i, o), false;
