@@ -1097,7 +1097,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 2);
-        R_TEST((double)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::floating_point_invalid, XXON::buffer::max_number);
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::floating_point_invalid, 64); // cxon::num_len_max
     // integral
         // bin
         R_TEST((signed)0, "0b0");
@@ -1140,7 +1140,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::integral_invalid, 2);
         R_TEST((signed)0, "0xg", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::integral_invalid, XXON::buffer::max_number);
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::integral_invalid, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validation
@@ -1162,7 +1162,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::ok, 1);
-        R_TEST((double)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::floating_point_invalid, XXON::buffer::max_number);
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::floating_point_invalid, 64); // cxon::num_len_max
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
@@ -1179,7 +1179,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0xg", cxon::read_error::ok, 1);
-        R_TEST((signed)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::integral_invalid, XXON::buffer::max_number);
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::integral_invalid, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
@@ -2501,6 +2501,21 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
         int *r = nullptr;
         if (!cxon::from_chars<XXON>(r, "42", cxon::allocator::set(std::allocator<char>())) || *r != 42) {
             ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        Enum1 r = Enum1::one;
+        if (!cxon::from_chars<XXON>(r, std::string("three"), cxon::ids_len_max::set<unsigned, 6U>()) || r != Enum1::three) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        Enum1 r = Enum1::one; std::string const i = "three";
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
+        if (e || *e.end != 'r') {
+            ++TEST_F, fprintf(stderr, "must fail, but passed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
     }
