@@ -323,7 +323,7 @@ namespace cxjson {
 }   // cxjson
 
 namespace cxjson { // errors
-    
+
     struct error_category : std::error_category {
         const char* name() const noexcept override {
             return "cxjson";

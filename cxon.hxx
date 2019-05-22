@@ -72,7 +72,7 @@
 // interface //////////////////////////////////////////////////////////////////
 
 namespace cxon { // interface
-                
+
     template <bool B, typename T = void>
         using enable_if_t = typename std::enable_if<B, T>::type;
 
@@ -83,7 +83,7 @@ namespace cxon { // interface
 
     template <typename T = struct json_format_traits>
         struct JSON : T { using traits = T; };
-        
+
     template <typename X, template <typename> class S, typename R = void>
         using enable_for_t = enable_if_t<std::is_same<X, S<typename X::traits>>::value, R>;
 
@@ -802,7 +802,7 @@ namespace cxon { // I/O
 
             HAS_METH_DEF(bool, operator bool());
             HAS_METH_DEF(good, good());
-            
+
             template <typename O, typename ...P>
                 inline auto poke(O& o, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
                     return push(o, p...), true;
@@ -1127,7 +1127,7 @@ namespace cxon { namespace bits { // <charconv>
             inline auto to_chars(char* f, char* l, T t, int precision) noexcept
                 -> enable_if_t< has_to_chars_p<T>::value, std::to_chars_result>
             {
-#               if defined(_MSC_VER) && _MSC_VER <= 1920
+#               if defined(_MSC_VER) && _MSC_VER <= 1921
                     return std::to_chars(f, l, t);
 #               else
                     return std::to_chars(f, l, t, general<std::chars_format>::value, precision);
