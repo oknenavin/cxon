@@ -275,7 +275,7 @@ namespace cxon { // contexts
             template <typename Ta, typename Pa>
                 struct pack_sbt <Ta, Pa, false, false>  { using type = typename pack_sbt<Ta, typename Pa::head_type>::type; };
 
-        }
+        }   // bits
 
         template <typename Ta, typename Ty>
             using stt = bits::stt<Ta, Ty>;
@@ -364,10 +364,10 @@ namespace cxon { // contexts
 
 namespace cxon { // context parameters
 
-    CXON_PARAMETER(fp_precision);   // write: float, double, long double: int, default = std::numeric_limits<T>::max_digits10)
-    CXON_PARAMETER(allocator);      // read: T*: std::Allocator, default = std::allocator<T>()
-    CXON_PARAMETER(num_len_max);    // read: numbers: unsigned, default = 32U (integral), 64U (floating point)
-    CXON_PARAMETER(ids_len_max);    // read: map, object key: unsigned, default = 64U
+    CXON_PARAMETER(allocator);      // read: std::Allocator [default = std::allocator<T>()]: T*
+    CXON_PARAMETER(num_len_max);    // read: unsigned/constexpr [32U (integral), 64U (floating point)]: numbers
+    CXON_PARAMETER(ids_len_max);    // read: unsigned/constexpr [64U]: map, object key
+    CXON_PARAMETER(fp_precision);   // write: int/constexpr [std::numeric_limits<T>::max_digits10]: floating-points
 
 }   // cxon context parameters
 
@@ -2733,7 +2733,7 @@ namespace cxon { namespace bits { // fundamental type encoding
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
             auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t,
-                                            fp_precision::value(cx.ps, std::numeric_limits<T>::max_digits10));
+                                            fp_precision::constant<prms_type<Cx>>(std::numeric_limits<T>::max_digits10));
                 if (r.ec != std::errc()) return cx|write_error::argument_invalid, false;
             return io::poke<X>(o, s, r.ptr - s, cx);
         }

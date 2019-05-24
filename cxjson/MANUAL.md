@@ -295,24 +295,24 @@ bool operator != (const basic_node& n) const; (2)
 
 `cxjson::basic_node` can be serialized as any other type.  
 `CXJSON` defines the following in addition:
-- own context adding recursion depth counter
-
-  ``` c++
-  struct format_traits : cxon::json_format_traits {
-      struct context {
-          struct read  : cxon::read_context  { unsigned depth {}; };
-          struct write : cxon::write_context { unsigned depth {}; };
-      };
-      static constexpr unsigned max_depth = 64;
-  };
-  ```
-
 - own error conditions
 
   Error code                      | Message
   --------------------------------|-------------------------------
   error::invalid                  | invalid `JSON`
   error::recursion_depth_exceeded | recursion depth limit exceeded
+
+- own context parameters
+
+  Parameter         | Context    | Type       | Default | Description
+  ------------------|------------|------------|---------|-------------------------
+  `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
+  `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
+  
+  *Note that the interface is overloaded for `cxjson::basic_node` and the overload
+   passes `recursion_guard` parameter. If `cxjson::basic_node` is part of a type
+   (e.g. `std::vector<basic_node>`) and guarding against recursion is needed, then
+   `recursion_guard` parameter must be passed explicitly.*
 
 ###### Example
 
@@ -321,26 +321,20 @@ bool operator != (const basic_node& n) const; (2)
 #include <cassert>
 
 int main() {
-    {   // ex14
-        using namespace cxjson;
-        {   node n;
-                auto const r = cxon::from_chars(n, "#[1]");
-            assert(!r &&
-                    r.ec.category() == error_category::value &&
-                    r.ec == error::invalid
-            );
-        }
-        {   node n;
-                auto const r = cxon::from_chars(n,
-                    "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[["
-                    "1"
-                    "]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
-                );
-            assert(!r &&
-                    r.ec.category() == error_category::value &&
-                    r.ec == error::recursion_depth_exceeded
-            );
-        }
+    using namespace cxjson;
+    {   node n;
+            auto const r = cxon::from_chars(n, "#[1]");
+        assert(!r &&
+                r.ec.category() == error_category::value &&
+                r.ec == error::invalid
+        );
+    }
+    {   node n;
+            auto const r = cxon::from_chars(n, "[[[[1]]]]", recursion_depth::set<unsigned, 4U>());
+        assert(!r &&
+                r.ec.category() == error_category::value &&
+                r.ec == error::recursion_depth_exceeded
+        );
     }
 }
 ```

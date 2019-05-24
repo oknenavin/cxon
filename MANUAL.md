@@ -10,8 +10,8 @@
 - [Interface](#interface)
 - [Implementation bridge](#implementation-bridge)
 - [Parametrization](#parametrization)
-  - [Context](#context)
   - [Format traits](#format-traits)
+  - [Context](#context)
 - [Example (`JSON-RPC`)](#example-json-rpc)
 
 
@@ -87,13 +87,21 @@ namespace cxon {
 - `It` - an iterator
   - `(1)` `InIt`
   - `(2)` `decltype(std::begin(i))`
-- `CxPs` - the types of the remaining parameters (see [Implementation Bridge](#implementation-bridge))
+- `CxPs` - context parameter types (see [Context](#context))
 
 ###### Parameters
 - `t` - the out-parameter where the parsed value is stored if successful
 - `b`, `e` -  valid (`char`) range to parse
 - `i` - a parameter representing a valid (`char`) range to parse
-- `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
+- `p...` - context parameters (see [Context](#context))
+
+###### Context parameters
+
+Parameter      | Context | Type                     | Default                             | Description
+---------------|---------|--------------------------|-------------------------------------|-------------------------
+`allocator`    | read    | [`Allocator`][cpp-alloc] | `std::allocator<T>`                 | `T*` allocator
+`num_len_max`  | read    | `size_t`                 | 32 (integral) / 64 (floating-point) | number read buffer size
+`ids_len_max`  | read    | `size_t`                 | 64                                  | token read buffer size
 
 ###### Return value
 On success, returns a value of type `from_chars_result`, such that `end` is one-past-the-end iterator of
@@ -181,14 +189,20 @@ namespace cxon {
   - `(1)` `OutIt`
   - `(2)` `decltype(std::begin(i))`
   - `(3)` `FwIt`
-- `CxPs` - the types of the remaining parameters (see [Implementation Bridge](#implementation-bridge))
+- `CxPs` - context parameter types (see [Context](#context))
 
 ###### Parameters
 - `o` - an output iterator to write to
 - `i` - a back insertable value to write to
 - `b`, `e` - a (`char`) range to write to
 - `t` - the value to convert to its representation 
-- `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
+- `p...` - context parameter (see [Context](#context))
+
+###### Context parameters
+
+Parameter      | Context | Type  | Default                                | Description
+---------------|---------|-------|----------------------------------------|-------------------------
+`fp_precision` | write   | `int` | `std::numeric_limits<T>::max_digits10` | floating-point precision
 
 ###### Return value
 On success, returns a value of type `to_chars_result`, such that `ec` is value-initialized, and `end` is:
@@ -237,7 +251,7 @@ int main() {
 
 The interface communicates the implementation via the so-called *implementation bridge*.  
 Read/write interfaces instantiate the [*context*](#context), with the `CxPs` parameters (if any)
-and then call the *implementation bridge* with it:
+and then calls the *implementation bridge* with it:
 
 ``` c++
 namespace cxon {
@@ -411,121 +425,6 @@ for binding of enumerations and compound types:
 
 
 --------------------------------------------------------------------------------
-##### Context
-
-The context is created by the interface with the optional `CxPs` parameters and
-passed to the implementation bridge.
-
-``` c++
-namespace cxon {
-    template <typename ...Ps>
-        struct context;
-}
-```
-
-###### Template parameters
-
-  - `Ps` - context parameter types
-
-###### Member types
-
-Member type |Definition
-------------|------------------------------------------
-`prms_type` | `prms::pack_type<Ps...>`
-
-###### Member objects
-
-Member name |Type
-------------|------------------------------------------
-`ec`        | [`std::error_condition`][cpp-err-cnd]
-`ps`        | `prms_type`
-
-###### Member functions
-
-- `operator |` - assign error condition enum
-    ``` c++
-    template <typename E>
-        auto operator |(E e) noexcept;
-    ```
-
-
-`ps`'s type is a tagged tuple with parameter types as tags. Concrete type is
-an implementation detail and the code shall use it by the `tag` interface.
-
-``` c++
-namespace cxon::prms {
-    template <typename Tag>
-        struct tag {
-            template <typename Pa>
-                struct in {                                     (1)
-                    static bool value;
-                }
-
-                static constexpr auto set();                    (2)
-            template <typename Ty>
-                static constexpr auto set(Ty&& v);              (3)
-            template <typename Ty>
-                static constexpr auto set(const Ty& v);         (3)
-
-            template <typename Pa>
-                static constexpr auto ref(Pa& p);               (4)
-            template <typename Pa>
-                static constexpr auto val(const Pa& p);         (5)
-
-            template <typename Pa, typename Ty>
-                static constexpr Ty val(const Pa& p, Ty dflt);  (6)
-        };
-}
-```
-
-- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise
-- `(2)` - creates parameter `Tag` and type `bool`, suitable for passing to the interface
-- `(3)` - creates parameter `Tag` and type `Ty`, suitable for passing to the interface
-- `(4)` - returns reference to parameter `Tag` as the type is the one of the creation type.
-  It's a compilation error if parameter `Tag` isn't set.
-- `(5)` - returns the value of parameter `Tag` as the type is the one of the creation type.
-  It's a compilation error if parameter `Tag` isn't set.
-- `(6)` - returns the value of parameter `Tag` if set or `dflt` otherwise.
-
-For convenience, parameter type could be inherited from `prms::tag` - `CXON` provides
-simple macro for this.
-
-``` c++
-#define CXON_PARAMETER(P) struct P : cxon::prms::tag<P> {}
-```
-
-###### Example
-
-``` c++
-CXON_PARAMETER(my_parameter);
-CXON_PARAMETER(my_state);
-using my_type = ...;
-...
-namespace cxon {
-    template <typename X, typename II, typename Cx>
-        inline auto read_value(my_type& t, II& i, II e, Cx& cx)
-            // specialize if my_state is set
-            -> enable_if_t< my_state::in<prms_type<Cx>>::value, bool>
-        {
-            auto& state = my_state::ref(cx.ps);
-            ...
-        }
-    template <typename X, typename II, typename Cx>
-        inline auto read_value(my_type& t, II& i, II e, Cx& cx)
-            // specialize if my_state isn't set
-            -> enable_if_t<!my_state::in<prms_type<Cx>>::value, bool>
-        {
-            auto par = my_parameter::val(cx.ps, 0); // 0 if not set
-            ...
-        }
-}
-...
-my_type mv;
-    auto res = cxon::from_chars(mv, "...", my_parameter::set(42), my_state::set(0));
-```
-
-
---------------------------------------------------------------------------------
 ##### Format Traits
 
 The purpose of `Traits` template parameter is to keep parameters for given serialization format.
@@ -617,7 +516,7 @@ auto const result = cxon::from_chars<my_traits>(...);
 ...
 ```
 
-and by using of this mechanism, specialization for given type and format is ensured with
+By using of this mechanism, specialization for given type and format is ensured with
 code like this:
 
 ``` c++
@@ -637,6 +536,133 @@ namespace cxon {
 
 *Here, the helper type `cxon::enable_for_t` is a convenience typedef similar to 
 [`std::enable_if`][cpp-enab-if].*
+
+
+--------------------------------------------------------------------------------
+##### Context
+
+The context is created by the interface with the optional `CxPs` parameters and
+passed to the implementation bridge.
+
+``` c++
+namespace cxon {
+    template <typename ...Ps>
+        struct context;
+}
+```
+
+###### Template parameters
+
+  - `Ps` - context parameter types
+
+###### Member types
+
+Member type |Definition
+------------|------------------------------------------
+`prms_type` | `prms::pack_type<Ps...>`
+
+###### Member objects
+
+Member name |Type
+------------|------------------------------------------
+`ec`        | [`std::error_condition`][cpp-err-cnd]
+`ps`        | `prms_type`
+
+###### Member functions
+
+- `operator |` - assign error condition enum
+    ``` c++
+    template <typename E>
+        auto operator |(E e) noexcept;
+    ```
+
+
+`ps`'s type is a tagged tuple with parameter types as tags. Concrete type is
+an implementation detail and the code shall access it by the `tag` interface.
+
+``` c++
+namespace cxon::prms {
+    template <typename Tag>
+        struct tag {
+            template <typename Pa>
+                struct in {                                     (1)
+                    static bool value;
+                }
+
+            template <typename Ty, Ty c>
+                static constexpr auto set();                    (2)
+            template <typename Ty>
+                static constexpr auto set(Ty&& v);              (3)
+
+            template <typename Pa, typename Ty>
+                static constexpr Ty constant(Ty dflt);          (4)
+
+            template <typename Pa>
+                static auto reference(Pa& p);                   (5)
+            template <typename Pa>
+                static auto value(const Pa& p);                 (6)
+
+            template <typename Pa, typename Ty>
+                static Ty value(const Pa&, Ty dflt);            (7)
+        };
+}
+```
+
+- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise.
+- `(2)` - creates `constexpr` parameter `Tag` and type `Ty`.
+- `(3)` - creates parameter `Tag` and type `Ty`.
+- `(4)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise.
+- `(5)` - returns reference to parameter `Tag` as the type is the one of the creation type.
+  It's a compilation error if parameter `Tag` isn't set.
+- `(6)` - returns the value of parameter `Tag` as the type is the one of the creation type.
+  It's a compilation error if parameter `Tag` isn't set.
+- `(7)` - returns the value of parameter `Tag` if set, `dflt` otherwise.
+
+For convenience, parameter type could be inherited from `prms::tag` - `CXON` provides
+simple macro for this.
+
+``` c++
+#define CXON_PARAMETER(P) struct P : cxon::prms::tag<P> {}
+```
+
+###### Example
+
+``` c++
+#include "cxon/cxon.hxx"
+
+CXON_PARAMETER(my_constant);
+CXON_PARAMETER(my_state);
+
+struct my_type { ... };
+
+namespace cxon {
+    template <typename X, typename II, typename Cx>
+        inline auto read_value(my_type& t, II& i, II e, Cx& cx)
+            // specialize if my_state is set
+            -> enable_if_t< my_state::in<prms_type<Cx>>::value, bool>
+        {
+            char buffer[my_constant::constant<prms_type<Cx>>(32U)]; // 32U if not set
+            auto& state = my_state::reference(cx.ps);
+            ...
+        }
+    template <typename X, typename II, typename Cx>
+        inline auto read_value(my_type& t, II& i, II e, Cx& cx)
+            // specialize if my_state isn't set
+            -> enable_if_t<!my_state::in<prms_type<Cx>>::value, bool>
+        {
+            auto par = my_state::value(cx.ps, 0); // 0 if not set
+            ...
+        }
+}
+
+int main() {
+    my_type mv;
+        auto res = cxon::from_chars(mv, "...",
+            my_constant::set<unsigned, 42U>(), // constexpr parameter
+            my_state::set(42) // runtime parameter
+        );
+}
+```
 
 
 --------------------------------------------------------------------------------
