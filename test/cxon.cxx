@@ -1097,7 +1097,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 2);
-        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::floating_point_invalid, 64); // cxon::num_len_max
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::unexpected, 64); // cxon::num_len_max
     // integral
         // bin
         R_TEST((signed)0, "0b0");
@@ -1140,7 +1140,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::integral_invalid, 2);
         R_TEST((signed)0, "0xg", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::integral_invalid, 32); // cxon::num_len_max
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::unexpected, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validation
@@ -1162,7 +1162,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::ok, 1);
-        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::floating_point_invalid, 64); // cxon::num_len_max
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::unexpected, 64); // cxon::num_len_max
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
@@ -1179,7 +1179,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0xg", cxon::read_error::ok, 1);
-        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::integral_invalid, 32); // cxon::num_len_max
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::unexpected, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
@@ -2489,6 +2489,17 @@ TEST_BEG(cxon::CXON<>) // interface/write
     }
 TEST_END()
 
+
+struct Struct11 {
+    int field;
+    int b;
+    Struct11(int f = 0) : field(f) {}
+    bool operator !=(const Struct11& t) const { return field != t.field; }
+    CXON_STRUCT_READ_MEMBER(Struct11,
+        CXON_STRUCT_FIELD_ASIS(field)
+    )
+};
+
 TEST_BEG(cxon::CXON<>) // interface/parameters
     {   ++TEST_A;
         std::string r; std::string const e = "3.142";
@@ -2505,6 +2516,36 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
         }
     }
     {   ++TEST_A;
+        size_t r = 0;
+        if (!cxon::from_chars<XXON>(r, std::string("123"), cxon::num_len_max::set<unsigned, 4U>()) || r != 123) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        unsigned r = 0; std::string const i = "123";
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
+        if (e || e.ec != cxon::read_error::unexpected || *e.end != '3') {
+            ++TEST_F, fprintf(stderr, "must fail, but passed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        double r = 0; std::list<char> const i = {'1', '2', '3'};
+        if (!cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 4U>()) || r != 123) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        float r = 0; std::list<char> const i = {'1', '2', '3'};
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
+        if (e || e.ec != cxon::read_error::unexpected || *e.end != '3') {
+            ++TEST_F, fprintf(stderr, "must fail, but passed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
         Enum1 r = Enum1::one;
         if (!cxon::from_chars<XXON>(r, std::string("three"), cxon::ids_len_max::set<unsigned, 6U>()) || r != Enum1::three) {
             ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
@@ -2514,7 +2555,22 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
     {   ++TEST_A;
         Enum1 r = Enum1::one; std::string const i = "three";
         auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
-        if (e || *e.end != 'r') {
+        if (e || e.ec != cxon::read_error::unexpected || *e.end != 'r') {
+            ++TEST_F, fprintf(stderr, "must fail, but passed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        Struct11 r(42); std::string const i = "{ field: 42 }";
+        if (!cxon::from_chars<XXON>(r, "{ field: 42 }", cxon::ids_len_max::set<unsigned, 6U>()) || r != Struct11(42)) {
+            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
+            CXON_ASSERT(false, "check failed");
+        }
+    }
+    {   ++TEST_A;
+        Struct11 r(42); std::string const i = "{ field: 42 }";
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
+        if (e || e.ec != cxon::read_error::unexpected || *e.end != 'e') {
             ++TEST_F, fprintf(stderr, "must fail, but passed: at %s:%li\n", __FILE__, (long)__LINE__);
             CXON_ASSERT(false, "check failed");
         }
