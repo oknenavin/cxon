@@ -188,7 +188,7 @@ static unsigned self() {
             CHECK(s0 == s1);
         }
         {   node jn;
-            auto const r = cxon::from_chars(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
+            auto const r = cxon::from_chars(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
         {   node jn;
