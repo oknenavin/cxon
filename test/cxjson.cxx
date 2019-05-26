@@ -191,6 +191,12 @@ static unsigned self() {
             auto const r = cxon::from_chars(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
+#       if !defined(__GNUG__) || defined(__clang__)
+        {   node jn;
+            auto const r = cxon::from_chars(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>()); // g++ (4.8.1->9.1) bug: overload resolution fail
+            CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
+        }
+#       endif
         {   node jn;
             auto const r = cxon::from_chars(jn, "~");
             CHECK(!r && r.ec == cxjson::error::invalid);
