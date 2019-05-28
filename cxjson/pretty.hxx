@@ -10,7 +10,7 @@
 
 namespace cxjson {
 
-    template <typename X = cxon::JSON<struct format_traits>, typename R = std::string, typename Tr>
+    template <typename X = cxon::JSON<>, typename R = std::string, typename Tr>
         inline auto pretty(const basic_node<Tr>& n, unsigned tab = 1, char pad = '\t') -> cxon::enable_if_t<cxon::is_back_insertable<R>::value, R>;
 
 }
@@ -27,7 +27,7 @@ namespace cxjson {
                     static bool value(O o, const basic_node<Tr>& n, unsigned tab, char pad, unsigned lvl = 0) {
                         using namespace cxon;
                         using json = basic_node<Tr>;
-                        static wctx<X> ctx;
+                        static write_context<> ctx; // TODO: recursion depth?
 #                       define CXJSON_CHECK(e) if (!(e)) return false
                             switch (n.type()) {
                                 case node_type::object: {
