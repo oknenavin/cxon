@@ -144,7 +144,8 @@ namespace cxon { // errors
         floating_point_invalid, // floating-point invalid
         boolean_invalid,        // boolean invalid
         escape_invalid,         // invalid escape sequence
-        surrogate_invalid       // invalid surrogate
+        surrogate_invalid,      // invalid surrogate
+        overflow                // buffer overflow
     };
 
     enum class write_error : int {
@@ -725,6 +726,7 @@ namespace cxon { // errors
                 case read_error::boolean_invalid:           return "invalid boolean";
                 case read_error::escape_invalid:            return "invalid escape sequence";
                 case read_error::surrogate_invalid:         return "invalid surrogate";
+                case read_error::overflow:                  return "buffer overflow";
             }
             CXON_ASSERT(0, "unexpected");
             return "unknown error";
@@ -1725,7 +1727,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32U)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::unexpected, false;
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
                                 if (b ==  0 || bits::from_chars(s, s + sizeof(s), t, b).ec != std::errc())
                                     return cx|read_error::integral_invalid, rewind(i, o), false;
                             return true;
@@ -1739,7 +1741,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::unexpected, false;
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
                                 if (b ==  0 || bits::from_chars(s, s + sizeof(s), t).ec != std::errc())
                                     return cx|read_error::floating_point_invalid, rewind(i, o), false;
                             return true;
@@ -1764,7 +1766,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32U)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::unexpected, false;
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
                                 if (b ==  0 || bits::from_chars(s, s + sizeof(s), t).ec != std::errc())
                                     return cx|read_error::integral_invalid, rewind(i, o), false;
                             return true;
@@ -1822,7 +1824,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::unexpected, false;
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
                                 if (b ==  0 || from_chars(s, s + sizeof(s), t).ec != std::errc())
                                     return cx|read_error::floating_point_invalid, rewind(i, o), false;
                             return true;
@@ -1974,7 +1976,7 @@ namespace cxon { namespace bits { // string quoting
         struct consume_str<S<UQKEY<X>>> {
             template <typename II, typename Cx> static constexpr bool    beg(II&, II, Cx&)          { return true; }
             template <typename II, typename Cx> static constexpr bool    end(II&, II, Cx&)          { return true; }
-            template <typename II, typename Cx> static char32_t          chr(II& i, II e, Cx& cx)  {
+            template <typename II, typename Cx> static char32_t          chr(II& i, II e, Cx& cx)   {
                 if (io::peek(i, e) == '\\') {
                         char const c = io::next(i, e);
                         return!is_str<S<UQKEY<X>>>::esc(c) ? esc_to_utf32<S<X>>(i, e, cx) : (++i, char32_t(c));
@@ -1993,7 +1995,7 @@ namespace cxon { namespace bits { // char arrays
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 char b[4]; int const n = utf32_to_utf8(b, c32);
-                    if (n == 0 || t + n > te) return cx|read_error::unexpected, rewind(i, o), false;
+                    if (n == 0 || t + n > te) return cx|read_error::overflow, false;
                 std::copy_n(b, n, t);
             return t += n, true;
         }
@@ -2006,7 +2008,7 @@ namespace cxon { namespace bits { // char arrays
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
-                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|read_error::unexpected, rewind(i, o), false;
+                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|read_error::overflow, false;
                     *t = T(0xDC00 | (c32 & 0x3FF));
                 }
                 else {
@@ -2026,13 +2028,17 @@ namespace cxon { namespace bits { // char arrays
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool array_read(T* t, const T* te, II& i, II ie, Cx& cx) {
-            if (!consume_str<X>::beg(i, ie, cx)) return false;
-                while (t < te) {
-                    if (!is<X>::real(io::peek(i, ie)))          break;
-                    if (is_str<X>::end(io::peek(i, ie)))        return *t = '\0', consume_str<X>::end(i, ie, cx);
-                    if (!array_char_read<X>(t, te, i, ie, cx)) return false;
-                }
-            return consume_str<X>::end(i, ie, cx);
+            II const o = i;
+                if (!consume_str<X>::beg(i, ie, cx)) return false;
+                    while (t < te) {
+                        if (!is<X>::real(io::peek(i, ie)))          return consume_str<X>::end(i, ie, cx);
+                        if (is_str<X>::end(io::peek(i, ie)))        return *t = '\0', consume_str<X>::end(i, ie, cx);
+                        if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == read_error::overflow ? (rewind(i, o), false) : false;
+                    }
+                return !is_str<X>::end(io::peek(i, ie)) ?
+                    (cx|read_error::overflow, rewind(i, o), false) :
+                    consume_str<X>::end(i, ie, cx)
+                ;
         }
 
     template <typename X>
@@ -2105,10 +2111,12 @@ namespace cxon { // read, compound types
         struct read<X, T[N]> {
             template <typename II, typename Cx>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    size_t p = 0;
-                        return container::read<X, list<X>>(i, e, cx, [&] {
-                            return read_value<X>(t[p], i, e, cx) ? ++p != N : false;
-                        });
+                    II const o = i;
+                        size_t p = 0;
+                    return container::read<X, list<X>>(i, e, cx, [&] {
+                            if (p == N) return cx|read_error::overflow, bits::rewind(i, o), false;
+                        return read_value<X>(t[p++], i, e, cx);
+                    });
                 }
         };
 
@@ -2345,14 +2353,16 @@ namespace cxon { // read, library types
                 }
         };
 
-    template <typename X, typename T, size_t S>
-        struct read<X, std::array<T, S>> {
+    template <typename X, typename T, size_t N>
+        struct read<X, std::array<T, N>> {
             template <typename II, typename Cx>
-                static bool value(std::array<T, S>& t, II& i, II e, Cx& cx) {
-                    size_t p = 0;
-                        return container::read<X, list<X>>(i, e, cx, [&] {
-                            return read_value<X>(t[p], i, e, cx) ? ++p != S : false;
-                        });
+                static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
+                    II const o = i;
+                        size_t p = 0;
+                    return container::read<X, list<X>>(i, e, cx, [&] {
+                            if (p == N) return cx|read_error::overflow, bits::rewind(i, o), false;
+                        return read_value<X>(t[p++], i, e, cx);
+                    });
                 }
         };
     template <typename X, typename T>
@@ -3226,12 +3236,13 @@ namespace cxon { namespace unquoted { // unquoted value
                     }
             };
 
-        template <typename T>
+        template <typename T, typename Cx>
             struct array_adder {
                 T *f, *l;
+                Cx& cx;
                 template <size_t N>
-                    array_adder(T (&t)[N]) : f(t), l(t + N) {}
-                bool add(T e) { return f != l ? (*f = e, ++f, true) : false; }
+                    array_adder(T (&t)[N], Cx& cx) : f(t), l(t + N), cx(cx) {}
+                bool add(T e) { return f != l ? (*f = e, ++f, true) : (cx|read_error::overflow, false); }
             };
 
         template <typename T>
@@ -3243,10 +3254,11 @@ namespace cxon { namespace unquoted { // unquoted value
 
     template <typename X, typename T, size_t N, typename II, typename Cx>
         inline bool read_value(T (&t)[N], II& i, II e, Cx& cx) {
-            return !bits::value<X>::read(bits::array_adder<T>(t), i, e) ?
-                (cx|read_error::unexpected, false) :
-                true
-            ;
+            II const o = i;
+                if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
+                    return cx.ec == read_error::overflow ? (cxon::bits::rewind(i, o), false) : (cx|read_error::unexpected, false);
+                }
+            return true;
         }
 
     template <typename X, typename II, typename Cx>

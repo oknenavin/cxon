@@ -305,7 +305,7 @@ TEST_BEG(cxon::CXON<>) // base
             R_TEST(a, "{", cxon::read_error::integral_invalid, 1);
         }
         {   int a[] = {1, 2, 3};
-            R_TEST(a, "{1,2,3,4}", cxon::read_error::unexpected, 6);
+            R_TEST(a, "{1,2,3,4}", cxon::read_error::overflow, 0);
         }
     // char[]
         R_TEST("", QS(""));
@@ -320,8 +320,8 @@ TEST_BEG(cxon::CXON<>) // base
             W_TEST(QS("123\\04"), a);
         }
         {   char a[] = {'1', '2', '3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\\u2728"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\\u2728"), cxon::read_error::overflow, 0);
         }
         {   char a[] = {'1', '2', '\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -356,8 +356,8 @@ TEST_BEG(cxon::CXON<>) // base
             W_TEST(QS("123\\04"), a);
         }
         {   char16_t a[] = {u'1', u'2', u'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::overflow, 0);
         }
         {   char16_t a[] = {u'1', u'2', u'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -393,7 +393,7 @@ TEST_BEG(cxon::CXON<>) // base
         }
         {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
             R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -413,7 +413,7 @@ TEST_BEG(cxon::CXON<>) // base
             W_TEST(QS("123\\04"), a);
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -686,7 +686,7 @@ TEST_BEG(cxon::JSON<>) // base
             R_TEST(a, "[", cxon::read_error::integral_invalid, 1);
         }
         {   int a[] = {1, 2, 3};
-            R_TEST(a, "[1,2,3,4]", cxon::read_error::unexpected, 6);
+            R_TEST(a, "[1,2,3,4]", cxon::read_error::overflow, 0);
         }
     // char[]
         R_TEST("", QS(""));
@@ -701,8 +701,8 @@ TEST_BEG(cxon::JSON<>) // base
             W_TEST(QS("123\\u00004"), a);
         }
         {   char a[] = {'1', '2', '3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\\u2728"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\\u2728"), cxon::read_error::overflow, 0);
         }
         {   char a[] = {'1', '2', '\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -739,8 +739,8 @@ TEST_BEG(cxon::JSON<>) // base
             W_TEST(QS("123\\u00004"), a);
         }
         {   char16_t a[] = {u'1', u'2', u'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::overflow, 0);
         }
         {   char16_t a[] = {u'1', u'2', u'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -776,7 +776,7 @@ TEST_BEG(cxon::JSON<>) // base
         }
         {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
             R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -796,7 +796,7 @@ TEST_BEG(cxon::JSON<>) // base
             W_TEST(QS("123\\u00004"), a);
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -1095,7 +1095,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 2);
-        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::unexpected, 64); // cxon::num_len_max
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::overflow, 64); // cxon::num_len_max
     // integral
         // bin
         R_TEST((signed)0, "0b0");
@@ -1138,7 +1138,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::integral_invalid, 2);
         R_TEST((signed)0, "0xg", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::unexpected, 32); // cxon::num_len_max
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::overflow, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validation
@@ -1160,7 +1160,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::ok, 1);
-        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::unexpected, 64); // cxon::num_len_max
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::overflow, 64); // cxon::num_len_max
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
@@ -1177,7 +1177,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0xg", cxon::read_error::ok, 1);
-        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::unexpected, 32); // cxon::num_len_max
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::overflow, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
@@ -1399,7 +1399,7 @@ TEST_BEG(cxon::CXON<>) // cxon
         R_TEST((array<int, 3>{{1, 2, 3}}), "{1, 2, 3}");
         W_TEST("{1,2,3}", (array<int, 3>{1, 2, 3}));
         R_TEST((array<int, 4>{{1, 2, 3, 0}}), "{1, 2, 3}");
-        R_TEST((array<int, 2>{}), "{1, 2, 3}", cxon::read_error::unexpected, 5);
+        R_TEST((array<int, 2>{}), "{1, 2, 3}", cxon::read_error::overflow, 0);
         R_TEST((array<int, 2>{}), "{x}", cxon::read_error::integral_invalid, 1);
         R_TEST((array<int, 2>{}), "{1, x}", cxon::read_error::integral_invalid, 4);
     // std::queue<int>
@@ -1854,7 +1854,7 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[1,2,3]", (array<int, 3>{{1, 2, 3}}));
         R_TEST((array<int, 4>{{1, 2, 3, 0}}), "[1, 2, 3]");
         W_TEST("[1,2,3,4]", (array<int, 4>{{1, 2, 3, 4}}));
-        R_TEST((array<int, 2>{}), "[1, 2, 3]", cxon::read_error::unexpected, 5);
+        R_TEST((array<int, 2>{}), "[1, 2, 3]", cxon::read_error::overflow, 0);
         W_TEST("[1,2]", (array<int, 2>{{1, 2}}));
     // std::queue<int>
         R_TEST((queue<int>{}), "[]");
@@ -2426,28 +2426,28 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
     }
     {   unsigned r = 0; std::string const i = "123";
         auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::unexpected && *e.end == '3');
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
     }
     {   double r = 0; std::list<char> const i = {'1', '2', '3'};
         TEST_CHECK(cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 4U>()) && r == 123);
     }
     {   float r = 0; std::list<char> const i = {'1', '2', '3'};
         auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::unexpected && *e.end == '3');
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
     }
     {   Enum1 r = Enum1::one;
         TEST_CHECK(cxon::from_chars<XXON>(r, std::string("three"), cxon::ids_len_max::set<unsigned, 6U>()) && r == Enum1::three);
     }
     {   Enum1 r = Enum1::one; std::string const i = "three";
         auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::unexpected && *e.end == 'r');
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 't');
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
         TEST_CHECK(cxon::from_chars<XXON>(r, "{ field: 42 }", cxon::ids_len_max::set<unsigned, 6U>()) && r == Struct11(42));
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
         auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::unexpected && *e.end == 'e');
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 'f');
     }
 TEST_END()
 
@@ -2472,6 +2472,8 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
             ec = read_error::surrogate_invalid;
                 CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
+            ec = read_error::overflow;
+                CXON_ASSERT(ec.message() == "buffer overflow", "check failed");
 #           ifdef NDEBUG
                 ec = read_error(255);
                     CXON_ASSERT(ec.message() == "unknown error", "check failed");
