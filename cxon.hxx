@@ -956,11 +956,11 @@ namespace cxon { // I/O
                     return push(o, p...), true;
                 }
             template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx& cx, P... p) -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
+                inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
                     return push(o, p...), (!o.good() ? (cx|write_error::output_failure), false : true);
                 }
             template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx& cx, P... p) -> enable_if_t< has_bool<O>::value, bool> {
+                inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t< has_bool<O>::value, bool> {
                     return push(o, p...), (!o ? (cx|write_error::output_failure), false : true);
                 }
 
@@ -980,15 +980,15 @@ namespace cxon { // I/O
             inline bool poke(O&, std::nullptr_t) noexcept   { return true; }
 
         template <typename X, typename O, typename Cx>
-            inline bool poke(O& o, char c, Cx& cx)                    { return bits::poke<X>(o, cx, c); }
+            inline bool poke(O& o, char c, Cx& cx)                  { return bits::poke<X>(o, cx, c); }
         template <typename X, typename O, typename Cx>
-            inline bool poke(O& o, const char* s, Cx& cx)             { return bits::poke<X>(o, cx, s); }
+            inline bool poke(O& o, const char* s, Cx& cx)           { return bits::poke<X>(o, cx, s); }
         template <typename X, typename O, typename Cx>
-            inline bool poke(O& o, const char* s, size_t n, Cx& cx)   { return bits::poke<X>(o, cx, s, n); }
+            inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return bits::poke<X>(o, cx, s, n); }
         template <typename X, typename O, typename Cx>
-            inline bool poke(O& o, unsigned n, char c, Cx& cx)        { return bits::poke<X>(o, cx, n, c); }
+            inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return bits::poke<X>(o, cx, n, c); }
         template <typename X, typename O, typename Cx>
-            constexpr bool poke(O&, std::nullptr_t, Cx&)               { return true; }
+            constexpr bool poke(O&, std::nullptr_t, Cx&)            { return true; }
 
     }   // io
 
@@ -2124,7 +2124,7 @@ namespace cxon { // read, compound types
         template <typename X, size_t N>\
             struct read<X, T[N]> {\
                 template <typename II, typename Cx>\
-                    static bool value(T (&t)[N], II& i, II e, Cx& cx)     { return bits::array<X>::read(t, t + N, i, e, cx); }\
+                    static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return bits::array<X>::read(t, t + N, i, e, cx); }\
             };
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
@@ -2136,7 +2136,7 @@ namespace cxon { // read, compound types
         template <typename X>\
             struct read<X, const T*> {\
                 template <typename II, typename Cx>\
-                    static bool value(const T*& t, II& i, II e, Cx& cx)   { return read_value<X>((T*&)t, i, e, cx); }\
+                    static bool value(const T*& t, II& i, II e, Cx& cx) { return read_value<X>((T*&)t, i, e, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
@@ -2148,7 +2148,7 @@ namespace cxon { // read, compound types
         template <typename X>\
             struct read<X, T*> {\
                 template <typename II, typename Cx>\
-                    static bool value(T*& t, II& i, II e, Cx& cx)         { return bits::pointer_read<X>(t, i, e, cx); }\
+                    static bool value(T*& t, II& i, II e, Cx& cx)       { return bits::pointer_read<X>(t, i, e, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
@@ -2588,12 +2588,12 @@ namespace cxon { namespace bits { // fundamental type encoding
                     else                    return io::poke<JSON<X>>(o, c, cx);
                 }
             template <typename O, typename II, typename Cx, typename S = X>
-                static auto value(O& o, II i, II, Cx& cx)      -> enable_if_t<!S::strict_js, bool> {
+                static auto value(O& o, II i, II, Cx& cx)       -> enable_if_t<!S::strict_js, bool> {
                     return value(o, *i, cx);
                 }
             template <typename O, typename II, typename Cx, typename S = X>
                 // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
-                static auto value(O& o, II& i, II e, Cx& cx)   -> enable_if_t< S::strict_js, bool> {
+                static auto value(O& o, II& i, II e, Cx& cx)    -> enable_if_t< S::strict_js, bool> {
                     if (*i == '\xE2') {
                         ++i; CXON_ASSERT(i != e, "unexpected");
                         if (*i == '\x80') {
@@ -2766,13 +2766,13 @@ namespace cxon { // write, fundamental types
         }
 
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, char t, Cx& cx)        { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, char t, Cx& cx)       { return bits::character_write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, char16_t t, Cx& cx)    { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, char16_t t, Cx& cx)   { return bits::character_write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, char32_t t, Cx& cx)    { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, char32_t t, Cx& cx)   { return bits::character_write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, wchar_t t, Cx& cx)     { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, wchar_t t, Cx& cx)    { return bits::character_write<X>(o, t, cx); }
 
 #   define CXON_WRITE_DEF(T)\
         template <typename X, typename O, typename Cx>\
@@ -2906,7 +2906,7 @@ namespace cxon { // write, compound types
         template <typename X, size_t N>\
             struct write<X, T[N]> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, const T (&t)[N], Cx& cx)     { return bits::array_write<X>(o, t, t + N, cx); }\
+                    static bool value(O& o, const T (&t)[N], Cx& cx)    { return bits::array_write<X>(o, t, t + N, cx); }\
             };
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
@@ -2918,7 +2918,7 @@ namespace cxon { // write, compound types
         template <typename X>\
             struct write<X, const T*> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, const T* t, Cx& cx)          { return bits::pointer<X>::write(o, t, cx); }\
+                    static bool value(O& o, const T* t, Cx& cx)         { return bits::pointer<X>::write(o, t, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
@@ -2930,7 +2930,7 @@ namespace cxon { // write, compound types
         template <typename X>\
             struct write<X, T*> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, T* t, Cx& cx)                { return write_value<X, const T*>(o, t, cx); }\
+                    static bool value(O& o, T* t, Cx& cx)               { return write_value<X, const T*>(o, t, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
@@ -3037,12 +3037,12 @@ namespace cxon { // write, library types
     template <typename X, typename T, typename ...R>
         struct write<X, std::basic_string<T, R...>> {
             template <typename O, typename Cx>
-                static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx)     { return bits::pointer_write<X>(o, t.data(), t.size(), cx); }
+                static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx)    { return bits::pointer_write<X>(o, t.data(), t.size(), cx); }
         };
     template <typename X, template <typename> class S, typename T, typename ...R>
         struct write<S<bits::UQKEY<X>>, std::basic_string<T, R...>> {
             template <typename O, typename Cx>
-                static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx)  { return bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx); }
+                static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx)    { return bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx); }
         };
 
     template <typename X, typename ...T>
