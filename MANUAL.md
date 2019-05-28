@@ -9,7 +9,9 @@
 - [Introduction](#introduction)
 - [Interface](#interface)
 - [Implementation bridge](#implementation-bridge)
-- [Format traits](#format-traits)
+- [Parametrization](#parametrization)
+  - [Format traits](#format-traits)
+  - [Context](#context)
 - [Example (`JSON-RPC`)](#example-json-rpc)
 
 
@@ -64,10 +66,10 @@ may be found [at the end of the document](#example-json-rpc).
 ``` c++
 namespace cxon {
 
-    template <typename Traits, typename T, typename InIt, typename ...CtxPrm>
-        from_chars_result<It> from_chars(T& t, InIt b, InIt e, CtxPrm... p);            (1)
-    template <typename Traits, typename T, typename Iterable, typename ...CtxPrm>
-        from_chars_result<It)> from_chars(T& t, const Iterable& i, CtxPrm... p);        (2)
+    template <typename Traits, typename T, typename InIt, typename ...CxPs>
+        from_chars_result<It> from_chars(T& t, InIt b, InIt e, CxPs... p);            (1)
+    template <typename Traits, typename T, typename Iterable, typename ...CxPs>
+        from_chars_result<It)> from_chars(T& t, const Iterable& i, CxPs... p);        (2)
 
     template <typename It>
         struct from_chars_result {
@@ -85,20 +87,28 @@ namespace cxon {
 - `It` - an iterator
   - `(1)` `InIt`
   - `(2)` `decltype(std::begin(i))`
-- `CtxPrm` - the types of the remaining parameters (see [Implementation Bridge](#implementation-bridge))
+- `CxPs` - context parameter types (see [Context](#context))
 
 ###### Parameters
 - `t` - the out-parameter where the parsed value is stored if successful
 - `b`, `e` -  valid (`char`) range to parse
 - `i` - a parameter representing a valid (`char`) range to parse
-- `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
+- `p...` - context parameters (see [Context](#context))
+
+###### Context parameters
+
+Parameter      | Context | Type                     | Default                             | Description
+---------------|---------|--------------------------|-------------------------------------|-------------------------
+`allocator`    | read    | [`Allocator`][cpp-alloc] | `std::allocator<T>`                 | `T*` allocator
+`num_len_max`  | read    | `size_t`                 | 32 (integral) / 64 (floating-point) | number read buffer size
+`ids_len_max`  | read    | `size_t`                 | 64                                  | token read buffer size
 
 ###### Return value
 On success, returns a value of type `from_chars_result`, such that `end` is one-past-the-end iterator of
 the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
 On failure, returns a value of type `from_chars_result`, such that `end` is an iterator pointing to
-the non-matching input, and `ec` contains the [error condition][err-cnd]. The value is in valid, but unspecified
-state.
+the non-matching input, and `ec` contains the [error condition][cpp-err-cnd]. The value is in valid, but
+unspecified state.
 
 Error code                         | Message
 -----------------------------------|---------------------------------
@@ -152,12 +162,12 @@ int main() {
 ``` c++
 namespace cxon {
 
-    template <typename Traits, typename OutIt, typename T, typename ...CtxPrm>
-        to_chars_result<It> to_chars(OutIt o, const T& t, CtxPrm... p);                 (1)
-    template <typename Traits, typename Insertable, typename T, typename ...CtxPrm>
-        to_chars_result<It> to_chars(Insertable& i, const T& t, CtxPrm... p);           (2)
-    template <typename Traits, typename FwIt, typename T, typename ...CtxPrm>
-        to_chars_result<It> to_chars(FwIt b, FwIt e, const T& t, CtxPrm... p);          (3)
+    template <typename Traits, typename OutIt, typename T, typename ...CxPs>
+        to_chars_result<It> to_chars(OutIt o, const T& t, CxPs... p);                 (1)
+    template <typename Traits, typename Insertable, typename T, typename ...CxPs>
+        to_chars_result<It> to_chars(Insertable& i, const T& t, CxPs... p);           (2)
+    template <typename Traits, typename FwIt, typename T, typename ...CxPs>
+        to_chars_result<It> to_chars(FwIt b, FwIt e, const T& t, CxPs... p);          (3)
 
     template <typename It>
         struct to_chars_result {
@@ -179,14 +189,20 @@ namespace cxon {
   - `(1)` `OutIt`
   - `(2)` `decltype(std::begin(i))`
   - `(3)` `FwIt`
-- `CtxPrm` - the types of the remaining parameters (see [Implementation Bridge](#implementation-bridge))
+- `CxPs` - context parameter types (see [Context](#context))
 
 ###### Parameters
 - `o` - an output iterator to write to
 - `i` - a back insertable value to write to
 - `b`, `e` - a (`char`) range to write to
 - `t` - the value to convert to its representation 
-- `p...` - arbitrary parameters passed to the [Implementation Bridge](#implementation-bridge)
+- `p...` - context parameter (see [Context](#context))
+
+###### Context parameters
+
+Parameter      | Context | Type  | Default                                | Description
+---------------|---------|-------|----------------------------------------|-------------------------
+`fp_precision` | write   | `int` | `std::numeric_limits<T>::max_digits10` | floating-point precision
 
 ###### Return value
 On success, returns a value of type `to_chars_result`, such that `ec` is value-initialized, and `end` is:
@@ -234,18 +250,18 @@ int main() {
 #### Implementation Bridge
 
 The interface communicates the implementation via the so-called *implementation bridge*.  
-Read/write interface instantiates the context, defined in the [*format traits*](#format-traits),
-with `CtxPrm` parameters (if any) and then calls the *implementation bridge* with it:
+Read/write interfaces instantiate the [*context*](#context), with the `CxPs` parameters (if any)
+and then calls the *implementation bridge* with it:
 
 ``` c++
 namespace cxon {
 
-    template <typename X, typename T, typename InIt>
-        bool read_value(T& t, InIt& i, InIt e, rctx<X>& ctx) {
+    template <typename X, typename T, typename InIt, typename Cx>
+        bool read_value(T& t, InIt& i, InIt e, Cx& cx) {
             ...
         }
-    template <typename X, typename T, typename OutIt>
-        bool write_value(OutIt& o, const T& t, wctx<X>& ctx) {
+    template <typename X, typename T, typename OutIt, typename Cx>
+        bool write_value(OutIt& o, const T& t, Cx& cx) {
             ...
         }
 
@@ -263,15 +279,15 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
         template <typename X>
             struct read<X, T> {
-                template <typename InIt>
-                    static bool value(T& t, InIt& i, InIt e, rctx<X>& ctx) {
+                template <typename InIt, typename Cx>
+                    static bool value(T& t, InIt& i, InIt e, Cx& cx) {
                         ...
                     }
             };
         template <typename X>
             struct write<X, T> {
-                template <typename OutIt>
-                    static bool value(OutIt&, const T& t, wctx<X>& ctx) {
+                template <typename OutIt, typename Cx>
+                    static bool value(OutIt&, const T& t, Cx& cx) {
                         ...
                     }
             };
@@ -281,12 +297,12 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 - static members provided by the type
     ``` c++
     struct T {
-        template <typename X, typename InIt>
-            static bool read_value(T& t, InIt& i, InIt e, cxon::rctx<X>& ctx) {
+        template <typename X, typename InIt, typename Cx>
+            static bool read_value(T& t, InIt& i, InIt e, Cx& cx) {
                 ...
             }
-        template <typename X, typename OutIt>
-            static bool write_value(OutIt& o, const T& t, cxon::wctx<X>& ctx) {
+        template <typename X, typename OutIt, typename Cx>
+            static bool write_value(OutIt& o, const T& t, Cx& cx) {
                 ...
             }
     };
@@ -294,12 +310,12 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 - members provided by the type
     ``` c++
     struct T {
-        template <typename X, typename InIt>
-            bool read_value(InIt& i, InIt e, cxon::rctx<X>& ctx) {
+        template <typename X, typename InIt, typename Cx>
+            bool read_value(InIt& i, InIt e, Cx& cx) {
                 ...
             }
-        template <typename X, typename OutIt>
-            bool write_value(OutIt& o, cxon::wctx<X>& ctx) {
+        template <typename X, typename OutIt, typename Cx>
+            bool write_value(OutIt& o, Cx& cx) {
                 ...
             }
     };
@@ -317,9 +333,9 @@ for binding of enumerations and compound types:
     // implements the read and write interfaces for enum Type
     #define CXON_ENUM(Type, ...)
 
-    // defines enum value Value, which will be serialized as Name
+    // defines enum value `Value`, which will be serialized as Name
     #define CXON_ENUM_VALUE_NAME(Name, Value)
-    // defines enum value Value, which will be serialized as ##Value
+    // defines enum value `Value`, which will be serialized as ##Value
     #define CXON_ENUM_VALUE_ASIS(Value)
     ```
 
@@ -346,20 +362,20 @@ for binding of enumerations and compound types:
     ```
 - [compound types][cpp-struct]
     ``` c++
-    // implements the read interface for type Type
+    // implements the read interface for type `Type`
     #define CXON_STRUCT_READ(Type, ...)
-    // implements the write interface for type Type
+    // implements the write interface for type `Type`
     #define CXON_STRUCT_WRITE(Type, ...)
-    // implements the read and write interfaces for type Type
+    // implements the read and write interfaces for type `Type`
     #define CXON_STRUCT(Type, ...)
     // and the same set for intrusive implementation
     #define CXON_STRUCT_READ_MEMBER(Type, ...)
     #define CXON_STRUCT_WRITE_MEMBER(Type, ...)
     #define CXON_STRUCT_MEMBER(Type, ...)
     
-    // defines field Field, which will be serialized as Name
+    // defines field `Field`, which will be serialized as Name
     #define CXON_STRUCT_FIELD_NAME(Name, Field)
-    // defines field Field, which will be serialized as ##Field
+    // defines field `Field`, which will be serialized as ##Field
     #define CXON_STRUCT_FIELD_ASIS(Field)
     // defines the key Name, which will be skipped during serialization (only meaningful for reading)
     #define CXON_STRUCT_FIELD_SKIP(Name)
@@ -395,37 +411,31 @@ for binding of enumerations and compound types:
     assert(v1 == v0);
     ```
 
+
 --------------------------------------------------------------------------------
-#### Format Traits
+#### Parametrization
 
-`Traits` template parameter has two roles:
-  - to keep configuration, related to the definition of a given serialization format
-  - to keep configuration parameters for a given serialization format
+`CXON` provides two ways for parametrization, serving different purposes:
+- [format-traits](#format-traits) - for parameterizing given serialization format,
+  usually meaning that some property of the format changes. As an example,
+  `unquoted_keys` parameter enables unquoted object keys.
+- [context](#context) - for parameterizing the serialization of given type
+  without changing of the format. As an example, `allocator` parameter allows
+  using of a custom [allocator][cpp-alloc] while reading of a pointer types.
 
-The implementation requires *format traits* to provide one mandatory trait to support the 
-[*implementation bridge*](#implementation-bridge) - a context:
 
-``` c++
-struct format_traits {
-    struct context {
-        struct read;
-        struct write;
-    };
-};
-```
+--------------------------------------------------------------------------------
+##### Format Traits
 
-The implementation requires these types to provide a mandatory member `ec` of type
-[`std::error_condition`][err-cnd].
-
-Although `JSON` is the default format, `CXON` defines a fall-back format called the same - `CXON`.  
-It is like somewhat relaxed `JSON` (e.g. object keys may not be quoted) and its traits are
-defined like this:
+The purpose of `Traits` template parameter is to keep parameters for given serialization format.
+As an example, although `JSON` is the default serialization format, `CXON` defines a fall-back
+format called the same - `CXON`, which is like somewhat relaxed `JSON` (e.g. object keys may not
+be quoted) and its traits are defined like this:
 
 ``` c++
 namespace cxon {
 
     struct format_traits {
-        struct context; // read/write contexts
         struct map;     // key/value types such as std::map, struct/class, etc.
         struct list;    // array/list/set like types
         struct string;  // string types
@@ -475,9 +485,9 @@ namespace cxon {
 }
 ```
 
-As both definition and configuration are in one place, specialization for given format 
-is not directly possible (because changing of a parameter requires new type).
-Because of this, `CXON` uses so-called *format-selector* and it is defined like this:
+As changing of a `Traits` parameter requires new type, specialization for given format
+is not directly possible and because of this, `CXON` uses so-called *format-selectors*
+defined like this:
 
 ``` c++
 namespace cxon {
@@ -491,9 +501,7 @@ namespace cxon {
 }
 ```
 
-Then the interface should be called with *format-selector* instead of with bare format traits.
-
-###### Example
+and the interface shall be called with *format-selector* instead of bare traits:
 
 ``` c++
 struct json_unquoted_keys_traits : cxon::json_format_traits {
@@ -508,27 +516,153 @@ auto const result = cxon::from_chars<my_traits>(...);
 ...
 ```
 
-This way, specialization for given type and format is ensured and code like this:
+By using of this mechanism, specialization for given type and format is ensured with
+code like this:
 
 ``` c++
 namespace cxon {
 
-    template <typename X, typename II>
-        auto read_value(char& t, II& i, II e, rctx<X>& ctx)
+    template <typename X, typename II, typename Cx>
+        auto read_value(char& t, II& i, II e, Cx& cx)
             -> enable_for_t<X, CXON, bool>
         { ... }
-    template <typename X, typename II>
-        auto read_value(char& t, II& i, II e, rctx<X>& ctx)
+    template <typename X, typename II, typename Cx>
+        auto read_value(char& t, II& i, II e, Cx& cx)
             -> enable_for_t<X, JSON, bool>
         { ... }
 
 }
 ```
 
-will work with an arbitrary *format traits*.
-
 *Here, the helper type `cxon::enable_for_t` is a convenience typedef similar to 
 [`std::enable_if`][cpp-enab-if].*
+
+
+--------------------------------------------------------------------------------
+##### Context
+
+The context is created by the interface with the optional `CxPs` parameters and
+passed to the implementation bridge.
+
+``` c++
+namespace cxon {
+    template <typename ...Ps>
+        struct context;
+}
+```
+
+###### Template parameters
+
+  - `Ps` - context parameter types
+
+###### Member types
+
+Member type |Definition
+------------|------------------------------------------
+`prms_type` | `prms::pack_type<Ps...>`
+
+###### Member objects
+
+Member name |Type
+------------|------------------------------------------
+`ec`        | [`std::error_condition`][cpp-err-cnd]
+`ps`        | `prms_type`
+
+###### Member functions
+
+- `operator |` - assign error condition enum
+    ``` c++
+    template <typename E>
+        auto operator |(E e) noexcept;
+    ```
+
+
+`ps`'s type is a tagged tuple with parameter types as tags. Concrete type is
+an implementation detail and the code shall access it by the `tag` interface.
+
+``` c++
+namespace cxon::prms {
+    template <typename Tag>
+        struct tag {
+            template <typename Pa>
+                struct in {                                     (1)
+                    static bool value;
+                }
+
+            template <typename Ty, Ty c>
+                static constexpr auto set();                    (2)
+            template <typename Ty>
+                static constexpr auto set(Ty&& v);              (3)
+
+            template <typename Pa, typename Ty>
+                static constexpr Ty constant(Ty dflt);          (4)
+
+            template <typename Pa>
+                static auto reference(Pa& p);                   (5)
+            template <typename Pa>
+                static auto value(const Pa& p);                 (6)
+
+            template <typename Pa, typename Ty>
+                static Ty value(const Pa&, Ty dflt);            (7)
+        };
+}
+```
+
+- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise.
+- `(2)` - creates `constexpr` parameter `Tag` and type `Ty`.
+- `(3)` - creates parameter `Tag` and type `Ty`.
+- `(4)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise.
+- `(5)` - returns reference to parameter `Tag` as the type is the one of the creation type.
+  It's a compilation error if parameter `Tag` isn't set.
+- `(6)` - returns the value of parameter `Tag` as the type is the one of the creation type.
+  It's a compilation error if parameter `Tag` isn't set.
+- `(7)` - returns the value of parameter `Tag` if set, `dflt` otherwise.
+
+For convenience, parameter type could be inherited from `prms::tag` - `CXON` provides
+simple macro for this.
+
+``` c++
+#define CXON_PARAMETER(P) struct P : cxon::prms::tag<P> {}
+```
+
+###### Example
+
+``` c++
+#include "cxon/cxon.hxx"
+
+CXON_PARAMETER(my_constant);
+CXON_PARAMETER(my_state);
+
+struct my_type { ... };
+
+namespace cxon {
+    template <typename X, typename II, typename Cx>
+        inline auto read_value(my_type& t, II& i, II e, Cx& cx)
+            // specialize if my_state is set
+            -> enable_if_t< my_state::in<prms_type<Cx>>::value, bool>
+        {
+            char buffer[my_constant::constant<prms_type<Cx>>(32U)]; // 32U if not set
+            auto& state = my_state::reference(cx.ps);
+            ...
+        }
+    template <typename X, typename II, typename Cx>
+        inline auto read_value(my_type& t, II& i, II e, Cx& cx)
+            // specialize if my_state isn't set
+            -> enable_if_t<!my_state::in<prms_type<Cx>>::value, bool>
+        {
+            auto par = my_state::value(cx.ps, 0); // 0 if not set
+            ...
+        }
+}
+
+int main() {
+    my_type mv;
+        auto res = cxon::from_chars(mv, "...",
+            my_constant::set<unsigned, 42U>(), // constexpr parameter
+            my_state::set(42) // runtime parameter
+        );
+}
+```
 
 
 --------------------------------------------------------------------------------
@@ -668,9 +802,10 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[cpp-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
 [cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
 [cpp-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
 [cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
 [cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
 [cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
-[err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
+[cpp-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237

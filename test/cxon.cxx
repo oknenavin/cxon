@@ -59,16 +59,14 @@ namespace test {
 
 }   // test
 
-#define R_TEST(ref, ...)\
-    if (++TEST_A, !test::verify_read<XXON>(ref, __VA_ARGS__)) {\
+#define TEST_CHECK(conditon)\
+    do if (++TEST_A, !(conditon)) {\
         ++TEST_F, fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr);\
         CXON_ASSERT(false, "check failed");\
-    }
-#define W_TEST(ref, ...)\
-    if (++TEST_A, !test::verify_write<XXON>(ref, __VA_ARGS__)) {\
-        ++TEST_F, fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr);\
-        CXON_ASSERT(false, "check failed");\
-    }
+    } while (0)
+
+#define R_TEST(ref, ...) TEST_CHECK(test::verify_read<XXON>(ref, __VA_ARGS__))
+#define W_TEST(ref, ...) TEST_CHECK(test::verify_write<XXON>(ref, __VA_ARGS__))
 
 #define QS(s) "\"" s "\""
 
@@ -307,7 +305,7 @@ TEST_BEG(cxon::CXON<>) // base
             R_TEST(a, "{", cxon::read_error::integral_invalid, 1);
         }
         {   int a[] = {1, 2, 3};
-            R_TEST(a, "{1,2,3,4}", cxon::read_error::unexpected, 6);
+            R_TEST(a, "{1,2,3,4}", cxon::read_error::overflow, 0);
         }
     // char[]
         R_TEST("", QS(""));
@@ -322,8 +320,8 @@ TEST_BEG(cxon::CXON<>) // base
             W_TEST(QS("123\\04"), a);
         }
         {   char a[] = {'1', '2', '3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\\u2728"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\\u2728"), cxon::read_error::overflow, 0);
         }
         {   char a[] = {'1', '2', '\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -358,8 +356,8 @@ TEST_BEG(cxon::CXON<>) // base
             W_TEST(QS("123\\04"), a);
         }
         {   char16_t a[] = {u'1', u'2', u'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::overflow, 0);
         }
         {   char16_t a[] = {u'1', u'2', u'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -395,7 +393,7 @@ TEST_BEG(cxon::CXON<>) // base
         }
         {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
             R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -415,7 +413,7 @@ TEST_BEG(cxon::CXON<>) // base
             W_TEST(QS("123\\04"), a);
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -688,7 +686,7 @@ TEST_BEG(cxon::JSON<>) // base
             R_TEST(a, "[", cxon::read_error::integral_invalid, 1);
         }
         {   int a[] = {1, 2, 3};
-            R_TEST(a, "[1,2,3,4]", cxon::read_error::unexpected, 6);
+            R_TEST(a, "[1,2,3,4]", cxon::read_error::overflow, 0);
         }
     // char[]
         R_TEST("", QS(""));
@@ -703,8 +701,8 @@ TEST_BEG(cxon::JSON<>) // base
             W_TEST(QS("123\\u00004"), a);
         }
         {   char a[] = {'1', '2', '3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\\u2728"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\\u2728"), cxon::read_error::overflow, 0);
         }
         {   char a[] = {'1', '2', '\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -741,8 +739,8 @@ TEST_BEG(cxon::JSON<>) // base
             W_TEST(QS("123\\u00004"), a);
         }
         {   char16_t a[] = {u'1', u'2', u'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::unexpected, 3);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), cxon::read_error::overflow, 0);
         }
         {   char16_t a[] = {u'1', u'2', u'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -778,7 +776,7 @@ TEST_BEG(cxon::JSON<>) // base
         }
         {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
             R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -798,7 +796,7 @@ TEST_BEG(cxon::JSON<>) // base
             W_TEST(QS("123\\u00004"), a);
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), cxon::read_error::unexpected, 4);
+            R_TEST(a, QS("1234"), cxon::read_error::overflow, 0);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
             R_TEST(a, "12", cxon::read_error::unexpected, 0);
@@ -1097,7 +1095,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 2);
-        R_TEST((double)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::floating_point_invalid, XXON::buffer::max_number);
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::overflow, 64); // cxon::num_len_max
     // integral
         // bin
         R_TEST((signed)0, "0b0");
@@ -1140,7 +1138,7 @@ TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // cxon number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::integral_invalid, 2);
         R_TEST((signed)0, "0xg", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::integral_invalid, XXON::buffer::max_number);
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::overflow, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validation
@@ -1162,7 +1160,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", cxon::read_error::ok, 1);
-        R_TEST((double)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::floating_point_invalid, XXON::buffer::max_number);
+        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::overflow, 64); // cxon::num_len_max
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
@@ -1179,7 +1177,7 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((signed)0, "08", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0x", cxon::read_error::ok, 1);
         R_TEST((signed)0, "0xg", cxon::read_error::ok, 1);
-        R_TEST((signed)0, std::string(XXON::buffer::max_number + 1, '1'), cxon::read_error::integral_invalid, XXON::buffer::max_number);
+        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::overflow, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
@@ -1401,7 +1399,7 @@ TEST_BEG(cxon::CXON<>) // cxon
         R_TEST((array<int, 3>{{1, 2, 3}}), "{1, 2, 3}");
         W_TEST("{1,2,3}", (array<int, 3>{1, 2, 3}));
         R_TEST((array<int, 4>{{1, 2, 3, 0}}), "{1, 2, 3}");
-        R_TEST((array<int, 2>{}), "{1, 2, 3}", cxon::read_error::unexpected, 5);
+        R_TEST((array<int, 2>{}), "{1, 2, 3}", cxon::read_error::overflow, 0);
         R_TEST((array<int, 2>{}), "{x}", cxon::read_error::integral_invalid, 1);
         R_TEST((array<int, 2>{}), "{1, x}", cxon::read_error::integral_invalid, 4);
     // std::queue<int>
@@ -1856,7 +1854,7 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[1,2,3]", (array<int, 3>{{1, 2, 3}}));
         R_TEST((array<int, 4>{{1, 2, 3, 0}}), "[1, 2, 3]");
         W_TEST("[1,2,3,4]", (array<int, 4>{{1, 2, 3, 4}}));
-        R_TEST((array<int, 2>{}), "[1, 2, 3]", cxon::read_error::unexpected, 5);
+        R_TEST((array<int, 2>{}), "[1, 2, 3]", cxon::read_error::overflow, 0);
         W_TEST("[1,2]", (array<int, 2>{{1, 2}}));
     // std::queue<int>
         R_TEST((queue<int>{}), "[]");
@@ -2061,16 +2059,16 @@ struct Struct4 {
     Struct4(int a = 0) : a(a) {}
     bool operator ==(const Struct4& t) const { return a == t.a; }
 
-    template <typename X, typename II>
-        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
+    template <typename X, typename II, typename C>
+        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
             return cxon::read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename II>
-        static auto read_value(Struct4& t, II& b, II e, cxon::rctx<X>& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
+    template <typename X, typename II, typename C>
+        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
             return cxon::read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename OI>
-        static bool write_value(OI& o, const Struct4& t, cxon::wctx<X>& ctx) {
+    template <typename X, typename OI, typename C>
+        static bool write_value(OI& o, const Struct4& t, C& ctx) {
             return cxon::write_value<X>(o, t.a, ctx);
         }
 
@@ -2093,16 +2091,16 @@ struct Struct5 {
     Struct5(int a = 0) : a(a) {}
     bool operator ==(const Struct5& t) const { return a == t.a; }
 
-    template <typename X, typename II>
-        bool read_value(II& b, II e, cxon::rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        bool read_value(II& b, II e, C& ctx) {
             return cxon::read_value<X>(a, b, e, ctx);
         }
-    template <typename X, typename OI>
-        auto write_value(OI& o, typename cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::CXON, bool> {
+    template <typename X, typename OI, typename C>
+        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::CXON, bool> {
             return cxon::write_value<X>(o, a, ctx);
         }
-    template <typename X, typename OI>
-        auto write_value(OI& o, cxon::wctx<X>& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
+    template <typename X, typename OI, typename C>
+        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
             return cxon::write_value<X>(o, a, ctx);
         }
 
@@ -2128,16 +2126,16 @@ struct Struct6 {
 };
 
 namespace cxon {
-    template <typename X, typename II>
-        inline  enable_for_t<X, CXON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        inline  enable_for_t<X, CXON, bool> read_value(Struct6& t, II& b, II e, C& ctx) {
             return read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename II>
-        inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, C& ctx) {
             return read_value<X>(t.a, b, e, ctx);
         }
-    template <typename X, typename OI>
-        inline bool write_value(OI& o, const Struct6& t, wctx<X>& ctx) {
+    template <typename X, typename OI, typename C>
+        inline bool write_value(OI& o, const Struct6& t, C& ctx) {
             return write_value<X>(o, t.a, ctx);
         }
 }
@@ -2188,8 +2186,8 @@ struct Struct8 {
     Struct8(int a = 0, int b = 0) : a(a), b(b) {}
     bool operator ==(const Struct8& t) const { return a == t.a && b == t.b; }
 
-    template <typename X, typename II>
-        static bool read_value(Struct8& t, II& i, II e, cxon::rctx<X>& ctx) {
+    template <typename X, typename II, typename C>
+        static bool read_value(Struct8& t, II& i, II e, C& ctx) {
             using namespace cxon::structs;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
@@ -2197,8 +2195,8 @@ struct Struct8 {
             );
             return read_fields<X>(t, f, i, e, ctx);
         }
-    template <typename X, typename OI>
-        static bool write_value(OI& o, const Struct8& t, cxon::wctx<X>& ctx) {
+    template <typename X, typename OI, typename C>
+        static bool write_value(OI& o, const Struct8& t, C& ctx) {
             using namespace cxon::structs;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
@@ -2326,166 +2324,129 @@ TEST_END()
 
 TEST_BEG(cxon::CXON<>) // interface/read
     // iterator
-    {   ++TEST_A;
-        int r; char const i[] = "1";
-        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   int r; char const i[] = "1";
+        TEST_CHECK(cxon::from_chars(r, std::begin(i), std::end(i)) && r == 1);
     }
-    {   ++TEST_A;
-        int r; std::string const i = "1";
-        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   int r; std::string const i = "1";
+        TEST_CHECK(cxon::from_chars(r, std::begin(i), std::end(i)) && r == 1);
     }
-    {   ++TEST_A;
-        int r; std::vector<char> const i = {'1', '\0'};
-        if (!cxon::from_chars(r, std::begin(i), std::end(i)) || r != 1) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   int r; std::vector<char> const i = {'1', '\0'};
+        TEST_CHECK(cxon::from_chars(r, std::begin(i), std::end(i)) && r == 1);
     }
     // container
-    {   ++TEST_A;
-        int r; char const i[] = "1";
-        if (!cxon::from_chars(r, i) || r != 1) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   int r; char const i[] = "1";
+        TEST_CHECK(cxon::from_chars(r, i) && r == 1);
     }
-    {   ++TEST_A;
-        int r; std::string const i = "1";
-        if (!cxon::from_chars(r, i) || r != 1) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   int r; std::string const i = "1";
+        TEST_CHECK(cxon::from_chars(r, i) && r == 1);
     }
-    {   ++TEST_A;
-        int r; std::vector<char> const i = {'1', '\0'};
-        if (!cxon::from_chars(r, i) || r != 1) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   int r; std::vector<char> const i = {'1', '\0'};
+        TEST_CHECK(cxon::from_chars(r, i) && r == 1);
     }
 TEST_END()
 
 TEST_BEG(cxon::CXON<>) // interface/write
     // output iterator
-    {   ++TEST_A;
-        std::string r; std::string const e = QS("1");
-        if (!cxon::to_chars<XXON>(std::back_inserter(r), "1") || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::string r; std::string const e = QS("1");
+        TEST_CHECK(cxon::to_chars<XXON>(std::back_inserter(r), "1") && r == e);
     }
-    {   ++TEST_A;
-        std::string r; std::string const e = "1";
-        if (!cxon::to_chars<XXON>(std::back_inserter(r), 1) || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::string r; std::string const e = "1";
+        TEST_CHECK(cxon::to_chars<XXON>(std::back_inserter(r), 1) && r == e);
     }
-    {   ++TEST_A;
-        std::string r; std::string const e = "true";
-        if (!cxon::to_chars<XXON>(std::back_inserter(r), true) || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::string r; std::string const e = "true";
+        TEST_CHECK(cxon::to_chars<XXON>(std::back_inserter(r), true) && r == e);
     }
     // range
-    {   ++TEST_A;
-        char o[16]; char const e[] = QS("1");
+    {   char o[16]; char const e[] = QS("1");
         auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
-        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+        TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
     }
-        {   ++TEST_A;
-            char o[1];
+        {   char o[1];
             auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
-            if (r.ec != cxon::write_error::output_failure) {
-                ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-                CXON_ASSERT(false, "check failed");
-            }
+            TEST_CHECK(r.ec == cxon::write_error::output_failure);
         }
-    {   ++TEST_A;
-        char o[16]; char const e[] = "1";
+    {   char o[16]; char const e[] = "1";
         auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 1);
-        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+        TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
     }
-        {   ++TEST_A;
-            char o[1];
+        {   char o[1];
             auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 42);
-            if (r.ec != cxon::write_error::output_failure) {
-                ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-                CXON_ASSERT(false, "check failed");
-            }
+            TEST_CHECK(r.ec == cxon::write_error::output_failure);
         }
-    {   ++TEST_A;
-        char o[16]; char const e[] = "true";
+    {   char o[16]; char const e[] = "true";
         auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
-        if (!r || std::strncmp(o, e, r.end - std::begin(o)) != 0) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+        TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
     }
-        {   ++TEST_A;
-            char o[1];
+        {   char o[1];
             auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
-            if (r.ec != cxon::write_error::output_failure) {
-                ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-                CXON_ASSERT(false, "check failed");
-            }
+            TEST_CHECK(r.ec == cxon::write_error::output_failure);
         }
     // container/std::string (push_back, append)
-    {   ++TEST_A;
-        std::string r; std::string const e = QS("1");
-        if (!cxon::to_chars<XXON>(r, "1") || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::string r; std::string const e = QS("1");
+        TEST_CHECK(cxon::to_chars<XXON>(r, "1") && r == e);
     }
-    {   ++TEST_A;
-        std::string r; std::string const e = "1";
-        if (!cxon::to_chars<XXON>(r, 1) || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::string r; std::string const e = "1";
+        TEST_CHECK(cxon::to_chars<XXON>(r, 1) && r == e);
     }
-    {   ++TEST_A;
-        std::string r; std::string const e = "true";
-        if (!cxon::to_chars<XXON>(r, true) || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::string r; std::string const e = "true";
+        TEST_CHECK(cxon::to_chars<XXON>(r, true) && r == e);
     }
     // container/std::vector (push_back)
-    {   ++TEST_A;
-        std::vector<char> r; std::vector<char> const e = {'"', '1', '"'};
-        if (!cxon::to_chars<XXON>(r, "1") || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::vector<char> r; std::vector<char> const e = {'"', '1', '"'};
+        TEST_CHECK(cxon::to_chars<XXON>(r, "1") && r == e);
     }
-    {   ++TEST_A;
-        std::vector<char> r; std::vector<char> const e = {'1'};
-        if (!cxon::to_chars<XXON>(r, 1) || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::vector<char> r; std::vector<char> const e = {'1'};
+        TEST_CHECK(cxon::to_chars<XXON>(r, 1) && r == e);
     }
-    {   ++TEST_A;
-        std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
-        if (!cxon::to_chars<XXON>(r, true) || r != e) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+    {   std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
+        TEST_CHECK(cxon::to_chars<XXON>(r, true) && r == e);
+    }
+TEST_END()
+
+
+struct Struct11 {
+    int field;
+    Struct11(int f = 0) : field(f) {}
+    bool operator ==(const Struct11& t) const { return field == t.field; }
+    CXON_STRUCT_READ_MEMBER(Struct11,
+        CXON_STRUCT_FIELD_ASIS(field)
+    )
+};
+
+TEST_BEG(cxon::CXON<>) // interface/parameters
+    {   std::string r; std::string const e = "3.142";
+        TEST_CHECK(cxon::to_chars<XXON>(r, 3.1415926, cxon::fp_precision::set<int, 4>()) && r == e);
+    }
+    {   int *r = nullptr;
+        TEST_CHECK(cxon::from_chars<XXON>(r, "42", cxon::allocator::set(std::allocator<char>())) && *r == 42);
+    }
+    {   size_t r = 0;
+        TEST_CHECK(cxon::from_chars<XXON>(r, std::string("123"), cxon::num_len_max::set<unsigned, 4U>()) && r == 123);
+    }
+    {   unsigned r = 0; std::string const i = "123";
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
+    }
+    {   double r = 0; std::list<char> const i = {'1', '2', '3'};
+        TEST_CHECK(cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 4U>()) && r == 123);
+    }
+    {   float r = 0; std::list<char> const i = {'1', '2', '3'};
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
+    }
+    {   Enum1 r = Enum1::one;
+        TEST_CHECK(cxon::from_chars<XXON>(r, std::string("three"), cxon::ids_len_max::set<unsigned, 6U>()) && r == Enum1::three);
+    }
+    {   Enum1 r = Enum1::one; std::string const i = "three";
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 't');
+    }
+    {   Struct11 r(42); std::string const i = "{ field: 42 }";
+        TEST_CHECK(cxon::from_chars<XXON>(r, "{ field: 42 }", cxon::ids_len_max::set<unsigned, 6U>()) && r == Struct11(42));
+    }
+    {   Struct11 r(42); std::string const i = "{ field: 42 }";
+        auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
+        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 'f');
     }
 TEST_END()
 
@@ -2510,6 +2471,8 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
             ec = read_error::surrogate_invalid;
                 CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
+            ec = read_error::overflow;
+                CXON_ASSERT(ec.message() == "buffer overflow", "check failed");
 #           ifdef NDEBUG
                 ec = read_error(255);
                     CXON_ASSERT(ec.message() == "unknown error", "check failed");
@@ -2532,8 +2495,7 @@ TEST_BEG(cxon::CXON<>) // errors
 TEST_END()
 
 TEST_BEG(cxon::CXON<>) // pretty
-    {   ++TEST_A;
-        using map = std::map<std::string, std::vector<int>>;
+    {   using map = std::map<std::string, std::vector<int>>;
         char const p[] =
             "{\n"
             "\teven: {\n"
@@ -2550,13 +2512,9 @@ TEST_BEG(cxon::CXON<>) // pretty
         ;
         std::string s;
             cxon::to_chars<XXON>(cxon::make_indenter<XXON>(s), map{{"even", {2, 4, 6}}, {"odd", {1, 3, 5}}});
-        if (s != p) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+        TEST_CHECK(s == p);
     }
-    {   ++TEST_A;
-        char const p[] =
+    {   char const p[] =
             "{\n"
             "\tala: \"ba\\\"la\",\n"
             "\tbl\\ ah: \"blah\"\n"
@@ -2564,10 +2522,7 @@ TEST_BEG(cxon::CXON<>) // pretty
         ;
         std::string s = "{ala: \"ba\\\"la\", bl\\ ah: \"blah\"}";
             s = cxon::pretty<XXON>(s);
-        if (s != p) {
-            ++TEST_F, fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__);
-            CXON_ASSERT(false, "check failed");
-        }
+        TEST_CHECK(s == p);
     }
 TEST_END()
 
@@ -2722,38 +2677,26 @@ namespace test {
         static bool verify_read(const T& ref, const std::string& sbj) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
-            if (!r || r.end != sbj.end() || !match<T>::values(res, ref)) {
-                return fprintf(stderr, "must pass, but failed: "), false;
-            }
-            return true;
+            return r && r.end == sbj.end() && match<T>::values(res, ref);
         }
     template <typename X, typename T>
         static bool verify_read(const T&, const std::string& sbj, cxon::read_error err, int pos) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
-            if (r.ec.value() != (int)err || (pos != -1 && std::distance(sbj.begin(), r.end) != pos)) {
-                return fprintf(stderr, "must fail, but passed: "), false;
-            }
-            return true;
+            return r.ec.value() == (int)err && (pos == -1 || std::distance(sbj.begin(), r.end) == pos);
         }
 
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj) {
             std::string res;
                 auto const r = cxon::to_chars<X>(res, sbj);
-            if (!r || ref != res) {
-                return fprintf(stderr, "must pass, but failed: "), false;
-            }
-            return true;
+            return r && ref == res;
         }
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj, cxon::write_error err) {
             std::string res;
                 auto const r = cxon::to_chars<X>(res, sbj);
-            if (r.ec.value() != (int)err) {
-                return fprintf(stderr, "must fail, but passed: "), false;
-            }
-            return true;
+            return r.ec.value() == (int)err;
         }
 
 }   // test
