@@ -2406,7 +2406,6 @@ TEST_END()
 
 struct Struct11 {
     int field;
-    int b;
     Struct11(int f = 0) : field(f) {}
     bool operator ==(const Struct11& t) const { return field == t.field; }
     CXON_STRUCT_READ_MEMBER(Struct11,
