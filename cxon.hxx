@@ -144,7 +144,8 @@ namespace cxon { // errors
         floating_point_invalid, // floating-point invalid
         boolean_invalid,        // boolean invalid
         escape_invalid,         // invalid escape sequence
-        surrogate_invalid       // invalid surrogate
+        surrogate_invalid,      // invalid surrogate
+        overflow                // buffer overflow
     };
 
     enum class write_error : int {
@@ -725,6 +726,7 @@ namespace cxon { // errors
                 case read_error::boolean_invalid:           return "invalid boolean";
                 case read_error::escape_invalid:            return "invalid escape sequence";
                 case read_error::surrogate_invalid:         return "invalid surrogate";
+                case read_error::overflow:                  return "buffer overflow";
             }
             CXON_ASSERT(0, "unexpected");
             return "unknown error";
@@ -1492,17 +1494,17 @@ namespace cxon { namespace bits { // fundamental type decoding
             return false;
         }
 
-#   define CXON_NEXT() { if (f == l) return false; *f = c, c = io::next(i, e), ++f; }
+#   define CXON_NEXT() { if (f == l) return -1; *f = c, c = io::next(i, e), ++f; }
 
         template <typename X, typename T>
             struct number_consumer {
                 // integral
                 template <typename II, typename N = T>
                     static auto consume(char* f, const char* l, II& i, II e)
-                        -> enable_if_t<std::is_integral<N>::value, unsigned>
+                        -> enable_if_t<std::is_integral<N>::value, int>
                     {
                         CXON_ASSERT(f && f < l, "unexpected");
-                        unsigned b = 2;
+                        int b = 2;
                         char c = io::peek(i, e);
                             if (is_sign<T>(c))              CXON_NEXT()
                             if (c == '0')                   goto trap_oct;
@@ -1533,7 +1535,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                 // floating point
                 template <typename II, typename N = T>
                     static auto consume(char* f, const char* l, II& i, II e)
-                        -> enable_if_t<!std::is_integral<N>::value, bool>
+                        -> enable_if_t<!std::is_integral<N>::value, int>
                     {
                         CXON_ASSERT(f && f < l, "unexpected");
                         char c = io::peek(i, e);
@@ -1542,14 +1544,14 @@ namespace cxon { namespace bits { // fundamental type decoding
                             if (c == 'i')               goto trap_inf;
                             if (c == 'n')               goto trap_nan;
                         //trap_whole:
-                               if (!is<X>::digit10(c))  return false;
+                               if (!is<X>::digit10(c))  return 0;
                             while ( is<X>::digit10(c))  CXON_NEXT()
                             if (c == '.')               goto trap_fraction_1;
                             if (c == 'e' || c == 'E')   goto trap_exponent;
                             ;                           goto trap_end;
                         trap_fraction_0:
                             ;                           CXON_NEXT()
-                               if (!is<X>::digit10(c))  return false;
+                               if (!is<X>::digit10(c))  return 0;
                             while ( is<X>::digit10(c))  CXON_NEXT()
                             if (c == 'e' || c == 'E')   goto trap_exponent;
                             ;                           goto trap_end;
@@ -1561,19 +1563,19 @@ namespace cxon { namespace bits { // fundamental type decoding
                         trap_exponent:
                             ;                           CXON_NEXT()
                             if (c == '-' || c == '+')   CXON_NEXT()
-                               if (!is<X>::digit10(c))  return false;
+                               if (!is<X>::digit10(c))  return 0;
                             while ( is<X>::digit10(c))  CXON_NEXT()
                             ;                           goto trap_end;
                         trap_inf:
-                            CXON_NEXT() if (c != 'n')   return false;
-                            CXON_NEXT() if (c != 'f')   return false;
+                            CXON_NEXT() if (c != 'n')   return 0;
+                            CXON_NEXT() if (c != 'f')   return 0;
                             CXON_NEXT()                 goto trap_end;
                         trap_nan:
-                            CXON_NEXT() if (c != 'a')   return false;
-                            CXON_NEXT() if (c != 'n')   return false;
+                            CXON_NEXT() if (c != 'a')   return 0;
+                            CXON_NEXT() if (c != 'n')   return 0;
                             CXON_NEXT()
                         trap_end:
-                            return f != l ? (*f = '\0', true) : false;
+                            return f != l ? (*f = '\0', 1) : 0;
                     }
             };
         template <typename X, typename T>
@@ -1581,40 +1583,40 @@ namespace cxon { namespace bits { // fundamental type decoding
             // integral
             template <typename II, typename N = T>
                 static auto consume(char* f, const char* l, II& i, II e)
-                    -> enable_if_t<std::is_integral<N>::value, bool>
+                    -> enable_if_t<std::is_integral<N>::value, int>
                 {
                     CXON_ASSERT(f && f < l, "unexpected");
                     char c = io::peek(i, e);
                         if (is_sign<T>(c))                  CXON_NEXT()
                         if (c == '0') {                     CXON_NEXT()
                                                             goto trap_end; }
-                           if (!is<JSON<X>>::digit10(c))    return false;
+                           if (!is<JSON<X>>::digit10(c))    return 0;
                         while ( is<JSON<X>>::digit10(c))    CXON_NEXT()
                     trap_end:
-                        return f != l ? (*f = '\0', true) : false;
+                        return f != l ? (*f = '\0', 1) : 0;
                 }
             template <typename N = T>
                 static auto consume(const char*& i, const char* e)
-                    -> enable_if_t<std::is_integral<N>::value, bool>
+                    -> enable_if_t<std::is_integral<N>::value, int>
                 {
                     io::consume<JSON<X>>(i, e);
                     char c = io::peek(i, e);
                     if (is_sign<T>(c)) goto trap_neg;
                     // trap_pos
-                        if (c == '0') return ++i, true;
+                        if (c == '0') return ++i, 1;
                         while (is<JSON<X>>::digit10(c)) c = io::next(i, e);
                         goto trap_end;
                     trap_neg:
                         c = io::next(i, e);
-                            if (c == '0' || !is<JSON<X>>::digit10(c)) return false;
+                            if (c == '0' || !is<JSON<X>>::digit10(c)) return 0;
                         while (is<JSON<X>>::digit10(c)) c = io::next(i, e);
                     trap_end:
-                        return true;
+                        return 1;
                 }
             // floating point
             template <typename II, typename N = T>
                 static auto consume(char* f, const char* l, II& i, II e)
-                    -> enable_if_t<!std::is_integral<N>::value, bool>
+                    -> enable_if_t<!std::is_integral<N>::value, int>
                 {   // as in RFC7159
                     CXON_ASSERT(f && f < l, "unexpected");
                     char c = io::peek(i, e);
@@ -1622,7 +1624,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         if (is_sign<T>(c))                  CXON_NEXT()
                         if (c == '0')                       goto trap_zero;
                     //trap_whole:
-                           if (!is<JSON<X>>::digit10(c))    return false;
+                           if (!is<JSON<X>>::digit10(c))    return 0;
                         while ( is<JSON<X>>::digit10(c))    CXON_NEXT()
                         if (c == '.')                       goto trap_fraction;
                         if (c == 'e' || c == 'E')           goto trap_exponent;
@@ -1633,14 +1635,14 @@ namespace cxon { namespace bits { // fundamental type decoding
                         ;                                   goto trap_end;
                     trap_fraction:
                         ;                                   CXON_NEXT()
-                           if (!is<JSON<X>>::digit10(c))    return false;
+                           if (!is<JSON<X>>::digit10(c))    return 0;
                         while ( is<JSON<X>>::digit10(c))    CXON_NEXT()
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_exponent:
                         ;                                   CXON_NEXT()
                         if (c == '-' || c == '+')           CXON_NEXT()
-                           if (!is<JSON<X>>::digit10(c))    return false;
+                           if (!is<JSON<X>>::digit10(c))    return 0;
                         while ( is<JSON<X>>::digit10(c))    CXON_NEXT()
                         ;                                   goto trap_end;
                     trap_spec_beg:
@@ -1648,30 +1650,30 @@ namespace cxon { namespace bits { // fundamental type decoding
                         if (is_sign<T>(c))                  CXON_NEXT()
                         if (c == 'i')                       goto trap_inf;
                         if (c == 'n')                       goto trap_nan;
-                        ;                                   return false;
+                        ;                                   return 0;
                     trap_inf:
-                        CXON_NEXT() if (c != 'n')           return false;
-                        CXON_NEXT() if (c != 'f')           return false;
+                        CXON_NEXT() if (c != 'n')           return 0;
+                        CXON_NEXT() if (c != 'f')           return 0;
                         ;                                   goto trap_spec_end;
                     trap_nan:
-                        CXON_NEXT() if (c != 'a')           return false;
-                        CXON_NEXT() if (c != 'n')           return false;
+                        CXON_NEXT() if (c != 'a')           return 0;
+                        CXON_NEXT() if (c != 'n')           return 0;
                     trap_spec_end:
-                        CXON_NEXT() if (c != '"')           return false;
+                        CXON_NEXT() if (c != '"')           return 0;
                         CXON_NEXT()
                     trap_end:
-                        return f != l ? (*f = '\0', true) : false;
+                        return f != l ? (*f = '\0', 1) : 0;
                 }
             template <typename N = T>
                 static auto consume(const char*& i, const char* e)
-                    -> enable_if_t<!std::is_integral<N>::value, bool>
+                    -> enable_if_t<!std::is_integral<N>::value, int>
                 {   // as in RFC7159
                     char c = io::peek(i, e);
                         if (c == '"')                       goto trap_spec_beg;
                         if (is_sign<T>(c))                  c = io::next(i, e);
                         if (c == '0')                       goto trap_zero;
                     //trap_whole:
-                            if (!is<JSON<X>>::digit10(c))   return false;
+                            if (!is<JSON<X>>::digit10(c))   return 0;
                         while (is<JSON<X>>::digit10(c))     c = io::next(i, e);
                         if (c == '.')                       goto trap_fraction;
                         if (c == 'e' || c == 'E')           goto trap_exponent;
@@ -1682,14 +1684,14 @@ namespace cxon { namespace bits { // fundamental type decoding
                         ;                                   goto trap_end;
                     trap_fraction:
                         ;                                   c = io::next(i, e);
-                           if (!is<JSON<X>>::digit10(c))    return false;
+                           if (!is<JSON<X>>::digit10(c))    return 0;
                         while ( is<JSON<X>>::digit10(c))    c = io::next(i, e);
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_exponent:
                         ;                                   c = io::next(i, e);
                         if (c == '-' || c == '+')           c = io::next(i, e);
-                           if (!is<JSON<X>>::digit10(c))    return false;
+                           if (!is<JSON<X>>::digit10(c))    return 0;
                         while ( is<JSON<X>>::digit10(c))    c = io::next(i, e);
                         ;                                   goto trap_end;
                     trap_spec_beg:
@@ -1697,19 +1699,19 @@ namespace cxon { namespace bits { // fundamental type decoding
                         if (is_sign<T>(c))                  c = io::next(i, e);
                         if (c == 'i')                       goto trap_inf;
                         if (c == 'n')                       goto trap_nan;
-                        ;                                   return false;
+                        ;                                   return 0;
                     trap_inf:
-                        c = io::next(i, e); if (c != 'n')   return false;
-                        c = io::next(i, e); if (c != 'f')   return false;
+                        c = io::next(i, e); if (c != 'n')   return 0;
+                        c = io::next(i, e); if (c != 'f')   return 0;
                         ;                                   goto trap_spec_end;
                     trap_nan:
-                        c = io::next(i, e); if (c != 'a')   return false;
-                        c = io::next(i, e); if (c != 'n')   return false;
+                        c = io::next(i, e); if (c != 'a')   return 0;
+                        c = io::next(i, e); if (c != 'n')   return 0;
                     trap_spec_end:
-                        c = io::next(i, e); if (c != '"')   return false;
+                        c = io::next(i, e); if (c != '"')   return 0;
                         ++i;
                     trap_end:
-                        return true;
+                        return 1;
                 }
         };
 
@@ -1724,9 +1726,11 @@ namespace cxon { namespace bits { // fundamental type decoding
                     {
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32U)];
-                            unsigned const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                            if (b && bits::from_chars(s, s + sizeof(s), t, b).ec == std::errc()) return true;
-                        return cx|read_error::integral_invalid, rewind(i, o), false;
+                            int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
+                                if (b ==  0 || bits::from_chars(s, s + sizeof(s), t, b).ec != std::errc())
+                                    return cx|read_error::integral_invalid, rewind(i, o), false;
+                            return true;
                     }
                 // no optimization for const char* because of numeric bases (0, 0b, 0x)
             // floating point
@@ -1736,9 +1740,11 @@ namespace cxon { namespace bits { // fundamental type decoding
                     {
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
-                            if (number_consumer<X, T>::consume(s, s + sizeof(s), i, e) &&
-                                bits::from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
-                        return cx|read_error::floating_point_invalid, rewind(i, o), false;
+                            int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
+                                if (b ==  0 || bits::from_chars(s, s + sizeof(s), t).ec != std::errc())
+                                    return cx|read_error::floating_point_invalid, rewind(i, o), false;
+                            return true;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
@@ -1759,9 +1765,11 @@ namespace cxon { namespace bits { // fundamental type decoding
                     {
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32U)];
-                            if (number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e) && 
-                                bits::from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
-                        return cx|read_error::integral_invalid, rewind(i, o), false;
+                            int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
+                                if (b ==  0 || bits::from_chars(s, s + sizeof(s), t).ec != std::errc())
+                                    return cx|read_error::integral_invalid, rewind(i, o), false;
+                            return true;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
@@ -1815,9 +1823,11 @@ namespace cxon { namespace bits { // fundamental type decoding
                     {
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
-                            if (number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e) &&
-                                from_chars(s, s + sizeof(s), t).ec == std::errc()) return true;
-                        return cx|read_error::floating_point_invalid, rewind(i, o), false;
+                            int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
+                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
+                                if (b ==  0 || from_chars(s, s + sizeof(s), t).ec != std::errc())
+                                    return cx|read_error::floating_point_invalid, rewind(i, o), false;
+                            return true;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
@@ -1966,7 +1976,7 @@ namespace cxon { namespace bits { // string quoting
         struct consume_str<S<UQKEY<X>>> {
             template <typename II, typename Cx> static constexpr bool    beg(II&, II, Cx&)          { return true; }
             template <typename II, typename Cx> static constexpr bool    end(II&, II, Cx&)          { return true; }
-            template <typename II, typename Cx> static char32_t          chr(II& i, II e, Cx& cx)  {
+            template <typename II, typename Cx> static char32_t          chr(II& i, II e, Cx& cx)   {
                 if (io::peek(i, e) == '\\') {
                         char const c = io::next(i, e);
                         return!is_str<S<UQKEY<X>>>::esc(c) ? esc_to_utf32<S<X>>(i, e, cx) : (++i, char32_t(c));
@@ -1985,7 +1995,7 @@ namespace cxon { namespace bits { // char arrays
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 char b[4]; int const n = utf32_to_utf8(b, c32);
-                    if (n == 0 || t + n > te) return cx|read_error::unexpected, rewind(i, o), false;
+                    if (n == 0 || t + n > te) return cx|read_error::overflow, false;
                 std::copy_n(b, n, t);
             return t += n, true;
         }
@@ -1998,7 +2008,7 @@ namespace cxon { namespace bits { // char arrays
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
-                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|read_error::unexpected, rewind(i, o), false;
+                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|read_error::overflow, false;
                     *t = T(0xDC00 | (c32 & 0x3FF));
                 }
                 else {
@@ -2018,13 +2028,17 @@ namespace cxon { namespace bits { // char arrays
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool array_read(T* t, const T* te, II& i, II ie, Cx& cx) {
-            if (!consume_str<X>::beg(i, ie, cx)) return false;
-                while (t < te) {
-                    if (!is<X>::real(io::peek(i, ie)))          break;
-                    if (is_str<X>::end(io::peek(i, ie)))        return *t = '\0', consume_str<X>::end(i, ie, cx);
-                    if (!array_char_read<X>(t, te, i, ie, cx)) return false;
-                }
-            return consume_str<X>::end(i, ie, cx);
+            II const o = i;
+                if (!consume_str<X>::beg(i, ie, cx)) return false;
+                    while (t < te) {
+                        if (!is<X>::real(io::peek(i, ie)))          return consume_str<X>::end(i, ie, cx);
+                        if (is_str<X>::end(io::peek(i, ie)))        return *t = '\0', consume_str<X>::end(i, ie, cx);
+                        if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == read_error::overflow ? (rewind(i, o), false) : false;
+                    }
+                return !is_str<X>::end(io::peek(i, ie)) ?
+                    (cx|read_error::overflow, rewind(i, o), false) :
+                    consume_str<X>::end(i, ie, cx)
+                ;
         }
 
     template <typename X>
@@ -2097,10 +2111,12 @@ namespace cxon { // read, compound types
         struct read<X, T[N]> {
             template <typename II, typename Cx>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    size_t p = 0;
-                        return container::read<X, list<X>>(i, e, cx, [&] {
-                            return read_value<X>(t[p], i, e, cx) ? ++p != N : false;
-                        });
+                    II const o = i;
+                        size_t p = 0;
+                    return container::read<X, list<X>>(i, e, cx, [&] {
+                            if (p == N) return cx|read_error::overflow, bits::rewind(i, o), false;
+                        return read_value<X>(t[p++], i, e, cx);
+                    });
                 }
         };
 
@@ -2337,14 +2353,16 @@ namespace cxon { // read, library types
                 }
         };
 
-    template <typename X, typename T, size_t S>
-        struct read<X, std::array<T, S>> {
+    template <typename X, typename T, size_t N>
+        struct read<X, std::array<T, N>> {
             template <typename II, typename Cx>
-                static bool value(std::array<T, S>& t, II& i, II e, Cx& cx) {
-                    size_t p = 0;
-                        return container::read<X, list<X>>(i, e, cx, [&] {
-                            return read_value<X>(t[p], i, e, cx) ? ++p != S : false;
-                        });
+                static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
+                    II const o = i;
+                        size_t p = 0;
+                    return container::read<X, list<X>>(i, e, cx, [&] {
+                            if (p == N) return cx|read_error::overflow, bits::rewind(i, o), false;
+                        return read_value<X>(t[p++], i, e, cx);
+                    });
                 }
         };
     template <typename X, typename T>
@@ -3218,12 +3236,13 @@ namespace cxon { namespace unquoted { // unquoted value
                     }
             };
 
-        template <typename T>
+        template <typename T, typename Cx>
             struct array_adder {
                 T *f, *l;
+                Cx& cx;
                 template <size_t N>
-                    array_adder(T (&t)[N]) : f(t), l(t + N) {}
-                bool add(T e) { return f != l ? (*f = e, ++f, true) : false; }
+                    array_adder(T (&t)[N], Cx& cx) : f(t), l(t + N), cx(cx) {}
+                bool add(T e) { return f != l ? (*f = e, ++f, true) : (cx|read_error::overflow, false); }
             };
 
         template <typename T>
@@ -3235,10 +3254,11 @@ namespace cxon { namespace unquoted { // unquoted value
 
     template <typename X, typename T, size_t N, typename II, typename Cx>
         inline bool read_value(T (&t)[N], II& i, II e, Cx& cx) {
-            return !bits::value<X>::read(bits::array_adder<T>(t), i, e) ?
-                (cx|read_error::unexpected, false) :
-                true
-            ;
+            II const o = i;
+                if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
+                    return cx.ec == read_error::overflow ? (cxon::bits::rewind(i, o), false) : (cx|read_error::unexpected, false);
+                }
+            return true;
         }
 
     template <typename X, typename II, typename Cx>
@@ -3420,7 +3440,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             for (char id[ids_len_max::constant<prms_type<Cx>>(64U)]; ; ) {
                 io::consume<X>(i, e);
                 II const o = i;
-                    if (!read_key<X>(id, i, e, cx)) return cxon::bits::rewind(i, o), false;
+                    if (!read_key<X>(id, i, e, cx)) return false;
                     if (!bits::read<X, S, F...>::fields(s, id, f, i, e, cx)) return !cx.ec ?
                         (cxon::bits::rewind(i, o), cx|read_error::unexpected, false) :
                         false
