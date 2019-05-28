@@ -193,7 +193,13 @@ static unsigned self() {
         }
 #       if !defined(__GNUG__) || defined(__clang__)
         {   node jn;
-            auto const r = cxon::from_chars(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>()); // g++ (4.8.1->9.1) bug: overload resolution fail
+            auto const r = cxon::from_chars(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
+            CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
+        }
+#       else
+        {   node jn;
+            auto const r = cxon::from_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                                (jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
 #       endif
