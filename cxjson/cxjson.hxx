@@ -16,6 +16,13 @@ namespace cxjson { // node
 
     using node = basic_node<struct node_traits>;
 
+    template <typename T, typename N> inline        bool    is(const N& n);
+    template <typename T, typename N> inline        T&      imbue(N& n);
+    template <typename T, typename N> inline        T&      get(N& n);
+    template <typename T, typename N> inline const  T&      get(const N& n);
+    template <typename T, typename N> inline        T*      get_if(N& n);
+    template <typename T, typename N> inline const  T*      get_if(const N& n);
+
 }   // cxjson node
 
 namespace cxjson { // errors
@@ -30,7 +37,7 @@ namespace cxjson { // errors
 
 namespace cxjson { // node traits
 
-    enum class node_type { object, array, string, number, boolean, null };
+    enum class node_kind { object, array, string, number, boolean, null };
 
     struct node_traits {
         using                                       null_type       = std::nullptr_t;
@@ -74,23 +81,24 @@ namespace cxjson { // node
 
     namespace bits {
 
-        template <typename N, typename T>   struct query;
-        template <typename N, typename T>   struct imbue;
-        template <typename N, typename T>   struct get;
-        template <typename N, typename T>   struct get_if;
+        template <typename N, typename T>
+            struct node_kind_t;
+        template <typename N> struct node_kind_t<N, typename N::null>     { static constexpr node_kind value = node_kind::null; };
+        template <typename N> struct node_kind_t<N, typename N::boolean>  { static constexpr node_kind value = node_kind::boolean; };
+        template <typename N> struct node_kind_t<N, typename N::number>   { static constexpr node_kind value = node_kind::number; };
+        template <typename N> struct node_kind_t<N, typename N::string>   { static constexpr node_kind value = node_kind::string; };
+        template <typename N> struct node_kind_t<N, typename N::array>    { static constexpr node_kind value = node_kind::array; };
+        template <typename N> struct node_kind_t<N, typename N::object>   { static constexpr node_kind value = node_kind::object; };
+
+        template <typename N, typename T>
+            constexpr node_kind node_kind_from() noexcept { return node_kind_t<N, T>::value; }
 
         template <template <typename C> class X, typename ...>
-            struct is_nothrow_x {
-                static constexpr bool value = true;
-            };
+            struct is_nothrow_x             { static constexpr bool value = true; };
         template <template <typename C> class X, typename T>
-            struct is_nothrow_x<X, T> {
-                static constexpr bool value = X<T>::value;
-            };
+            struct is_nothrow_x<X, T>       { static constexpr bool value = X<T>::value; };
         template <template <typename C> class X, typename H, typename ...T>
-            struct is_nothrow_x<X, H, T...> {
-                static constexpr bool value = is_nothrow_x<X, H>::value && is_nothrow_x<X, T...>::value;
-            };
+            struct is_nothrow_x<X, H, T...> { static constexpr bool value = is_nothrow_x<X, H>::value && is_nothrow_x<X, T...>::value; };
 
     }
 
@@ -115,12 +123,12 @@ namespace cxjson { // node
                 using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
 #           endif
 
-            basic_node() noexcept : type_(node_type::null)  {}
+            basic_node() noexcept : kind_(node_kind::null)  {}
             ~basic_node()                                   { reset(); }
 
-            basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : type_(o.type_) {
-                switch (o.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: new (&reinterpret_cast<T&>(value_)) T(std::move(o.get<T>())); break
+            basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : kind_(o.kind_) {
+                switch (o.kind_) {
+#                   define CXJSON_DEF(T)    case node_kind::T: new (&reinterpret_cast<T&>(value_)) T(std::move(o.get<T>())); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -131,8 +139,8 @@ namespace cxjson { // node
                 }
             }
             basic_node& operator =(basic_node&& o) noexcept(is_nothrow_move_assignable::value) {
-                switch (o.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: get<T>() = std::move(o.get<T>()); break
+                switch (o.kind_) {
+#                   define CXJSON_DEF(T)    case node_kind::T: get<T>() = std::move(o.get<T>()); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -144,9 +152,9 @@ namespace cxjson { // node
                 return *this;
             }
 
-            basic_node(const basic_node& o) : type_(o.type_) {
-                switch (o.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: new (&reinterpret_cast<T&>(value_)) T(o.get<T>()); break
+            basic_node(const basic_node& o) : kind_(o.kind_) {
+                switch (o.kind_) {
+#                   define CXJSON_DEF(T)    case node_kind::T: new (&reinterpret_cast<T&>(value_)) T(o.get<T>()); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -157,8 +165,8 @@ namespace cxjson { // node
                 }
             }
             basic_node& operator =(const basic_node& o) {
-                switch (o.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: imbue<T>() = o.get<T>(); break
+                switch (o.kind_) {
+#                   define CXJSON_DEF(T)    case node_kind::T: imbue<T>() = o.get<T>(); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -171,10 +179,10 @@ namespace cxjson { // node
             }
 
 #           define CXJSON_DEF(T)\
-                    basic_node(T&& v) : type_(node_type::null)          { imbue<T>() = std::forward<T>(v); }\
-                    basic_node& operator =(T&& v)                       { imbue<T>() = std::forward<T>(v); return *this; }\
-                    basic_node(const T& v) : type_(node_type::null)     { imbue<T>() = v; }\
-                    basic_node& operator =(const T& v)                  { imbue<T>() = v; return *this; }
+                    basic_node(T&& v) : kind_(node_kind::null)      { imbue<T>() = std::forward<T>(v); }\
+                    basic_node& operator =(T&& v)                   { imbue<T>() = std::forward<T>(v); return *this; }\
+                    basic_node(const T& v) : kind_(node_kind::null) { imbue<T>() = v; }\
+                    basic_node& operator =(const T& v)              { imbue<T>() = v; return *this; }
                 CXJSON_DEF(object)
                 CXJSON_DEF(array)
                 CXJSON_DEF(string)
@@ -182,14 +190,14 @@ namespace cxjson { // node
                 CXJSON_DEF(boolean)
                 CXJSON_DEF(null)
 #           undef CXJSON_DEF
-                basic_node(int n) : type_(node_type::null)              { imbue<number>() = n; }
-                basic_node& operator =(int n)                           { imbue<number>() = n; return *this; }
-                basic_node(const char* s) : type_(node_type::null)      { imbue<string>() = s; }
-                basic_node& operator =(const char* s)                   { imbue<string>() = s; return *this; }
+                basic_node(int n) : kind_(node_kind::null)          { imbue<number>() = n; }
+                basic_node& operator =(int n)                       { imbue<number>() = n; return *this; }
+                basic_node(const char* s) : kind_(node_kind::null)  { imbue<string>() = s; }
+                basic_node& operator =(const char* s)               { imbue<string>() = s; return *this; }
 
             void reset() {
-                switch (type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: reinterpret_cast<T&>(value_).~T(); break
+                switch (kind_) {
+#                   define CXJSON_DEF(T)    case node_kind::T: reinterpret_cast<T&>(value_).~T(); break
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -198,29 +206,43 @@ namespace cxjson { // node
                         CXJSON_DEF(null);
 #                   undef CXJSON_DEF
                 }
-                type_ = node_type::null;
+                kind_ = node_kind::null;
             }
 
-            node_type type() const noexcept                         { return type_; }
+            node_kind kind() const noexcept { return kind_; }
 
-            template <typename N, typename T> friend struct bits::query;
-            template <typename T>       bool  is() const            { return bits::query<basic_node, T>::it(*this); }
+            template <typename T> bool  is() const {
+                return kind_ == bits::node_kind_from<basic_node, T>();
+            }
 
-            template <typename N, typename T> friend struct bits::imbue;
-            template <typename T>       T& imbue()                  { return bits::imbue<basic_node, T>::it(*this); }
+            template <typename T> T& imbue() {
+                if (!is<T>()) {
+                    reset(), kind_ = bits::node_kind_from<basic_node, T>();
+                    new (&value_) T();
+                }
+                return reinterpret_cast<T&>(value_);
+            }
 
-            template <typename N, typename T> friend struct bits::get;
-            template <typename T>       T& get()                    { return bits::get<basic_node, T>::it(*this); }
-            template <typename T> const T& get() const              { return bits::get<basic_node, T>::it(*this); }
+            template <typename T> T& get() {
+                CXON_ASSERT(is<T>(), "node type mismatch");
+                return reinterpret_cast<T&>(value_);
+            }
+            template <typename T> const T& get() const {
+                CXON_ASSERT(is<T>(), "node type mismatch");
+                return reinterpret_cast<const T&>(value_);
+            }
 
-            template <typename N, typename T> friend struct bits::get_if;
-            template <typename T>       T* get_if() noexcept        { return bits::get_if<basic_node, T>::it(*this); }
-            template <typename T> const T* get_if() const noexcept  { return bits::get_if<basic_node, T>::it(*this); }
+            template <typename T> T* get_if() noexcept {
+                return is<T>() ? &reinterpret_cast<T&>(value_) : nullptr;
+            }
+            template <typename T> const T* get_if() const noexcept {
+                return is<T>() ? &reinterpret_cast<const T&>(value_) : nullptr;
+            }
 
             bool operator == (const basic_node& n) const {
-                if (type() != n.type()) return false;
-                switch (n.type_) {
-#                   define CXJSON_DEF(T)    case node_type::T: return get<T>() == n.get<T>()
+                if (kind() != n.kind()) return false;
+                switch (n.kind_) {
+#                   define CXJSON_DEF(T)    case node_kind::T: return get<T>() == n.get<T>()
                         CXJSON_DEF(object);
                         CXJSON_DEF(array);
                         CXJSON_DEF(string);
@@ -238,82 +260,24 @@ namespace cxjson { // node
         private:
             using value_type = typename std::aligned_union<0, object, array, string, number, boolean, null>::type;
             value_type  value_;
-            node_type   type_;
+            node_kind   kind_;
         };
 
-    namespace bits {
+    template <typename T, typename N>
+        inline bool is(const N& n) { return n.template is<T>(); }
 
-#       define CXJSON_DEF(T)\
-            template <typename N>\
-                struct query<N, typename N::T> {\
-                    static bool it(const N& n)      { return n.type_ == node_type::T; }\
-                }
-            CXJSON_DEF(object);
-            CXJSON_DEF(array);
-            CXJSON_DEF(string);
-            CXJSON_DEF(number);
-            CXJSON_DEF(boolean);
-            CXJSON_DEF(null);
-#       undef CXJSON_DEF
+    template <typename T, typename N>
+        inline T& imbue(N& n) { return n.template imbue<T>(); }
 
-        template <typename N, typename V>
-            inline V& imbue_it(N& n, node_type& nt, node_type t, V& v) {
-                if (n.type() != t) {
-                    n.reset(), nt = t;
-                    new (&v) V();
-                }
-                return v;
-            }
-#       define CXJSON_DEF(T)\
-            template <typename N>\
-                struct imbue<N, typename N::T> {\
-                    using NT  = typename N::T;\
-                    static NT& it(N& n)             { return imbue_it(n, n.type_, node_type::T, reinterpret_cast<NT&>(n.value_)); }\
-                }
-            CXJSON_DEF(object);
-            CXJSON_DEF(array);
-            CXJSON_DEF(string);
-            CXJSON_DEF(number);
-            CXJSON_DEF(boolean);
-            CXJSON_DEF(null);
-#       undef CXJSON_DEF
+    template <typename T, typename N>
+        inline T& get(N& n) { return n.template get<T>(); }
+    template <typename T, typename N>
+        inline const T& get(const N& n) { return n.template get<T>(); }
 
-        template <typename N, typename V>
-            inline V& get_it(N& n, node_type t, V& v) {
-                CXON_ASSERT(n.type() == t, "node type mismatch");
-                return v;
-            }
-#       define CXJSON_DEF(T)\
-            template <typename N>\
-                struct get<N,  typename N::T> {\
-                    using NT = typename N::T;\
-                    static       NT& it(N& n)       { return get_it(n, node_type::T, reinterpret_cast<      NT&>(n.value_)); }\
-                    static const NT& it(const N& n) { return get_it(n, node_type::T, reinterpret_cast<const NT&>(n.value_)); }\
-                }
-            CXJSON_DEF(object);
-            CXJSON_DEF(array);
-            CXJSON_DEF(string);
-            CXJSON_DEF(number);
-            CXJSON_DEF(boolean);
-            CXJSON_DEF(null);
-#       undef CXJSON_DEF
-
-#       define CXJSON_DEF(T)\
-            template <typename N>\
-                struct get_if<N, typename N::T> {\
-                    using NT   = typename N::T;\
-                    static       NT* it(N& n) noexcept       { return n.type() == node_type::T ? &reinterpret_cast<      NT&>(n.value_) : nullptr; }\
-                    static const NT* it(const N& n) noexcept { return n.type() == node_type::T ? &reinterpret_cast<const NT&>(n.value_) : nullptr; }\
-                }
-            CXJSON_DEF(object);
-            CXJSON_DEF(array);
-            CXJSON_DEF(string);
-            CXJSON_DEF(number);
-            CXJSON_DEF(boolean);
-            CXJSON_DEF(null);
-#       undef CXJSON_DEF
-
-    }
+    template <typename T, typename N>
+        inline T* get_if(N& n) { return n.template get_if<T>(); }
+    template <typename T, typename N>
+        inline const T* get_if(const N& n) { return n.template get_if<T>(); }
 
 }   // cxjson node
 
@@ -352,24 +316,24 @@ namespace cxon {
 
     template <typename X, typename Tr, typename II, typename ...CxPs>
         inline auto from_chars(basic_node<Tr>& t, II b, II e, CxPs... p) -> from_chars_result<II> {
-            return interface::from_chars<X>(t, b, e, recursion_guard::set(0U), p...);
+            return interface::from_chars<X>(t, b, e, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
         inline auto from_chars(basic_node<Tr>& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
-            return interface::from_chars<X>(t, i, recursion_guard::set(0U), p...);
+            return interface::from_chars<X>(t, i, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
 
     template <typename X, typename OI, typename Tr, typename ...CxPs>
         inline auto to_chars(OI o, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
-            return interface::to_chars<X>(o, t, recursion_guard::set(0U), p...);
+            return interface::to_chars<X>(o, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
     template <typename X, typename I, typename Tr, typename ...CxPs>
         inline auto to_chars(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
-            return interface::to_chars<X>(i, t, recursion_guard::set(0U), p...);
+            return interface::to_chars<X>(i, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
     template <typename X, typename FwIt, typename Tr, typename ...CxPs>
         inline auto to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FwIt> {
-            return interface::to_chars<X>(b, e, t, recursion_guard::set(0U), p...);
+            return interface::to_chars<X>(b, e, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
 
 #   define CXJSON_RG()\
@@ -419,15 +383,15 @@ namespace cxon {
             struct write<X, basic_node<Tr>> {
                 template <typename O, typename Cx>
                     static bool value(O& o, const basic_node<Tr>& t, Cx& cx) {
-                        using cxjson::node_type;
-                        switch (t.type()) {
+                        using cxjson::node_kind;
+                        switch (t.kind()) {
 #                           define CXON_WRITE(T) write_value<X>(o, t.template get<typename basic_node<Tr>::T>(), cx)
-                                case node_type::object  : { CXJSON_RG();    return CXON_WRITE(object); }
-                                case node_type::array   : { CXJSON_RG();    return CXON_WRITE(array); }
-                                case node_type::string  :                   return CXON_WRITE(string);
-                                case node_type::number  :                   return CXON_WRITE(number);
-                                case node_type::boolean :                   return CXON_WRITE(boolean);
-                                case node_type::null    :                   return CXON_WRITE(null);
+                                case node_kind::object  : { CXJSON_RG();    return CXON_WRITE(object); }
+                                case node_kind::array   : { CXJSON_RG();    return CXON_WRITE(array); }
+                                case node_kind::string  :                   return CXON_WRITE(string);
+                                case node_kind::number  :                   return CXON_WRITE(number);
+                                case node_kind::boolean :                   return CXON_WRITE(boolean);
+                                case node_kind::null    :                   return CXON_WRITE(null);
 #                           undef CXON_WRITE
                         }
                         return false; // LCOV_EXCL_LINE

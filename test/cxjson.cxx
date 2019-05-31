@@ -35,13 +35,18 @@ struct test_case {
 };
 
 template <typename B>
-    static double measure(B block) {
+    static double measure(unsigned c, B block) {
+        CXON_ASSERT(c > 0, "unexpected");
         using clock = std::chrono::steady_clock;
         using std::chrono::duration_cast;
         using std::chrono::nanoseconds;
-        auto const s = clock::now();
-            block();
-        return duration_cast<nanoseconds>(clock::now() - s).count() / 1e6;
+        double t = std::numeric_limits<double>::max();
+            do {
+                auto const s = clock::now();
+                block();
+                t = std::min(t, duration_cast<nanoseconds>(clock::now() - s).count() / 1e6);
+            }   while (--c);
+        return t;
     }
 
 template <typename R, typename I>
@@ -55,33 +60,37 @@ template <typename R, typename I>
         ;
     }
 
+constexpr unsigned cxjson_repeat = 3;
+
 static void cxjson_test_time(test_case& test) {
     std::ifstream is(test.source, std::ifstream::binary);
         if (!is) return test.error = "cannot be opened", void();
     std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
     {   // base
-        std::unique_ptr<char[]> s;
-        test.time.base = measure([&] { // something like strdup
-            s = std::unique_ptr<char[]>(new char[strlen(json.c_str()) + 1]);
-            std::memcpy(s.get(), json.c_str(), json.size());
+        std::vector<std::unique_ptr<char[]>> vs;
+        test.time.base = measure(cxjson_repeat, [&] { // something like strdup
+            vs.emplace_back(std::unique_ptr<char[]>(new char[strlen(json.c_str()) + 1]));
+            std::memcpy(vs.back().get(), json.c_str(), json.size());
         });
     }
     {   // cxon
-        node j;
-        test.time.read = measure([&] {
-            auto const r = cxon::from_chars(j, json);
+        std::vector<node> vj;
+        test.time.read = measure(cxjson_repeat, [&] {
+            vj.emplace_back();
+            auto const r = cxon::from_chars(vj.back(), json);
             if (!r) test.error = format_error(r, json.begin());
         });
-        test.time.write = measure([&] {
+        node j = vj.back(); vj.clear();
+        test.time.write = measure(cxjson_repeat, [&] {
             std::string s; cxon::to_chars(s, j);
         });
         {   std::string s;
-            test.time.pretty = measure([&] {
+            test.time.pretty = measure(cxjson_repeat, [&] {
                 std::string s;
-                //cxon::to_chars(cxon::make_indenter(std::back_inserter(s)), j);
+                //cxon::to_chars(cxon::make_indenter(std::back_inserter(s)), *j);
                 cxon::to_chars(cxon::make_indenter(s), j);
             });
-            test.time.pretty_native = measure([&] {
+            test.time.pretty_native = measure(cxjson_repeat, [&] {
                 s = cxjson::pretty(j);
             });
         }
@@ -187,6 +196,13 @@ static unsigned self() {
             std::string const s1 = cxjson::pretty(jno);
             CHECK(s0 == s1);
         }
+        {   // pretty
+            node n; char const s0[] = "[3.1415926, 3.1415926, 3.1415926]";
+                cxon::from_chars(n, s0);
+            std::string const s1 =
+                cxjson::pretty(n, cxjson::tab::set<unsigned, 4>(), cxjson::pad::set<char, ' '>(), cxon::fp_precision::set<int, 4>());
+                CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
+        }
         {   node jn;
             auto const r = cxon::from_chars(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
@@ -283,7 +299,7 @@ static unsigned self() {
 
         // build using node's methods
         node n2;
-            CHECK(n2.is<node::null>()); // default node type is node_type::null
+            CHECK(n2.is<node::null>()); // default node type is node_kind::null
             auto& o = n2.imbue<node::object>(); // change the type and return its value
                 CHECK(n2.is<node::object>());
                 o["object"] = node::object {};      CHECK(o["object"].is<node::object>());
@@ -361,7 +377,7 @@ static unsigned self() {
         CHECK(n.get_if<cxjson::node::array>() == nullptr);
     }
     {   // ex9
-        cxjson::node const n; CHECK(n.type() == cxjson::node_type::null);
+        cxjson::node const n; CHECK(n.kind() == cxjson::node_kind::null);
     }
     {   // ex10
         {   node a = nullptr, b;
@@ -418,7 +434,7 @@ int main(int argc, char *argv[]) {
     }
     cases pass, fail, time, diff;
     if (!cl_parse(argc, argv, pass, fail, time, diff)) {
-        return fprintf(stderr, "usage: cxjson ((pass|fail|diff|time) (file|@file)+)+\n"), 1;
+        return fprintf(stderr, "usage: cxjson ((pass|fail|diff|time) (file|@file)+)+\n"), fflush(stderr), 1;
     }
     int err = 0;
     if (!pass.empty()) {
@@ -437,13 +453,13 @@ int main(int argc, char *argv[]) {
         size_t fc = 0;
             for (auto& c : pass) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str());
+                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
                 }
             }
         fc ?
             fprintf(stdout, "cxjson/pass: %zu of %zu failed\n", fc, pass.size()) :
             fprintf(stdout, "cxjson/pass: %zu of %zu passed\n", pass.size(), pass.size())
-        ;
+        ;   fflush(stdout);
     }
     if (!fail.empty()) {
         for (auto& c : fail) {
@@ -465,13 +481,13 @@ int main(int argc, char *argv[]) {
         size_t fc = 0;
             for (auto& c : fail) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str());
+                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
                 }
             }
         fc ?
             fprintf(stdout, "cxjson/fail: %zu of %zu failed\n", fc, fail.size()) :
             fprintf(stdout, "cxjson/fail: %zu of %zu passed\n", fail.size(), fail.size())
-        ;
+        ;   fflush(stdout);
     }
     if (!diff.empty()) {
         static auto const name = [](const std::string& p) {
@@ -518,23 +534,23 @@ int main(int argc, char *argv[]) {
                         c.error += ": " + w.ec.message();
                         continue;
                         CXON_ASSERT(w, "unexpected");
-                        fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str());
+                        fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str()), fflush(stdout);
                     }
             }
         }
         size_t fc = 0;
             for (auto& c : diff) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str());
+                    ++fc, fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
                 }
             }
         if (!fc) {
             for (auto& c : diff) {
-                fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str());
+                fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str()), fflush(stdout);
             }
         }
         else {
-            fprintf(stdout, "cxjson/diff: %zu of %zu failed\n", fc, diff.size());
+            fprintf(stdout, "cxjson/diff: %zu of %zu failed\n", fc, diff.size()), fflush(stdout);
         }
     }
     if (!time.empty()) {

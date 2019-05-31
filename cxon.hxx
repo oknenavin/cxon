@@ -277,11 +277,11 @@ namespace cxon { // contexts
                 struct pack_sbt <Ta, Pa, false, false>  { using type = typename pack_sbt<Ta, typename Pa::head_type>::type; };
 
         }   // bits
-
-        template <typename Ta, typename Ty>
-            using stt = bits::stt<Ta, Ty>;
+        
         template <typename Ta, typename Ty, Ty c>
             using ctt = bits::ctt<Ta, Ty, c>;
+        template <typename Ta, typename Ty>
+            using stt = bits::stt<Ta, Ty>;
         template <typename ...P>
             using pack = bits::pack<bits::unwrap_ref_decay_t<P>...>;
 
@@ -598,18 +598,18 @@ namespace cxon { // interface implementation
             }
         template <typename X, typename T, typename I, typename ...CxPs>
             CXON_FORCE_INLINE auto from_chars(T& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
-                return interface::from_chars<X>(t, std::begin(i), std::end(i), p...);
+                return interface::from_chars<X>(t, std::begin(i), std::end(i), std::forward<CxPs>(p)...);
             }
 
     }
 
     template <typename X, typename T, typename II, typename ...CxPs>
         inline auto from_chars(T& t, II b, II e, CxPs... p) -> from_chars_result<II> {
-            return interface::from_chars<X>(t, b, e, p...);
+            return interface::from_chars<X>(t, b, e, std::forward<CxPs>(p)...);
         }
     template <typename X, typename T, typename I, typename ...CxPs>
         inline auto from_chars(T& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
-            return interface::from_chars<X>(t, i, p...);
+            return interface::from_chars<X>(t, i, std::forward<CxPs>(p)...);
         }
 
     // write
@@ -697,15 +697,15 @@ namespace cxon { // interface implementation
 
     template <typename X, typename OI, typename T, typename ...CxPs>
         inline auto to_chars(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
-            return interface::to_chars<X>(o, t, p...);
+            return interface::to_chars<X>(o, t, std::forward<CxPs>(p)...);
         }
     template <typename X, typename I, typename T, typename ...CxPs>
         inline auto to_chars(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
-            return interface::to_chars<X>(i, t, p...);
+            return interface::to_chars<X>(i, t, std::forward<CxPs>(p)...);
         }
     template <typename X, typename FwIt, typename T, typename ...CxPs>
         inline auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
-            return interface::to_chars<X>(b, e, t, p...);
+            return interface::to_chars<X>(b, e, t, std::forward<CxPs>(p)...);
         }
 
 }   // cxon interface implementation
