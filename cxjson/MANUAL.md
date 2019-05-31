@@ -32,6 +32,12 @@ Type            | Definition
 
   - `Traits` - traits class specifying the actual types of each `JSON` value type
 
+###### Non-member types
+
+```c++
+enum class node_kind { object, array, string, number, boolean, null };
+```
+
 ###### Member types
 
 Member type |Definition
@@ -45,18 +51,26 @@ Member type |Definition
 
 ###### Member functions
 
-- [`(constructor)`](#constructors) - construct a basic_node  
-- `(destructor)` - destroys the node, deallocating internal storage if used  
-- [`operator =`](#assignment-operators) - assigns values to the node  
-- [`reset`](#reset) - resets the node  
-- [`type`](#type) - returns node's value type  
-- [`is`](#is) - returns `true` if node's value is of given type  
-- [`imbue`](#imbue) - resets node's value type; returns value reference  
-- [`get`](#get) - returns value reference  
-- [`get_if`](#get_if) - returns value pointer if node's value type matches  
-- [`operator ==`](#comparison-operators) - compare for equality  
-- [`operator !=`](#comparison-operators) - compare for inequality  
+- [`(constructor)`](#constructors) - construct a basic_node
+- `(destructor)` - destroys the node, deallocating internal storage if used
+- [`operator =`](#assignment-operators) - assigns values to the node
+- [`reset`](#reset) - resets the node
+- [`kind`](#kind) - returns node's value type
+- [`is`](#is) - returns `true` if node's value is of given type
+- [`imbue`](#imbue) - resets node's value type; returns value reference
+- [`get`](#get) - returns value reference
+- [`get_if`](#get_if) - returns value pointer if node's value type matches
+- [`operator ==`](#comparison-operators) - compare for equality
+- [`operator !=`](#comparison-operators) - compare for inequality
 
+###### Non-member functions
+
+- `is` - returns `true` if node's value is of given type
+- `imbue` - resets node's value type; returns value reference
+- `get` - returns value reference
+- `get_if` - returns value pointer if node's value type matches
+
+Same as the member counterparts with single `basic_node&` argument.
 
 --------------------------------------------------------------------------------
 ##### Constructors
@@ -170,20 +184,20 @@ Resets the content of node, the value type is `null`.
 
 
 --------------------------------------------------------------------------------
-##### type
+##### kind
 
 ``` c++
-node_type type() const noexcept;
+node_kind kind() const noexcept;
 ```
 
 ###### Return value
-`node_type` of the value
+`node_kind` of the value
 
 ###### Example
 
 ``` c++
 using namespace ;
-node const n; assert(n.type() == node_type::null);
+node const n; assert(n.kind() == node_kind::null);
 ```
 
 

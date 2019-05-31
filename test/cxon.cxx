@@ -2693,7 +2693,7 @@ namespace test {
             return r && ref == res;
         }
     template <typename X, typename T>
-        static bool verify_write(const std::string& ref, const T& sbj, cxon::write_error err) {
+        static bool verify_write(const std::string&, const T& sbj, cxon::write_error err) {
             std::string res;
                 auto const r = cxon::to_chars<X>(res, sbj);
             return r.ec.value() == (int)err;
