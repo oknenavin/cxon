@@ -20,7 +20,82 @@ namespace cxjson {
 
 // implementation /////////////////////////////////////////////////////////////
 
+namespace cxon {
+
+    using cxjson::basic_node;
+
+#   define CXJSON_CHECK(e) if (!(e)) return false
+
+    template <typename X, typename Tr, typename O, typename Cx> // struct write
+        inline bool write_value(indent_iterator<X, O>& o, const basic_node<Tr>& t, Cx& cx) {
+            using json = basic_node<Tr>;
+            switch (t.kind()) {
+                case node_kind::object: {
+                    auto& j = get<typename json::object>(t);
+                    if (j.empty()) return io::poke(o.o_, "{}");
+                    auto i = std::begin(j);
+                    o.lvl_ += o.tab_;
+                        CXJSON_CHECK((
+                            io::poke(o.o_, "{\n") &&
+                            io::poke(o.o_, o.lvl_, o.pad_) &&
+                                write_key<X>(o.o_, i->first, cx), io::poke(o.o_, ' ') &&
+                                write_value<X>(o, i->second, cx)
+                        ));
+                        if (j.size() > 1) {
+                            auto const e = std::end(j);
+                            while (++i != e) {
+                                CXJSON_CHECK((
+                                    io::poke(o.o_, ",\n") &&
+                                    io::poke(o.o_, o.lvl_, o.pad_) &&
+                                        write_key<X>(o.o_, i->first, cx), io::poke(o.o_, ' ') &&
+                                        write_value<X>(o, i->second, cx)
+                                ));
+                            }
+                        }
+                    o.lvl_ -= o.tab_;
+                    return io::poke(o.o_, '\n') && io::poke(o.o_, o.lvl_, o.pad_) && io::poke(o.o_, '}');
+                }
+                case node_kind::array: {
+                    auto& j = get<typename json::array>(t);
+                    if (j.empty()) return io::poke(o.o_, "[]");
+                    auto i = std::begin(j);
+                    o.lvl_ += o.tab_;
+                        CXJSON_CHECK((
+                            io::poke(o.o_, "[\n") &&
+                            io::poke(o.o_, o.lvl_, o.pad_) &&
+                                write_value<X>(o, *i, cx)
+                        ));
+                        if (j.size() > 1) {
+                            auto const e = std::end(j);
+                            while (++i != e) {
+                                CXJSON_CHECK((
+                                    io::poke(o.o_, ",\n") &&
+                                    io::poke(o.o_, o.lvl_, o.pad_) &&
+                                        write_value<X>(o, *i, cx)
+                                ));
+                            }
+                        }
+                    o.lvl_ -= o.tab_;
+                    return io::poke(o.o_, '\n') && io::poke(o.o_, o.lvl_, o.pad_) && io::poke(o.o_, ']');
+                }
+                case node_kind::string:
+                    return write_value<X>(o.o_, get<typename json::string>(t), cx);
+                case node_kind::number:
+                    return write_value<X>(o.o_, get<typename json::number>(t), cx);
+                case node_kind::boolean:
+                    return write_value<X>(o.o_, get<typename json::boolean>(t), cx);
+                case node_kind::null:
+                    return write_value<X>(o.o_, get<typename json::null>(t), cx);
+            }
+            return true; // LCOV_EXCL_LINE
+        }
+
+#       undef CXJSON_CHECK
+
+}   // cxon
+
 namespace cxjson {
+
 
     namespace bits {
 
@@ -29,7 +104,7 @@ namespace cxjson {
             template <typename X, typename O>
                 struct pretty {
                     template <typename Tr, typename Cx>
-                        static bool value(O o, const basic_node<Tr>& n, unsigned lvl, Cx& cx) {
+                        static bool value(O& o, const basic_node<Tr>& n, unsigned lvl, Cx& cx) {
                             using namespace cxon;
                             using json = basic_node<Tr>;
                             constexpr auto tab = tab::constant<prms_type<Cx>>(1);

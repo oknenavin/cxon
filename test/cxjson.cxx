@@ -201,7 +201,14 @@ static unsigned self() {
                 cxon::from_chars(n, s0);
             std::string const s1 =
                 cxjson::pretty(n, cxjson::tab::set<unsigned, 4>(), cxjson::pad::set<char, ' '>(), cxon::fp_precision::set<int, 4>());
-                CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
+            CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
+        }
+        {   // pretty
+            node n; char const s0[] = "[3.1415926, 3.1415926, 3.1415926]";
+                cxon::from_chars(n, s0);
+            std::string s1;
+                cxon::to_chars(cxon::make_indenter(s1), n, cxon::fp_precision::set<int, 4>());
+            CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
         }
         {   node jn;
             auto const r = cxon::from_chars(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");

@@ -468,6 +468,16 @@ namespace cxon { namespace io { // I/O
 
     // output
 
+    namespace bits {
+        template <typename FwIt>
+            struct output_iterator;
+    }
+    template <typename FwIt>
+        using output_iterator = bits::output_iterator<FwIt>;
+
+    template <typename FwIt>
+        constexpr auto make_output_iterator(FwIt b, FwIt e) -> output_iterator<FwIt>;
+
     template <typename O>
         inline bool poke(O& o, char c); // write a character
     template <typename O>
@@ -614,61 +624,6 @@ namespace cxon { // interface implementation
 
     // write
 
-    namespace bits {
-
-        template <typename FwIt>
-            struct range_write_iterator {
-                using iterator_category = std::output_iterator_tag;
-                using value_type        = char;
-                using difference_type   = void;
-                using pointer           = void;
-                using reference         = void;
-
-                range_write_iterator& operator ++() noexcept       { return *this; }
-                range_write_iterator& operator *() noexcept        { return *this; }
-
-                constexpr range_write_iterator(FwIt b, FwIt e)
-                :   b_(b), e_(e)
-                {
-#                   if __cplusplus >= 201402L
-                        CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range");
-#                   endif
-                }
-
-                range_write_iterator& operator =(char c) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    *b_ = c, ++b_;
-                    return *this;
-                }
-                void append(const char* s) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
-                }
-                void append(const char* s, size_t n) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    n = std::min<size_t>(n, e_ - b_);
-                    std::copy_n(s, n, b_), std::advance(b_, n);
-                }
-                void append(size_t n, char c) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    n = std::min<size_t>(n, e_ - b_);
-                    std::fill_n(b_, n, c), std::advance(b_, n);
-                }
-
-                operator bool() const noexcept { return b_ != e_; }
-                operator FwIt() const noexcept { return b_; }
-
-            private:
-                FwIt        b_;
-                FwIt const  e_;
-            };
-        template <typename FwIt>
-            constexpr range_write_iterator<FwIt> make_range_writer(FwIt b, FwIt e) {
-                return range_write_iterator<FwIt>(b, e);
-            }
-
-    }
-
     namespace interface {
 
         template <typename X, typename OI, typename T, typename ...CxPs>
@@ -688,7 +643,7 @@ namespace cxon { // interface implementation
         template <typename X, typename FwIt, typename T, typename ...CxPs>
             CXON_FORCE_INLINE auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
-                    auto o = bits::make_range_writer(b, e);
+                    auto o = io::make_output_iterator(b, e);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
@@ -887,6 +842,62 @@ namespace cxon { // I/O
             constexpr bool consume(std::nullptr_t, II&, II, Cx&) { return true; }
 
         // output
+
+        namespace bits {
+
+            template <typename FwIt>
+                struct output_iterator {
+                    using iterator_category = std::output_iterator_tag;
+                    using value_type        = char;
+                    using difference_type   = void;
+                    using pointer           = void;
+                    using reference         = void;
+
+                    output_iterator& operator ++() noexcept { return *this; }
+                    output_iterator& operator *() noexcept  { return *this; }
+
+                    constexpr output_iterator(FwIt b, FwIt e)
+                    :   b_(b), e_(e)
+                    {
+#                       if __cplusplus >= 201402L
+                            CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range");
+#                       endif
+                    }
+
+                    output_iterator& operator =(char c) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        *b_ = c, ++b_;
+                        return *this;
+                    }
+                    void append(const char* s) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
+                    }
+                    void append(const char* s, size_t n) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        n = std::min<size_t>(n, e_ - b_);
+                        std::copy_n(s, n, b_), std::advance(b_, n);
+                    }
+                    void append(size_t n, char c) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        n = std::min<size_t>(n, e_ - b_);
+                        std::fill_n(b_, n, c), std::advance(b_, n);
+                    }
+
+                    operator bool() const noexcept { return b_ != e_; }
+                    operator FwIt() const noexcept { return b_; }
+
+                private:
+                    FwIt        b_;
+                    FwIt const  e_;
+                };
+
+        }
+
+        template <typename FwIt>
+            constexpr output_iterator<FwIt> make_output_iterator(FwIt b, FwIt e) {
+                return output_iterator<FwIt>(b, e);
+            }
 
         namespace bits {
 
