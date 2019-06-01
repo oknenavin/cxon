@@ -125,11 +125,11 @@ namespace cxon { // interface
             operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X = JSON<>, typename OutIt, typename T, typename ...CxPs>
+    template <typename X = JSON<>, typename T, typename OutIt, typename ...CxPs>
         inline auto     to_chars(OutIt o, const T& t, CxPs... p)          -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
-    template <typename X = JSON<>, typename Insertable, typename T, typename ...CxPs>
+    template <typename X = JSON<>, typename T, typename Insertable, typename ...CxPs>
         inline auto     to_chars(Insertable& i, const T& t, CxPs... p)    -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
-    template <typename X = JSON<>, typename FwIt, typename T, typename ...CxPs>
+    template <typename X = JSON<>, typename T, typename FwIt, typename ...CxPs>
         inline auto     to_chars(FwIt b, FwIt e, const T& t, CxPs... p)   -> to_chars_result<FwIt>;
 
 }   // cxon interface
@@ -626,13 +626,13 @@ namespace cxon { // interface implementation
 
     namespace interface {
 
-        template <typename X, typename OI, typename T, typename ...CxPs>
+        template <typename X, typename T, typename OI, typename ...CxPs>
             CXON_FORCE_INLINE auto to_chars(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
-        template <typename X, typename I, typename T, typename ...CxPs>
+        template <typename X, typename T, typename I, typename ...CxPs>
             CXON_FORCE_INLINE auto to_chars(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto const s = std::distance(std::begin(i), std::end(i));
@@ -640,7 +640,7 @@ namespace cxon { // interface implementation
                     auto b = std::begin(i); std::advance(b, s);
                 return { cx.ec, b };
             }
-        template <typename X, typename FwIt, typename T, typename ...CxPs>
+        template <typename X, typename T, typename FwIt, typename ...CxPs>
             CXON_FORCE_INLINE auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto o = io::make_output_iterator(b, e);
@@ -650,15 +650,15 @@ namespace cxon { // interface implementation
 
     }
 
-    template <typename X, typename OI, typename T, typename ...CxPs>
+    template <typename X, typename T, typename OI, typename ...CxPs>
         inline auto to_chars(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
             return interface::to_chars<X>(o, t, std::forward<CxPs>(p)...);
         }
-    template <typename X, typename I, typename T, typename ...CxPs>
+    template <typename X, typename T, typename I, typename ...CxPs>
         inline auto to_chars(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
             return interface::to_chars<X>(i, t, std::forward<CxPs>(p)...);
         }
-    template <typename X, typename FwIt, typename T, typename ...CxPs>
+    template <typename X, typename T, typename FwIt, typename ...CxPs>
         inline auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
             return interface::to_chars<X>(b, e, t, std::forward<CxPs>(p)...);
         }

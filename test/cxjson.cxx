@@ -24,8 +24,8 @@ struct test_time {
     double base = 0;
     double read = 0;
     double write = 0;
+    double pretty_string = 0;
     double pretty = 0;
-    double pretty_native = 0;
 };
 
 struct test_case {
@@ -85,13 +85,13 @@ static void cxjson_test_time(test_case& test) {
             std::string s; cxon::to_chars(s, j);
         });
         {   std::string s;
-            test.time.pretty = measure(cxjson_repeat, [&] {
-                std::string s;
-                //cxon::to_chars(cxon::make_indenter(std::back_inserter(s)), *j);
-                cxon::to_chars(cxon::make_indenter(s), j);
+            test.time.pretty_string = measure(cxjson_repeat, [&] {
+                s = cxon::pretty(json);
             });
-            test.time.pretty_native = measure(cxjson_repeat, [&] {
-                s = cxjson::pretty(j);
+        }
+        {   std::string s;
+            test.time.pretty = measure(cxjson_repeat, [&] {
+                cxon::to_chars(cxon::make_indenter(s), j);
             });
         }
     }
@@ -191,23 +191,36 @@ static unsigned self() {
             CHECK(r == s);
         }
         {   // pretty
-            std::string s0; cxon::to_chars(cxon::make_indenter(s0), jns);
-            auto const s = cxjson::pretty<cxon::JSON<>, std::vector<char>>(jno);
-            std::string const s1 = cxjson::pretty(jno);
+            std::string s0;
+                cxon::to_chars(cxon::make_indenter(s0), jns);
+            std::vector<char> s;
+                cxon::to_chars(cxon::make_indenter(s), jno);
+            std::string s1;
+                cxon::to_chars(cxon::make_indenter(s1), jno);
             CHECK(s0 == s1);
         }
         {   // pretty
             node n; char const s0[] = "[3.1415926, 3.1415926, 3.1415926]";
                 cxon::from_chars(n, s0);
-            std::string const s1 =
-                cxjson::pretty(n, cxjson::tab::set<unsigned, 4>(), cxjson::pad::set<char, ' '>(), cxon::fp_precision::set<int, 4>());
+            std::string s1;
+#           if !defined(__GNUG__) || defined(__clang__)
+                cxon::to_chars(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+#           else
+                cxon::to_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                    (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+#           endif
             CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
         }
         {   // pretty
             node n; char const s0[] = "[3.1415926, 3.1415926, 3.1415926]";
                 cxon::from_chars(n, s0);
             std::string s1;
-                cxon::to_chars(cxon::make_indenter(s1), n, cxon::fp_precision::set<int, 4>());
+#           if !defined(__GNUG__) || defined(__clang__)
+                cxon::to_chars(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+#           else
+                cxon::to_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                    (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+#           endif
             CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
         }
         {   node jn;
@@ -571,13 +584,13 @@ int main(int argc, char *argv[]) {
                 fprintf(stdout, "\tbase          :\t%8.2f\n", c.time.base);
                 fprintf(stdout, "\tread          :\t%8.2f\tx %6.2f\n", c.time.read, c.time.read / c.time.base);
                 fprintf(stdout, "\twrite         :\t%8.2f\tx %6.2f\n", c.time.write, c.time.write / c.time.base);
-                fprintf(stdout, "\tcxon::pretty  :\t%8.2f\tx %6.2f\n", c.time.pretty, c.time.pretty / c.time.base);
-                fprintf(stdout, "\tcxjson::pretty:\t%8.2f\tx %6.2f\n", c.time.pretty_native, c.time.pretty_native / c.time.base);
+                fprintf(stdout, "\tpretty/string :\t%8.2f\tx %6.2f\n", c.time.pretty_string, c.time.pretty_string / c.time.base);
+                fprintf(stdout, "\tpretty        :\t%8.2f\tx %6.2f\n", c.time.pretty, c.time.pretty / c.time.base);
                 total.base += c.time.base,
                 total.read += c.time.read,
                 total.write += c.time.write,
-                total.pretty += c.time.pretty,
-                total.pretty_native += c.time.pretty_native;
+                total.pretty_string += c.time.pretty_string,
+                total.pretty += c.time.pretty;
             }
             else {
                 fprintf(stdout, "\tfailed: %s\n", c.error.c_str());
@@ -586,8 +599,8 @@ int main(int argc, char *argv[]) {
         fprintf(stdout, "------------------------------------------------\n");
         fprintf(stdout, "\tread          :                 x %6.2f\n", total.read / total.base);
         fprintf(stdout, "\twrite         :                 x %6.2f\n", total.write / total.base);
-        fprintf(stdout, "\tcxon::pretty  :                 x %6.2f\n", total.pretty / total.base);
-        fprintf(stdout, "\tcxjson::pretty:                 x %6.2f\n", total.pretty_native / total.base);
+        fprintf(stdout, "\tpretty/string :                 x %6.2f\n", total.pretty_string / total.base);
+        fprintf(stdout, "\tpretty        :                 x %6.2f\n", total.pretty / total.base);
     }
     return err;
 }

@@ -45,7 +45,9 @@ namespace cxon {
                 using pointer           = void;
                 using reference         = void;
 
-                constexpr indent_iterator(O o, unsigned tab = 1, char pad = '\t') : o_(o), stt_(grn), lvl_(), tab_(tab), pad_(pad) {}
+                using out_type = O;
+
+                constexpr indent_iterator(out_type o, unsigned tab = 1, char pad = '\t') : o_(o), stt_(grn), lvl_(), tab_(tab), pad_(pad) {}
 
                 indent_iterator& operator ++() noexcept { return *this; }
                 indent_iterator& operator *() noexcept { return *this; }
@@ -83,6 +85,25 @@ namespace cxon {
                     return *this;
                 }
 
+                template <typename VI>
+                    bool value_indent(VI value_indent) {
+                        if (stt() == con) {
+                            mut(grn), io::poke(o_, '\n') && io::poke(o_, lvl_ += tab_, pad_);
+                        }
+                        return value_indent(o_, lvl_, tab_, pad_);
+                    }
+
+                void append(const char* s, size_t n) {
+                    value_indent([&](out_type out, unsigned&, unsigned, char) {
+                        return io::poke(out, s, n);
+                    });
+                }
+                void append(const char* s) {
+                    value_indent([&](out_type out, unsigned&, unsigned, char) {
+                        return io::poke(out, s);
+                    });
+                }
+
 #               define HAS_METH_DEF(name, M)\
                     template <typename, typename = void>\
                         struct has_##name : std::false_type {};\
@@ -91,14 +112,14 @@ namespace cxon {
 
                 HAS_METH_DEF(bool, operator bool());
                 HAS_METH_DEF(good, good());
-                template <typename S = O>
+                template <typename S = out_type>
                     auto good() const noexcept -> enable_if_t<!has_bool<S>::value && has_good<S>::value, bool> { return o_.good(); }
-                template <typename S = O>
+                template <typename S = out_type>
                     auto good() const noexcept -> enable_if_t< has_bool<S>::value, bool> { return o_; }
 
 #               undef HAS_METH_DEF
 
-            protected:
+            private:
                 struct is {
                     static bool beg(char c) { return c == X::map::beg || c == X::list::beg; }
                     static bool end(char c) { return c == X::map::end || c == X::list::end; }
@@ -115,9 +136,8 @@ namespace cxon {
                 auto stt() const -> decltype(grn)   { return stt_; }
                 void mut(decltype(grn) s)           { stt_ = s; }
 
-            //protected:
-            public:
-                O               o_;
+            private:
+                out_type        o_;
                 decltype(grn)   stt_;
                 unsigned        lvl_;
                 unsigned const  tab_;
@@ -142,10 +162,10 @@ namespace cxon {
 
     template <typename X, typename R, typename InIt>
         inline auto pretty(InIt b, InIt e, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
-            std::string s;
-                auto i = make_indenter<X>(s, tab, pad);
+            R r;
+                auto i = make_indenter<X>(r, tab, pad);
                 for ( ; b != e; ++b) *i = *b;
-            return s;
+            return r;
         }
     template <typename X, typename R, typename C>
         inline auto pretty(const C& c, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
