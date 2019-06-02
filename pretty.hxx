@@ -17,17 +17,17 @@ namespace cxon { // interface
     template <typename X, typename Out>
         using indent_iterator = bits::indent_iterator<X, Out>;
 
-    template <typename X = JSON<>, typename Out>
-        constexpr auto make_indenter(Out o, unsigned tab = 1, char pad = '\t')          -> enable_if_t<is_output_iterator<Out>::value, indent_iterator<X, Out>>;
-    template <typename X = JSON<>, typename C>
-        constexpr auto make_indenter(C& c, unsigned tab = 1, char pad = '\t')           -> enable_if_t<is_back_insertable<C>::value, indent_iterator<X, C&>>;
+    template <typename X = JSON<>, typename OutIt>
+        constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t')        -> enable_if_t<is_output_iterator<OutIt>::value, indent_iterator<X, OutIt>>;
+    template <typename X = JSON<>, typename Insertable>
+        constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<Insertable>::value, indent_iterator<X, Insertable&>>;
     template <typename X = JSON<>, typename FwIt>
         constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indent_iterator<X, io::output_iterator<FwIt>>;
 
     template <typename X = JSON<>, typename R = std::string, typename InIt>
-        inline auto pretty(InIt b, InIt e, unsigned tab = 1, char pad = '\t')   -> enable_if_t<is_back_insertable<R>::value, R>;
-    template <typename X = JSON<>, typename R = std::string, typename C>
-        inline auto pretty(const C& c, unsigned tab = 1, char pad = '\t')       -> enable_if_t<is_back_insertable<R>::value, R>;
+        inline auto pretty(InIt b, InIt e, unsigned tab = 1, char pad = '\t')       -> enable_if_t<is_back_insertable<R>::value, R>;
+    template <typename X = JSON<>, typename R = std::string, typename Insertable>
+        inline auto pretty(const Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<R>::value, R>;
 
 }
 
@@ -150,30 +150,30 @@ namespace cxon {
 
     }
 
-    template <typename X, typename O>
-        constexpr auto make_indenter(O o, unsigned tab, char pad) -> enable_if_t<is_output_iterator<O>::value, indent_iterator<X, O>> {
-            return indent_iterator<X, O>{o, tab, pad};
+    template <typename X, typename OI>
+        constexpr auto make_indenter(OI o, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, indent_iterator<X, OI>> {
+            return indent_iterator<X, OI>{o, tab, pad};
         }
-    template <typename X, typename C>
-        constexpr auto make_indenter(C& c, unsigned tab, char pad) -> enable_if_t<is_back_insertable<C>::value, indent_iterator<X, C&>> {
-            return indent_iterator<X, C&>{c, tab, pad};
+    template <typename X, typename I>
+        constexpr auto make_indenter(I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<I>::value, indent_iterator<X, I&>> {
+            return indent_iterator<X, I&>{i, tab, pad};
         }
-    template <typename X, typename FwIt>
-        constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab, char pad) -> indent_iterator<X, io::output_iterator<FwIt>> {
-            using O = io::output_iterator<FwIt>;
+    template <typename X, typename FI>
+        constexpr auto make_indenter(FI b, FI e, unsigned tab, char pad) -> indent_iterator<X, io::output_iterator<FI>> {
+            using O = io::output_iterator<FI>;
             return indent_iterator<X, O>{io::make_output_iterator(b, e), tab, pad};
         }
 
-    template <typename X, typename R, typename InIt>
-        inline auto pretty(InIt b, InIt e, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
+    template <typename X, typename R, typename II>
+        inline auto pretty(II b, II e, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
             R r;
                 auto i = make_indenter<X>(r, tab, pad);
                 for ( ; b != e; ++b) *i = *b;
             return r;
         }
-    template <typename X, typename R, typename C>
-        inline auto pretty(const C& c, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
-            return pretty<X, R>(std::begin(c), std::end(c), tab, pad);
+    template <typename X, typename R, typename Insertable>
+        inline auto pretty(const Insertable& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
+            return pretty<X, R>(std::begin(i), std::end(i), tab, pad);
         }
 
 }

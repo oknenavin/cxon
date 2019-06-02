@@ -331,8 +331,8 @@ namespace cxon {
         inline auto to_chars(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
             return interface::to_chars<X>(i, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
-    template <typename X, typename Tr, typename FwIt, typename ...CxPs>
-        inline auto to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FwIt> {
+    template <typename X, typename Tr, typename FI, typename ...CxPs>
+        inline auto to_chars(FI b, FI e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FI> {
             return interface::to_chars<X>(b, e, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
 
