@@ -66,11 +66,11 @@ namespace cxon {
     template <typename X = JSON<>, typename Tr, typename Iterable, typename ...CxPs>
         inline auto     from_chars(basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_chars_result<decltype(std::begin(i))>;
 
-    template <typename X = JSON<>, typename OutIt, typename Tr, typename ...CxPs>
+    template <typename X = JSON<>, typename Tr, typename OutIt, typename ...CxPs>
         inline auto     to_chars(OutIt o, const basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
-    template <typename X = JSON<>, typename Insertable, typename Tr, typename ...CxPs>
+    template <typename X = JSON<>, typename Tr, typename Insertable, typename ...CxPs>
         inline auto     to_chars(Insertable& i, const basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
-    template <typename X = JSON<>, typename FwIt, typename Tr, typename ...CxPs>
+    template <typename X = JSON<>, typename Tr, typename FwIt, typename ...CxPs>
         inline auto     to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p)  -> to_chars_result<FwIt>;
 
 }   // cxon
@@ -323,16 +323,16 @@ namespace cxon {
             return interface::from_chars<X>(t, i, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
 
-    template <typename X, typename OI, typename Tr, typename ...CxPs>
+    template <typename X, typename Tr, typename OI, typename ...CxPs>
         inline auto to_chars(OI o, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
             return interface::to_chars<X>(o, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
-    template <typename X, typename I, typename Tr, typename ...CxPs>
+    template <typename X, typename Tr, typename I, typename ...CxPs>
         inline auto to_chars(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
             return interface::to_chars<X>(i, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
-    template <typename X, typename FwIt, typename Tr, typename ...CxPs>
-        inline auto to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FwIt> {
+    template <typename X, typename Tr, typename FI, typename ...CxPs>
+        inline auto to_chars(FI b, FI e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FI> {
             return interface::to_chars<X>(b, e, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
 

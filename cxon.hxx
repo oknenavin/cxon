@@ -125,11 +125,11 @@ namespace cxon { // interface
             operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X = JSON<>, typename OutIt, typename T, typename ...CxPs>
+    template <typename X = JSON<>, typename T, typename OutIt, typename ...CxPs>
         inline auto     to_chars(OutIt o, const T& t, CxPs... p)          -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
-    template <typename X = JSON<>, typename Insertable, typename T, typename ...CxPs>
+    template <typename X = JSON<>, typename T, typename Insertable, typename ...CxPs>
         inline auto     to_chars(Insertable& i, const T& t, CxPs... p)    -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
-    template <typename X = JSON<>, typename FwIt, typename T, typename ...CxPs>
+    template <typename X = JSON<>, typename T, typename FwIt, typename ...CxPs>
         inline auto     to_chars(FwIt b, FwIt e, const T& t, CxPs... p)   -> to_chars_result<FwIt>;
 
 }   // cxon interface
@@ -468,6 +468,16 @@ namespace cxon { namespace io { // I/O
 
     // output
 
+    namespace bits {
+        template <typename FwIt>
+            struct output_iterator;
+    }
+    template <typename FwIt>
+        using output_iterator = bits::output_iterator<FwIt>;
+
+    template <typename FwIt>
+        constexpr auto make_output_iterator(FwIt b, FwIt e) -> output_iterator<FwIt>;
+
     template <typename O>
         inline bool poke(O& o, char c); // write a character
     template <typename O>
@@ -614,70 +624,15 @@ namespace cxon { // interface implementation
 
     // write
 
-    namespace bits {
-
-        template <typename FwIt>
-            struct range_write_iterator {
-                using iterator_category = std::output_iterator_tag;
-                using value_type        = char;
-                using difference_type   = void;
-                using pointer           = void;
-                using reference         = void;
-
-                range_write_iterator& operator ++() noexcept       { return *this; }
-                range_write_iterator& operator *() noexcept        { return *this; }
-
-                constexpr range_write_iterator(FwIt b, FwIt e)
-                :   b_(b), e_(e)
-                {
-#                   if __cplusplus >= 201402L
-                        CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range");
-#                   endif
-                }
-
-                range_write_iterator& operator =(char c) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    *b_ = c, ++b_;
-                    return *this;
-                }
-                void append(const char* s) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
-                }
-                void append(const char* s, size_t n) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    n = std::min<size_t>(n, e_ - b_);
-                    std::copy_n(s, n, b_), std::advance(b_, n);
-                }
-                void append(size_t n, char c) {
-                    CXON_ASSERT(*this, "unexpected state");
-                    n = std::min<size_t>(n, e_ - b_);
-                    std::fill_n(b_, n, c), std::advance(b_, n);
-                }
-
-                operator bool() const noexcept { return b_ != e_; }
-                operator FwIt() const noexcept { return b_; }
-
-            private:
-                FwIt        b_;
-                FwIt const  e_;
-            };
-        template <typename FwIt>
-            constexpr range_write_iterator<FwIt> make_range_writer(FwIt b, FwIt e) {
-                return range_write_iterator<FwIt>(b, e);
-            }
-
-    }
-
     namespace interface {
 
-        template <typename X, typename OI, typename T, typename ...CxPs>
+        template <typename X, typename T, typename OI, typename ...CxPs>
             CXON_FORCE_INLINE auto to_chars(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
-        template <typename X, typename I, typename T, typename ...CxPs>
+        template <typename X, typename T, typename I, typename ...CxPs>
             CXON_FORCE_INLINE auto to_chars(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto const s = std::distance(std::begin(i), std::end(i));
@@ -685,26 +640,26 @@ namespace cxon { // interface implementation
                     auto b = std::begin(i); std::advance(b, s);
                 return { cx.ec, b };
             }
-        template <typename X, typename FwIt, typename T, typename ...CxPs>
-            CXON_FORCE_INLINE auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
+        template <typename X, typename T, typename FI, typename ...CxPs>
+            CXON_FORCE_INLINE auto to_chars(FI b, FI e, const T& t, CxPs... p) -> to_chars_result<FI> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
-                    auto o = bits::make_range_writer(b, e);
+                    auto o = io::make_output_iterator(b, e);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
 
     }
 
-    template <typename X, typename OI, typename T, typename ...CxPs>
+    template <typename X, typename T, typename OI, typename ...CxPs>
         inline auto to_chars(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
             return interface::to_chars<X>(o, t, std::forward<CxPs>(p)...);
         }
-    template <typename X, typename I, typename T, typename ...CxPs>
+    template <typename X, typename T, typename I, typename ...CxPs>
         inline auto to_chars(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
             return interface::to_chars<X>(i, t, std::forward<CxPs>(p)...);
         }
-    template <typename X, typename FwIt, typename T, typename ...CxPs>
-        inline auto to_chars(FwIt b, FwIt e, const T& t, CxPs... p) -> to_chars_result<FwIt> {
+    template <typename X, typename T, typename FI, typename ...CxPs>
+        inline auto to_chars(FI b, FI e, const T& t, CxPs... p) -> to_chars_result<FI> {
             return interface::to_chars<X>(b, e, t, std::forward<CxPs>(p)...);
         }
 
@@ -890,6 +845,62 @@ namespace cxon { // I/O
 
         namespace bits {
 
+            template <typename FwIt>
+                struct output_iterator {
+                    using iterator_category = std::output_iterator_tag;
+                    using value_type        = char;
+                    using difference_type   = void;
+                    using pointer           = void;
+                    using reference         = void;
+
+                    output_iterator& operator ++() noexcept { return *this; }
+                    output_iterator& operator *() noexcept  { return *this; }
+
+                    constexpr output_iterator(FwIt b, FwIt e)
+                    :   b_(b), e_(e)
+                    {
+#                       if __cplusplus >= 201402L
+                            CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range");
+#                       endif
+                    }
+
+                    output_iterator& operator =(char c) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        *b_ = c, ++b_;
+                        return *this;
+                    }
+                    void append(const char* s) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
+                    }
+                    void append(const char* s, size_t n) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        n = std::min<size_t>(n, e_ - b_);
+                        std::copy_n(s, n, b_), std::advance(b_, n);
+                    }
+                    void append(size_t n, char c) {
+                        CXON_ASSERT(*this, "unexpected state");
+                        n = std::min<size_t>(n, e_ - b_);
+                        std::fill_n(b_, n, c), std::advance(b_, n);
+                    }
+
+                    operator bool() const noexcept { return b_ != e_; }
+                    operator FwIt() const noexcept { return b_; }
+
+                private:
+                    FwIt        b_;
+                    FwIt const  e_;
+                };
+
+        }
+
+        template <typename FwIt>
+            constexpr output_iterator<FwIt> make_output_iterator(FwIt b, FwIt e) {
+                return output_iterator<FwIt>(b, e);
+            }
+
+        namespace bits {
+
             template <typename O>
                 inline auto push(O& o, char c) -> enable_if_t<is_output_iterator<O>::value> {
                     *o = c, ++o;
@@ -906,63 +917,63 @@ namespace cxon { // I/O
                     struct has_##name<T, enable_if_t<std::is_same<void, decltype(std::declval<T>().M, void())>::value>> : std::true_type {}
 
             HAS_METH_DEF(append_s, append(std::declval<char*>()));
-            template <typename O>
-                inline auto push(O& o, const char* s) -> enable_if_t<!has_append_s<O>::value> {
-                    while (*s) push(o, *s), ++s;
-                }
-            template <typename O>
-                inline auto push(O& o, const char* s) -> enable_if_t< has_append_s<O>::value> {
-                    o.append(s);
-                }
+                template <typename O>
+                    inline auto push(O& o, const char* s) -> enable_if_t<!has_append_s<O>::value> {
+                        while (*s) push(o, *s), ++s;
+                    }
+                template <typename O>
+                    inline auto push(O& o, const char* s) -> enable_if_t< has_append_s<O>::value> {
+                        o.append(s);
+                    }
 
             HAS_METH_DEF(append_sn, append(std::declval<char*>(), 0));
-            template <typename O>
-                inline auto push(O& o, const char* s, size_t n) -> enable_if_t<!has_append_sn<O>::value> {
-                    while (n) push(o, *s), ++s, --n;
-                }
-            template <typename O>
-                inline auto push(O& o, const char* s, size_t n) -> enable_if_t< has_append_sn<O>::value> {
-                    o.append(s, n);
-                }
+                template <typename O>
+                    inline auto push(O& o, const char* s, size_t n) -> enable_if_t<!has_append_sn<O>::value> {
+                        while (n) push(o, *s), ++s, --n;
+                    }
+                template <typename O>
+                    inline auto push(O& o, const char* s, size_t n) -> enable_if_t< has_append_sn<O>::value> {
+                        o.append(s, n);
+                    }
 
             HAS_METH_DEF(append_nc, append(0, ' '));
-            template <typename O>
-                inline auto push(O& o, unsigned n, char c) -> enable_if_t<!has_append_nc<O>::value> {
-                    while (n) push(o, c), --n;
-                }
-            template <typename O>
-                inline auto push(O& o, unsigned n, char c) -> enable_if_t< has_append_nc<O>::value> {
-                    o.append(n, c);
-                }
+                template <typename O>
+                    inline auto push(O& o, unsigned n, char c) -> enable_if_t<!has_append_nc<O>::value> {
+                        while (n) push(o, c), --n;
+                    }
+                template <typename O>
+                    inline auto push(O& o, unsigned n, char c) -> enable_if_t< has_append_nc<O>::value> {
+                        o.append(n, c);
+                    }
 
             HAS_METH_DEF(bool, operator bool());
             HAS_METH_DEF(good, good());
 
-            template <typename O, typename ...P>
-                inline auto poke(O& o, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
-                    return push(o, p...), true;
-                }
-            template <typename O, typename ...P>
-                inline auto poke(O& o, P... p) -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
-                    return push(o, p...), o.good();
-                }
-            template <typename O, typename ...P>
-                inline auto poke(O& o, P... p) -> enable_if_t< has_bool<O>::value, bool> {
-                    return push(o, p...), o;
-                }
+                template <typename O, typename ...P>
+                    inline auto poke(O& o, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
+                        return push(o, p...), true;
+                    }
+                template <typename O, typename ...P>
+                    inline auto poke(O& o, P... p) -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
+                        return push(o, p...), o.good();
+                    }
+                template <typename O, typename ...P>
+                    inline auto poke(O& o, P... p) -> enable_if_t< has_bool<O>::value, bool> {
+                        return push(o, p...), o;
+                    }
 
-            template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx&, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
-                    return push(o, p...), true;
-                }
-            template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
-                    return push(o, p...), (!o.good() ? (cx|write_error::output_failure), false : true);
-                }
-            template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t< has_bool<O>::value, bool> {
-                    return push(o, p...), (!o ? (cx|write_error::output_failure), false : true);
-                }
+                template <typename X, typename O, typename Cx, typename ...P>
+                    inline auto poke(O& o, Cx&, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
+                        return push(o, p...), true;
+                    }
+                template <typename X, typename O, typename Cx, typename ...P>
+                    inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
+                        return push(o, p...), (!o.good() ? (cx|write_error::output_failure), false : true);
+                    }
+                template <typename X, typename O, typename Cx, typename ...P>
+                    inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t< has_bool<O>::value, bool> {
+                        return push(o, p...), (!o ? (cx|write_error::output_failure), false : true);
+                    }
 
 #           undef HAS_METH_DEF
 

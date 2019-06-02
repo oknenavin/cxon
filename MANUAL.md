@@ -162,11 +162,11 @@ int main() {
 ``` c++
 namespace cxon {
 
-    template <typename Traits, typename OutIt, typename T, typename ...CxPs>
+    template <typename Traits, typename T, typename OutIt, typename ...CxPs>
         to_chars_result<It> to_chars(OutIt o, const T& t, CxPs... p);                 (1)
-    template <typename Traits, typename Insertable, typename T, typename ...CxPs>
+    template <typename Traits, typename T, typename Insertable, typename ...CxPs>
         to_chars_result<It> to_chars(Insertable& i, const T& t, CxPs... p);           (2)
-    template <typename Traits, typename FwIt, typename T, typename ...CxPs>
+    template <typename Traits, typename T, typename FwIt, typename ...CxPs>
         to_chars_result<It> to_chars(FwIt b, FwIt e, const T& t, CxPs... p);          (3)
 
     template <typename It>
@@ -242,6 +242,88 @@ int main() {
             auto const r = to_chars(std::begin(v), std::end(v), std::vector<int>{ 4, 2 });
         assert(!r && r.ec == write_error::output_failure);
     }
+}
+```
+
+##### Non-members
+
+```c++
+template <typename Traits, typename Out>
+    struct indent_iterator;
+
+template <typename Traits, typename OutIt>
+    constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t');           (1)
+template <typename Traits, typename Insertable>
+    constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t');     (2)
+template <typename Traits, typename FwIt>
+    constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t');    (3)
+```
+
+###### Template parameters
+- [`Traits`](#format-traits) - traits class specifying given serialization format
+- `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
+- `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
+- `FwIt` - the type of the iterator, must meet [ForwardIterator][cpp-fwit] requirements
+
+###### Parameters
+- `o` - an output iterator to write to
+- `i` - a back insertable value to write to
+- `b`, `e` - a (`char`) range to write to
+- `tab` - the number of `pad` characters to use for indentation 
+- `pad` - character to use for indentation
+
+###### Return value
+`indent_iterator` instance.
+
+###### Example
+
+```c++
+#include "cxon/cxon.hxx"
+#include "cxon/pretty.hxx"
+#include <map>
+#include <vector>
+#include <string>
+#include <cassert>
+
+int main() {
+    using namespace cxon;
+    std::map<std::string, std::vector<int>> const m = {
+        {"even", {2, 4, 6}}, {"odd", {1, 3, 5}}
+    };
+    char const s0[] =
+        "{\n"
+        "  \"even\": [\n"
+        "    2,\n"
+        "    4,\n"
+        "    6\n"
+        "  ],\n"
+        "  \"odd\": [\n"
+        "    1,\n"
+        "    3,\n"
+        "    5\n"
+        "  ]\n"
+        "}"
+    ;
+    std::string s1;
+        cxon::to_chars(cxon::make_indenter(s1, 4, ' '), m);
+    assert(s1 == s0);
+}
+```
+
+where `s1` will contain:
+
+```json
+{
+    "even": [
+        2,
+        4,
+        6
+    ],
+    "odd": [
+        1,
+        3,
+        5
+    ]
 }
 ```
 
