@@ -190,18 +190,17 @@ static unsigned self() {
             std::string r; cxon::to_chars(r, jno);
             CHECK(r == s);
         }
-        {   // pretty
-            std::string s0;
-                cxon::to_chars(cxon::make_indenter(s0), jns);
-            std::vector<char> s;
-                cxon::to_chars(cxon::make_indenter(s), jno);
-            std::string s1;
-                cxon::to_chars(cxon::make_indenter(s1), jno);
-            CHECK(s0 == s1);
+        {   std::string s1;
+                cxon::to_chars(cxon::make_indenter(s1), jns);
+            std::string s2;
+                cxon::to_chars(cxon::make_indenter(s2), jno);
+            std::string const s0 =
+                cxon::pretty(s1);
+            CHECK(s1 == s0);
+            CHECK(s2 == s0);
         }
-        {   // pretty
-            node n; char const s0[] = "[3.1415926, 3.1415926, 3.1415926]";
-                cxon::from_chars(n, s0);
+        {   node n;
+                cxon::from_chars(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
 #           if !defined(__GNUG__) || defined(__clang__)
                 cxon::to_chars(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
@@ -209,36 +208,66 @@ static unsigned self() {
                 cxon::to_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
 #           endif
-            CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
+            std::string const s0 =
+                cxon::pretty(s1, 4, ' ');
+            CHECK(s1 == s0);
         }
-        {   // pretty
-            node n; char const s0[] = "[3.1415926, 3.1415926, 3.1415926]";
-                cxon::from_chars(n, s0);
+        {   node n;
+                cxon::from_chars(n, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
             std::string s1;
+                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), n);
+            std::string const s0 =
+                cxon::pretty(s1, 2, ' ');
+            CHECK(s1 == s0);
+        }
+        {   std::vector<node> v;
+                cxon::from_chars(v, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
+            std::string s1;
+                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), v);
+            std::string const s0 =
+                cxon::pretty(s1, 2, ' ');
+            CHECK(s1 == s0);
+        }
+        {   std::vector<node> v;
+                cxon::from_chars(v, "[{\"even\": [2, 4, 6]}, {\"odd\": [1, 3, 5]}]");
+            std::string s1;
+                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), v);
+            std::string const s0 =
+                cxon::pretty(s1, 2, ' ');
+            CHECK(s1 == s0);
+        }
+        {   std::map<std::string, node> m;
+                cxon::from_chars(m, "{\"even\": [2, 4, 6], \"odd\": [1, 3, 5]}");
+            std::string s1;
+                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), m);
+            std::string const s0 =
+                cxon::pretty(s1, 2, ' ');
+            CHECK(s1 == s0);
+        }
+        {   node n;
+                cxon::from_chars(n, "[[[[42]]]]");
+            std::string s;
 #           if !defined(__GNUG__) || defined(__clang__)
-                cxon::to_chars(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+                auto const r = cxon::to_chars(cxon::make_indenter(s), n, cxjson::recursion_depth::set<unsigned, 4U>());
 #           else
-                cxon::to_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                    (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+                auto const r = cxon::to_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                                    (cxon::make_indenter(s), n, cxjson::recursion_depth::set<unsigned, 4U>());
 #           endif
-            CHECK(s1 == "[\n    3.142,\n    3.142,\n    3.142\n]");
+            CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
         {   node jn;
             auto const r = cxon::from_chars(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
-#       if !defined(__GNUG__) || defined(__clang__)
         {   node jn;
-            auto const r = cxon::from_chars(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
+#           if !defined(__GNUG__) || defined(__clang__)
+                auto const r = cxon::from_chars(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
+#           else
+                auto const r = cxon::from_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                                    (jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
+#           endif
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
-#       else
-        {   node jn;
-            auto const r = cxon::from_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                (jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
-            CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
-        }
-#       endif
         {   node jn;
             auto const r = cxon::from_chars(jn, "~");
             CHECK(!r && r.ec == cxjson::error::invalid);

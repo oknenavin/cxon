@@ -45,7 +45,7 @@ namespace cxon {
                 using pointer           = void;
                 using reference         = void;
 
-                using out_type = O;
+                using out_type          = O;
 
                 constexpr indent_iterator(out_type o, unsigned tab = 1, char pad = '\t') : o_(o), stt_(grn), lvl_(), tab_(tab), pad_(pad) {}
 
@@ -86,23 +86,12 @@ namespace cxon {
                 }
 
                 template <typename VI>
-                    bool value_indent(VI value_indent) {
+                    bool indent_value(VI indent_value) {
                         if (stt() == con) {
                             mut(grn), io::poke(o_, '\n') && io::poke(o_, lvl_ += tab_, pad_);
                         }
-                        return value_indent(o_, lvl_, tab_, pad_);
+                        return indent_value(o_, lvl_, tab_, pad_);
                     }
-
-                void append(const char* s, size_t n) {
-                    value_indent([&](out_type out, unsigned&, unsigned, char) {
-                        return io::poke(out, s, n);
-                    });
-                }
-                void append(const char* s) {
-                    value_indent([&](out_type out, unsigned&, unsigned, char) {
-                        return io::poke(out, s);
-                    });
-                }
 
 #               define HAS_METH_DEF(name, M)\
                     template <typename, typename = void>\
@@ -110,12 +99,27 @@ namespace cxon {
                     template <typename T>\
                         struct has_##name<T, enable_if_t<std::is_same<void, decltype(std::declval<T>().M, void())>::value>> : std::true_type {}
 
-                HAS_METH_DEF(bool, operator bool());
+                HAS_METH_DEF(append_sn, append(std::declval<char*>(), 0));
+                    template <typename S = out_type>
+                        auto append(const char* s, size_t n) -> enable_if_t<has_append_sn<S>::value> {
+                            indent_value([&](out_type out, unsigned&, unsigned, char) {
+                                return io::poke(out, s, n);
+                            });
+                        }
+                HAS_METH_DEF(append_s, append(std::declval<char*>()));
+                    template <typename S = out_type>
+                        auto append(const char* s) -> enable_if_t<has_append_s<S>::value> {
+                            indent_value([&](out_type out, unsigned&, unsigned, char) {
+                                return io::poke(out, s);
+                            });
+                        }
+
                 HAS_METH_DEF(good, good());
-                template <typename S = out_type>
-                    auto good() const noexcept -> enable_if_t<!has_bool<S>::value && has_good<S>::value, bool> { return o_.good(); }
-                template <typename S = out_type>
-                    auto good() const noexcept -> enable_if_t< has_bool<S>::value, bool> { return o_; }
+                HAS_METH_DEF(bool, operator bool());
+                    template <typename S = out_type>
+                        auto good() const noexcept -> enable_if_t<!has_bool<S>::value && has_good<S>::value, bool> { return o_.good(); }
+                    template <typename S = out_type>
+                        auto good() const noexcept -> enable_if_t< has_bool<S>::value, bool> { return o_; }
 
 #               undef HAS_METH_DEF
 

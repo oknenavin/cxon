@@ -917,63 +917,63 @@ namespace cxon { // I/O
                     struct has_##name<T, enable_if_t<std::is_same<void, decltype(std::declval<T>().M, void())>::value>> : std::true_type {}
 
             HAS_METH_DEF(append_s, append(std::declval<char*>()));
-            template <typename O>
-                inline auto push(O& o, const char* s) -> enable_if_t<!has_append_s<O>::value> {
-                    while (*s) push(o, *s), ++s;
-                }
-            template <typename O>
-                inline auto push(O& o, const char* s) -> enable_if_t< has_append_s<O>::value> {
-                    o.append(s);
-                }
+                template <typename O>
+                    inline auto push(O& o, const char* s) -> enable_if_t<!has_append_s<O>::value> {
+                        while (*s) push(o, *s), ++s;
+                    }
+                template <typename O>
+                    inline auto push(O& o, const char* s) -> enable_if_t< has_append_s<O>::value> {
+                        o.append(s);
+                    }
 
             HAS_METH_DEF(append_sn, append(std::declval<char*>(), 0));
-            template <typename O>
-                inline auto push(O& o, const char* s, size_t n) -> enable_if_t<!has_append_sn<O>::value> {
-                    while (n) push(o, *s), ++s, --n;
-                }
-            template <typename O>
-                inline auto push(O& o, const char* s, size_t n) -> enable_if_t< has_append_sn<O>::value> {
-                    o.append(s, n);
-                }
+                template <typename O>
+                    inline auto push(O& o, const char* s, size_t n) -> enable_if_t<!has_append_sn<O>::value> {
+                        while (n) push(o, *s), ++s, --n;
+                    }
+                template <typename O>
+                    inline auto push(O& o, const char* s, size_t n) -> enable_if_t< has_append_sn<O>::value> {
+                        o.append(s, n);
+                    }
 
             HAS_METH_DEF(append_nc, append(0, ' '));
-            template <typename O>
-                inline auto push(O& o, unsigned n, char c) -> enable_if_t<!has_append_nc<O>::value> {
-                    while (n) push(o, c), --n;
-                }
-            template <typename O>
-                inline auto push(O& o, unsigned n, char c) -> enable_if_t< has_append_nc<O>::value> {
-                    o.append(n, c);
-                }
+                template <typename O>
+                    inline auto push(O& o, unsigned n, char c) -> enable_if_t<!has_append_nc<O>::value> {
+                        while (n) push(o, c), --n;
+                    }
+                template <typename O>
+                    inline auto push(O& o, unsigned n, char c) -> enable_if_t< has_append_nc<O>::value> {
+                        o.append(n, c);
+                    }
 
             HAS_METH_DEF(bool, operator bool());
             HAS_METH_DEF(good, good());
 
-            template <typename O, typename ...P>
-                inline auto poke(O& o, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
-                    return push(o, p...), true;
-                }
-            template <typename O, typename ...P>
-                inline auto poke(O& o, P... p) -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
-                    return push(o, p...), o.good();
-                }
-            template <typename O, typename ...P>
-                inline auto poke(O& o, P... p) -> enable_if_t< has_bool<O>::value, bool> {
-                    return push(o, p...), o;
-                }
+                template <typename O, typename ...P>
+                    inline auto poke(O& o, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
+                        return push(o, p...), true;
+                    }
+                template <typename O, typename ...P>
+                    inline auto poke(O& o, P... p) -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
+                        return push(o, p...), o.good();
+                    }
+                template <typename O, typename ...P>
+                    inline auto poke(O& o, P... p) -> enable_if_t< has_bool<O>::value, bool> {
+                        return push(o, p...), o;
+                    }
 
-            template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx&, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
-                    return push(o, p...), true;
-                }
-            template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
-                    return push(o, p...), (!o.good() ? (cx|write_error::output_failure), false : true);
-                }
-            template <typename X, typename O, typename Cx, typename ...P>
-                inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t< has_bool<O>::value, bool> {
-                    return push(o, p...), (!o ? (cx|write_error::output_failure), false : true);
-                }
+                template <typename X, typename O, typename Cx, typename ...P>
+                    inline auto poke(O& o, Cx&, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
+                        return push(o, p...), true;
+                    }
+                template <typename X, typename O, typename Cx, typename ...P>
+                    inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
+                        return push(o, p...), (!o.good() ? (cx|write_error::output_failure), false : true);
+                    }
+                template <typename X, typename O, typename Cx, typename ...P>
+                    inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t< has_bool<O>::value, bool> {
+                        return push(o, p...), (!o ? (cx|write_error::output_failure), false : true);
+                    }
 
 #           undef HAS_METH_DEF
 

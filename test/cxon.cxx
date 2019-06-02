@@ -2495,34 +2495,49 @@ TEST_BEG(cxon::CXON<>) // errors
 TEST_END()
 
 TEST_BEG(cxon::CXON<>) // pretty
-    {   using map = std::map<std::string, std::vector<int>>;
-        char const p[] =
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        char const s0[] =
             "{\n"
-            "\teven: {\n"
-            "\t\t2,\n"
-            "\t\t4,\n"
-            "\t\t6\n"
-            "\t},\n"
-            "\todd: {\n"
-            "\t\t1,\n"
-            "\t\t3,\n"
-            "\t\t5\n"
-            "\t}\n"
+            "  even: {\n"
+            "    2,\n"
+            "    4,\n"
+            "    6\n"
+            "  },\n"
+            "  odd: {\n"
+            "    1,\n"
+            "    3,\n"
+            "    5\n"
+            "  }\n"
             "}"
         ;
-        std::string s;
-            cxon::to_chars<XXON>(cxon::make_indenter<XXON>(s), map{{"even", {2, 4, 6}}, {"odd", {1, 3, 5}}});
-        TEST_CHECK(s == p);
+        std::string s1;
+            cxon::to_chars<XXON>(cxon::make_indenter<XXON>(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
     }
-    {   char const p[] =
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        std::string s1;
+            cxon::to_chars<XXON>(cxon::make_indenter(s1), m);
+        std::string const s0 =
+            cxon::pretty<XXON>(s1);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl ah", "blah"} };
+        char const s0[] =
             "{\n"
-            "\tala: \"ba\\\"la\",\n"
-            "\tbl\\ ah: \"blah\"\n"
+            "  ala: \"ba\\\"la\",\n"
+            "  bl\\ ah: \"blah\"\n"
             "}"
         ;
-        std::string s = "{ala: \"ba\\\"la\", bl\\ ah: \"blah\"}";
-            s = cxon::pretty<XXON>(s);
-        TEST_CHECK(s == p);
+        std::string s1;
+            cxon::to_chars<XXON>(cxon::make_indenter<XXON>(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl ah", "blah"} };
+        std::string s1;
+            cxon::to_chars<XXON>(cxon::make_indenter(s1), m);
+        std::string const s0 =
+            cxon::pretty<XXON>(s1);
+        TEST_CHECK(s1 == s0);
     }
 TEST_END()
 
