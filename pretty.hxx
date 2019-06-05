@@ -24,10 +24,14 @@ namespace cxon { // interface
     template <typename X = JSON<>, typename FwIt>
         constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indent_iterator<X, io::output_iterator<FwIt>>;
 
-    template <typename X = JSON<>, typename R = std::string, typename InIt>
-        inline auto pretty(InIt b, InIt e, unsigned tab = 1, char pad = '\t')       -> enable_if_t<is_back_insertable<R>::value, R>;
-    template <typename X = JSON<>, typename R = std::string, typename Insertable>
-        inline auto pretty(const Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<R>::value, R>;
+    template <typename X = JSON<>, typename OutIt, typename InIt>
+        inline auto pretty(OutIt o, InIt b, InIt e, unsigned tab = 1, char pad = '\t')      -> enable_if_t<is_output_iterator<OutIt>::value, void>;
+    template <typename X = JSON<>, typename OutIt, typename Iterable>
+        inline auto pretty(OutIt o, const Iterable& i, unsigned tab = 1, char pad = '\t')   -> enable_if_t<is_output_iterator<OutIt>::value, void>;
+    template <typename X = JSON<>, typename Result = std::string, typename InIt>
+        inline auto pretty(InIt b, InIt e, unsigned tab = 1, char pad = '\t')               -> enable_if_t<is_back_insertable<Result>::value, Result>;
+    template <typename X = JSON<>, typename Result = std::string, typename Iterable>
+        inline auto pretty(const Iterable& i, unsigned tab = 1, char pad = '\t')            -> enable_if_t<is_back_insertable<Result>::value, Result>;
 
 }
 
@@ -164,6 +168,15 @@ namespace cxon {
             return indent_iterator<X, O>{io::make_output_iterator(b, e), tab, pad};
         }
 
+    template <typename X, typename OI, typename II>
+        inline auto pretty(OI o, II b, II e, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, void> {
+            auto i = make_indenter<X>(o, tab, pad);
+            for ( ; b != e; ++b) *i = *b;
+        }
+    template <typename X, typename OI, typename I>
+        inline auto pretty(OI o, const I& i, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, void> {
+            pretty<X>(o, std::begin(i), std::end(i), tab, pad);
+        }
     template <typename X, typename R, typename II>
         inline auto pretty(II b, II e, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
             R r;
@@ -171,8 +184,8 @@ namespace cxon {
                 for ( ; b != e; ++b) *i = *b;
             return r;
         }
-    template <typename X, typename R, typename Insertable>
-        inline auto pretty(const Insertable& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
+    template <typename X, typename R, typename I>
+        inline auto pretty(const I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
             return pretty<X, R>(std::begin(i), std::end(i), tab, pad);
         }
 
