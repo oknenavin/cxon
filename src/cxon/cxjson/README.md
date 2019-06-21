@@ -7,7 +7,7 @@
 --------------------------------------------------------------------------------
 #### Contents
 - [Introduction](#introduction)
-- [`cxjson::basic_node`](#cxjson-basic_node)
+- [`cxjson::basic_node`](#basic_node)
 - [`CXON` Integration](#cxon-integration)
 
 
@@ -136,9 +136,9 @@ The resulting `JSON` is (*note, that the default number type is `double`*):
 
 
 --------------------------------------------------------------------------------
-#### `cxjson::basic_node`
+#### `basic_node`
 
-*Defined in header [cxjson.hxx](cxjson.hxx)*
+*Defined in header [`cxjson/cxjson.hxx`](cxjson.hxx)*
 
 ``` c++
 namespace cxjson {
@@ -432,7 +432,7 @@ bool operator != (const basic_node& n) const; (2)
 --------------------------------------------------------------------------------
 #### `CXON` Integration
 
-`cxjson::basic_node` can be serialized as any other type.  
+`basic_node` can be serialized as any other type.  
 `CXJSON` defines the following in addition:
 - own error conditions
 

@@ -6,7 +6,7 @@
 
 --------------------------------------------------------------------------------
 #### Contents
-- [CXON](../src/cxon/README.md)
+- [`CXON`](../src/cxon/README.md)
   - [Introduction](../src/cxon/README.md#introduction)
   - [Interface](../src/cxon/README.md#interface)
   - [Implementation bridge](../src/cxon/README.md#implementation-bridge)
@@ -14,9 +14,9 @@
     - [Format traits](../src/cxon/README.md#format-traits)
     - [Context](../src/cxon/README.md#context)
   - [Example (`JSON-RPC`)](../src/cxon/README.md#example-json-rpc)
-- [CXJSON](../src/cxon/cxjson/README.md)
+- [`CXJSON`](../src/cxon/cxjson/README.md)
   - [Introduction](../src/cxon/cxjson/README.md#introduction)
-  - [`cxjson::basic_node`](../src/cxon/cxjson/README.md#cxjson-basic_node)
+  - [`cxjson::basic_node`](../src/cxon/cxjson/README.md#basic_node)
   - [`CXON` Integration](../src/cxon/cxjson/README.md#cxon-integration)
 
 
