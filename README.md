@@ -8,13 +8,14 @@
 
 [![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.org/oknenavin/cxon)
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
+[![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
+[![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)
 
 --------------------------------------------------------------------------------
 
 
-> `CXON` is a _simple_, non-intrusive `C++` serialization library  
+> `CXON` is a simple, non-intrusive `C++` serialization library  
 > `CXON`'s default serialization format is `UTF-8` encoded `JSON`  
-> `CXON` makes it trivial to bind `JSON` to arbitrary `C++` types  
 > `CXON` is `C++11` compliant, self contained, header-only library  
 > `CXON` core library consist of one header
 
@@ -25,11 +26,10 @@
 `CXON` defines and implements an interface, which is a generalization of `C++17`'s
 [`<charconv>`][cpp-charconv] interface.
 
-Majority of the `JSON` libraries implement some kind of polymorphic type to represent arbitrary
-`JSON` - many call it `DOM`, `DOM`-like, etc. refering to popular `XML` libraries.  
-In contrast, `CXON` binds `JSON` to any suitable `C++` type.  
-*[`CXJSON`](cxjson/README.md), which is part of `CXON`, is an implementation of such a polymorphic
-type, and also an example of how `CXON` can be used.*
+Most libraries implement a polymorphic type to represent arbitrary `JSON` - many call it `DOM`,
+`DOM`-like, etc.. In contrast, `CXON` binds `JSON` to any suitable `C++` type, though
+[`CXJSON`](cxjson/README.md), which is part of `CXON`, is an implementation of such a polymorphic
+type, and also an example of how `CXON` can be used.
 
 `CXON` implements good part of `C++`'s fundamental and standard library types including:
 
@@ -44,7 +44,7 @@ type, and also an example of how `CXON` can be used.*
     - [`std::basic_string`][cpp-bstr]
     - [`std::tuple`][cpp-tuple]
     - [`std::pair`][cpp-pair]
-    - [containers library][cpp-container] - in its entirety
+    - [containers library][cpp-container]
 
 `CXON` can easily be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](MANUAL.md#implementation-bridge) for details).
@@ -163,6 +163,8 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-win]: .rc/windows.png
 [img-bld]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
+[img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 [GitHub]: https://github.com/oknenavin/cxon
