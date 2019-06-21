@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "../cxon.hxx"
-#include "../pretty.hxx"
+#include "cxon/cxon.hxx"
+#include "cxon/pretty.hxx"
 
 #include <cstdio>
 

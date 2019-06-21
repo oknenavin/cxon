@@ -28,7 +28,7 @@
 
 Most libraries implement a polymorphic type to represent arbitrary `JSON` - many call it `DOM`,
 `DOM`-like, etc.. In contrast, `CXON` binds `JSON` to any suitable `C++` type, though
-[`CXJSON`](cxjson/README.md), which is part of `CXON`, is an implementation of such a polymorphic
+[`CXJSON`](src/cxon/cxjson/README.md), which is part of `CXON`, is an implementation of such a polymorphic
 type, and also an example of how `CXON` can be used.
 
 `CXON` implements good part of `C++`'s fundamental and standard library types including:
@@ -47,7 +47,7 @@ type, and also an example of how `CXON` can be used.
     - [containers library][cpp-container]
 
 `CXON` can easily be extended for arbitrary types, using intrusive and non-intrusive methods
-(see the [`MANUAL`](MANUAL.md#implementation-bridge) for details).
+(see the [`MANUAL`](src/cxon/MANUAL.md#implementation-bridge) for details).
 
 ###### Example
 
@@ -111,7 +111,7 @@ In both cases `my_type` is bound to the same `JSON`:
 }
 ```
 
-*Somewhat more meaningful example can be found here [`JSON-RPC`](MANUAL.md#example-json-rpc).*
+*Somewhat more meaningful example can be found here [`JSON-RPC`](src/cxon/MANUAL.md#example-json-rpc).*
 
 #### Compilation
 
@@ -138,7 +138,7 @@ $ make CXX=clang++ test
 
 #### Documentation
 
-See the [MANUAL](MANUAL.md).
+See the [MANUAL](src/cxon/MANUAL.md).
 
 #### Contributing
 
