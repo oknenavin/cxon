@@ -15,7 +15,7 @@ if (MSVC)
 endif ()
 
 
-include_directories (..)
+include_directories (../src)
 
 add_executable (
     cxon cxon.cxx
@@ -28,8 +28,7 @@ set_target_properties (
 )
 
 add_executable (
-    cxjson
-    cxjson.cxx
+    cxjson cxjson.cxx
 )
 set_target_properties (
     cxjson PROPERTIES

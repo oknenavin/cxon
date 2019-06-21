@@ -1,6 +1,8 @@
 SHELL = /bin/sh
 
 out = .out
+src = ../src/cxon
+dat = ../data
 
 test: test-cxon test-cxjson
 
@@ -10,23 +12,23 @@ test-cxon: $(out)/cxon-test
 test-cxjson: $(out)/cxjson-test
 	@(cd $(out) && ../$<)
 	@(cd $(out) && ../$< \
-                            pass    @../data/set.1-pass.in \
-                                    @../data/set.2-pass.in \
-                            fail    @../data/set.1-fail.in \
-                                    @../data/set.2-fail.in)
+                            pass    @$(dat)/set.1-pass.in \
+                                    @$(dat)/set.2-pass.in \
+                            fail    @$(dat)/set.1-fail.in \
+                                    @$(dat)/set.2-fail.in)
 	@(cd $(out) && ../$< \
-                            diff    @../data/set.3-diff.in \
-                                    @../data/set.4-diff.in \
-                                    @../data/set.5-diff.in \
+                            diff    @$(dat)/set.3-diff.in \
+                                    @$(dat)/set.4-diff.in \
+                                    @$(dat)/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
-$(out)/cxon-test: cxon.cxx ../cxon.hxx ../pretty.hxx
+$(out)/cxon-test: cxon.cxx $(src)/cxon.hxx $(src)/pretty.hxx
 	@mkdir -p $(out)
-	$(CXX) -I.. -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
 
-$(out)/cxjson-test: cxjson.cxx ../cxon.hxx ../cxjson/cxjson.hxx ../cxjson/pretty.hxx
+$(out)/cxjson-test: cxjson.cxx $(src)/cxon.hxx $(src)/cxjson/cxjson.hxx $(src)/cxjson/pretty.hxx
 	@mkdir -p $(out)
-	$(CXX) -I.. -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
     
 clean:
 	@rm -fr $(out)
