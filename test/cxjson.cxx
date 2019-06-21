@@ -18,7 +18,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using node = cxjson::ordered_node;
-using JSON = cxon::JSON<>;
 
 struct test_time {
     double base = 0;
@@ -519,12 +518,11 @@ int main(int argc, char *argv[]) {
                 }
             node result;
             auto const e = std::istreambuf_iterator<char>();
-            auto r = cxon::from_chars(result, std::istreambuf_iterator<char>(is), e);
-            if (r) {
+            if (auto r = cxon::from_chars(result, std::istreambuf_iterator<char>(is), e)) {
                 cxon::io::consume<cxon::JSON<>>(r.end, e);
-                if (r.end != e) continue; // trailing chars
-                std::string tluser; cxon::to_chars(tluser, result);
-                ++err, c.error += "must fail: '" + c.source + "' (passed as '" + tluser + "')";
+                    if (r.end != e) continue; // trailing chars
+                std::string pass; cxon::to_chars(pass, result);
+                ++err, c.error += "must fail: '" + c.source + "' (passed as '" + pass + "')";
             }
         }
         size_t fc = 0;
@@ -554,15 +552,16 @@ int main(int argc, char *argv[]) {
                     }
                 json.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
             }
-            node result;
-            {   // from
+            {   // pretty
                 std::ofstream os(name(c.source) + ".0.json", std::ofstream::binary);
                     if (!os) {
                         ++err, c.error = name(c.source) + ".0.json" + ": cannot be opened";
                         continue;
                     }
-                auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
-                    for (auto c : json)  *o = c;
+                cxon::pretty(std::ostreambuf_iterator<char>(os), json);
+            }
+            node result;
+            {   // from
                 auto const r = cxon::from_chars(result, json);
                     if (!r) {
                         ++err, c.error = format_error(r, json.cbegin());
@@ -575,15 +574,10 @@ int main(int argc, char *argv[]) {
                         ++err, c.error = name(c.source) + ".1.json" + "cannot be opened";
                         continue;
                     }
-                auto o = cxon::make_indenter(std::ostreambuf_iterator<char>(os));
-                auto const w = cxon::to_chars(o, result);
+                auto const w = cxon::to_chars(cxon::make_indenter(std::ostreambuf_iterator<char>(os)), result);
                     if (!w) {
-                        //++err, c.error = format_error(w, o);
                         ++err, c.error += w.ec.category().name(),
                         c.error += ": " + w.ec.message();
-                        continue;
-                        CXON_ASSERT(w, "unexpected");
-                        fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str()), fflush(stdout);
                     }
             }
         }
