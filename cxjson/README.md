@@ -8,23 +8,28 @@
 
 [![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.org/oknenavin/cxon)
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
+[![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
+[![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)
 
 --------------------------------------------------------------------------------
 
 
-> `CXJSON` is a polymorphic `C++` type for binding of an arbitrary `JSON`  
+> `CXJSON` is a polymorphic `C++` type for binding of arbitrary `JSON`  
 > `CXJSON` is using [`CXON`](../README.md) for serialization
 
 #### Introduction
 
 `CXJSON` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
-  - `object` - [`std::map`][cpp-map]
-  - `array` - [`std::vector`][cpp-vect]
-  - `string` - [`std::string`][cpp-bstr]
-  - `number` - [`double`][cpp-types]
-  - `true|false` - [`bool`][cpp-types]
-  - `null` - [`std::nullptr_t`][cpp-types]
+
+type         | default binding
+-------------|------------------------------
+`object`     | [`std::map`][cpp-map]
+`array`      | [`std::vector`][cpp-vect]
+`string`     | [`std::string`][cpp-bstr]
+`number`     | [`double`][cpp-types]
+`true|false` | [`bool`][cpp-types]
+`null`       | [`std::nullptr_t`][cpp-types]
 
 ###### Example 1
 
@@ -165,6 +170,8 @@ Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more informat
 [img-win]: ../.rc/windows.png
 [img-bld]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
+[img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [GitHub]: https://github.com/oknenavin/cxon
 [cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
 [cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
