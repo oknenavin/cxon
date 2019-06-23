@@ -397,7 +397,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
                 ...
             }
         template <typename X, typename OutIt, typename Cx>
-            bool write_value(OutIt& o, Cx& cx) {
+            bool write_value(OutIt& o, Cx& cx) const {
                 ...
             }
     };
