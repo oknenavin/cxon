@@ -155,7 +155,7 @@ Type            | Definition
 
 ###### Template parameters
 
-  - `Traits` - traits class specifying the actual types of each `JSON` value type
+  - [`Traits`](#traits) - traits class specifying the actual types of each `JSON` value type
 
 ###### Non-member types
 
@@ -196,6 +196,25 @@ Member type |Definition
 - `get_if` - returns value pointer if node's value type matches
 
 Same as the member counterparts with single `basic_node&` argument.
+
+
+--------------------------------------------------------------------------------
+##### Traits
+
+###### Example
+
+```c++
+struct traits : cxjson::node_traits {
+    using                               string_type = std::u16string;
+    template <class T> using            array_type = std::list<T>;
+    template <class K, class V> using   object_type = std::multimap<K, V>;
+};
+...
+using node = cxjson::basic_node<traits>;
+node n;
+cxon::from_chars(n, "{\"k\": 42, \"k\": 43}");
+assert(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
+```
 
 --------------------------------------------------------------------------------
 ##### Constructors
