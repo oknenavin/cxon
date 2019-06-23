@@ -143,6 +143,12 @@ static bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& ti
     return true;
 }
 
+struct my_traits : cxjson::node_traits {
+    using                               string_type = std::u16string;
+    template <class T> using            array_type = std::list<T>;
+    template <class K, class V> using   object_type = std::multimap<K, V>;
+};
+
 struct my_type {
     std::vector<int> even;
     std::list<int> odd;
@@ -159,6 +165,12 @@ static unsigned self() {
 #   define CHECK(c) ++a_; if (!(c))\
         fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr), ++f_;\
         CXON_ASSERT((c), "check failed");
+    {   // custom type binding + equal keys
+        using node = cxjson::basic_node<my_traits>;
+        node n;
+        cxon::from_chars(n, "{\"k\": 42, \"k\": 43}");
+        CHECK(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
+    }
     {   //using node = cxjson::node;
 
         char const s[] = "{\"array0\":[{\"1\":1},{\"2\":2}],\"array1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"number\":4}";

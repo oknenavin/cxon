@@ -9,7 +9,7 @@
 [![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.org/oknenavin/cxon)
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 [![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
-[![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)
+<!--[![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)-->
 
 --------------------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ $ make CXX=clang++ test
 
 #### Documentation
 
-See the [MANUAL](src/cxon/README.md).
+See the [MANUAL](doc/README.md).
 
 #### Contributing
 
@@ -155,7 +155,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
-[img-lng]: https://img.shields.io/badge/language-C++11-608060.svg?style=plastic&logo=C%2B%2B
+[img-lng]: https://img.shields.io/badge/language-C++11/17-608060.svg?style=plastic&logo=C%2B%2B
 [img-fmt]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
 [img-lnx]: .rc/linux.png
