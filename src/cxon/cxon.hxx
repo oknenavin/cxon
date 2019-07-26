@@ -1111,15 +1111,15 @@ namespace cxon { namespace bits { // <charconv>
                     CXON_ASSERT(base == 2 || base == 8 || base == 10 || base == 16, "unsupported base");
                         if (is_sign_invalid<T>(*first)) return { first, errc::invalid_argument };
                     char* end;
-                    errno = 0, value = clamp<T>(convert(first, &end, base));
-                    return { end, end != first ? errno != ERANGE ? errc{} : errc::result_out_of_range : errc::invalid_argument };
+                    errno = 0; auto const v = clamp<T>(convert(first, &end, base));
+                    return { end, end != first ? errno != ERANGE ? (value = v, errc{}) : errc::result_out_of_range : errc::invalid_argument };
                 }
             template <typename T, typename Cv>
                 inline from_chars_result number_from_chars(const char* first, const char*, Cv convert, T& value, chars_format) {
                         if (is_sign_invalid<T>(*first)) return { first, errc::invalid_argument };
                     char* end;
-                    value = convert(first, &end);
-                    return { end, end == first ? errc::invalid_argument : errc() };
+                    errno = 0; auto const v = convert(first, &end);
+                    return { end, end != first ? errno != ERANGE ? (value = v, errc{}) : errc::result_out_of_range : errc::invalid_argument };
                 }
 
         }
@@ -1274,7 +1274,8 @@ namespace cxon { namespace bits { // <charconv>
                 -> enable_if_t< has_to_chars_p<T>::value, std::to_chars_result>
             {
 #               if defined(_MSC_VER) && _MSC_VER <= 1922
-                    return std::to_chars(f, l, t);
+                    auto const r = charconv::to_chars(f, l, t, precision);
+                    return { r.ptr, r.ec };
 #               else
                     return std::to_chars(f, l, t, general<std::chars_format>::value, precision);
 #               endif

@@ -903,10 +903,10 @@ namespace special {
 TEST_BEG(cxon::CXON<>) // special numbers
     using namespace special;
     // float
-        R_TEST( -inf<float>(), omin<float>());
+        R_TEST( -inf<float>(), omin<float>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST( -inf<float>(), "-inf");
         W_TEST("-inf", -inf<float>());
-        R_TEST(  inf<float>(), omax<float>());
+        R_TEST(  inf<float>(), omax<float>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST(  inf<float>(), "inf");
         R_TEST(  inf<float>(), "+inf", cxon::read_error::floating_point_invalid, 0);
         W_TEST( "inf",  inf<float>());
@@ -923,10 +923,10 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", float(0.0 * -inf<float>()));
         W_TEST( "nan", inf<float>() + -inf<float>());
     // double
-        R_TEST( -inf<double>(), omin<double>());
+        R_TEST( -inf<double>(), omin<double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST( -inf<double>(), "-inf");
         W_TEST("-inf", -inf<double>());
-        R_TEST(  inf<double>(), omax<double>());
+        R_TEST(  inf<double>(), omax<double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST(  inf<double>(), "inf");
         R_TEST(  inf<double>(), "+inf", cxon::read_error::floating_point_invalid, 0);
         W_TEST( "inf",  inf<double>());
@@ -944,10 +944,10 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", inf<double>() + -inf<double>());
     // long double
 #   if !defined(__clang__) // some older versions (ex. 3.8) crash
-        R_TEST( -inf<long double>(), omin<long double>());
+        R_TEST( -inf<long double>(), omin<long double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST( -inf<long double>(), "-inf");
         W_TEST("-inf", -inf<long double>());
-        R_TEST(  inf<long double>(), omax<long double>());
+        R_TEST(  inf<long double>(), omax<long double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST(  inf<long double>(), "inf");
         R_TEST(  inf<long double>(), "+inf", cxon::read_error::floating_point_invalid, 0);
         W_TEST( "inf",  inf<long double>());
@@ -969,10 +969,10 @@ TEST_END()
 TEST_BEG(cxon::JSON<>) // special numbers
     using namespace special;
     // float
-        R_TEST( -inf<float>(), omin<float>());
+        R_TEST( -inf<float>(), omin<float>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST( -inf<float>(), QS("-inf"));
         W_TEST(QS("-inf"), -inf<float>());
-        R_TEST(  inf<float>(), omax<float>());
+        R_TEST(  inf<float>(), omax<float>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST(  inf<float>(), QS("inf"));
         R_TEST(  inf<float>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
         W_TEST(QS("inf"),  inf<float>());
@@ -989,10 +989,10 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), 0.0 * -inf<float>());
         W_TEST(QS("nan"), inf<float>() + -inf<float>());
     // double
-        R_TEST( -inf<double>(), omin<double>());
+        R_TEST( -inf<double>(), omin<double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST( -inf<double>(), QS("-inf"));
         W_TEST(QS("-inf"), -inf<double>());
-        R_TEST(  inf<double>(), omax<double>());
+        R_TEST(  inf<double>(), omax<double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST(  inf<double>(), QS("inf"));
         R_TEST(  inf<double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
         W_TEST(QS("inf"),  inf<double>());
@@ -1010,10 +1010,10 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), inf<double>() + -inf<double>());
     // long double
 #   if !defined(__clang__) // some older versions (ex. 3.8) crash
-        R_TEST( -inf<long double>(), omin<long double>());
+        R_TEST( -inf<long double>(), omin<long double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST( -inf<long double>(), QS("-inf"));
         W_TEST(QS("-inf"), -inf<long double>());
-        R_TEST(  inf<long double>(), omax<long double>());
+        R_TEST(  inf<long double>(), omax<long double>(), cxon::read_error::floating_point_invalid, 0);
         R_TEST(  inf<long double>(), QS("inf"));
         R_TEST(  inf<long double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
         W_TEST(QS("inf"),  inf<long double>());
