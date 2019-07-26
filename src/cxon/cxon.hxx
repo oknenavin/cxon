@@ -26,6 +26,13 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#if __cplusplus >= 201703L
+#   if defined(__has_include) && __has_include(<optional>)
+#       include <optional>
+#       define CXON_HAS_OPTIONAL
+#   endif
+#endif
+
 #include <utility>
 #include <algorithm>
 
@@ -33,13 +40,13 @@
 #include <type_traits>
 #include <system_error>
 
-#if defined(__has_include) && __has_include(<charconv>)
-#   if __cplusplus >= 201703L
+#if __cplusplus >= 201703L
+#   if defined(__has_include) && __has_include(<charconv>)
 #       include <charconv>
 #       ifdef __GLIBCXX__ // partial
             namespace std { enum class chars_format; }
 #       endif
-#       define HAVE_CHARCONV
+#       define CXON_HAS_CHARCONV
 #   endif
 #endif
 #include <cerrno>
@@ -48,14 +55,6 @@
 #include <cmath> // isfinite
 
 #include <cstring> // strcmp
-
-#if defined(__GNUC__) || defined(__clang__)
-#   define CXON_FORCE_INLINE __attribute__((always_inline)) inline
-#elif defined(_MSC_VER)
-#   define CXON_FORCE_INLINE __forceinline
-#else
-#   define CXON_FORCE_INLINE inline
-#endif
 
 #ifndef NDEBUG
 #   if !defined(_MSC_VER)
@@ -594,6 +593,14 @@ namespace cxon { // interface implementation
     template <typename II>
         constexpr auto continuous_range(II b, II e) -> enable_if_t<!is_continuous_iterator<II>::value, std::pair<II, II>>   { return std::make_pair(b, e); }
 
+#   if defined(__GNUC__) || defined(__clang__)
+#       define CXON_FORCE_INLINE __attribute__((always_inline)) inline
+#   elif defined(_MSC_VER)
+#       define CXON_FORCE_INLINE __forceinline
+#   else
+#       define CXON_FORCE_INLINE inline
+#   endif
+
     // read
 
     namespace interface {
@@ -662,6 +669,8 @@ namespace cxon { // interface implementation
         inline auto to_chars(FI b, FI e, const T& t, CxPs... p) -> to_chars_result<FI> {
             return interface::to_chars<X>(b, e, t, std::forward<CxPs>(p)...);
         }
+
+#   undef CXON_FORCE_INLINE
 
 }   // cxon interface implementation
 
@@ -1218,7 +1227,7 @@ namespace cxon { namespace bits { // <charconv>
 
     }   // charconv
 
-#   ifdef HAVE_CHARCONV
+#   ifdef CXON_HAS_CHARCONV
 #       define HAS_FUNC_DEF(name, R, F)\
             template <typename, typename = void>\
                 struct has_##name : std::false_type {};\
@@ -2550,6 +2559,21 @@ namespace cxon { // read, library types
         CXON_MAP(std::unordered_multimap)
 #   undef CXON_MAP
 
+#   ifdef CXON_HAS_OPTIONAL
+        template <typename X, typename T>
+            struct read<X, std::optional<T>> {
+                template <typename II, typename Cx>
+                    static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
+                        if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
+                            II const o = i;
+                                if (!io::consume<X>(X::id::nil, i, e)) return cx|read_error::unexpected, bits::rewind(i, o), false;
+                            return true;
+                        }
+                        return read_value<X>(t.emplace(), i, e, cx);
+                    }
+            };
+#   endif
+
 }   // cxon read, library types
 
 namespace cxon { namespace bits { // fundamental type encoding
@@ -3195,6 +3219,19 @@ namespace cxon { // write, library types
         CXON_MAP(std::unordered_map)
         CXON_MAP(std::unordered_multimap)
 #   undef CXON_MAP
+
+#   ifdef CXON_HAS_OPTIONAL
+        template <typename X, typename T>
+            struct write<X, std::optional<T>> {
+                template <typename O, typename Cx>
+                    static bool value(O& o, const std::optional<T>& t, Cx& cx) {
+                        return t.has_value() ?
+                            write_value<X>(o, t.value(), cx) :
+                            io::poke<X>(o, X::id::nil, cx)
+                        ;
+                    }
+            };
+#   endif
 
 }   // write, library types
 
