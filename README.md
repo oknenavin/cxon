@@ -45,6 +45,7 @@ type, and also an example of how `CXON` can be used.
     - [`std::tuple`][cpp-tuple]
     - [`std::pair`][cpp-pair]
     - [containers library][cpp-container]
+    - [`std::optional`][cpp-opt]
 
 `CXON` can easily be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
@@ -175,3 +176,4 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[cpp-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327

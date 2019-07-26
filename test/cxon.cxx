@@ -1929,6 +1929,17 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
+TEST_BEG(cxon::CXON<>) // optional
+    using namespace std;
+#   ifdef CXON_HAS_OPTIONAL
+        R_TEST(optional<int>(42), "42");
+        W_TEST("42", optional<int>(42));
+        R_TEST(optional<int>(), "null");
+        W_TEST("null", optional<int>());
+#   endif
+TEST_END()
+
+
 enum Enum1 { one, two, three, four };
 
 CXON_ENUM(Enum1,
