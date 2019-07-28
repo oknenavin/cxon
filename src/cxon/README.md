@@ -43,7 +43,8 @@ types is as follow:
               [std::multimap][cpp-mmap], [std:: unordered_multimap][cpp-ummap]) ->
         `JSON` `object` `(1)`
       - others -> `JSON` `array`
-    - [`std::optional`][cpp-opt] -> `JSON` `object`
+    - [`std::optional`][cpp-opt] -> underlying type
+    - [`std::variant`][cpp-var] -> `JSON` `object`
 
 *`(1)` [`ECMA-404(6)`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
 specify this about object keys:*
@@ -891,5 +892,6 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
 [cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
 [cpp-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
+[cpp-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
 [cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
 [cpp-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237

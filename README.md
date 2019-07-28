@@ -46,6 +46,7 @@ type, and also an example of how `CXON` can be used.
     - [`std::pair`][cpp-pair]
     - [containers library][cpp-container]
     - [`std::optional`][cpp-opt]
+    - [`std::variant`][cpp-var]
 
 `CXON` can easily be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
@@ -177,3 +178,4 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
 [cpp-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
+[cpp-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919

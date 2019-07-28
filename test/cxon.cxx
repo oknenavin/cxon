@@ -1940,6 +1940,21 @@ TEST_BEG(cxon::CXON<>) // optional
 TEST_END()
 
 
+TEST_BEG(cxon::CXON<>) // variant
+    using namespace std;
+#   ifdef CXON_HAS_VARIANT
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), "{0:1}");
+        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), "{1:0}");
+        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), "{2:0}", cxon::read_error::unexpected, 1);
+        W_TEST("{0:1}", variant<int, double>(1));
+        W_TEST("{1:0}", variant<int, double>(in_place_index_t<1>(), 0));
+        R_TEST(variant<monostate, int>(), "{0:null}");
+        R_TEST(variant<monostate, int>(), "{0:1}", cxon::read_error::unexpected, 3);
+        W_TEST("{0:null}", variant<monostate, int>());
+#   endif
+TEST_END()
+
+
 enum Enum1 { one, two, three, four };
 
 CXON_ENUM(Enum1,
