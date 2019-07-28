@@ -33,6 +33,13 @@
 #   endif
 #endif
 
+#if __cplusplus >= 201703L
+#   if defined(__has_include) && __has_include(<variant>)
+#       include <variant>
+#       define CXON_HAS_VARIANT
+#   endif
+#endif
+
 #include <utility>
 #include <algorithm>
 
@@ -2574,6 +2581,53 @@ namespace cxon { // read, library types
             };
 #   endif
 
+#   ifdef CXON_HAS_VARIANT
+        namespace bits {
+
+            template <typename X, typename V, size_t Ndx, typename II, typename Cx>
+                static bool variant_read(V& t, II& i, II e, Cx& cx) {
+                    V v = V(std::in_place_index_t<Ndx>());
+                    return read_value<X>(std::get<Ndx>(v), i, e, cx) ?
+                        (t = std::move(v), true) :
+                        false
+                    ;
+                }
+
+            template <typename X, typename V, typename II, typename Cx, typename Ndx = std::make_index_sequence<std::variant_size<V>::value>>
+                struct variant;
+            template <typename X, typename V, typename II, typename Cx, size_t ...Ndx>
+                struct variant<X, V, II, Cx, std::index_sequence<Ndx...>> {
+                    static bool read(V& t, II& i, II e, Cx& cx) {
+                        static constexpr auto N = std::index_sequence<Ndx...>::size();
+                            using reader_t = bool(*)(V&, II&, II, Cx&);
+                        static constexpr reader_t reader[N] = { &variant_read<X, V, Ndx, II, Cx>... };
+                        II const o = i;
+                            size_t ndx; if (!read_key<X>(ndx, i, e, cx)) return false;
+                                if (ndx >= N) return cx|read_error::unexpected, bits::rewind(i, o), false;
+                        return reader[ndx](t, i, e, cx);
+                    }
+                };
+
+        }
+
+        template <typename X, typename II, typename Cx>
+            inline bool read_value(std::monostate&, II& i, II e, Cx& cx) {
+                II const o = i;
+                return !io::consume<X>(X::id::nil, i, e) ? (cx|read_error::unexpected, bits::rewind(i, o), false) : true;
+            }
+
+        template <typename X, typename ...T>
+            struct read<X, std::variant<T...>> {
+                template <typename II, typename Cx>
+                    static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
+                        if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
+                        return  bits::variant<X, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
+                                io::consume<X>(X::map::end, i, e, cx)
+                        ;
+                    }
+            };
+#   endif
+
 }   // cxon read, library types
 
 namespace cxon { namespace bits { // fundamental type encoding
@@ -3228,6 +3282,25 @@ namespace cxon { // write, library types
                         return t.has_value() ?
                             write_value<X>(o, t.value(), cx) :
                             io::poke<X>(o, X::id::nil, cx)
+                        ;
+                    }
+            };
+#   endif
+
+#   ifdef CXON_HAS_VARIANT
+        template <typename X, typename O, typename Cx>
+            inline bool write_value(O& o, std::monostate, Cx& cx) {
+                return io::poke<X>(o, X::id::nil, cx);
+            }
+
+        template <typename X, typename ...T>
+            struct write<X, std::variant<T...>> {
+                template <typename O, typename Cx>
+                    static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
+                        return  io::poke(o, X::map::beg) &&
+                                    write_key<X>(o, t.index(), cx) &&
+                                    std::visit([&](auto&& v) { return write_value<X>(o, v, cx); }, t) &&
+                                io::poke(o, X::map::end)
                         ;
                     }
             };
