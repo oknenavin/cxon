@@ -355,6 +355,7 @@ namespace cxon { // contexts
                 auto operator |(E e) noexcept -> enable_if_t<std::is_enum<E>::value, context&> {
                     return ec = e, *this;
                 }
+            operator bool() const noexcept { return !ec; }
         };
 
     template <typename ...P>
@@ -2573,8 +2574,7 @@ namespace cxon { // read, library types
                     static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
                         if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
                             II const o = i;
-                                if (!io::consume<X>(X::id::nil, i, e)) return cx|read_error::unexpected, bits::rewind(i, o), false;
-                            return true;
+                            return io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected);
                         }
                         return read_value<X>(t.emplace(), i, e, cx);
                     }
@@ -2586,25 +2586,24 @@ namespace cxon { // read, library types
 
             template <typename X, typename V, size_t Ndx, typename II, typename Cx>
                 static bool variant_read(V& t, II& i, II e, Cx& cx) {
-                    V v = V(std::in_place_index_t<Ndx>());
-                    return read_value<X>(std::get<Ndx>(v), i, e, cx) ?
-                        (t = std::move(v), true) :
-                        false
-                    ;
+                    V v{std::in_place_index_t<Ndx>()};
+                    return read_value<X>(std::get<Ndx>(v), i, e, cx) && (t = std::move(v), true);
                 }
 
             template <typename X, typename V, typename II, typename Cx, typename Ndx = std::make_index_sequence<std::variant_size<V>::value>>
                 struct variant;
             template <typename X, typename V, typename II, typename Cx, size_t ...Ndx>
                 struct variant<X, V, II, Cx, std::index_sequence<Ndx...>> {
-                    static bool read(V& t, II& i, II e, Cx& cx) {
-                        static constexpr auto N = std::index_sequence<Ndx...>::size();
-                            using reader_t = bool(*)(V&, II&, II, Cx&);
-                        static constexpr reader_t reader[N] = { &variant_read<X, V, Ndx, II, Cx>... };
+                    using reader_t = bool(*)(V&, II&, II, Cx&);
+                    static constexpr size_t cnt_ = std::index_sequence<Ndx...>::size();
+                    static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
+                    static bool index(size_t& n, II& i, II e, Cx& cx) {
                         II const o = i;
-                            size_t ndx; if (!read_key<X>(ndx, i, e, cx)) return false;
-                                if (ndx >= N) return cx|read_error::unexpected, bits::rewind(i, o), false;
-                        return reader[ndx](t, i, e, cx);
+                        return read_key<X>(n, i, e, cx) && (n < cnt_ || (bits::rewind(i, o), cx|read_error::unexpected));
+                    }
+                    static bool read(V& t, II& i, II e, Cx& cx) {
+                        size_t n;
+                        return index(n, i, e, cx) && rdr_[n](t, i, e, cx);
                     }
                 };
 
@@ -2613,15 +2612,15 @@ namespace cxon { // read, library types
         template <typename X, typename II, typename Cx>
             inline bool read_value(std::monostate&, II& i, II e, Cx& cx) {
                 II const o = i;
-                return !io::consume<X>(X::id::nil, i, e) ? (cx|read_error::unexpected, bits::rewind(i, o), false) : true;
+                return io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected);
             }
 
         template <typename X, typename ...T>
             struct read<X, std::variant<T...>> {
                 template <typename II, typename Cx>
                     static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
-                        if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
-                        return  bits::variant<X, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
+                        return  io::consume<X>(X::map::beg, i, e, cx) &&
+                                    bits::variant<X, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
                                 io::consume<X>(X::map::end, i, e, cx)
                         ;
                     }

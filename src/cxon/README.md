@@ -659,6 +659,10 @@ Member name |Type
     template <typename E>
         auto operator |(E e) noexcept;
     ```
+- `operator bool` - check if context is good (no error condition)
+    ``` c++
+    operator bool() const noexcept;
+    ```
 
 
 `ps`'s type is a tagged tuple with parameter types as tags. Concrete type is
