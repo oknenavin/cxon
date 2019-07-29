@@ -1,0 +1,47 @@
+// Copyright (c) 2017-2019 oknenavin.
+// Licensed under the MIT license. See LICENSE file in the library root for full license information.
+//
+// SPDX-License-Identifier: MIT
+
+#ifndef CXON_OPTIONAL_HXX_
+#define CXON_OPTIONAL_HXX_
+
+#if __cplusplus >= 201703L
+#   if defined(__has_include) && __has_include(<optional>)
+#       include <optional>
+#       define CXON_HAS_OPTIONAL
+#   endif
+#endif
+
+#ifdef CXON_HAS_OPTIONAL
+
+namespace cxon {
+
+    template <typename X, typename T>
+        struct read<X, std::optional<T>> {
+            template <typename II, typename Cx>
+                static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
+                    if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
+                        II const o = i;
+                        return io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected);
+                    }
+                    return read_value<X>(t.emplace(), i, e, cx);
+                }
+        };
+
+    template <typename X, typename T>
+        struct write<X, std::optional<T>> {
+            template <typename O, typename Cx>
+                static bool value(O& o, const std::optional<T>& t, Cx& cx) {
+                    return t.has_value() ?
+                        write_value<X>(o, t.value(), cx) :
+                        io::poke<X>(o, X::id::nil, cx)
+                    ;
+                }
+        };
+
+}   // cxon
+
+#endif // CXON_HAS_OPTIONAL
+
+#endif // CXON_OPTIONAL_HXX_

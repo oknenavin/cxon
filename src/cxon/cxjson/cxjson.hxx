@@ -5,7 +5,10 @@
 
 #ifndef CXJSON_CXJSON_HXX_
 #define CXJSON_CXJSON_HXX_
+
 #include "../cxon.hxx"
+#include "../vector.hxx"
+#include "../map.hxx"
 
 // interface //////////////////////////////////////////////////////////////////
 
