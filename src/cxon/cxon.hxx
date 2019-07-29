@@ -355,6 +355,7 @@ namespace cxon { // contexts
                 auto operator |(E e) noexcept -> enable_if_t<std::is_enum<E>::value, context&> {
                     return ec = e, *this;
                 }
+            operator bool() const noexcept { return !ec; }
         };
 
     template <typename ...P>
@@ -836,13 +837,12 @@ namespace cxon { // I/O
         template <typename X, typename II>
             inline bool consume(char c, II& i, II e) {
                 consume<X>(i, e);
-                return c == peek(i, e) ? (next(i, e), true) : false;
+                return c == peek(i, e) && (next(i, e), true);
             }
         template <typename X, typename II, typename Cx>
             inline bool consume(char c, II& i, II e, Cx& cx) {
                 consume<X>(i, e);
-                if (c == peek(i, e)) return next(i, e), true;
-                return cx|read_error::unexpected, false;
+                return (c == peek(i, e) && (next(i, e), true)) || (cx|read_error::unexpected);
             }
 
         template <typename X, typename II>
@@ -984,11 +984,11 @@ namespace cxon { // I/O
                     }
                 template <typename X, typename O, typename Cx, typename ...P>
                     inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
-                        return push(o, p...), (!o.good() ? (cx|write_error::output_failure), false : true);
+                        return push(o, p...), o.good() || (cx|write_error::output_failure);
                     }
                 template <typename X, typename O, typename Cx, typename ...P>
                     inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t< has_bool<O>::value, bool> {
-                        return push(o, p...), (!o ? (cx|write_error::output_failure), false : true);
+                        return push(o, p...), o || (cx|write_error::output_failure);
                     }
 
 #           undef HAS_METH_DEF
@@ -1047,7 +1047,7 @@ namespace cxon { // list read/write helpers
         template <typename X, typename Cr, typename II, typename Cx, typename EA>
             inline bool read(II& i, II e, Cx& cx, EA element_add) {
                 if (!io::consume<X>(Cr::beg, i, e, cx)) return false;
-                if ( io::consume<X>(Cr::end, i, e))      return true;
+                if ( io::consume<X>(Cr::end, i, e))     return true;
                 return bits::list_read<X, Cr>(i, e, element_add), !cx.ec && io::consume<X>(Cr::end, i, e, cx);
             }
 
@@ -1755,10 +1755,10 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32U)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
-                                if (b ==  0 || bits::from_chars(s, s + sizeof(s), t, b).ec != std::errc())
-                                    return cx|read_error::integral_invalid, rewind(i, o), false;
-                            return true;
+                            return  (b != -1                                                    || (rewind(i, o), cx|read_error::overflow)) &&
+                                    (b !=  0                                                    || (rewind(i, o), cx|read_error::integral_invalid)) &&
+                                    (bits::from_chars(s, s + sizeof(s), t, b).ec == std::errc() || (rewind(i, o), cx|read_error::integral_invalid))
+                            ;
                     }
                 // no optimization for const char* because of numeric bases (0, 0b, 0x)
             // floating point
@@ -1769,18 +1769,18 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
-                                if (b ==  0 || bits::from_chars(s, s + sizeof(s), t).ec != std::errc())
-                                    return cx|read_error::floating_point_invalid, rewind(i, o), false;
-                            return true;
+                            return  (b != -1                                                    || (rewind(i, o), cx|read_error::overflow)) &&
+                                    (b !=  0                                                    || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
+                                    (bits::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (rewind(i, o), cx|read_error::floating_point_invalid))
+                            ;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
                         -> enable_if_t<!std::is_integral<N>::value, bool>
                     {
                         auto const r = bits::from_chars(i, e, t);
-                            if (r.ec != std::errc()) return cx|read_error::floating_point_invalid, false;
-                        return i = r.ptr, true;
+                        return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
+                                (i = r.ptr, true);
                     }
         };
     template <typename X, typename T>
@@ -1794,10 +1794,10 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32U)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
-                                if (b ==  0 || bits::from_chars(s, s + sizeof(s), t).ec != std::errc())
-                                    return cx|read_error::integral_invalid, rewind(i, o), false;
-                            return true;
+                            return  (b != -1                                                    || (rewind(i, o), cx|read_error::overflow)) &&
+                                    (b !=  0                                                    || (rewind(i, o), cx|read_error::integral_invalid)) &&
+                                    (bits::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (rewind(i, o), cx|read_error::integral_invalid))
+                            ;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
@@ -1809,7 +1809,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                             auto const r = bits::from_chars(b, i, t);
                             if (r.ec == std::errc() && r.ptr == i) return true;
                         }
-                        return i = b, cx|read_error::integral_invalid, false;
+                        return i = b, cx|read_error::integral_invalid;
                     }
                 // not strict
                 template <typename N, typename Cx>
@@ -1817,8 +1817,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<std::is_integral<N>::value && !X::number::strict, bool>
                     {
                         auto const r = bits::from_chars(i, e, t);
-                            if (r.ec != std::errc()) return cx|read_error::integral_invalid, false;
-                        return i = r.ptr, true;
+                        return (r.ec == std::errc() && (i = r.ptr, true)) || (cx|read_error::integral_invalid);
                     }
             // floating point
                 template <typename N>
@@ -1852,10 +1851,10 @@ namespace cxon { namespace bits { // fundamental type decoding
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
-                                if (b == -1) return cx|read_error::overflow, rewind(i, o), false;
-                                if (b ==  0 || from_chars(s, s + sizeof(s), t).ec != std::errc())
-                                    return cx|read_error::floating_point_invalid, rewind(i, o), false;
-                            return true;
+                                return  (b != -1                                            || (rewind(i, o), cx|read_error::overflow)) &&
+                                        (b !=  0                                            || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
+                                        (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))
+                                ;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
@@ -1867,7 +1866,7 @@ namespace cxon { namespace bits { // fundamental type decoding
                             auto const r = from_chars(b, i, t);
                             if (r.ec == std::errc() && r.ptr == i) return true;
                         }
-                        return i = b, cx|read_error::floating_point_invalid, false;
+                        return i = b, cx|read_error::floating_point_invalid;
                     }
                 // not strict
                 template <typename N, typename Cx>
@@ -1875,8 +1874,9 @@ namespace cxon { namespace bits { // fundamental type decoding
                         -> enable_if_t<!std::is_integral<N>::value && !X::number::strict, bool>
                     {
                         auto const r = from_chars(i, e, t);
-                            if (r.ec != std::errc()) return cx|read_error::floating_point_invalid, false;
-                        return i = r.ptr, true;
+                        return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
+                                (i = r.ptr, true)
+                        ;
                     }
         };
 
@@ -1897,7 +1897,7 @@ namespace cxon { // read, fundamental types
                 char const c = (io::consume<X>(i, e), io::peek(i, e));
                      if (c == *X::id::pos && io::consume<X>(X::id::pos, i, e))  return t = true,  true;
                 else if (c == *X::id::neg && io::consume<X>(X::id::neg, i, e))  return t = false, true;
-            return cx|read_error::boolean_invalid, bits::rewind(i, o), false;
+            return bits::rewind(i, o), cx|read_error::boolean_invalid;
         }
 
     template <typename X, typename II, typename Cx>
@@ -1905,9 +1905,9 @@ namespace cxon { // read, fundamental types
             if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
                     char32_t const c32 = bits::str_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF)  return                                      bits::rewind(i, o), false;
-                        if (c32 > 0XFF)         return cx|read_error::character_invalid,   bits::rewind(i, o), false;
-            return io::consume<X>(X::string::end, i, e, cx) ? (t = char(c32), true) : false;
+                        if (c32 == 0xFFFFFFFF)  return bits::rewind(i, o), false;
+                        if (c32 > 0XFF)         return bits::rewind(i, o), cx|read_error::character_invalid;
+            return io::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
@@ -1916,9 +1916,9 @@ namespace cxon { // read, fundamental types
             if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
                     char32_t const c32 = bits::str_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF)  return                                      bits::rewind(i, o), false;
-                        if (c32 > 0XFFFF)       return cx|read_error::character_invalid,   bits::rewind(i, o), false;
-            return io::consume<X>(X::string::end, i, e, cx) ? (t = T(c32), true) : false;
+                        if (c32 == 0xFFFFFFFF)  return bits::rewind(i, o), false;
+                        if (c32 > 0XFFFF)       return bits::rewind(i, o), cx|read_error::character_invalid;
+            return io::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
@@ -1928,7 +1928,7 @@ namespace cxon { // read, fundamental types
                 II const o = i;
                     char32_t const c32 = bits::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF) return bits::rewind(i, o), false;
-            return io::consume<X>(X::string::end, i, e, cx) ? (t = T(c32), true) : false;
+            return io::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
 
 #   define CXON_READ_DEF(T)\
@@ -1954,8 +1954,9 @@ namespace cxon { // read, fundamental types
     template <typename X, typename II, typename Cx>
         inline bool read_value(std::nullptr_t& t, II& i, II e, Cx& cx) {
             II const o = i;
-                if (io::consume<X>(X::id::nil, i, e)) return t = nullptr, true;
-            return cx|read_error::unexpected, bits::rewind(i, o), false;
+            return (io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected)) &&
+                    (t = nullptr, true)
+            ;
         }
 
 }   // cxon read, fundamental types
@@ -2023,7 +2024,7 @@ namespace cxon { namespace bits { // char arrays
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 char b[4]; int const n = utf32_to_utf8(b, c32);
-                    if (n == 0 || t + n > te) return cx|read_error::overflow, false;
+                    if (n == 0 || t + n > te) return cx|read_error::overflow;
                 std::copy_n(b, n, t);
             return t += n, true;
         }
@@ -2036,7 +2037,7 @@ namespace cxon { namespace bits { // char arrays
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
-                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|read_error::overflow, false;
+                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|read_error::overflow;
                     *t = T(0xDC00 | (c32 & 0x3FF));
                 }
                 else {
@@ -2061,11 +2062,10 @@ namespace cxon { namespace bits { // char arrays
                     while (t < te) {
                         if (!is<X>::real(io::peek(i, ie)))          return consume_str<X>::end(i, ie, cx);
                         if (is_str<X>::end(io::peek(i, ie)))        return *t = '\0', consume_str<X>::end(i, ie, cx);
-                        if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == read_error::overflow ? (rewind(i, o), false) : false;
+                        if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == read_error::overflow && (rewind(i, o), false);
                     }
-                return !is_str<X>::end(io::peek(i, ie)) ?
-                    (cx|read_error::overflow, rewind(i, o), false) :
-                    consume_str<X>::end(i, ie, cx)
+                return (is_str<X>::end(io::peek(i, ie)) || (rewind(i, o), cx|read_error::overflow)) &&
+                        consume_str<X>::end(i, ie, cx)
                 ;
         }
 
@@ -2109,7 +2109,7 @@ namespace cxon { namespace bits { // char arrays
                 if (is_str<X>::end(io::peek(i, e)))         return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
                 if (!array_char_read<X>(p, be, i, e, cx))   goto err;
             }
-            err: return al::deallocate(a, b, be - b), cx|read_error::unexpected, false;
+            err: return al::deallocate(a, b, be - b), cx|read_error::unexpected;
         }
 
 }}  // cxon::bits char arrays
@@ -2123,8 +2123,9 @@ namespace cxon { // read, compound types
                     io::consume<X>(i, e);
                     if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
-                            if (!io::consume<X>(X::id::nil, i, e)) return cx|read_error::unexpected, bits::rewind(i, o), false;
-                        return t = nullptr, true;
+                        return  (io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected)) &&
+                                (t = nullptr, true)
+                        ;
                     }
                     auto a = allocator::value(cx.ps, std::allocator<T>());
                         using al = std::allocator_traits<decltype(a)>;
@@ -2142,8 +2143,9 @@ namespace cxon { // read, compound types
                     II const o = i;
                         size_t p = 0;
                     return container::read<X, list<X>>(i, e, cx, [&] {
-                            if (p == N) return cx|read_error::overflow, bits::rewind(i, o), false;
-                        return read_value<X>(t[p++], i, e, cx);
+                        return (p != N || (bits::rewind(i, o), cx|read_error::overflow)) &&
+                                read_value<X>(t[p++], i, e, cx)
+                        ;
                     });
                 }
         };
@@ -2309,9 +2311,9 @@ namespace cxon { namespace bits { // std::basic_string
             if (!consume_str<X>::beg(i, e, cx)) return false;
                 for (char c = io::peek(i, e); is<X>::real(c); c = io::peek(i, e)) {
                     if (is_str<X>::end(c))                          return consume_str<X>::end(i, e, cx);
-                    if (!basic_string_char_read<X>(t, i, e, cx))   return false;
+                    if (!basic_string_char_read<X>(t, i, e, cx))    return false;
                 }
-            return cx|read_error::unexpected, false;
+            return cx|read_error::unexpected;
         }
 
 }}  // cxon::bits std::basic_string
@@ -2372,7 +2374,7 @@ namespace cxon { // read, library types
                             v.resize(p + p);
                                 for (size_t i = 0; i != p; ++i) v[i] = n[i];
                         }
-                        return read_value<X>(v[p], i, e, cx) ? (++p, true) : false;
+                        return read_value<X>(v[p], i, e, cx) && (++p, true);
                     });
                         if (!r) return false;
                     t.resize(p);
@@ -2388,8 +2390,9 @@ namespace cxon { // read, library types
                     II const o = i;
                         size_t p = 0;
                     return container::read<X, list<X>>(i, e, cx, [&] {
-                            if (p == N) return cx|read_error::overflow, bits::rewind(i, o), false;
-                        return read_value<X>(t[p++], i, e, cx);
+                        return (p != N || (bits::rewind(i, o), cx|read_error::overflow)) &&
+                                read_value<X>(t[p++], i, e, cx)
+                        ;
                     });
                 }
         };
@@ -2422,11 +2425,7 @@ namespace cxon { // read, library types
                 static bool value(std::priority_queue<T, R...>& t, II& i, II e, Cx& cx) {
                     return container::read<X, list<X>>(i, e, cx, [&] {
                         T o{};
-                        if (read_value<X>(o, i, e, cx)) {
-                            t.emplace(std::move(o));
-                            return true;
-                        }
-                        return false;
+                        return read_value<X>(o, i, e, cx) && (t.emplace(std::move(o)), true);
                     });
                 }
         };
@@ -2514,11 +2513,7 @@ namespace cxon { // read, library types
             inline bool read_set(S& t, II& i, II e, Cx& cx) {
                 return container::read<X, list<X>>(i, e, cx, [&] {
                     typename S::value_type o{};
-                    if (read_value<X>(o, i, e, cx)) {
-                        t.emplace(std::move(o));
-                        return true;
-                    }
-                    return false;
+                    return read_value<X>(o, i, e, cx) && (t.emplace(std::move(o)), true);
                 });
             }
 
@@ -2543,11 +2538,8 @@ namespace cxon { // read, library types
             inline bool read_map(M& t, II& i, II e, Cx& cx) {
                 return container::read<X, map<X>>(i, e, cx, [&] {
                     typename M::key_type k{}; typename M::mapped_type v{};
-                    if (read_key<X>(k, i, e, cx) && read_value<X>(v, i, e, cx)) {
-                        t.emplace(std::move(k), std::move(v));
-                        return true;
-                    }
-                    return false;
+                    return  read_key<X>(k, i, e, cx) && read_value<X>(v, i, e, cx) &&
+                            (t.emplace(std::move(k), std::move(v)), true);
                 });
             }
 
@@ -2573,8 +2565,7 @@ namespace cxon { // read, library types
                     static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
                         if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
                             II const o = i;
-                                if (!io::consume<X>(X::id::nil, i, e)) return cx|read_error::unexpected, bits::rewind(i, o), false;
-                            return true;
+                            return io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected);
                         }
                         return read_value<X>(t.emplace(), i, e, cx);
                     }
@@ -2586,25 +2577,24 @@ namespace cxon { // read, library types
 
             template <typename X, typename V, size_t Ndx, typename II, typename Cx>
                 static bool variant_read(V& t, II& i, II e, Cx& cx) {
-                    V v = V(std::in_place_index_t<Ndx>());
-                    return read_value<X>(std::get<Ndx>(v), i, e, cx) ?
-                        (t = std::move(v), true) :
-                        false
-                    ;
+                    V v{std::in_place_index_t<Ndx>()};
+                    return read_value<X>(std::get<Ndx>(v), i, e, cx) && (t = std::move(v), true);
                 }
 
             template <typename X, typename V, typename II, typename Cx, typename Ndx = std::make_index_sequence<std::variant_size<V>::value>>
                 struct variant;
             template <typename X, typename V, typename II, typename Cx, size_t ...Ndx>
                 struct variant<X, V, II, Cx, std::index_sequence<Ndx...>> {
-                    static bool read(V& t, II& i, II e, Cx& cx) {
-                        static constexpr auto N = std::index_sequence<Ndx...>::size();
-                            using reader_t = bool(*)(V&, II&, II, Cx&);
-                        static constexpr reader_t reader[N] = { &variant_read<X, V, Ndx, II, Cx>... };
+                    using reader_t = bool(*)(V&, II&, II, Cx&);
+                    static constexpr size_t cnt_ = std::index_sequence<Ndx...>::size();
+                    static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
+                    static bool index(size_t& n, II& i, II e, Cx& cx) {
                         II const o = i;
-                            size_t ndx; if (!read_key<X>(ndx, i, e, cx)) return false;
-                                if (ndx >= N) return cx|read_error::unexpected, bits::rewind(i, o), false;
-                        return reader[ndx](t, i, e, cx);
+                        return read_key<X>(n, i, e, cx) && (n < cnt_ || (bits::rewind(i, o), cx|read_error::unexpected));
+                    }
+                    static bool read(V& t, II& i, II e, Cx& cx) {
+                        size_t n;
+                        return index(n, i, e, cx) && rdr_[n](t, i, e, cx);
                     }
                 };
 
@@ -2613,15 +2603,15 @@ namespace cxon { // read, library types
         template <typename X, typename II, typename Cx>
             inline bool read_value(std::monostate&, II& i, II e, Cx& cx) {
                 II const o = i;
-                return !io::consume<X>(X::id::nil, i, e) ? (cx|read_error::unexpected, bits::rewind(i, o), false) : true;
+                return io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected);
             }
 
         template <typename X, typename ...T>
             struct read<X, std::variant<T...>> {
                 template <typename II, typename Cx>
                     static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
-                        if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
-                        return  bits::variant<X, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
+                        return  io::consume<X>(X::map::beg, i, e, cx) &&
+                                    bits::variant<X, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
                                 io::consume<X>(X::map::end, i, e, cx)
                         ;
                     }
@@ -2825,8 +2815,9 @@ namespace cxon { namespace bits { // fundamental type encoding
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
             char s[std::numeric_limits<T>::digits10 + 3];
             auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t);
-                if (r.ec != std::errc()) return cx|write_error::argument_invalid, false;
-            return io::poke<X>(o, s, r.ptr - s, cx);
+            return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
+                    io::poke<X>(o, s, r.ptr - s, cx)
+            ;
         }
 
     template <typename X, typename T, typename O, typename Cx>
@@ -2840,10 +2831,12 @@ namespace cxon { namespace bits { // fundamental type encoding
                 return io::poke<X>(o, opqt<X>::beg, cx) && io::poke<X>(o, "nan", cx) && io::poke<X>(o, opqt<X>::end, cx);
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
-            auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t,
-                                            fp_precision::constant<prms_type<Cx>>(std::numeric_limits<T>::max_digits10));
-                if (r.ec != std::errc()) return cx|write_error::argument_invalid, false;
-            return io::poke<X>(o, s, r.ptr - s, cx);
+            auto const r = bits::to_chars(
+                s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<prms_type<Cx>>(std::numeric_limits<T>::max_digits10)
+            );
+            return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
+                    io::poke<X>(o, s, r.ptr - s, cx)
+            ;
         }
 
 }}  // cxon::bits fundamental type encoding
@@ -2940,11 +2933,11 @@ namespace cxon { namespace bits { // char arrays
         inline bool uqkey_pointer_write(O& o, const T* t, size_t s, Cx& cx) {
             for (auto e = t + s; t != e; ++t) {
                 switch (*t) {
-                    case ' ':           if (!io::poke<X>(o, '\\', cx) || !io::poke<X>(o, ' ', cx))            return false;   break;
-                    case '"':           if (!io::poke<X>(o, '"', cx))                                          return false;   break;
-                    case '\'':          if (!io::poke<X>(o, '\'', cx))                                         return false;   break;
-                    case X::map::div:   if (!io::poke<X>(o, '\\', cx) || !io::poke<X>(o, X::map::div, cx))    return false;   break;
-                    default:            if (!encode<X, T>::value(o, t, e, cx))                                 return false;
+                    case ' ':           if (!io::poke<X>(o, '\\', cx) || !io::poke<X>(o, ' ', cx))          return false;   break;
+                    case '"':           if (!io::poke<X>(o, '"', cx))                                       return false;   break;
+                    case '\'':          if (!io::poke<X>(o, '\'', cx))                                      return false;   break;
+                    case X::map::div:   if (!io::poke<X>(o, '\\', cx) || !io::poke<X>(o, X::map::div, cx))  return false;   break;
+                    default:            if (!encode<X, T>::value(o, t, e, cx))                              return false;
                 }
             }
             return true;
@@ -3364,7 +3357,7 @@ namespace cxon { namespace unquoted { // unquoted value
                 Cx& cx;
                 template <size_t N>
                     array_adder(T (&t)[N], Cx& cx) : f(t), l(t + N), cx(cx) {}
-                bool add(T e) { return f != l ? (*f = e, ++f, true) : (cx|read_error::overflow, false); }
+                bool add(T e) { return f != l ? (*f = e, ++f, true) : cx|read_error::overflow; }
             };
 
         template <typename T>
@@ -3378,15 +3371,14 @@ namespace cxon { namespace unquoted { // unquoted value
         inline bool read_value(T (&t)[N], II& i, II e, Cx& cx) {
             II const o = i;
                 if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
-                    return cx.ec == read_error::overflow ? (cxon::bits::rewind(i, o), false) : (cx|read_error::unexpected, false);
+                    return cx.ec == read_error::overflow ? (cxon::bits::rewind(i, o), false) : cx|read_error::unexpected;
                 }
             return true;
         }
 
     template <typename X, typename II, typename Cx>
         inline bool read_value(II& i, II e, Cx& cx) {
-            return !bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) ?
-                (cx|read_error::unexpected, false) : true;
+            return bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) || (cx|read_error::unexpected);
         }
 
 }}  // cxon::unquoted value
@@ -3420,7 +3412,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
                     if (!bits::read<X>::value(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;
-            return cx|read_error::unexpected, cxon::bits::rewind(i, o), false;
+            return cxon::bits::rewind(i, o), cx|read_error::unexpected;
         }
 
     template <typename X, typename E, typename V, typename O, typename Cx>
@@ -3563,10 +3555,8 @@ namespace cxon { namespace structs { // structured types reader/writer construct
                 io::consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return false;
-                    if (!bits::read<X, S, F...>::fields(s, id, f, i, e, cx)) return !cx.ec ?
-                        (cxon::bits::rewind(i, o), cx|read_error::unexpected, false) :
-                        false
-                    ;
+                    if (!bits::read<X, S, F...>::fields(s, id, f, i, e, cx))
+                        return cx && (cxon::bits::rewind(i, o), cx|read_error::unexpected);
                     if (io::consume<X>(X::map::sep, i, e)) continue;
                 return io::consume<X>(X::map::end, i, e, cx);
             }
