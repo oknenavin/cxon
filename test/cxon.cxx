@@ -5,6 +5,21 @@
 
 #include "cxon/cxon.hxx"
 #include "cxon/pretty.hxx"
+#include "cxon/std/tuple.hxx"
+#include "cxon/std/array.hxx"
+#include "cxon/std/valarray.hxx"
+#include "cxon/std/vector.hxx"
+#include "cxon/std/queue.hxx"
+#include "cxon/std/stack.hxx"
+#include "cxon/std/deque.hxx"
+#include "cxon/std/list.hxx"
+#include "cxon/std/forward_list.hxx"
+#include "cxon/std/set.hxx"
+#include "cxon/std/unordered_set.hxx"
+#include "cxon/std/map.hxx"
+#include "cxon/std/unordered_map.hxx"
+#include "cxon/std/optional.hxx"
+#include "cxon/std/variant.hxx"
 
 #include <cstdio>
 
@@ -1429,6 +1444,11 @@ TEST_BEG(cxon::CXON<>) // cxon
         W_TEST("{}", (list<int>{}));
         R_TEST((list<int>({1, 2, 3})), "{1, 2, 3}");
         W_TEST("{1,2,3}", (list<int>({1, 2, 3})));
+    // std::forward_list<int>
+        R_TEST((forward_list<int>{}), "{}");
+        W_TEST("{}", (forward_list<int>{}));
+        R_TEST((forward_list<int>({1, 2, 3})), "{1, 2, 3}");
+        W_TEST("{1,2,3}", (forward_list<int>({1, 2, 3})));
     // std::vector<int>
         R_TEST((vector<int>{}), "{}");
         W_TEST("{}", (vector<int>{}));
@@ -1887,6 +1907,17 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((list<int>{}), "[", cxon::read_error::integral_invalid, 1);
         W_TEST("[1,2,3]", (list<float>({1, 2, 3})));
         R_TEST((list<float>{}), "[", cxon::read_error::floating_point_invalid, 1);
+    // std::list<int>
+        R_TEST((forward_list<int>{}), "[]");
+        W_TEST("[]", (forward_list<int>{}));
+        R_TEST((forward_list<int>({1, 2, 3})), "[1, 2, 3]");
+        W_TEST("[1,2,3]", (forward_list<int>({1, 2, 3})));
+        R_TEST((forward_list<int>{}), "", cxon::read_error::unexpected, 0);
+        R_TEST((forward_list<int>{}), "]", cxon::read_error::unexpected, 0);
+        R_TEST((forward_list<int>{}), "{", cxon::read_error::unexpected, 0);
+        R_TEST((forward_list<int>{}), "[", cxon::read_error::integral_invalid, 1);
+        W_TEST("[1,2,3]", (forward_list<float>({1, 2, 3})));
+        R_TEST((forward_list<float>{}), "[", cxon::read_error::floating_point_invalid, 1);
     // std::vector<int>
         R_TEST((vector<int>{}), "[]");
         W_TEST("[]", (vector<int>{}));

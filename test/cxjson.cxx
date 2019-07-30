@@ -5,6 +5,7 @@
 
 #include "cxon/cxon.hxx"
 #include "cxon/pretty.hxx"
+#include "cxon/std/list.hxx"
 #include "cxon/cxjson/cxjson.hxx"
 #include "cxon/cxjson/pretty.hxx"
 
