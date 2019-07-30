@@ -7,8 +7,8 @@
 #define CXJSON_CXJSON_HXX_
 
 #include "../cxon.hxx"
-#include "../vector.hxx"
-#include "../map.hxx"
+#include "../std/vector.hxx"
+#include "../std/map.hxx"
 
 // interface //////////////////////////////////////////////////////////////////
 
