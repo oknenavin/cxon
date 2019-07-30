@@ -11,29 +11,17 @@
 
 namespace cxon {
 
-#   define CXON_MAP(M)\
-        template <typename X, typename K, typename V, typename ...R>\
-            struct read<X, M<K, V, R...>> {\
-                template <typename II, typename Cx>\
-                    static bool value(M<K, V, R...>& t, II& i, II e, Cx& cx) {\
-                        return bits::read_map<X>(t, i, e, cx);\
-                    }\
-            };
-        CXON_MAP(std::unordered_map)
-        CXON_MAP(std::unordered_multimap)
-#   undef CXON_MAP
+    template <typename X, typename ...R>
+        struct read<X, std::unordered_map<R...>>    : bits::map_reader<X, std::unordered_map<R...>> {};
 
-#   define CXON_MAP(M)\
-        template <typename X, typename K, typename V, typename ...R>\
-            struct write<X, M<K, V, R...>> {\
-                template <typename O, typename Cx>\
-                    static bool value(O& o, const M<K, V, R...>& t, Cx& cx) {\
-                        return bits::write_map<X>(o, t, cx);\
-                    }\
-            };
-        CXON_MAP(std::unordered_map)
-        CXON_MAP(std::unordered_multimap)
-#   undef CXON_MAP
+    template <typename X, typename ...R>
+        struct write<X, std::unordered_map<R...>>   : bits::map_writer<X, std::unordered_map<R...>> {};
+
+    template <typename X, typename ...R>
+        struct read<X, std::unordered_multimap<R...>>   : bits::map_reader<X, std::unordered_multimap<R...>> {};
+
+    template <typename X, typename ...R>
+        struct write<X, std::unordered_multimap<R...>>  : bits::map_writer<X, std::unordered_multimap<R...>> {};
 
 }   // cxon
 

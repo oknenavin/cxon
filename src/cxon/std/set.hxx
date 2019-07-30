@@ -11,29 +11,17 @@
 
 namespace cxon {
 
-#   define CXON_SET(S)\
-        template <typename X, typename T, typename ...R>\
-            struct read<X, S<T, R...>> {\
-                template <typename II, typename Cx>\
-                    static bool value(S<T, R...>& t, II& i, II e, Cx& cx) {\
-                        return bits::read_set<X>(t, i, e, cx);\
-                    }\
-            };
-        CXON_SET(std::set)
-        CXON_SET(std::multiset)
-#   undef CXON_SET
+    template <typename X, typename T, typename ...R>
+        struct read<X, std::set<T, R...>>   : bits::set_reader<X, std::set<T, R...>> {};
 
-#   define CXON_SET(S)\
-        template <typename X, typename T, typename ...R>\
-            struct write<X, S<T, R...>> {\
-                template <typename O, typename Cx>\
-                    static bool value(O& o, const S<T, R...>& t, Cx& cx) {\
-                        return container::write<X, list<X>>(o, t, cx);\
-                    }\
-            };
-        CXON_SET(std::set)
-        CXON_SET(std::multiset)
-#   undef CXON_SET
+    template <typename X, typename T, typename ...R>
+        struct write<X, std::set<T, R...>>  : bits::set_writer<X, std::set<T, R...>> {};
+
+    template <typename X, typename T, typename ...R>
+        struct read<X, std::multiset<T, R...>>  : bits::set_reader<X, std::multiset<T, R...>> {};
+
+    template <typename X, typename T, typename ...R>
+        struct write<X, std::multiset<T, R...>> : bits::set_writer<X, std::multiset<T, R...>> {};
 
 }   // cxon
 

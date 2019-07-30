@@ -23,7 +23,7 @@ namespace cxon {
                 static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
                     if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
                         II const o = i;
-                        return io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected);
+                        return io::consume<X>(X::id::nil, i, e) || (io::rewind(i, o), cx|read_error::unexpected);
                     }
                     return read_value<X>(t.emplace(), i, e, cx);
                 }

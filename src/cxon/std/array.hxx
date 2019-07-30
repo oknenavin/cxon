@@ -17,7 +17,7 @@ namespace cxon {
                     II const o = i;
                         size_t p = 0;
                     return container::read<X, list<X>>(i, e, cx, [&] {
-                        return (p != N || (bits::rewind(i, o), cx|read_error::overflow)) &&
+                        return (p != N || (io::rewind(i, o), cx|read_error::overflow)) &&
                                 read_value<X>(t[p++], i, e, cx)
                         ;
                     });

@@ -39,7 +39,7 @@ namespace cxon { namespace bits { namespace charconv {
         errc ec;
     };
 
-    namespace bits {
+    namespace {
 
         template <typename T, typename F>
             constexpr auto clamp(F t)       -> enable_if_t<sizeof(T) == sizeof(F), T> {
@@ -86,7 +86,7 @@ namespace cxon { namespace bits { namespace charconv {
 
 #   define CXON_FROM_CHARS(T, C)\
         inline from_chars_result from_chars(const char* first, const char* last, T& value, int base = 10) {\
-            return bits::number_from_chars(first, last, C, value, base);\
+            return number_from_chars(first, last, C, value, base);\
         }
         CXON_FROM_CHARS(char, strtol)
         CXON_FROM_CHARS(signed char, strtol)
@@ -102,7 +102,7 @@ namespace cxon { namespace bits { namespace charconv {
 #   undef CXON_FROM_CHARS
 #   define CXON_FROM_CHARS(T, C)\
         inline from_chars_result from_chars(const char* first, const char* last, T& value, chars_format fmt = chars_format::general) {\
-            return bits::number_from_chars(first, last, C, value, fmt);\
+            return number_from_chars(first, last, C, value, fmt);\
         }
         CXON_FROM_CHARS(float, strtof)
         CXON_FROM_CHARS(double, strtod)
@@ -114,7 +114,7 @@ namespace cxon { namespace bits { namespace charconv {
         errc ec;
     };
 
-    namespace bits {
+    namespace {
 
         template <typename> struct fmt;
         template <> struct fmt<char>                // %c writes a single character but, the argument is first converted to unsigned char
@@ -153,7 +153,7 @@ namespace cxon { namespace bits { namespace charconv {
 
 #   define CXON_TO_CHARS(T)\
         inline to_chars_result to_chars(char* first, char* last, T value) {\
-            return bits::number_to_chars<T>(first, last, value);\
+            return number_to_chars<T>(first, last, value);\
         }
         CXON_TO_CHARS(char)
         CXON_TO_CHARS(signed char)
@@ -169,7 +169,7 @@ namespace cxon { namespace bits { namespace charconv {
 #   undef CXON_TO_CHARS
 #   define CXON_TO_CHARS(T)\
         inline to_chars_result to_chars(char* first, char* last, T value, int precision) {\
-            return bits::number_to_chars<T>(first, last, value, precision);\
+            return number_to_chars<T>(first, last, value, precision);\
         }
         CXON_TO_CHARS(float)
         CXON_TO_CHARS(double)
@@ -179,9 +179,6 @@ namespace cxon { namespace bits { namespace charconv {
 }}}   // cxon::bits::charconv
 
 namespace cxon { namespace bits { // <charconv>
-
-    template <bool C, typename T = void>
-        using enable_if_t = typename std::enable_if<C, T>::type;
 
 #   ifdef CXON_HAS_CHARCONV
 #       define HAS_FUNC_DEF(name, R, F)\
@@ -261,23 +258,8 @@ namespace cxon { namespace bits { // <charconv>
 
 #       undef HAS_FUNC_DEF
 #   else
-        template <typename T>
-            inline charconv::from_chars_result from_chars(const char* f, const char* l, T& t, int base) {
-                return charconv::from_chars(f, l, t, base);
-            }
-        template <typename T>
-            inline charconv::from_chars_result from_chars(const char* f, const char* l, T& t) {
-                return charconv::from_chars(f, l, t);
-            }
-
-        template <typename T>
-            inline charconv::to_chars_result to_chars(char* f, char* l, T t) {
-                return charconv::to_chars(f, l, t);
-            }
-        template <typename T>
-            inline charconv::to_chars_result to_chars(char* f, char* l, T t, int precision) {
-                return charconv::to_chars(f, l, t, precision);
-            }
+        using charconv::from_chars;
+        using charconv::to_chars;
 #   endif
 
 }}  //cxon::bits <charconv>

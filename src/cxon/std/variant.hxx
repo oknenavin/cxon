@@ -34,7 +34,7 @@ namespace cxon {
                 static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
                 static bool index(size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return read_key<X>(n, i, e, cx) && (n < cnt_ || (bits::rewind(i, o), cx|read_error::unexpected));
+                    return read_key<X>(n, i, e, cx) && (n < cnt_ || (io::rewind(i, o), cx|read_error::unexpected));
                 }
                 static bool read(V& t, II& i, II e, Cx& cx) {
                     size_t n;
@@ -47,7 +47,7 @@ namespace cxon {
     template <typename X, typename II, typename Cx>
         inline bool read_value(std::monostate&, II& i, II e, Cx& cx) {
             II const o = i;
-            return io::consume<X>(X::id::nil, i, e) || (bits::rewind(i, o), cx|read_error::unexpected);
+            return io::consume<X>(X::id::nil, i, e) || (io::rewind(i, o), cx|read_error::unexpected);
         }
 
     template <typename X, typename ...T>
