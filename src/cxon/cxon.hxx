@@ -375,11 +375,6 @@ namespace cxon { // implementation bridge
             return t.template read_value<X>(i, e, cx);
         }
 
-    // read key
-
-    template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx);
-
     // write value
 
     template <typename X, typename T>
@@ -405,11 +400,6 @@ namespace cxon { // implementation bridge
         {
             return t.template write_value<X>(o, cx);
         }
-
-    // write key
-
-    template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx);
 
 }   // cxon implementation bridge
 
@@ -483,6 +473,16 @@ namespace cxon { namespace io { // I/O
 
 }}   // cxon::io I/O
 
+namespace cxon {  // key read/write
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_key(T& t, II& i, II e, Cx& cx);
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool write_key(O& o, const T& t, Cx& cx);
+
+}   // cxon key read/write
+
 namespace cxon { namespace container { // list read/write helpers
 
     // read
@@ -502,6 +502,16 @@ namespace cxon { namespace container { // list read/write helpers
         inline bool write(O& o, const T& t, Cx& cx);
 
 }}  // cxon::container list read/write helpers
+
+namespace cxon { namespace unquoted { // unquoted value
+
+    template <typename X, typename T, size_t N, typename II, typename Cx>
+        inline bool read_value(T (&t)[N], II& i, II e, Cx& cx);
+
+    template <typename X, typename II, typename Cx>
+        inline bool read_value(II& i, II e, Cx& cx);
+
+}}  // cxon::unquoted value
 
 namespace cxon { namespace enums { // enum reader/writer construction helpers
 
@@ -535,6 +545,26 @@ namespace cxon { namespace structs { // structured types reader/writer construct
         struct fields {};
     template <typename ...T> 
         constexpr fields<T...> make_fields(T... t) { return { t... }; }
+
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S& s, F f, II& i, II e, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>;
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S&, F f, II& i, II e, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>;
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S&, F, II& i, II e, Cx& cx)
+            -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>;
+
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        inline auto write_field(O& o, const S& s, F f, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>;
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        inline auto write_field(O& o, const S&, F f, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>;
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        constexpr auto write_field(O&, const S&, F, Cx&)
+            -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>;
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx);
@@ -792,6 +822,20 @@ namespace cxon { namespace io { // I/O
 
 }}   // cxon::io
 
+namespace cxon {  // key read/write
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_key(T& t, II& i, II e, Cx& cx) {
+            return bits::key_read<X>::value(t, i, e, cx) && io::consume<X>(X::map::div, i, e, cx);
+        }
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool write_key(O& o, const T& t, Cx& cx) {
+            return bits::key_write<X>::value(o, t, cx) && io::poke<X>(o, X::map::div, cx);
+        }
+
+}   // cxon key read/write
+
 namespace cxon { namespace container { // container read/write helpers
 
     // read
@@ -826,6 +870,24 @@ namespace cxon { namespace container { // container read/write helpers
         }
 
 }}  // cxon::container read/write helpers
+
+namespace cxon { namespace unquoted { // unquoted value
+
+    template <typename X, typename T, size_t N, typename II, typename Cx>
+        inline bool read_value(T (&t)[N], II& i, II e, Cx& cx) {
+            II const o = i;
+                if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
+                    return cx.ec == read_error::overflow ? (io::rewind(i, o), false) : cx|read_error::unexpected;
+                }
+            return true;
+        }
+
+    template <typename X, typename II, typename Cx>
+        inline bool read_value(II& i, II e, Cx& cx) {
+            return bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) || (cx|read_error::unexpected);
+        }
+
+}}  // cxon::unquoted value
 
 namespace cxon { // read, fundamental types
 
@@ -974,15 +1036,6 @@ namespace cxon { // read, compound types
 
 }   // cxon read, compound types
 
-namespace cxon {  // key read
-
-    template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx) {
-            return bits::key_read<X>::value(t, i, e, cx) && io::consume<X>(X::map::div, i, e, cx);
-        }
-
-}   // cxon key read
-
 namespace cxon { // read, library types
 
     template <typename X, typename T, typename ...R>
@@ -1116,15 +1169,6 @@ namespace cxon { // write, compound types
 
 }   // cxon write, compound types
 
-namespace cxon { // key write
-
-    template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx) {
-            return bits::key_write<X>::value(o, t, cx) && io::poke<X>(o, X::map::div, cx);
-        }
-
-}   // cxon key write
-
 namespace cxon { // write, library types
 
     template <typename X, typename T, typename ...R>
@@ -1151,108 +1195,7 @@ namespace cxon { // write, library types
 
 }   // write, library types
 
-namespace cxon { namespace unquoted { // unquoted value
-
-    namespace bits {
-
-        template <typename X>
-            struct value {
-                template <typename BA, typename II>
-                    static bool skip(BA& o, II& i, II e) {
-                        if (!o.add(*i)) return false;
-                        for (++i; i != e; ++i) {
-                            switch (*i)  {
-                                case '\\':              if (!o.add(*i)) return false;
-                                                        if (++i == e)   return false;
-                                                        break;
-                                case X::string::end:    return o.add(*i);
-                            }
-                        }
-                        return false;
-                    }
-                template <char CB, char CE, typename BA, typename II>
-                    static bool skip(BA& o, II& i, II e) {
-                        if (!o.add(*i)) return false;
-                        unsigned r = 0;
-                        for (++i; i != e; ++i) {
-                            switch (*i) {
-                                case CB:                if (!o.add(*i))     return false;
-                                                        ++r; break;
-                                case CE:                if (!o.add(*i))     return false;
-                                                        if (r == 0)         return true;
-                                                        --r; break;
-                                case X::string::beg:    if (!skip(o, i, e)) return false;
-                            }
-                        }
-                        return false;
-                    }
-                template <typename BA, typename II>
-                    static bool read(BA o, II& i, II e) {
-                        for (char c = *i; i != e; c = *++i) {
-                                 if (c == X::map::beg)      { if (!skip<map<X>::beg, map<X>::end>(o, i, e))     return false; }
-                            else if (c == X::list::beg)     { if (!skip<list<X>::beg, list<X>::end>(o, i, e))   return false; }
-                            else if (c == X::string::beg)   { if (!skip(o, i, e))                               return false; }
-                            else if (c == X::map::sep)                                                          break;
-                            else if (c == X::map::end)                                                          break;
-                            else if (c == X::list::end)                                                         break;
-                            else                            { if (!o.add(*i))                                   return false; }
-                        }
-                        return o.add('\0');
-                    }
-            };
-
-        template <typename T, typename Cx>
-            struct array_adder {
-                T *f, *l;
-                Cx& cx;
-                template <size_t N>
-                    array_adder(T (&t)[N], Cx& cx) : f(t), l(t + N), cx(cx) {}
-                bool add(T e) { return f != l ? (*f = e, ++f, true) : cx|read_error::overflow; }
-            };
-
-        template <typename T>
-            struct black_adder {
-                constexpr bool add(T) const { return true; }
-            };
-
-    }
-
-    template <typename X, typename T, size_t N, typename II, typename Cx>
-        inline bool read_value(T (&t)[N], II& i, II e, Cx& cx) {
-            II const o = i;
-                if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
-                    return cx.ec == read_error::overflow ? (io::rewind(i, o), false) : cx|read_error::unexpected;
-                }
-            return true;
-        }
-
-    template <typename X, typename II, typename Cx>
-        inline bool read_value(II& i, II e, Cx& cx) {
-            return bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) || (cx|read_error::unexpected);
-        }
-
-}}  // cxon::unquoted value
-
 namespace cxon { namespace enums { // enum reader/writer construction helpers
-
-    namespace bits {
-
-        template <typename X>
-            struct read {
-                template <size_t N, typename II, typename Cx>
-                    static bool value(char (&t)[N], II& i, II e, Cx& cx) {
-                        return unquoted::read_value<X>(t, i, e, cx);
-                    }
-            };
-        template <typename X>
-            struct read<JSON<X>> {
-                template <size_t N, typename II, typename Cx>
-                    static bool value(char (&t)[N], II& i, II e, Cx& cx) {
-                        return cxon::read_value<JSON<X>>(t, i, e, cx);
-                    }
-            };
-
-    }
 
     template <typename X, typename E, typename V, typename II, typename Cx>
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
@@ -1315,25 +1258,25 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             D mptr;
         };
         template <typename X, typename S, typename F, typename II, typename Cx>
-            static auto read_field(S& s, F f, II& i, II e, Cx& cx)
+            inline auto read_field(S& s, F f, II& i, II e, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
             {
                 return read_value<X>(s.*f.mptr, i, e, cx);
             }
         template <typename X, typename S, typename F, typename II, typename Cx>
-            static auto read_field(S&, F f, II& i, II e, Cx& cx)
+            inline auto read_field(S&, F f, II& i, II e, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
             {
                 return read_value<X>(*f.mptr, i, e, cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
-            static auto write_field(O& o, const S& s, F f, Cx& cx)
+            inline auto write_field(O& o, const S& s, F f, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
             {
                 return write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.mptr, cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
-            static auto write_field(O& o, const S&, F f, Cx& cx)
+            inline auto write_field(O& o, const S&, F f, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
             {
                 return write_key<X>(o, f.name, cx) && write_value<X>(o, *f.mptr, cx);
@@ -1345,13 +1288,13 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             skip_type const _;
         };
         template <typename X, typename S, typename F, typename II, typename Cx>
-            static auto read_field(S&, F, II& i, II e, Cx& cx)
+            inline auto read_field(S&, F, II& i, II e, Cx& cx)
                 -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
             {
                 return unquoted::read_value<X>(i, e, cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
-            static auto write_field(O&, const S&, F, Cx&)
+            constexpr auto write_field(O&, const S&, F, Cx&)
                 -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
             {
                 return true;
@@ -1375,28 +1318,6 @@ namespace cxon { namespace structs { // structured types reader/writer construct
 
     // read
 
-    namespace bits {
-
-        template <typename X, typename S, typename ...>
-            struct read {
-                template <typename II, typename Cx>
-                    static constexpr bool fields(S&, const char*, const fields<>&, II&, II, Cx&) {
-                        return false;
-                    }
-            };
-        template <typename X, typename S, typename H, typename ...T>
-            struct read<X, S, H, T...> {
-                template <typename II, typename Cx>
-                    static bool fields(S& t, const char* name, const fields<H, T...>& f, II& i, II e, Cx& cx) {
-                        return std::strcmp(f.field.name, name) == 0 ?
-                            read_field<X>(t, f.field, i, e, cx) :
-                            read<X, S, T...>::fields(t, name, f.next, i, e, cx)
-                        ;
-                    }
-            };
-
-    }
-
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
             if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
@@ -1414,27 +1335,6 @@ namespace cxon { namespace structs { // structured types reader/writer construct
         }
 
     // write
-
-    namespace bits {
-
-        template <typename X, typename S, typename H, typename ...T>
-            struct write {
-                template <typename O, typename Cx>
-                    static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        return  write_field<X>(o, t, f.field, cx) && io::poke<X>(o, X::map::sep, cx) &&
-                                write<X, S, T...>::fields(o, t, f.next, cx)
-                        ;
-                    }
-            };
-        template <typename X, typename S, typename F>
-            struct write<X, S, F> {
-                template <typename O, typename Cx>
-                    static bool fields(O& o, const S& t, const fields<F>& f, Cx& cx) {
-                        return write_field<X>(o, t, f.field, cx);
-                    }
-            };
-
-    }
 
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx) {
