@@ -23,12 +23,6 @@
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
 types is as follow:
-- standard library types
-    - [containers library][cpp-container]
-      - maps ([std::map][cpp-map], [std:: unordered_map][cpp-umap],
-              [std::multimap][cpp-mmap], [std:: unordered_multimap][cpp-ummap]) ->
-        `JSON` `object` `(1)`
-      - others -> `JSON` `array`
 
 - [fundamental types][cpp-fund-types]
 
@@ -46,19 +40,36 @@ types is as follow:
   --------------------------------|------------------------|----------------------------
   [`reference types`][cpp-ref]    | `value type` or `null` | [`cxon/cxon.hxx`](cxon.hxx)
   [`pointer types`][cpp-ptr]      | `value type` or `null` | [`cxon/cxon.hxx`](cxon.hxx)
-  [`array types`][cpp-array]      | `array`                | [`cxon/cxon.hxx`](cxon.hxx)
+  [`array types`][cpp-arr]      | `array`                | [`cxon/cxon.hxx`](cxon.hxx)
   [`enumeration types`][cpp-enum] | `string`               | [`cxon/cxon.hxx`](cxon.hxx)
   [`class types`][cpp-class]      | `object`               | [`cxon/cxon.hxx`](cxon.hxx)
 
 - standard library types
 
-  type                            | `JSON` type      | header
-  --------------------------------|------------------|------------------------------------------
-  [`std::basic_string`][cpp-bstr] | `string`         | [`cxon/std/string.hxx`](std/string.hxx)
-  [`std::tuple`][cpp-tuple]       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
-  [`std::pair`][cpp-pair]         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
-  [`std::optional`][cpp-opt]      | `value_type`     | [`cxon/std/optional.hxx`](/optional.hxx)
-  [`std::variant`][cpp-var]       | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
+  type                                            | `JSON` type      | header
+  ------------------------------------------------|------------------|------------------------------------------------------
+  [`std::basic_string`][std-bstr]                 | `string`         | [`cxon/std/string.hxx`](std/string.hxx)
+  [`std::array`][std-array]                       | `array`          | [`cxon/std/array.hxx`](std/array.hxx)
+  [`std::vector`][std-vector]                     | `array`          | [`cxon/std/vector.hxx`](std/vector.hxx)
+  [`std::deque`][std-deque]                       | `array`          | [`cxon/std/deque.hxx`](std/deque.hxx)
+  [`std::forward_list`][std-forward_list]         | `array`          | [`cxon/std/forward_list.hxx`](std/forward_list.hxx)
+  [`std::list`][std-list]                         | `array`          | [`cxon/std/list.hxx`](std/list.hxx)
+  [`std::set`][std-set]                           | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
+  [`std::multiset`][std-multiset]                 | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
+  [`std::unordered_set`][std-uset]                | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
+  [`std::unordered_multiset`][std-umultiset]      | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
+  [`std::map`][std-map]`(1)`                      | `object`         | [`cxon/std/map.hxx`](std/map.hxx)
+  [`std::multimap`][std-multimap]`(1)`            | `object`         | [`cxon/std/map.hxx`](std/map.hxx)
+  [`std::unordered_map`][std-umap]`(1)`           | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
+  [`std::unordered_multimap`][std-umultimap]`(1)` | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
+  [`std::stack`][std-stack]                       | `array`          | [`cxon/std/stack.hxx`](std/stack.hxx)
+  [`std::queue`][std-queue]                       | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
+  [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
+  [`std::tuple`][std-tuple]                       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
+  [`std::pair`][std-pair]                         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
+  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](/optional.hxx)
+  [`std::variant`][std-variant]                   | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
+  [`std::valarray`][std-valarray]                 | `array`          | [`cxon/std/valarray.hxx`](std/valarray.hxx)
 
 *`(1)` [`ECMA-404(6)`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
 specify this about object keys:*
@@ -900,20 +911,33 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
 [cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
 [cpp-ref]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/reference&oldid=105941
-[cpp-array]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
+[cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
-[cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
-[cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
-[cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
+[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
+[std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
-[cpp-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
-[cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
-[cpp-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
-[cpp-mmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
-[cpp-ummap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
-[cpp-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
-[cpp-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
+[std-array]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/array&oldid=111731
+[std-vector]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
+[std-deque]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/deque&oldid=107644
+[std-forward_list]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/forward_list&oldid=107645
+[std-list]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/list&oldid=107646
+[std-set]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/set&oldid=107670
+[std-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
+[std-multiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multiset&oldid=107671
+[std-multimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
+[std-uset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_set&oldid=107673
+[std-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
+[std-umultiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multiset&oldid=107674
+[std-umultimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
+[std-stack]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/stack&oldid=106350
+[std-queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/queue&oldid=103354
+[std-priority_queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/priority_queue&oldid=103092
+[std-optional]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
+[std-variant]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
+[std-valarray]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
 [cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
 [cpp-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
+[cpp-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
