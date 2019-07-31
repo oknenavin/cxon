@@ -7,6 +7,7 @@
 #define CXJSON_CXJSON_HXX_
 
 #include "../cxon.hxx"
+#include "../std/string.hxx"
 #include "../std/vector.hxx"
 #include "../std/map.hxx"
 

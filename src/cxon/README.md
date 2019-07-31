@@ -23,28 +23,42 @@
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
 types is as follow:
-- [fundamental types][cpp-fund-types]
-    - `nullptr_t` -> `null`
-    - `bool` -> `true` or `false`
-    - character types (`char`, `wchar_t`, `char16_t` and `char32_t`) -> `JSON` `string`
-    - integral types (`signed` and `unsigned` `char`, `short`, `int`, `long`, `long long`) ->
-      `JSON` `number`
-    - floating-point types (`float`, `double`, `long double`) -> `JSON` `number`
-- `enum` -> `JSON` `string`
-- [compound types][cpp-struct] -> `JSON` `object`
-- arrays -> `JSON` `array`
-- pointers are represented as their value or `JSON` `null`
 - standard library types
-    - [`std::basic_string`][cpp-bstr] -> `JSON` `string`
-    - [`std::tuple`][cpp-tuple] -> `JSON` `array`
-    - [`std::pair`][cpp-pair] -> `JSON` `array`
     - [containers library][cpp-container]
       - maps ([std::map][cpp-map], [std:: unordered_map][cpp-umap],
               [std::multimap][cpp-mmap], [std:: unordered_multimap][cpp-ummap]) ->
         `JSON` `object` `(1)`
       - others -> `JSON` `array`
-    - [`std::optional`][cpp-opt] -> underlying type
-    - [`std::variant`][cpp-var] -> `JSON` `object`
+
+- [fundamental types][cpp-fund-types]
+
+  type                                                            | `JSON` type    | header
+  ----------------------------------------------------------------|----------------|----------------------------
+  `nullptr_t`                                                     | `null`         | [`cxon/cxon.hxx`](cxon.hxx)
+  `bool`                                                          | `true`/`false` | [`cxon/cxon.hxx`](cxon.hxx)
+  `char`, `wchar_t`, `char16_t` and `char32_t`                    | `string`       | [`cxon/cxon.hxx`](cxon.hxx)
+  `signed`/`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | [`cxon/cxon.hxx`](cxon.hxx)
+  `float`, `double`, `long double`                                | `number`       | [`cxon/cxon.hxx`](cxon.hxx)
+ 
+- compound types
+
+  type                            | `JSON` type            | header
+  --------------------------------|------------------------|----------------------------
+  [`reference types`][cpp-ref]    | `value type` or `null` | [`cxon/cxon.hxx`](cxon.hxx)
+  [`pointer types`][cpp-ptr]      | `value type` or `null` | [`cxon/cxon.hxx`](cxon.hxx)
+  [`array types`][cpp-array]      | `array`                | [`cxon/cxon.hxx`](cxon.hxx)
+  [`enumeration types`][cpp-enum] | `string`               | [`cxon/cxon.hxx`](cxon.hxx)
+  [`class types`][cpp-class]      | `object`               | [`cxon/cxon.hxx`](cxon.hxx)
+
+- standard library types
+
+  type                            | `JSON` type      | header
+  --------------------------------|------------------|------------------------------------------
+  [`std::basic_string`][cpp-bstr] | `string`         | [`cxon/std/string.hxx`](std/string.hxx)
+  [`std::tuple`][cpp-tuple]       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
+  [`std::pair`][cpp-pair]         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
+  [`std::optional`][cpp-opt]      | `value_type`     | [`cxon/std/optional.hxx`](/optional.hxx)
+  [`std::variant`][cpp-var]       | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
 
 *`(1)` [`ECMA-404(6)`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
 specify this about object keys:*
@@ -884,7 +898,11 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
 [cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
-[cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=106277
+[cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
+[cpp-ref]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/reference&oldid=105941
+[cpp-array]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
+[cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
+[cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562

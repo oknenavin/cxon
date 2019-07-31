@@ -1036,40 +1036,6 @@ namespace cxon { // read, compound types
 
 }   // cxon read, compound types
 
-namespace cxon { // read, library types
-
-    template <typename X, typename T, typename ...R>
-        struct read<X, std::basic_string<T, R...>> {
-            template <typename II, typename Cx>
-                static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    return bits::basic_string_read<X>(t, i, e, cx);
-                }
-        };
-    template <typename X, template <typename> class S, typename T, typename ...R>
-        struct read<S<bits::UQKEY<X>>, std::basic_string<T, R...>> {
-            template <typename II, typename Cx>
-                static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    io::consume<S<X>>(i, e);
-                    return io::peek(i, e) == S<X>::string::beg ?
-                        bits::basic_string_read<S<X>>(t, i, e, cx) :
-                        bits::basic_string_read<S<bits::UQKEY<X>>>(t, i, e, cx)
-                    ;
-                }
-        };
-
-    template <typename X, typename F, typename S>
-        struct read<X, std::pair<F, S>> {
-            template <typename II, typename Cx>
-                static bool value(std::pair<F, S>& t, II& i, II e, Cx& cx) {
-                    return  io::consume<X>(X::list::beg, i, e, cx) &&
-                            read_value<X>(t.first, i, e, cx) && io::consume<X>(X::list::sep, i, e, cx) && read_value<X>(t.second, i, e, cx) &&
-                            io::consume<X>(X::list::end, i, e, cx)
-                    ;
-                }
-        };
-
-}   // cxon read, library types
-
 namespace cxon { // write, fundamental types
 
     template <typename X, typename O, typename Cx>
@@ -1168,32 +1134,6 @@ namespace cxon { // write, compound types
 #   undef CXON_POINTER
 
 }   // cxon write, compound types
-
-namespace cxon { // write, library types
-
-    template <typename X, typename T, typename ...R>
-        struct write<X, std::basic_string<T, R...>> {
-            template <typename O, typename Cx>
-                static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx)    { return bits::pointer_write<X>(o, t.data(), t.size(), cx); }
-        };
-    template <typename X, template <typename> class S, typename T, typename ...R>
-        struct write<S<bits::UQKEY<X>>, std::basic_string<T, R...>> {
-            template <typename O, typename Cx>
-                static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx)    { return bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx); }
-        };
-
-    template <typename X, typename F, typename S>
-        struct write<X, std::pair<F, S>> {
-            template <typename O, typename Cx>
-                static bool value(O& o, const std::pair<F, S>& t, Cx& cx) {
-                    return  io::poke<X>(o, X::list::beg, cx) &&
-                                write_value<X>(o, t.first, cx) && io::poke<X>(o, X::list::sep, cx) && write_value<X>(o, t.second, cx) &&
-                            io::poke<X>(o, X::list::end, cx)
-                    ;
-                }
-        };
-
-}   // write, library types
 
 namespace cxon { namespace enums { // enum reader/writer construction helpers
 
