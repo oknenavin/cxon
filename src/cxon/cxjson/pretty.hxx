@@ -6,8 +6,6 @@
 #ifndef CXJSON_PRETTY_HXX_
 #define CXJSON_PRETTY_HXX_
 
-// implementation /////////////////////////////////////////////////////////////
-
 namespace cxon {
 
 #   define CXJSON_RG()\

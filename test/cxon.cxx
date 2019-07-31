@@ -5,6 +5,8 @@
 
 #include "cxon/cxon.hxx"
 #include "cxon/pretty.hxx"
+#include "cxon/std/utility.hxx" // std::pair
+#include "cxon/std/string.hxx"
 #include "cxon/std/tuple.hxx"
 #include "cxon/std/array.hxx"
 #include "cxon/std/valarray.hxx"

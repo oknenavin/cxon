@@ -8,27 +8,45 @@
 
 #include <tuple>
 
+namespace cxon { namespace bits { // read/write
+
+    template <typename X, typename T, unsigned N, unsigned L>
+        struct tuple_read {
+            template <typename II, typename Cx>
+                static bool value(T& t, II& i, II e, Cx& cx) {
+                    if (!read_value<X>(std::get<N>(t), i, e, cx)) return false;
+                    if (N + 1 != L) if (!io::consume<X>(X::list::sep, i, e, cx)) return false;
+                    return tuple_read<X, T, N + 1, L>::value(t, i, e, cx);
+                }
+        };
+
+    template <typename X, typename T, unsigned N>
+        struct tuple_read<X, T, N, N> {
+            template <typename II, typename Cx>
+                static constexpr bool value(T&, II&, II, Cx&) { return true; }
+        };
+
+    template <typename X, typename T, unsigned N, unsigned L>
+        struct tuple_write {
+            template <typename O, typename Cx>
+                static bool value(O& o, const T& t, Cx& cx) {
+                    return  write_value<X>(o, std::get<N>(t), cx) && io::poke<X>(o, X::list::sep, cx) &&
+                            tuple_write<X, T, N + 1, L>::value(o, t, cx)
+                    ;
+                }
+        };
+
+    template <typename X, typename T, unsigned N>
+        struct tuple_write<X, T, N, N> {
+            template <typename O, typename Cx>
+                static bool value(O& o, const T& t, Cx& cx) {
+                    return write_value<X>(o, std::get<N>(t), cx);
+                }
+        };
+
+}}  // cxon::bits read/write
+
 namespace cxon {
-
-    namespace bits {
-
-        template <typename X, typename T, unsigned N, unsigned L>
-            struct tuple_read {
-                template <typename II, typename Cx>
-                    static bool value(T& t, II& i, II e, Cx& cx) {
-                        if (!read_value<X>(std::get<N>(t), i, e, cx)) return false;
-                        if (N + 1 != L) if (!io::consume<X>(X::list::sep, i, e, cx)) return false;
-                        return tuple_read<X, T, N + 1, L>::value(t, i, e, cx);
-                    }
-            };
-
-        template <typename X, typename T, unsigned N>
-            struct tuple_read<X, T, N, N> {
-                template <typename II, typename Cx>
-                    static constexpr bool value(T&, II&, II, Cx&) { return true; }
-            };
-
-    }
 
     template <typename X, typename H, typename ...T>
         struct read<X, std::tuple<H, T...>> {
@@ -41,28 +59,6 @@ namespace cxon {
                     ;
                 }
         };
-
-    namespace bits { // tuple write
-
-        template <typename X, typename T, unsigned N, unsigned L>
-            struct tuple_write {
-                template <typename O, typename Cx>
-                    static bool value(O& o, const T& t, Cx& cx) {
-                        return  write_value<X>(o, std::get<N>(t), cx) && io::poke<X>(o, X::list::sep, cx) &&
-                                tuple_write<X, T, N + 1, L>::value(o, t, cx)
-                        ;
-                    }
-            };
-
-        template <typename X, typename T, unsigned N>
-            struct tuple_write<X, T, N, N> {
-                template <typename O, typename Cx>
-                    static bool value(O& o, const T& t, Cx& cx) {
-                        return write_value<X>(o, std::get<N>(t), cx);
-                    }
-            };
-
-    }
 
     template <typename X, typename ...T>
         struct write<X, std::tuple<T...>> {
