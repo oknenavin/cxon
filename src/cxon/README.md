@@ -27,22 +27,22 @@ types is as follow:
 - [fundamental types][cpp-fund-types]
 
   type                                                            | `JSON` type    | header
-  ----------------------------------------------------------------|----------------|----------------------------
-  `nullptr_t`                                                     | `null`         | [`cxon/cxon.hxx`](cxon.hxx)
-  `bool`                                                          | `true`/`false` | [`cxon/cxon.hxx`](cxon.hxx)
-  `char`, `wchar_t`, `char16_t` and `char32_t`                    | `string`       | [`cxon/cxon.hxx`](cxon.hxx)
-  `signed`/`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | [`cxon/cxon.hxx`](cxon.hxx)
-  `float`, `double`, `long double`                                | `number`       | [`cxon/cxon.hxx`](cxon.hxx)
+  ----------------------------------------------------------------|----------------|---------------------------------------------------------------------------------------
+  `nullptr_t`                                                     | `null`         | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  `bool`                                                          | `true`/`false` | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  `char`, `wchar_t`, `char16_t` and `char32_t`                    | `string`       | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  `signed`/`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  `float`, `double`, `long double`                                | `number`       | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
  
 - compound types
 
   type                            | `JSON` type            | header
-  --------------------------------|------------------------|----------------------------
-  [`reference types`][cpp-ref]    | `value type` or `null` | [`cxon/cxon.hxx`](cxon.hxx)
-  [`pointer types`][cpp-ptr]      | `value type` or `null` | [`cxon/cxon.hxx`](cxon.hxx)
-  [`array types`][cpp-arr]      | `array`                | [`cxon/cxon.hxx`](cxon.hxx)
-  [`enumeration types`][cpp-enum] | `string`               | [`cxon/cxon.hxx`](cxon.hxx)
-  [`class types`][cpp-class]      | `object`               | [`cxon/cxon.hxx`](cxon.hxx)
+  --------------------------------|------------------------|---------------------------------------------------------------------------------
+  [`reference types`][cpp-ref]    | `value type` or `null` | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  [`pointer types`][cpp-ptr]      | `value type` or `null` | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  [`array types`][cpp-array]      | `array`                | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  [`enumeration types`][cpp-enum] | `string`               | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  [`class types`][cpp-class]      | `object`               | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
 
 - standard library types
 
@@ -76,7 +76,7 @@ specify this about object keys:*
   > *The JSON syntax does not impose any restrictions on the strings used as names,
   > __does not require that name strings be unique__*...
 
-*and by choosing map or multi-map as a `C++` mapping type, value of an existing key
+*and by picking map or multi-map as a `C++` mapping type, value of an existing key
 may be replaced or kept.*
 
 Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation
