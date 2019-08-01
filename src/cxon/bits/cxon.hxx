@@ -8,6 +8,68 @@
 
 #include "charconv.hxx"
 
+namespace cxon {namespace prms { namespace bits { // context parameters
+
+    template <typename Ta, typename Ty, Ty c>
+        struct ctt {
+            using tag   = Ta;
+            using type  = Ty;
+            static constexpr type value = c;
+        };
+
+    template <typename Ta, typename Ty>
+        struct stt {
+            using tag   = Ta;
+            using type  = Ty;
+            type value;
+            stt()               : value() {}
+            stt(type&& v)       : value(std::move(v)) {}
+            stt(const type& v)  : value(v) {}
+        };
+
+    template <typename ...>
+        struct pack {
+            using head_type = void;
+            using tag       = void;
+            using type      = void;
+        };
+    template <typename P>
+        struct pack<P> : pack<> {
+            using head_type = pack<>;
+            using tag       = typename P::tag;
+            using type      = P;
+            type prm;
+            constexpr pack(type&& p)        : prm(std::move(p)) {}
+            constexpr pack(const type& p)   : prm(p) {}
+        };
+    template <typename P, typename ...T>
+        struct pack<P, T...> : pack<T...> {
+            using head_type = pack<T...>;
+            using tag       = typename P::tag;
+            using type      = P;
+            type prm;
+            constexpr pack(type&& p, T&&... t)      : head_type(std::forward<T>(t)...), prm(std::move(p)) {}
+            constexpr pack(const type& p, T&&... t) : head_type(std::forward<T>(t)...), prm(p) {}
+        };
+
+    template <typename Ta, typename Pa, bool V = std::is_same<typename Pa::head_type, void>::value, bool T = std::is_same<typename Pa::tag, Ta>::value>
+        struct pack_has_                        { static constexpr bool value = T; };
+    template <typename Ta, typename Pa>
+        struct pack_has_<Ta, Pa, false, false>  { static constexpr bool value = pack_has_<Ta, typename Pa::head_type>::value; };
+
+    template <typename Ta, typename Pa>
+        struct pack_has : pack_has_<Ta, Pa>     {};
+
+    template <typename Ta, typename Pa, bool V = std::is_same<typename Pa::head_type, void>::value, bool T = std::is_same<typename Pa::tag, Ta>::value>
+        struct pack_sbt_                        { using type = Pa; static_assert(T, "tag unknown"); };
+    template <typename Ta, typename Pa>
+        struct pack_sbt_<Ta, Pa, false, false>  { using type = typename pack_sbt_<Ta, typename Pa::head_type>::type; };
+
+    template <typename Ta, typename Pa>
+        struct pack_sbt : pack_sbt_<Ta, Pa>     {};
+
+}}} // cxon::prms::bits context parameters
+
 namespace cxon { namespace bits { // character classes
 
     enum : unsigned char {

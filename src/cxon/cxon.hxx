@@ -179,130 +179,64 @@ namespace cxon { // format traits
 
 }   // cxon format traits
 
-namespace cxon { // contexts
+namespace cxon { namespace prms { // context parameters
 
-    namespace prms {
+    namespace bits { // forward
+        template <typename Ta, typename Ty, Ty c> struct ctt;
+        template <typename Ta, typename Ty> struct stt;
+        template <typename ...> struct pack;
+        template <typename Ta, typename Pa> struct pack_has;
+        template <typename Ta, typename Pa> struct pack_sbt;
+    }
 
-        namespace bits {
-
-            template <typename Ta, typename Ty, Ty c>
-                struct ctt {
-                    using tag   = Ta;
-                    using type  = Ty;
-                    static constexpr type value = c;
-                };
-
-            template <typename Ta, typename Ty>
-                struct stt {
-                    using tag   = Ta;
-                    using type  = Ty;
-                    type value;
-                    stt()               : value() {}
-                    stt(type&& v)       : value(std::move(v)) {}
-                    stt(const type& v)  : value(v) {}
-                };
-
-            template <typename ...>
-                struct pack {
-                    using head_type = void;
-                    using tag       = void;
-                    using type      = void;
-                };
-            template <typename P>
-                struct pack<P> : pack<> {
-                    using head_type = pack<>;
-                    using tag       = typename P::tag;
-                    using type      = P;
-                    type prm;
-                    constexpr pack(type&& p)        : prm(std::move(p)) {}
-                    constexpr pack(const type& p)   : prm(p) {}
-                };
-            template <typename P, typename ...T>
-                struct pack<P, T...> : pack<T...> {
-                    using head_type = pack<T...>;
-                    using tag       = typename P::tag;
-                    using type      = P;
-                    type prm;
-                    constexpr pack(type&& p, T&&... t)      : head_type(std::forward<T>(t)...), prm(std::move(p)) {}
-                    constexpr pack(const type& p, T&&... t) : head_type(std::forward<T>(t)...), prm(p) {}
-                };
-
-            template <typename T>
-                struct unwrap_reference                             { using type = T; }; // C++20
-            template <typename T>
-                struct unwrap_reference<std::reference_wrapper<T>>  { using type = T&; }; // C++20
+    template <typename T> struct unwrap_reference                               { using type = T; }; // C++20
+    template <typename T> struct unwrap_reference<std::reference_wrapper<T>>    { using type = T&; }; // C++20
  
-            template <typename T>
-                using unwrap_ref_decay      = unwrap_reference<typename std::decay<T>::type>; // C++20
-            template <typename T>
-                using unwrap_ref_decay_t    = typename unwrap_ref_decay<T>::type; // C++20
+    template <typename T> using unwrap_ref_decay    = unwrap_reference<typename std::decay<T>::type>; // C++20
+    template <typename T> using unwrap_ref_decay_t  = typename unwrap_ref_decay<T>::type; // C++20
 
-            template <typename Ta, typename Pa, bool V = std::is_same<typename Pa::head_type, void>::value, bool T = std::is_same<typename Pa::tag, Ta>::value>
-                struct pack_has                         { static constexpr bool value = T; };
-            template <typename Ta, typename Pa>
-                struct pack_has<Ta, Pa, false, false>   { static constexpr bool value = pack_has<Ta, typename Pa::head_type>::value; };
+    template <typename ...P>
+        using pack = bits::pack<unwrap_ref_decay_t<P>...>;
 
-            template <typename Ta, typename Pa, bool V = std::is_same<typename Pa::head_type, void>::value, bool T = std::is_same<typename Pa::tag, Ta>::value>
-                struct pack_sbt                         { using type = Pa; static_assert(T, "tag unknown"); };
-            template <typename Ta, typename Pa>
-                struct pack_sbt <Ta, Pa, false, false>  { using type = typename pack_sbt<Ta, typename Pa::head_type>::type; };
+    template <typename ...P>
+        constexpr pack<P...> make(P&&... p) { return { std::forward<P>(p)... }; }
 
-        }   // bits
-        
-        template <typename Ta, typename Ty, Ty c>
-            using ctt = bits::ctt<Ta, Ty, c>;
-        template <typename Ta, typename Ty>
-            using stt = bits::stt<Ta, Ty>;
-        template <typename ...P>
-            using pack = bits::pack<bits::unwrap_ref_decay_t<P>...>;
+    template <typename Ta>
+        struct tag {        
+            template <typename Ty, Ty c>    using ctt = bits::ctt<Ta, Ty, c>;
+            template <typename Ty>          using stt = bits::stt<Ta, Ty>;
+            template <typename Pa>          using in = bits::pack_has<Ta, Pa>;
 
-        template <typename ...P>
-            constexpr pack<P...> make(P&&... p) {
-                return { std::forward<P>(p)... };
-            }
+            template <typename Ty, Ty c>
+                static constexpr auto set() -> ctt<Ty, c>;
 
-        template <typename Ta>
-            struct tag {
-                template <typename Pa>
-                    using in = bits::pack_has<Ta, Pa>;
+            template <typename Ty>
+                static constexpr auto set(Ty&& v) -> stt<Ty>;
+            template <typename Ty>
+                static constexpr auto set(const Ty& v) -> stt<Ty>;
 
-                template <typename Ty, Ty c>
-                    static constexpr auto set() -> ctt<Ta, Ty, c>
-                        { return {}; }
+            template <typename Pa>
+                using pack_of_tag = typename bits::pack_sbt<Ta, Pa>::type;
 
-                template <typename Ty>
-                    static constexpr auto set(Ty&& v) -> stt<Ta, Ty>
-                        { return stt<Ta, Ty>(std::forward<Ty>(v)); }
-                template <typename Ty>
-                    static constexpr auto set(const Ty& v) -> stt<Ta, Ty>
-                        { return stt<Ta, Ty>(v); }
+            template <typename Pa, typename Ty>
+                static constexpr auto constant(Ty)      -> cxon::enable_if_t< in<Pa>::value, Ty>;
+            template <typename Pa, typename Ty>
+                static constexpr auto constant(Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>;
 
-                template <typename Pa>
-                    using pack_of_tag = typename bits::pack_sbt<Ta, Pa>::type;
+            template <typename Pa>
+                static constexpr auto reference(Pa& p) -> typename pack_of_tag<Pa>::type::type&;
+            template <typename Pa>
+                static constexpr auto value(const Pa& p) -> typename pack_of_tag<Pa>::type::type;
 
-                template <typename Pa, typename Ty>
-                    static constexpr auto constant(Ty)      -> cxon::enable_if_t< in<Pa>::value, Ty>
-                        { return pack_of_tag<Pa>::type::value; }
-                template <typename Pa, typename Ty>
-                    static constexpr auto constant(Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>
-                        { return dflt; }
+            template <typename Pa, typename Ty>
+                static constexpr auto value(const Pa& p, Ty)    -> cxon::enable_if_t< in<Pa>::value, Ty>;
+            template <typename Pa, typename Ty>
+                static constexpr auto value(const Pa&, Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>;
+        };
 
-                template <typename Pa>
-                    static constexpr auto reference(Pa& p)      -> typename pack_of_tag<Pa>::type::type&
-                        { return static_cast<pack_of_tag<Pa>&>(p).prm.value; }
-                template <typename Pa>
-                    static constexpr auto value(const Pa& p)    -> typename pack_of_tag<Pa>::type::type
-                        { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
+}}  // cxon::prms context parameters
 
-                template <typename Pa, typename Ty>
-                    static constexpr auto value(const Pa& p, Ty)    -> cxon::enable_if_t< in<Pa>::value, Ty>
-                        { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
-                template <typename Pa, typename Ty>
-                    static constexpr auto value(const Pa&, Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>
-                        { return dflt; }
-            };
-
-    }   // prms
+namespace cxon { // contexts
 
     template <typename ...Ps> // prms
         struct context {
@@ -576,6 +510,42 @@ namespace cxon { namespace structs { // structured types reader/writer construct
 // implementation /////////////////////////////////////////////////////////////
 
 #include "bits/cxon.hxx"
+
+namespace cxon { namespace prms { // context parameters
+
+    template <typename Ta> template <typename Ty, Ty c>
+        constexpr auto tag<Ta>::set() -> ctt<Ty, c>
+            { return {}; }
+
+    template <typename Ta> template <typename Ty>
+        constexpr auto tag<Ta>::set(Ty&& v) -> stt<Ty>
+            { return stt<Ty>(std::forward<Ty>(v)); }
+    template <typename Ta> template <typename Ty>
+        constexpr auto tag<Ta>::set(const Ty& v) -> stt<Ty>
+            { return stt<Ty>(v); }
+
+    template <typename Ta> template <typename Pa, typename Ty>
+        constexpr auto tag<Ta>::constant(Ty)         -> cxon::enable_if_t< in<Pa>::value, Ty>
+            { return pack_of_tag<Pa>::type::value; }
+    template <typename Ta> template <typename Pa, typename Ty>
+        constexpr auto tag<Ta>::constant(Ty dflt)    -> cxon::enable_if_t<!in<Pa>::value, Ty>
+            { return dflt; }
+
+    template <typename Ta> template <typename Pa>
+        constexpr auto tag<Ta>::reference(Pa& p) -> typename pack_of_tag<Pa>::type::type&
+            { return static_cast<pack_of_tag<Pa>&>(p).prm.value; }
+    template <typename Ta> template <typename Pa>
+        constexpr auto tag<Ta>::value(const Pa& p) -> typename pack_of_tag<Pa>::type::type
+            { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
+
+    template <typename Ta> template <typename Pa, typename Ty>
+        constexpr auto tag<Ta>::value(const Pa& p, Ty)       -> cxon::enable_if_t< in<Pa>::value, Ty>
+            { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
+    template <typename Ta> template <typename Pa, typename Ty>
+        constexpr auto tag<Ta>::value(const Pa&, Ty dflt)    -> cxon::enable_if_t<!in<Pa>::value, Ty>
+            { return dflt; }
+
+}}  // cxon::prms context parameters
 
 namespace cxon { // interface implementation
 
