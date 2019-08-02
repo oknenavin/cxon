@@ -24,8 +24,10 @@
 `CXON` defines and implements an interface, which is a generalization of `C++17`'s
 [`<charconv>`][cpp-charconv] interface and it's generalized with:
 
-- traits template parameter
-- trailing arbitrary parameters
+- traits template parameter (see [`Format traits`](src/cxon/README.md#format-traits))
+- trailing arbitrary parameters (see [`Context`](src/cxon/README.md#context))
+- input and output iterators as input and output (allowing streams, containers and arrays,
+  see [`Interface`](src/cxon/README.md#interface))
 
 ```c++
 namespace cxon {
@@ -36,13 +38,21 @@ namespace cxon {
         ... to_chars(..., CxPs... ps);
 ```
 
+###### Example
+
+``` c++
+from_chars(std::vector<int>, std::begin(<x>), std:end(<x>), ...); // read from itratoror (default format `JSON`)
+from_chars<CBOR>(std::vector<int>, <container>, ...); // read from container or array (format `CBOR`)
+```
+
 `CXON` implements good part of `C++`'s fundamental and standard library types including:
 
 - [fundamental types][cpp-fund-types]
     - `nullptr_t`
     - `bool`
     - character types - `char`, `wchar_t`, `char16_t` and `char32_t`
-    - integral types - `signed` and `unsigned` `char`, `short`, `int`, `long`, `long long`
+    - integral types - `signed` and `unsigned` `char`, `short int`, `int`, `long int`,
+	  `long long int`
     - floating-point types - `float`, `double`, `long double`
 - compound types
   - [`pointer types`][cpp-ptr]

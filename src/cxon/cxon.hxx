@@ -520,10 +520,10 @@ namespace cxon { namespace prms { // context parameters
             { return stt<Ty>(v); }
 
     template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::constant(Ty)         -> cxon::enable_if_t< in<Pa>::value, Ty>
+        constexpr auto tag<Ta>::constant(Ty)        -> cxon::enable_if_t< in<Pa>::value, Ty>
             { return pack_of_tag<Pa>::type::value; }
     template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::constant(Ty dflt)    -> cxon::enable_if_t<!in<Pa>::value, Ty>
+        constexpr auto tag<Ta>::constant(Ty dflt)   -> cxon::enable_if_t<!in<Pa>::value, Ty>
             { return dflt; }
 
     template <typename Ta> template <typename Pa>
@@ -534,10 +534,10 @@ namespace cxon { namespace prms { // context parameters
             { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
 
     template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::value(const Pa& p, Ty)       -> cxon::enable_if_t< in<Pa>::value, Ty>
+        constexpr auto tag<Ta>::value(const Pa& p, Ty)      -> cxon::enable_if_t< in<Pa>::value, Ty>
             { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
     template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::value(const Pa&, Ty dflt)    -> cxon::enable_if_t<!in<Pa>::value, Ty>
+        constexpr auto tag<Ta>::value(const Pa&, Ty dflt)   -> cxon::enable_if_t<!in<Pa>::value, Ty>
             { return dflt; }
 
 }}  // cxon::prms context parameters
