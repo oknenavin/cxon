@@ -18,13 +18,8 @@
 #include <vector>
 
 #include <utility>
-#include <algorithm>
-
-#include <limits>
 #include <type_traits>
 #include <system_error>
-
-#include <cmath> // isfinite, ...
 
 #include <cstring> // strcmp
 
@@ -126,58 +121,6 @@ namespace cxon { // errors
     };
 
 }   // cxon errors
-
-namespace cxon { // format traits
-
-    struct format_traits {
-        struct map {
-            static constexpr char                   beg             = '{';
-            static constexpr char                   end             = '}';
-            static constexpr char                   div             = ':';
-            static constexpr char                   sep             = ',';
-            static constexpr bool                   unquoted_keys   = true;
-        };
-        struct list {
-            static constexpr char                   beg             = '{';
-            static constexpr char                   end             = '}';
-            static constexpr char                   sep             = ',';
-        };
-        struct string {
-            static constexpr char                   beg             = '"';
-            static constexpr char                   end             = '"';
-        };
-        struct number {
-            static constexpr bool                   strict          = false;
-        };
-        struct id {
-            static constexpr char const*            nil             = "null";
-            static constexpr char const*            pos             = "true";
-            static constexpr char const*            neg             = "false";
-        };
-    };
-    static_assert(format_traits::string::beg == format_traits::string::end && (format_traits::string::beg == '"' || format_traits::string::beg == '\''), "not supported");
-
-    struct cxon_format_traits : format_traits {};
-
-    struct json_format_traits : format_traits {
-        struct map : format_traits::map {
-            static constexpr bool                   unquoted_keys   = false;
-        };
-        struct list : format_traits::list {
-            static constexpr char                   beg             = '[';
-            static constexpr char                   end             = ']';
-        };
-        static constexpr bool                       strict_js       = false;
-    };
-
-    // access
-
-    template <typename X>
-        using map = typename X::map;
-    template <typename X>
-        using list = typename X::list;
-
-}   // cxon format traits
 
 namespace cxon { namespace prms { // context parameters
 
@@ -508,6 +451,58 @@ namespace cxon { namespace structs { // structured types reader/writer construct
 }}  // cxon::structs structured types reader/writer construction helpers
 
 // implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { // format traits
+
+    struct format_traits {
+        struct map {
+            static constexpr char                   beg             = '{';
+            static constexpr char                   end             = '}';
+            static constexpr char                   div             = ':';
+            static constexpr char                   sep             = ',';
+            static constexpr bool                   unquoted_keys   = true;
+        };
+        struct list {
+            static constexpr char                   beg             = '{';
+            static constexpr char                   end             = '}';
+            static constexpr char                   sep             = ',';
+        };
+        struct string {
+            static constexpr char                   beg             = '"';
+            static constexpr char                   end             = '"';
+        };
+        struct number {
+            static constexpr bool                   strict          = false;
+        };
+        struct id {
+            static constexpr char const*            nil             = "null";
+            static constexpr char const*            pos             = "true";
+            static constexpr char const*            neg             = "false";
+        };
+    };
+    static_assert(format_traits::string::beg == format_traits::string::end && (format_traits::string::beg == '"' || format_traits::string::beg == '\''), "not supported");
+
+    struct cxon_format_traits : format_traits {};
+
+    struct json_format_traits : format_traits {
+        struct map : format_traits::map {
+            static constexpr bool                   unquoted_keys   = false;
+        };
+        struct list : format_traits::list {
+            static constexpr char                   beg             = '[';
+            static constexpr char                   end             = ']';
+        };
+        static constexpr bool                       strict_js       = false;
+    };
+
+    // access
+
+    template <typename X>
+        using map = typename X::map;
+    template <typename X>
+        using list = typename X::list;
+
+}   // cxon format traits
 
 #include "bits/cxon.hxx"
 

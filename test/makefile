@@ -22,11 +22,11 @@ test-cxjson: $(out)/cxjson-test
                                     @$(dat)/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
-$(out)/cxon-test: cxon.cxx $(src)/cxon.hxx $(src)/pretty.hxx
+$(out)/cxon-test: cxon.cxx
 	@mkdir -p $(out)
 	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
 
-$(out)/cxjson-test: cxjson.cxx $(src)/cxon.hxx $(src)/cxjson/cxjson.hxx $(src)/cxjson/pretty.hxx
+$(out)/cxjson-test: cxjson.cxx
 	@mkdir -p $(out)
 	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
     

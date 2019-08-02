@@ -19,7 +19,10 @@
 #### Introduction
 
 `CXON` defines and implements an interface, which is a generalization of `C++17`'s
-[`<charconv>`][cpp-charconv] interface.
+[`<charconv>`][cpp-charconv] interface and it's generalized with:
+
+- traits template parameter
+- trailing arbitrary parameters
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
 types is as follow:
@@ -40,7 +43,7 @@ types is as follow:
   --------------------------------|------------------------|---------------------------------------------------------------------------------
   [`reference types`][cpp-ref]    | `value type` or `null` | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
   [`pointer types`][cpp-ptr]      | `value type` or `null` | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  [`array types`][cpp-array]      | `array`                | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+  [`array types`][cpp-arr]        | `array`                | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
   [`enumeration types`][cpp-enum] | `string`               | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
   [`class types`][cpp-class]      | `object`               | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
 
@@ -104,6 +107,8 @@ namespace cxon {
             It end;
             operator bool() const noexcept;
         };
+
+}
 ```
 
 ###### Template parameters
@@ -160,6 +165,7 @@ Does not throw by itself, however specializations may throw or not:
 
 ``` c++
 #include "cxon/cxon.hxx"
+#include "cxon/std/vector.hxx"
 #include <cassert>
 
 int main() {
@@ -180,7 +186,6 @@ int main() {
         );
     }
 }
-
 ```
 
 
@@ -253,6 +258,7 @@ Does not throw by itself, however writing to the output may throw (e.g. adding t
 
 ``` c++
 #include "cxon/cxon.hxx"
+#include "cxon/std/vector.hxx"
 #include <cassert>
 
 int main() {
@@ -307,9 +313,9 @@ template <typename Traits, typename FwIt>
 ```c++
 #include "cxon/cxon.hxx"
 #include "cxon/pretty.hxx"
-#include <map>
-#include <vector>
-#include <string>
+#include "cxon/std/string.hxx"
+#include "cxon/std/vector.hxx"
+#include "cxon/std/map.hxx"
 #include <cassert>
 
 int main() {
@@ -786,6 +792,8 @@ usage with `CXON`.
 
 ``` c++
 #include "cxon/cxon.hxx"
+#include "cxon/std/string.hxx"
+#include "cxon/std/tuple.hxx"
 #include <cassert>
 
 namespace jsonrpc {

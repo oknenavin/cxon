@@ -6,6 +6,7 @@
 #ifndef CXON_BITS_CXON_HXX_
 #define CXON_BITS_CXON_HXX_
 
+#include <cmath> // isfinite, ...
 #include "charconv.hxx"
 
 namespace cxon {namespace prms { namespace bits { // context parameters
@@ -1497,7 +1498,7 @@ namespace cxon { namespace unquoted { namespace bits { // unquoted value
             template <typename BA, typename II>
                 static bool read(BA o, II& i, II e) {
                     for (char c = *i; i != e; c = *++i) {
-                                if (c == X::map::beg)      { if (!skip<map<X>::beg, map<X>::end>(o, i, e))  return false; }
+                             if (c == X::map::beg)      { if (!skip<map<X>::beg, map<X>::end>(o, i, e))     return false; }
                         else if (c == X::list::beg)     { if (!skip<list<X>::beg, list<X>::end>(o, i, e))   return false; }
                         else if (c == X::string::beg)   { if (!skip(o, i, e))                               return false; }
                         else if (c == X::map::sep)                                                          break;

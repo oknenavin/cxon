@@ -14,22 +14,27 @@
 --------------------------------------------------------------------------------
 
 
-> `CXON` is a simple, non-intrusive `C++` serialization library  
-> `CXON`'s default serialization format is `UTF-8` encoded `JSON`  
-> `CXON` is `C++11` compliant, self contained, header-only library  
-> `CXON` core library consist of one header
+`CXON` is a C++ serialization interface and also an implementation for `UTF-8` encoded `JSON`.  
+`CXON` is `C++11` compliant, self contained, header-only library.
 
 `CXON/JSON` strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
 
 #### Introduction
 
 `CXON` defines and implements an interface, which is a generalization of `C++17`'s
-[`<charconv>`][cpp-charconv] interface.
+[`<charconv>`][cpp-charconv] interface and it's generalized with:
 
-Most libraries implement a polymorphic type to represent arbitrary `JSON` - many call it `DOM`,
-`DOM`-like, etc.. In contrast, `CXON` binds `JSON` to any suitable `C++` type, though
-[`CXJSON`](src/cxon/cxjson/README.md), which is part of `CXON`, is an implementation of such a polymorphic
-type, and also an example of how `CXON` can be used.
+- traits template parameter
+- trailing arbitrary parameters
+
+```c++
+namespace cxon {
+
+    template <typename Traits, ..., typename ...CxPs>
+        ... from_chars(..., CxPs... ps);
+    template <typename Traits, ..., typename ...CxPs>
+        ... to_chars(..., CxPs... ps);
+```
 
 `CXON` implements good part of `C++`'s fundamental and standard library types including:
 
@@ -39,7 +44,11 @@ type, and also an example of how `CXON` can be used.
     - character types - `char`, `wchar_t`, `char16_t` and `char32_t`
     - integral types - `signed` and `unsigned` `char`, `short`, `int`, `long`, `long long`
     - floating-point types - `float`, `double`, `long double`
-- arrays and pointers of arbitrary types
+- compound types
+  - [`pointer types`][cpp-ptr]
+  - [`array types`][cpp-arr]
+  - [`enumeration types`][cpp-enum]
+  - [`class types`][cpp-class]
 - standard library types
     - [`std::basic_string`][cpp-bstr]
     - [`std::tuple`][cpp-tuple]
@@ -48,8 +57,14 @@ type, and also an example of how `CXON` can be used.
     - [`std::optional`][cpp-opt]
     - [`std::variant`][cpp-var]
 
-`CXON` can easily be extended for arbitrary types, using intrusive and non-intrusive methods
+`CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
+
+Most of the so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
+implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc..
+[`CXJSON`](src/cxon/cxjson/README.md), which is part of `CXON`, is an implementation of such a
+polymorphic type (and also an example of how `CXON` can be used).
+
 
 ###### Example
 
@@ -57,6 +72,9 @@ Bind to a library type:
 
 ``` c++
 #include "cxon/cxon.hxx"
+#include "cxon/std/string.hxx" // include std/<stdlib>.hxx
+#include "cxon/std/vector.hxx" // instead of the standard header
+#include "cxon/std/map.hxx"
 #include <cassert>
 
 // an arbitrary complex combination of fundamental and library types
@@ -78,6 +96,8 @@ Bind to a custom type:
 
 ``` c++
 #include "cxon/cxon.hxx"
+#include "cxon/std/vector.hxx"
+#include "cxon/std/list.hxx"
 #include <cassert>
 
 struct my_type {
@@ -122,7 +142,7 @@ In both cases `my_type` is bound to the same `JSON`:
 
 #### Installation
 
-`CXON` is a header-only library, copy the header(s) you need or use
+`CXON` is a header-only library, copy the headers you need or use
 the provided makefile to install it on `POSIX` systems:
 
 ``` bash
@@ -173,6 +193,10 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
+[cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
+[cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
+[cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
