@@ -8,6 +8,7 @@
 
 [![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.org/oknenavin/cxon)
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
+[![Quality][img-cod]](https://www.codacy.com/app/oknenavin/cxon?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
 [![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
 <!--[![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)-->
 
@@ -197,6 +198,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-win]: .rc/windows.png
 [img-bld]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[img-cod]: https://api.codacy.com/project/badge/Grade/503ff2e908b745ba9dfeba2b50ec2201
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
