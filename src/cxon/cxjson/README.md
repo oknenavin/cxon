@@ -44,11 +44,11 @@ int main() {
     };
 
     node n1; // read
-        cxon::from_chars(n1, s0);
+        cxon::from_bytes(n1, s0);
     assert(n1 == n0);
 
     std::string s1; // write
-        cxon::to_chars(s1, n0);
+        cxon::to_bytes(s1, n0);
     assert(s1 == s0);
 }
 ```
@@ -107,9 +107,9 @@ int main() {
     assert(n1 == n2);
 
     std::string s1;
-        cxon::to_chars(s1, n1);
+        cxon::to_bytes(s1, n1);
     std::string s2;
-        cxon::to_chars(s2, n2);
+        cxon::to_bytes(s2, n2);
     assert(s1 == s2);
 }
 ```
@@ -212,7 +212,7 @@ struct traits : cxjson::node_traits {
 ...
 using node = cxjson::basic_node<traits>;
 node n;
-cxon::from_chars(n, "{\"k\": 42, \"k\": 43}");
+cxon::from_bytes(n, "{\"k\": 42, \"k\": 43}");
 assert(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
 ```
 
@@ -473,10 +473,10 @@ bool operator != (const basic_node& n) const; (2)
    `recursion_guard` parameter must be passed explicitly.*
 
   *Note: currently calling of the overloads with parameter(s), e.g.
-  `from_chars(..., recursion_depth::set<unsigned, 4U>())`, fail to compile with g++
+  `from_bytes(..., recursion_depth::set<unsigned, 4U>())`, fail to compile with g++
   due to a bug in the compiler ([Bug 90642](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90642)).
   As a workaround, they may be called by explicitly passing of the traits parameters - e.g.
-  `from_chars<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
+  `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
 
 ###### Example
 
@@ -487,14 +487,14 @@ bool operator != (const basic_node& n) const; (2)
 int main() {
     using namespace cxjson;
     {   node n;
-            auto const r = cxon::from_chars(n, "#[1]");
+            auto const r = cxon::from_bytes(n, "#[1]");
         assert(!r &&
                 r.ec.category() == error_category::value &&
                 r.ec == error::invalid
         );
     }
     {   node n;
-            auto const r = cxon::from_chars(n, "[[[[1]]]]", recursion_depth::set<unsigned, 4U>());
+            auto const r = cxon::from_bytes(n, "[[[[1]]]]", recursion_depth::set<unsigned, 4U>());
         assert(!r &&
                 r.ec.category() == error_category::value &&
                 r.ec == error::recursion_depth_exceeded

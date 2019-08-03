@@ -66,16 +66,16 @@ namespace cxon {
     using cxjson::basic_node;
 
     template <typename X = JSON<>, typename Tr, typename InIt, typename ...CxPs>
-        inline auto     from_chars(basic_node<Tr>& t, InIt b, InIt e, CxPs... p)      -> from_chars_result<InIt>;
+        inline auto     from_bytes(basic_node<Tr>& t, InIt b, InIt e, CxPs... p)      -> from_bytes_result<InIt>;
     template <typename X = JSON<>, typename Tr, typename Iterable, typename ...CxPs>
-        inline auto     from_chars(basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_chars_result<decltype(std::begin(i))>;
+        inline auto     from_bytes(basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_bytes_result<decltype(std::begin(i))>;
 
     template <typename X = JSON<>, typename Tr, typename OutIt, typename ...CxPs>
-        inline auto     to_chars(OutIt o, const basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_chars_result<OutIt>>;
+        inline auto     to_bytes(OutIt o, const basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
     template <typename X = JSON<>, typename Tr, typename Insertable, typename ...CxPs>
-        inline auto     to_chars(Insertable& i, const basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_chars_result<decltype(std::begin(i))>>;
+        inline auto     to_bytes(Insertable& i, const basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
     template <typename X = JSON<>, typename Tr, typename FwIt, typename ...CxPs>
-        inline auto     to_chars(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p)  -> to_chars_result<FwIt>;
+        inline auto     to_bytes(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p)  -> to_bytes_result<FwIt>;
 
 }   // cxon
 
@@ -319,25 +319,25 @@ namespace cxon {
     using cxjson::recursion_guard;
 
     template <typename X, typename Tr, typename II, typename ...CxPs>
-        inline auto from_chars(basic_node<Tr>& t, II b, II e, CxPs... p) -> from_chars_result<II> {
-            return interface::from_chars<X>(t, b, e, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+        inline auto from_bytes(basic_node<Tr>& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
+            return interface::from_bytes<X>(t, b, e, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
-        inline auto from_chars(basic_node<Tr>& t, const I& i, CxPs... p) -> from_chars_result<decltype(std::begin(i))> {
-            return interface::from_chars<X>(t, i, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+        inline auto from_bytes(basic_node<Tr>& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
+            return interface::from_bytes<X>(t, i, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
 
     template <typename X, typename Tr, typename OI, typename ...CxPs>
-        inline auto to_chars(OI o, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_chars_result<OI>> {
-            return interface::to_chars<X>(o, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+        inline auto to_bytes(OI o, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
+            return interface::to_bytes<X>(o, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
-        inline auto to_chars(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_chars_result<decltype(std::begin(i))>> {
-            return interface::to_chars<X>(i, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+        inline auto to_bytes(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
+            return interface::to_bytes<X>(i, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename FI, typename ...CxPs>
-        inline auto to_chars(FI b, FI e, const basic_node<Tr>& t, CxPs... p) -> to_chars_result<FI> {
-            return interface::to_chars<X>(b, e, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+        inline auto to_bytes(FI b, FI e, const basic_node<Tr>& t, CxPs... p) -> to_bytes_result<FI> {
+            return interface::to_bytes<X>(b, e, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
         }
 
 #   define CXJSON_RG()\

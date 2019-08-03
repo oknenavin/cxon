@@ -2384,81 +2384,81 @@ TEST_END()
 TEST_BEG(cxon::CXON<>) // interface/read
     // iterator
     {   int r; char const i[] = "1";
-        TEST_CHECK(cxon::from_chars(r, std::begin(i), std::end(i)) && r == 1);
+        TEST_CHECK(cxon::from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
     {   int r; std::string const i = "1";
-        TEST_CHECK(cxon::from_chars(r, std::begin(i), std::end(i)) && r == 1);
+        TEST_CHECK(cxon::from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
     {   int r; std::vector<char> const i = {'1', '\0'};
-        TEST_CHECK(cxon::from_chars(r, std::begin(i), std::end(i)) && r == 1);
+        TEST_CHECK(cxon::from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
     // container
     {   int r; char const i[] = "1";
-        TEST_CHECK(cxon::from_chars(r, i) && r == 1);
+        TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }
     {   int r; std::string const i = "1";
-        TEST_CHECK(cxon::from_chars(r, i) && r == 1);
+        TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }
     {   int r; std::vector<char> const i = {'1', '\0'};
-        TEST_CHECK(cxon::from_chars(r, i) && r == 1);
+        TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }
 TEST_END()
 
 TEST_BEG(cxon::CXON<>) // interface/write
     // output iterator
     {   std::string r; std::string const e = QS("1");
-        TEST_CHECK(cxon::to_chars<XXON>(std::back_inserter(r), "1") && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(std::back_inserter(r), "1") && r == e);
     }
     {   std::string r; std::string const e = "1";
-        TEST_CHECK(cxon::to_chars<XXON>(std::back_inserter(r), 1) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(std::back_inserter(r), 1) && r == e);
     }
     {   std::string r; std::string const e = "true";
-        TEST_CHECK(cxon::to_chars<XXON>(std::back_inserter(r), true) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(std::back_inserter(r), true) && r == e);
     }
     // range
     {   char o[16]; char const e[] = QS("1");
-        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
+        auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "1");
         TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
     }
         {   char o[1];
-            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), "1");
+            auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "1");
             TEST_CHECK(r.ec == cxon::write_error::output_failure);
         }
     {   char o[16]; char const e[] = "1";
-        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 1);
+        auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 1);
         TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
     }
         {   char o[1];
-            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), 42);
+            auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 42);
             TEST_CHECK(r.ec == cxon::write_error::output_failure);
         }
     {   char o[16]; char const e[] = "true";
-        auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
+        auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
         TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
     }
         {   char o[1];
-            auto const r = cxon::to_chars<XXON>(std::begin(o), std::end(o), true);
+            auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
             TEST_CHECK(r.ec == cxon::write_error::output_failure);
         }
     // container/std::string (push_back, append)
     {   std::string r; std::string const e = QS("1");
-        TEST_CHECK(cxon::to_chars<XXON>(r, "1") && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, "1") && r == e);
     }
     {   std::string r; std::string const e = "1";
-        TEST_CHECK(cxon::to_chars<XXON>(r, 1) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, 1) && r == e);
     }
     {   std::string r; std::string const e = "true";
-        TEST_CHECK(cxon::to_chars<XXON>(r, true) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, true) && r == e);
     }
     // container/std::vector (push_back)
     {   std::vector<char> r; std::vector<char> const e = {'"', '1', '"'};
-        TEST_CHECK(cxon::to_chars<XXON>(r, "1") && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, "1") && r == e);
     }
     {   std::vector<char> r; std::vector<char> const e = {'1'};
-        TEST_CHECK(cxon::to_chars<XXON>(r, 1) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, 1) && r == e);
     }
     {   std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
-        TEST_CHECK(cxon::to_chars<XXON>(r, true) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, true) && r == e);
     }
 TEST_END()
 
@@ -2474,37 +2474,37 @@ struct Struct11 {
 
 TEST_BEG(cxon::CXON<>) // interface/parameters
     {   std::string r; std::string const e = "3.142";
-        TEST_CHECK(cxon::to_chars<XXON>(r, 3.1415926, cxon::fp_precision::set<int, 4>()) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, 3.1415926, cxon::fp_precision::set<int, 4>()) && r == e);
     }
     {   int *r = nullptr;
-        TEST_CHECK(cxon::from_chars<XXON>(r, "42", cxon::allocator::set(std::allocator<char>())) && *r == 42);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, "42", cxon::allocator::set(std::allocator<char>())) && *r == 42);
     }
     {   size_t r = 0;
-        TEST_CHECK(cxon::from_chars<XXON>(r, std::string("123"), cxon::num_len_max::set<unsigned, 4U>()) && r == 123);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("123"), cxon::num_len_max::set<unsigned, 4U>()) && r == 123);
     }
     {   unsigned r = 0; std::string const i = "123";
-        auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
         TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
     }
     {   double r = 0; std::list<char> const i = {'1', '2', '3'};
-        TEST_CHECK(cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 4U>()) && r == 123);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<unsigned, 4U>()) && r == 123);
     }
     {   float r = 0; std::list<char> const i = {'1', '2', '3'};
-        auto const e = cxon::from_chars<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<unsigned, 2U>());
         TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
     }
     {   Enum1 r = Enum1::one;
-        TEST_CHECK(cxon::from_chars<XXON>(r, std::string("three"), cxon::ids_len_max::set<unsigned, 6U>()) && r == Enum1::three);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("three"), cxon::ids_len_max::set<unsigned, 6U>()) && r == Enum1::three);
     }
     {   Enum1 r = Enum1::one; std::string const i = "three";
-        auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
         TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 't');
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
-        TEST_CHECK(cxon::from_chars<XXON>(r, "{ field: 42 }", cxon::ids_len_max::set<unsigned, 6U>()) && r == Struct11(42));
+        TEST_CHECK(cxon::from_bytes<XXON>(r, "{ field: 42 }", cxon::ids_len_max::set<unsigned, 6U>()) && r == Struct11(42));
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
-        auto const e = cxon::from_chars<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::ids_len_max::set<unsigned, 2U>());
         TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 'f');
     }
 TEST_END()
@@ -2570,12 +2570,12 @@ TEST_BEG(cxon::CXON<>) // pretty
             "}"
         ;
         std::string s1;
-            cxon::to_chars<XXON>(cxon::make_indenter<XXON>(s1, 2, ' '), m);
+            cxon::to_bytes<XXON>(cxon::make_indenter<XXON>(s1, 2, ' '), m);
         TEST_CHECK(s1 == s0);
     }
     {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
         std::string s1;
-            cxon::to_chars<XXON>(cxon::make_indenter(s1), m);
+            cxon::to_bytes<XXON>(cxon::make_indenter(s1), m);
         std::string const s0 =
             cxon::pretty<XXON>(s1);
         TEST_CHECK(s1 == s0);
@@ -2588,12 +2588,12 @@ TEST_BEG(cxon::CXON<>) // pretty
             "}"
         ;
         std::string s1;
-            cxon::to_chars<XXON>(cxon::make_indenter<XXON>(s1, 2, ' '), m);
+            cxon::to_bytes<XXON>(cxon::make_indenter<XXON>(s1, 2, ' '), m);
         TEST_CHECK(s1 == s0);
     }
     {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl ah", "blah"} };
         std::string s1;
-            cxon::to_chars<XXON>(cxon::make_indenter(s1), m);
+            cxon::to_bytes<XXON>(cxon::make_indenter(s1), m);
         std::string const s0 =
             cxon::pretty<XXON>(s1);
         TEST_CHECK(s1 == s0);
@@ -2609,7 +2609,7 @@ namespace test {
     template <typename X, typename T>
         inline std::string to_string(const T& t) {
             std::string s;
-                to_chars<X>(s, t);
+                to_bytes<X>(s, t);
             return s;
         }
 
@@ -2734,17 +2734,17 @@ namespace test {
 
     template <typename X, typename T>
         inline auto from_string(T& t, const std::string& c)
-            -> enable_if_t< is_force_input_iterator<X>::value, from_chars_result<decltype(c.begin())>>
+            -> enable_if_t< is_force_input_iterator<X>::value, from_bytes_result<decltype(c.begin())>>
         {
             auto b = make_force_input_iterator(c.begin()), e = make_force_input_iterator(c.end());
-            auto const r =  from_chars<X>(t, b, e);
+            auto const r =  from_bytes<X>(t, b, e);
             return { r.ec, r.end.ii_ };
         }
     template <typename X, typename T>
         inline auto from_string(T& t, const std::string& c)
-            -> enable_if_t<!is_force_input_iterator<X>::value, from_chars_result<decltype(c.begin())>>
+            -> enable_if_t<!is_force_input_iterator<X>::value, from_bytes_result<decltype(c.begin())>>
         {
-            return from_chars<X>(t, c);
+            return from_bytes<X>(t, c);
         }
 
     template <typename X, typename T>
@@ -2763,13 +2763,13 @@ namespace test {
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj) {
             std::string res;
-                auto const r = cxon::to_chars<X>(res, sbj);
+                auto const r = cxon::to_bytes<X>(res, sbj);
             return r && ref == res;
         }
     template <typename X, typename T>
         static bool verify_write(const std::string&, const T& sbj, cxon::write_error err) {
             std::string res;
-                auto const r = cxon::to_chars<X>(res, sbj);
+                auto const r = cxon::to_bytes<X>(res, sbj);
             return r.ec.value() == (int)err;
         }
 

@@ -21,28 +21,30 @@
 
 #### Introduction
 
-`CXON` defines and implements an interface, which is a generalization of `C++17`'s
-[`<charconv>`][cpp-charconv] interface and it's generalized with:
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
+interface with these differences:
 
 - traits template parameter (see [`Format traits`](src/cxon/README.md#format-traits))
 - trailing arbitrary parameters (see [`Context`](src/cxon/README.md#context))
-- input and output iterators as input and output (allowing streams, containers and arrays,
+- input and output iterators for I/O (allowing streams, containers and arrays,
   see [`Interface`](src/cxon/README.md#interface))
 
 ```c++
 namespace cxon {
-
     template <typename Traits, ..., typename ...CxPs>
-        ... from_chars(..., CxPs... ps);
+        ... from_bytes(..., CxPs... ps);
     template <typename Traits, ..., typename ...CxPs>
-        ... to_chars(..., CxPs... ps);
+        ... to_bytes(..., CxPs... ps);
+}
 ```
+
+and with these changes, an arbitrary serilaization format could be implementeed.
 
 ###### Example
 
 ``` c++
-from_chars(std::vector<int>, std::begin(<x>), std:end(<x>), ...); // read from itratoror (default format `JSON`)
-from_chars<CBOR>(std::vector<int>, <container>, ...); // read from container or array (format `CBOR`)
+from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from itratoror (default format `JSON`)
+from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (format `CBOR`)
 ```
 
 `CXON` implements good part of `C++`'s fundamental and standard library types including:
@@ -95,9 +97,9 @@ int main() {
             mv2;
     std::string json;
         // write it to output-iterator, container, buffer, etc. - in this case, std::string
-        cxon::to_chars(json, mv1);
+        cxon::to_bytes(json, mv1);
         // read it from input-iterator, container, buffer, etc. - in this case, std::string
-        cxon::from_chars(mv2, json);
+        cxon::from_bytes(mv2, json);
     assert(mv1 == mv2);
 }
 ```
@@ -128,8 +130,8 @@ int main() {
     my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
             mv2;
     std::string json;
-        cxon::to_chars(json, mv1);
-        cxon::from_chars(mv2, json);
+        cxon::to_bytes(json, mv1);
+        cxon::from_bytes(mv2, json);
     assert(mv1 == mv2);
 }
 ```
