@@ -8,7 +8,7 @@
 #### Contents
 - [Introduction](#introduction)
 - [`cxjson::basic_node`](#basic_node)
-- [`CXON` Integration](#cxon-integration)
+- [`CXON` integration](#cxon-integration)
 
 
 --------------------------------------------------------------------------------
@@ -449,7 +449,7 @@ bool operator != (const basic_node& n) const; (2)
 
 
 --------------------------------------------------------------------------------
-#### `CXON` Integration
+#### `CXON` integration
 
 `basic_node` can be serialized as any other type.  
 `CXJSON` defines the following in addition:
