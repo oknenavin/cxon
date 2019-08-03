@@ -18,11 +18,15 @@
 --------------------------------------------------------------------------------
 #### Introduction
 
-`CXON` defines and implements an interface, which is a generalization of `C++17`'s
-[`<charconv>`][cpp-charconv] interface and it's generalized with:
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
+interface with these differences:
 
-- traits template parameter
-- trailing arbitrary parameters
+- traits template parameter (see [`Format traits`](#format-traits))
+- trailing arbitrary parameters (see [`Context`](#context))
+- input and output iterators for I/O (allowing streams, containers and arrays,
+  see [`Interface`](#interface))
+
+and with these changes, an arbitrary serilaization format could be implementeed.
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
 types is as follow:
