@@ -77,12 +77,12 @@ static void cxjson_test_time(test_case& test) {
         std::vector<node> vj;
         test.time.read = measure(cxjson_repeat, [&] {
             vj.emplace_back();
-            auto const r = cxon::from_chars(vj.back(), json);
+            auto const r = cxon::from_bytes(vj.back(), json);
             if (!r) test.error = format_error(r, json.begin());
         });
         node j = vj.back(); vj.clear();
         test.time.write = measure(cxjson_repeat, [&] {
-            std::string s; cxon::to_chars(s, j);
+            std::string s; cxon::to_bytes(s, j);
         });
         {   std::string s;
             test.time.pretty_string = measure(cxjson_repeat, [&] {
@@ -91,7 +91,7 @@ static void cxjson_test_time(test_case& test) {
         }
         {   std::string s;
             test.time.pretty = measure(cxjson_repeat, [&] {
-                cxon::to_chars(cxon::make_indenter(s), j);
+                cxon::to_bytes(cxon::make_indenter(s), j);
             });
         }
     }
@@ -169,7 +169,7 @@ static unsigned self() {
     {   // custom type binding + equal keys
         using node = cxjson::basic_node<my_traits>;
         node n;
-        cxon::from_chars(n, "{\"k\": 42, \"k\": 43}");
+        cxon::from_bytes(n, "{\"k\": 42, \"k\": 43}");
         CHECK(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
     }
     {   //using node = cxjson::node;
@@ -177,8 +177,8 @@ static unsigned self() {
         char const s[] = "{\"array0\":[{\"1\":1},{\"2\":2}],\"array1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"number\":4}";
         node jns;
         {   // from/to string
-            cxon::from_chars(jns, s);
-            std::string r; cxon::to_chars(std::back_inserter(r), jns);
+            cxon::from_bytes(jns, s);
+            std::string r; cxon::to_bytes(std::back_inserter(r), jns);
             CHECK(r == s);
         }
         node jno;
@@ -199,25 +199,25 @@ static unsigned self() {
                 }},
                 {"number", 4}
             };
-            std::string r; cxon::to_chars(r, jno);
+            std::string r; cxon::to_bytes(r, jno);
             CHECK(r == s);
         }
         {   std::string s1;
-                cxon::to_chars(cxon::make_indenter(s1), jns);
+                cxon::to_bytes(cxon::make_indenter(s1), jns);
             std::string s2;
-                cxon::to_chars(cxon::make_indenter(s2), jno);
+                cxon::to_bytes(cxon::make_indenter(s2), jno);
             std::string const s0 =
                 cxon::pretty(s1);
             CHECK(s1 == s0);
             CHECK(s2 == s0);
         }
         {   node n;
-                cxon::from_chars(n, "[3.1415926, 3.1415926, 3.1415926]");
+                cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
 #           if !defined(__GNUG__) || defined(__clang__)
-                cxon::to_chars(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+                cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
 #           else
-                cxon::to_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                cxon::to_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
 #           endif
             std::string const s0 =
@@ -225,63 +225,63 @@ static unsigned self() {
             CHECK(s1 == s0);
         }
         {   node n;
-                cxon::from_chars(n, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
+                cxon::from_bytes(n, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
             std::string s1;
-                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), n);
+                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), n);
             std::string const s0 =
                 cxon::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::vector<node> v;
-                cxon::from_chars(v, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
+                cxon::from_bytes(v, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
             std::string s1;
-                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), v);
+                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), v);
             std::string const s0 =
                 cxon::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::vector<node> v;
-                cxon::from_chars(v, "[{\"even\": [2, 4, 6]}, {\"odd\": [1, 3, 5]}]");
+                cxon::from_bytes(v, "[{\"even\": [2, 4, 6]}, {\"odd\": [1, 3, 5]}]");
             std::string s1;
-                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), v);
+                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), v);
             std::string const s0 =
                 cxon::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::map<std::string, node> m;
-                cxon::from_chars(m, "{\"even\": [2, 4, 6], \"odd\": [1, 3, 5]}");
+                cxon::from_bytes(m, "{\"even\": [2, 4, 6], \"odd\": [1, 3, 5]}");
             std::string s1;
-                cxon::to_chars(cxon::make_indenter(s1, 2, ' '), m);
+                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), m);
             std::string const s0 =
                 cxon::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   node n;
-                cxon::from_chars(n, "[[[[42]]]]");
+                cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
 #           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::to_chars(cxon::make_indenter(s), n, cxjson::recursion_depth::set<unsigned, 4U>());
+                auto const r = cxon::to_bytes(cxon::make_indenter(s), n, cxjson::recursion_depth::set<unsigned, 4U>());
 #           else
-                auto const r = cxon::to_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                auto const r = cxon::to_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                                     (cxon::make_indenter(s), n, cxjson::recursion_depth::set<unsigned, 4U>());
 #           endif
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
         {   node jn;
-            auto const r = cxon::from_chars(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
+            auto const r = cxon::from_bytes(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
         {   node jn;
 #           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::from_chars(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
+                auto const r = cxon::from_bytes(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
 #           else
-                auto const r = cxon::from_chars<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                                     (jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
 #           endif
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
         {   node jn;
-            auto const r = cxon::from_chars(jn, "~");
+            auto const r = cxon::from_bytes(jn, "~");
             CHECK(!r && r.ec == cxjson::error::invalid);
         }
         {   using namespace cxjson;
@@ -306,8 +306,8 @@ static unsigned self() {
         my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
                 mv2;
         std::string json;
-            cxon::to_chars(json, mv1);
-            cxon::from_chars(mv2, json);
+            cxon::to_bytes(json, mv1);
+            cxon::from_bytes(mv2, json);
         CHECK(mv1 == mv2);
 
         std::string const pretty_json = cxon::pretty(json);
@@ -316,8 +316,8 @@ static unsigned self() {
         my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
                 mv2;
         std::string json;
-            cxon::to_chars(json, mv1);
-            cxon::from_chars(mv2, json);
+            cxon::to_bytes(json, mv1);
+            cxon::from_bytes(mv2, json);
         CHECK(mv1 == mv2);
     }
     {   // ex3
@@ -330,11 +330,11 @@ static unsigned self() {
         };
 
         node n1; // read
-            cxon::from_chars(n1, s0);
+            cxon::from_bytes(n1, s0);
         CHECK(n1 == n0);
 
         std::string s1; // write
-            cxon::to_chars(s1, n0);
+            cxon::to_bytes(s1, n0);
         CHECK(s1 == s0);
     }
     {   // ex4
@@ -383,9 +383,9 @@ static unsigned self() {
         CHECK(n1 == n2);
 
         std::string s1;
-            cxon::to_chars(s1, n1);
+            cxon::to_bytes(s1, n1);
         std::string s2;
-            cxon::to_chars(s2, n2);
+            cxon::to_bytes(s2, n2);
         CHECK(s1 == s2);
 
         std::string const pretty_json = cxon::pretty(s1);
@@ -506,7 +506,7 @@ int main(int argc, char *argv[]) {
                     continue;
                 }
             std::string const s = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-            node result; auto const r = cxon::from_chars(result, s);
+            node result; auto const r = cxon::from_bytes(result, s);
             if (!r) {
                 ++err, c.error += "must pass: '" + c.source + "' (failed with '" + format_error(r, s.begin()) + "')";
             }
@@ -531,10 +531,10 @@ int main(int argc, char *argv[]) {
                 }
             node result;
             auto const e = std::istreambuf_iterator<char>();
-            if (auto r = cxon::from_chars(result, std::istreambuf_iterator<char>(is), e)) {
+            if (auto r = cxon::from_bytes(result, std::istreambuf_iterator<char>(is), e)) {
                 cxon::io::consume<cxon::JSON<>>(r.end, e);
                     if (r.end != e) continue; // trailing chars
-                std::string pass; cxon::to_chars(pass, result);
+                std::string pass; cxon::to_bytes(pass, result);
                 ++err, c.error += "must fail: '" + c.source + "' (passed as '" + pass + "')";
             }
         }
@@ -575,7 +575,7 @@ int main(int argc, char *argv[]) {
             }
             node result;
             {   // from
-                auto const r = cxon::from_chars(result, json);
+                auto const r = cxon::from_bytes(result, json);
                     if (!r) {
                         ++err, c.error = format_error(r, json.cbegin());
                         continue;
@@ -587,7 +587,7 @@ int main(int argc, char *argv[]) {
                         ++err, c.error = name(c.source) + ".1.json" + "cannot be opened";
                         continue;
                     }
-                auto const w = cxon::to_chars(cxon::make_indenter(std::ostreambuf_iterator<char>(os)), result);
+                auto const w = cxon::to_bytes(cxon::make_indenter(std::ostreambuf_iterator<char>(os)), result);
                     if (!w) {
                         ++err, c.error += w.ec.category().name(),
                         c.error += ": " + w.ec.message();

@@ -97,12 +97,12 @@ may be found [at the end of the document](#example-json-rpc).
 namespace cxon {
 
     template <typename Traits, typename T, typename InIt, typename ...CxPs>
-        from_chars_result<It> from_chars(T& t, InIt b, InIt e, CxPs... p);            (1)
+        from_bytes_result<It> from_bytes(T& t, InIt b, InIt e, CxPs... p);            (1)
     template <typename Traits, typename T, typename Iterable, typename ...CxPs>
-        from_chars_result<It)> from_chars(T& t, const Iterable& i, CxPs... p);        (2)
+        from_bytes_result<It)> from_bytes(T& t, const Iterable& i, CxPs... p);        (2)
 
     template <typename It>
-        struct from_chars_result {
+        struct from_bytes_result {
             std::error_condition ec;
             It end;
             operator bool() const noexcept;
@@ -136,9 +136,9 @@ Parameter      | Context | Type                     | Default                   
 `ids_len_max`  | read    | `size_t`                 | 64                                  | token read buffer size
 
 ###### Return value
-On success, returns a value of type `from_chars_result`, such that `end` is one-past-the-end iterator of
+On success, returns a value of type `from_bytes_result`, such that `end` is one-past-the-end iterator of
 the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
-On failure, returns a value of type `from_chars_result`, such that `end` is an iterator pointing to
+On failure, returns a value of type `from_bytes_result`, such that `end` is an iterator pointing to
 the non-matching input, and `ec` contains the [error condition][cpp-err-cnd]. The value is in valid, but
 unspecified state.
 
@@ -171,15 +171,15 @@ Does not throw by itself, however specializations may throw or not:
 int main() {
     using namespace cxon;
     {   double v;
-            auto const r = from_chars(v, "42");
+            auto const r = from_bytes(v, "42");
         assert(r && v == 42);
     }
     {   int v;
-            auto const r = from_chars(v, "42");
+            auto const r = from_bytes(v, "42");
         assert(r && v == 42);
     }
     {   std::vector<float> v;
-            auto const r = from_chars(v, "[42, true]");
+            auto const r = from_bytes(v, "[42, true]");
         assert( !r && // fails with error r.ec and location r.end
                 r.ec == read_error::floating_point_invalid &&
                 strcmp(r.end, "true]") == 0
@@ -195,14 +195,14 @@ int main() {
 namespace cxon {
 
     template <typename Traits, typename T, typename OutIt, typename ...CxPs>
-        to_chars_result<It> to_chars(OutIt o, const T& t, CxPs... p);                 (1)
+        to_bytes_result<It> to_bytes(OutIt o, const T& t, CxPs... p);                 (1)
     template <typename Traits, typename T, typename Insertable, typename ...CxPs>
-        to_chars_result<It> to_chars(Insertable& i, const T& t, CxPs... p);           (2)
+        to_bytes_result<It> to_bytes(Insertable& i, const T& t, CxPs... p);           (2)
     template <typename Traits, typename T, typename FwIt, typename ...CxPs>
-        to_chars_result<It> to_chars(FwIt b, FwIt e, const T& t, CxPs... p);          (3)
+        to_bytes_result<It> to_bytes(FwIt b, FwIt e, const T& t, CxPs... p);          (3)
 
     template <typename It>
-        struct to_chars_result {
+        struct to_bytes_result {
             std::error_condition ec;
             It end;
             operator bool() const noexcept;
@@ -237,12 +237,12 @@ Parameter      | Context | Type  | Default                                | Desc
 `fp_precision` | write   | `int` | `std::numeric_limits<T>::max_digits10` | floating-point precision
 
 ###### Return value
-On success, returns a value of type `to_chars_result`, such that `ec` is value-initialized, and `end` is:
+On success, returns a value of type `to_bytes_result`, such that `ec` is value-initialized, and `end` is:
 - `(1)` one-past-the-end output iterator
 - `(2)` `std::begin(i)`
 - `(3)` one-past-the-end iterator of the output written. Note that the output is not terminated.
 
-On failure, returns a value of type `to_chars_result`, such that `ec` contains the error condition, and
+On failure, returns a value of type `to_bytes_result`, such that `ec` contains the error condition, and
 `end` has the same value as in case of success.
 
 Error code                         | Message
@@ -264,15 +264,15 @@ Does not throw by itself, however writing to the output may throw (e.g. adding t
 int main() {
     using namespace cxon;
     {   std::string v;
-            auto const r = to_chars(v, 42);
+            auto const r = to_bytes(v, 42);
         assert(r && v == "42");
     }
     {   std::string v;
-            auto const r = to_chars(v, "42");
+            auto const r = to_bytes(v, "42");
         assert(r && v == "\"42\"");
     }
     {   char v[4];
-            auto const r = to_chars(std::begin(v), std::end(v), std::vector<int>{ 4, 2 });
+            auto const r = to_bytes(std::begin(v), std::end(v), std::vector<int>{ 4, 2 });
         assert(!r && r.ec == write_error::output_failure);
     }
 }
@@ -338,7 +338,7 @@ int main() {
         "}"
     ;
     std::string s1;
-        cxon::to_chars(cxon::make_indenter(s1, 4, ' '), m);
+        cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), m);
     assert(s1 == s0);
 }
 ```
@@ -469,10 +469,10 @@ for binding of enumerations and compound types:
 
     std::vector<rgb> v0 = { rgb::red, rgb::green, rgb::blue };
     std::string s0;
-        cxon::to_chars(s0, v0);
+        cxon::to_bytes(s0, v0);
     assert(s0 == "[\"red\",\"green (1)\",\"blue\"]");
     std::vector<rgb> v1;
-        cxon::from_chars(v1, s0);
+        cxon::from_bytes(v1, s0);
     assert(v1 == v0);
     ```
 - [compound types][cpp-struct]
@@ -519,10 +519,10 @@ for binding of enumerations and compound types:
 
     my_struct v0 = { 1, 2, 3 };
     std::string s0;
-        cxon::to_chars(s0, v0);
+        cxon::to_bytes(s0, v0);
     assert(s0 == "{\"first\":1,\"second field\":2}");
     my_struct v1;
-        cxon::from_chars(v1, "{\"first\":1,\"second field\":2,\"skip\":42}");
+        cxon::from_bytes(v1, "{\"first\":1,\"second field\":2,\"skip\":42}");
     assert(v1 == v0);
     ```
 
@@ -627,7 +627,7 @@ struct json_unquoted_keys_traits : cxon::json_format_traits {
 using my_traits = cxon::JSON<json_unquoted_keys_traits>;
 
 ...
-auto const result = cxon::from_chars<my_traits>(...);
+auto const result = cxon::from_bytes<my_traits>(...);
 ...
 ```
 
@@ -776,7 +776,7 @@ namespace cxon {
 
 int main() {
     my_type mv;
-        auto res = cxon::from_chars(mv, "...",
+        auto res = cxon::from_bytes(mv, "...",
             my_constant::set<unsigned, 42U>(), // constexpr parameter
             my_state::set(42) // runtime parameter
         );
@@ -864,25 +864,25 @@ int main() {
     {   // success
         auto const call = jsonrpc::make_request(1, "sub", 42, 23);
         std::string req; // serialize call to req
-            auto const w = cxon::to_chars(req, call);
+            auto const w = cxon::to_bytes(req, call);
         assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":[42,23]}");
         // round-trip req -> res
         char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
         jsonrpc::response<int> ret; // serialize res to ret
-            auto const r = cxon::from_chars(ret, res);
+            auto const r = cxon::from_bytes(ret, res);
         assert(r && ret.id == 1 && ret.result == 19);
     }
     {   // error
         auto const call = jsonrpc::make_request(1, "div", 42, 0);
         std::string req; // serialize call to req
-            auto const w = cxon::to_chars(req, call);
+            auto const w = cxon::to_bytes(req, call);
         assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"div\",\"params\":[42,0]}");
         // round-trip req -> res
         char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
                             "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
         {   // serialize res to ret, error's data will be skipped
             jsonrpc::response<int> ret;
-                auto const r = cxon::from_chars(ret, res);
+                auto const r = cxon::from_bytes(ret, res);
             assert( r &&
                     ret.id == 1 &&
                     ret.error.code == 42 &&
@@ -891,7 +891,7 @@ int main() {
         }
         {   // serialize res to ret, error's data is bound to std::string
             jsonrpc::response<int, std::string> ret;
-                auto const r = cxon::from_chars(ret, res);
+                auto const r = cxon::from_bytes(ret, res);
             assert( r &&
                     ret.id == 1 &&
                     ret.error.code == 42 &&
