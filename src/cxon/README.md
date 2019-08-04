@@ -21,12 +21,12 @@
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
 interface with these differences:
 
-- traits template parameter (see [`Format traits`](#format-traits))
-- trailing arbitrary parameters (see [`Context`](#context))
+- traits template parameter (to allow arbitrary serialization formats, see
+  [`Format traits`](README.md#format-traits))
+- trailing arbitrary and position-independent parameters (to allow passing of arbitrary
+  parameters to given type serializer, see [`Context`](README.md#context))
 - input and output iterators for I/O (allowing streams, containers and arrays,
-  see [`Interface`](#interface))
-
-and with these changes, an arbitrary serilaization format could be implementeed.
+  see [`Interface`](README.md#interface))
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
 types is as follow:
@@ -87,7 +87,7 @@ specify this about object keys:*
 may be replaced or kept.*
 
 Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation
-may be found [at the end of the document](#example-json-rpc).
+may be found at the [end](#example-json-rpc) of the document.
 
 
 --------------------------------------------------------------------------------
@@ -126,9 +126,9 @@ namespace cxon {
 - `CxPs` - context parameter types (see [Context](#context))
 
 ###### Parameters
-- `t` - the out-parameter where the parsed value is stored if successful
+- `t` - the out-parameter where the parsed value is stored in case of success
 - `b`, `e` -  valid (`char`) range to parse
-- `i` - a parameter representing a valid (`char`) range to parse
+- `i` - an iterable type representing a valid (`char`) range to parse
 - `p...` - context parameters (see [Context](#context))
 
 ###### Context parameters
@@ -159,11 +159,11 @@ read_error::surrogate_invalid      | invalid surrogate
 
 ###### Exceptions
 Does not throw by itself, however specializations may throw or not:
-- of fundamental types - does not throw
-- of pointers - allocator and constructors may throw
-- of standard library types - constructing and adding of elements may throw with the same guarantees as
-  of the standard library
-- of user types - may or may not throw depending of the implementation
+- for fundamental types - does not throw
+- for pointers - allocators and constructors may throw
+- for standard library types - constructing and adding of elements may throw with
+  the same guarantees as given by the standard library
+- for user types - may throw or not depending of the implementation
 
 ###### Example
 
@@ -231,7 +231,7 @@ namespace cxon {
 - `o` - an output iterator to write to
 - `i` - a back insertable value to write to
 - `b`, `e` - a (`char`) range to write to
-- `t` - the value to convert to its representation 
+- `t` - serialization value
 - `p...` - context parameter (see [Context](#context))
 
 ###### Context parameters
@@ -392,7 +392,7 @@ in namespace `cxon`.
 
 The _implementation bridge_ however, bridges three additional methods of extension:
 
-- specialization of read/write structures for the type (non-intrusive)
+- specialization of read/write structures for the type (non-intrusive, allows partial specialization)
     ``` c++
     namespace cxon {
 
@@ -440,10 +440,10 @@ The _implementation bridge_ however, bridges three additional methods of extensi
     };
     ```
 
-For convenience, core library also provides a set of simple, non-intrusive and intrusive macros
-for binding of enumerations and compound types:
+For convenience, core library also provides a set of simple, non-intrusive and intrusive
+macros for binding of enumeration and class types:
 
-- [enumerations][cpp-enum]
+- [`enumeration types`][cpp-enum]
     ``` c++
     // implements the read interface for enum Type
     #define CXON_ENUM_READ(Type, ...)
@@ -479,7 +479,7 @@ for binding of enumerations and compound types:
         cxon::from_bytes(v1, s0);
     assert(v1 == v0);
     ```
-- [compound types][cpp-struct]
+- [`class types`][cpp-class]
     ``` c++
     // implements the read interface for type `Type`
     #define CXON_STRUCT_READ(Type, ...)
@@ -536,11 +536,11 @@ for binding of enumerations and compound types:
 
 `CXON` provides two ways for parametrization, serving different purposes:
 - [format-traits](#format-traits) - for parameterizing given serialization format,
-  usually meaning that some property of the format changes. As an example,
+  usually meaning that some properties of the format change. As an example,
   `unquoted_keys` parameter enables unquoted object keys.
 - [context](#context) - for parameterizing the serialization of given type
-  without changing of the format. As an example, `allocator` parameter allows
-  using of a custom [allocator][cpp-alloc] while reading of a pointer types.
+  without changing the format. As an example, `allocator` parameter allows
+  using of a custom [allocator][cpp-alloc] when reading pointer types.
 
 
 --------------------------------------------------------------------------------
@@ -566,7 +566,7 @@ namespace cxon {
 }
 ```
 
-for example, `map` is defined as this:
+for example, `map` is defined like this:
 
 ``` c++
 namespace cxon {
@@ -604,7 +604,7 @@ namespace cxon {
 }
 ```
 
-As changing of a `Traits` parameter requires new type, specialization for given format
+As changing of a `Traits` parameter introduces new type, specialization for given format
 is not directly possible and because of this, `CXON` uses so-called *format-selectors*
 defined like this:
 
@@ -689,12 +689,12 @@ Member name |Type
 
 ###### Member functions
 
-- `operator |` - assign error condition enum
+- `operator |` - assign an error condition enum
     ``` c++
     template <typename E>
         auto operator |(E e) noexcept;
     ```
-- `operator bool` - check if context is good (no error condition)
+- `operator bool` - check if the context is good (i.e., no error condition)
     ``` c++
     operator bool() const noexcept;
     ```
@@ -731,15 +731,13 @@ namespace cxon::prms {
 }
 ```
 
-- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise.
-- `(2)` - creates `constexpr` parameter `Tag` and type `Ty`.
-- `(3)` - creates parameter `Tag` and type `Ty`.
-- `(4)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise.
-- `(5)` - returns reference to parameter `Tag` as the type is the one of the creation type.
-  It's a compilation error if parameter `Tag` isn't set.
-- `(6)` - returns the value of parameter `Tag` as the type is the one of the creation type.
-  It's a compilation error if parameter `Tag` isn't set.
-- `(7)` - returns the value of parameter `Tag` if set, `dflt` otherwise.
+- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise
+- `(2)` - creates `constexpr` parameter `Tag` and type `Ty`
+- `(3)` - creates parameter `Tag` and type `Ty`
+- `(4)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise
+- `(5)` - returns a reference to parameter `Tag`, compilation error if not set
+- `(6)` - returns the value of parameter `Tag`, compilation error if not set
+- `(7)` - returns the value of parameter `Tag` if set, `dflt` otherwise
 
 For convenience, parameter type could be inherited from `prms::tag` - `CXON` provides
 simple macro for this.
@@ -791,8 +789,8 @@ int main() {
 --------------------------------------------------------------------------------
 ###### Example (`JSON-RPC`)
 
-A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and example of its
-usage with `CXON`.
+A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and an
+example of its usage with `CXON`.
 
 ``` c++
 #include "cxon/cxon.hxx"
