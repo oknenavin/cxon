@@ -138,7 +138,7 @@ The resulting `JSON` is (*note, that the default number type is `double`*):
 --------------------------------------------------------------------------------
 #### `basic_node`
 
-*Defined in header [`cxjson/cxjson.hxx`](cxjson.hxx)*
+*Defined in header [`cxon/cxjson/cxjson.hxx`](cxjson.hxx)*
 
 ``` c++
 namespace cxjson {
@@ -155,7 +155,7 @@ Type            | Definition
 
 ###### Template parameters
 
-  - [`Traits`](#traits) - traits class specifying the actual types of each `JSON` value type
+  - [`Traits`](#traits) - traits class specifying the mapping type for each `JSON` value type
 
 ###### Non-member types
 
@@ -177,7 +177,7 @@ Member type |Definition
 ###### Member functions
 
 - [`(constructor)`](#constructors) - construct a basic_node
-- `(destructor)` - destroys the node, deallocating internal storage if used
+- `(destructor)` - destroys the node, deallocating any internal storage if used
 - [`operator =`](#assignment-operators) - assigns values to the node
 - [`reset`](#reset) - resets the node
 - [`kind`](#kind) - returns node's value type
@@ -242,12 +242,9 @@ basic_node(int v);                  (4)
 basic_node(const char* v);
 ```
 
-Constructs new node from a variety of data sources.
+Construct new node from a variety of data sources.
 - `(1)` Default constructor. Constructs node with `null` value type.
-- `(2)` Move and copy constructors:
-    - constructs the node with the contents of `o` using move semantics, `o` is left  
-    in valid state, but its value is in unspecified state
-    - constructs the node with the copy of the contents of `o`
+- `(2)` Move and copy constructors
 - `(3)` Move and copy constructors for each value type
 - `(4)` Constructors for `string` and `number` value types
 
@@ -306,12 +303,10 @@ basic_node& operator =(int v);                  (3)
 basic_node& operator =(const char* v);
 ```
 
-Replaces the contents of the node: 
-- `(1)` Replaces the content with those of `o`:
-    - using move semantics, `o` is left in valid state, but its value is in unspecified state
-    - constructs the node with copy of the contents of `o`
-- `(2)` For each value type, replaces the content with those of `v`
-- `(3)` For `string` and `number` value types, replaces the content with those of `v`
+Replaces the content of the node: 
+- `(1)` Move or copy of `o`
+- `(2)` Move or copy of `v`
+- `(3)` Copy of `v`
 
 ###### Return value
 `*this`
@@ -324,7 +319,7 @@ Replaces the contents of the node:
 void reset();
 ```
 
-Resets the content of node, the value type is `null`.
+Resets the content of the node, the value type is `null`.
 
 
 --------------------------------------------------------------------------------
@@ -353,7 +348,7 @@ template <typename T>
     bool is() const;
 ```
 
-Checks if value type is `T`.
+Checks if the value type is `T`.
 
 ###### Return value
 `true` if the type is `T`, `false` otherwise
@@ -368,7 +363,7 @@ template <typename T>
 ```
 
 Changes the value type of the node. If `T` is different than nodes's value type,
-the content is reset.
+the content will be reset.
 
 ###### Return value
 If `T` is same as the value type, a reference to it; otherwise, reference to the
@@ -473,9 +468,9 @@ bool operator != (const basic_node& n) const; (2)
    `recursion_guard` parameter must be passed explicitly.*
 
   *Note: currently calling of the overloads with parameter(s), e.g.
-  `from_bytes(..., recursion_depth::set<unsigned, 4U>())`, fail to compile with g++
-  due to a bug in the compiler ([Bug 90642](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90642)).
-  As a workaround, they may be called by explicitly passing of the traits parameters - e.g.
+  `from_bytes(..., recursion_depth::set<unsigned, 4U>())`,
+  fail to compile with g++ due to a bug in the compiler ([Bug 90642](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90642)).
+  As a workaround, they may be called by passing the traits parameters explicitly - e.g.
   `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
 
 ###### Example

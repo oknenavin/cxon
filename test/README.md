@@ -5,7 +5,7 @@
 #### `CXON`
 
 All tests are located in [cxon.cxx](cxon.cxx). A group of tests for given `Traits`
-are defined as this:
+can be defined as this:
 
 ``` c++
 TEST_BEG(Traits)
@@ -25,8 +25,8 @@ TEST_END()
 ```
 
 for non-trivial cases, free code can be used, provided that:
-- `TEST_A` is incremented, indicated that new test is added
-- `TEST_F` is incremented if the test fails
+- `TEST_A` shall be incremented for each new test
+- `TEST_F` shall be incremented if the test fails
 - in case of failure, error message + `assert` shall be used to point out failure's location
 
 example:
@@ -53,11 +53,11 @@ Is a utility that accepts command and a list of inputs (or a `@file`, see below)
 - `pass`  - the input is a list of files that must be read successfully
 - `fail`  - the input is a list of files that must fail to read
 - `diff`  - for each input file, a pair of files is produced, such that the first file
-            is just the input file pretty-printed, and the second is the result of a
-            read/write/pretty-print sequence. These files shall further be diffed.
-- `file`  - arbitrary valid or invalid `JSON`. Must be relative to the current directory.
+             is just the input file pretty-printed, and the second one is the result of a
+             read/write/pretty-print sequence. These files shall be further diffed
+- `file`  - arbitrary valid or invalid `JSON`. Must be relative to the current directory
 - `@file` - is a new-line separated list of files. The files must be relative to the
-            current directory. Lines starting with `#` are ignored.
+             current directory. Lines starting with `#` are ignored
 
 If no parameters are provided, self tests will be performed.  
 For example of its usage, see `test-cxjson` rule in the [makefile](makefile).

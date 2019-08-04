@@ -25,8 +25,10 @@
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
 interface with these differences:
 
-- traits template parameter (allowing arbitrary serialization format, see [`Format traits`](src/cxon/README.md#format-traits))
-- trailing arbitrary parameters (allowing arbitrary serialization format, see [`Context`](src/cxon/README.md#context))
+- traits template parameter (to allow arbitrary serialization formats, see
+  [`Format traits`](src/cxon/README.md#format-traits))
+- trailing arbitrary and position-independent parameters (to allow passing of arbitrary
+  parameters to given type serializer, see [`Context`](src/cxon/README.md#context))
 - input and output iterators for I/O (allowing streams, containers and arrays,
   see [`Interface`](src/cxon/README.md#interface))
 
