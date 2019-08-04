@@ -15,8 +15,8 @@
 --------------------------------------------------------------------------------
 
 
-`CXON` is a C++ serialization interface and also an implementation for `UTF-8` encoded `JSON`.  
-`CXON` is `C++11` compliant, self contained, header-only library.
+`CXON` is a C++ serialization interface and implementation for `UTF-8` encoded `JSON`.  
+`CXON` is `C++11` compliant, self contained, header-only library.  
 
 `CXON/JSON` strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
 
@@ -25,8 +25,8 @@
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
 interface with these differences:
 
-- traits template parameter (see [`Format traits`](src/cxon/README.md#format-traits))
-- trailing arbitrary parameters (see [`Context`](src/cxon/README.md#context))
+- traits template parameter (allowing arbitrary serialization format, see [`Format traits`](src/cxon/README.md#format-traits))
+- trailing arbitrary parameters (allowing arbitrary serialization format, see [`Context`](src/cxon/README.md#context))
 - input and output iterators for I/O (allowing streams, containers and arrays,
   see [`Interface`](src/cxon/README.md#interface))
 
@@ -38,8 +38,6 @@ namespace cxon {
         ... to_bytes(..., CxPs... ps);
 }
 ```
-
-and with these changes, an arbitrary serilaization format could be implementeed.
 
 ###### Example
 
