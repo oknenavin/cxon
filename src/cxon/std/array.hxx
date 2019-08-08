@@ -10,6 +10,17 @@
 
 namespace cxon {
 
+    template <typename I>
+        struct is_continuous_iterator<
+            I,
+            enable_if_t<!std::is_pointer<I>::value && std::is_same<I, typename std::array<typename std::iterator_traits<I>::value_type, 1>::iterator>::value>
+        > : std::true_type {};
+    template <typename I>
+        struct is_continuous_iterator<
+            I,
+            enable_if_t<!std::is_pointer<I>::value && std::is_same<I, typename std::array<typename std::iterator_traits<I>::value_type, 1>::const_iterator>::value>
+        > : std::true_type {};
+
     template <typename X, typename T, size_t N>
         struct read<X, std::array<T, N>> {
             template <typename II, typename Cx>

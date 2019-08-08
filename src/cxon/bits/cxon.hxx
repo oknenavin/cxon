@@ -6,8 +6,10 @@
 #ifndef CXON_BITS_CXON_HXX_
 #define CXON_BITS_CXON_HXX_
 
-#include <cmath> // isfinite, ...
 #include "charconv.hxx"
+#include <algorithm>
+#include <cmath> // isfinite, ...
+
 
 namespace cxon {namespace prms { namespace bits { // context parameters
 
