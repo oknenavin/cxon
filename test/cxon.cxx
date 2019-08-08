@@ -6,6 +6,7 @@
 #include "cxon/cxon.hxx"
 #include "cxon/pretty.hxx"
 #include "cxon/std/utility.hxx" // std::pair
+#include "cxon/std/complex.hxx"
 #include "cxon/std/string.hxx"
 #include "cxon/std/tuple.hxx"
 #include "cxon/std/array.hxx"
@@ -1959,6 +1960,23 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[[]]", (list<vector<int>>{{}}));
         R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
         W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
+TEST_END()
+
+
+TEST_BEG(cxon::CXON<>) // complex
+    using namespace std;
+    R_TEST(complex<float>(), "{0, 0}");
+    R_TEST(complex<float>(), "{}", cxon::read_error::floating_point_invalid, 1);
+    R_TEST(complex<float>(), "{0}", cxon::read_error::unexpected, 2);
+    W_TEST("{0,0}", complex<float>());
+    R_TEST(complex<double>(), "{0, 0}");
+    R_TEST(complex<double>(), "{}", cxon::read_error::floating_point_invalid, 1);
+    R_TEST(complex<double>(), "{0}", cxon::read_error::unexpected, 2);
+    W_TEST("{0,0}", complex<double>());
+    R_TEST(complex<long double>(), "{0, 0}");
+    R_TEST(complex<long double>(), "{}", cxon::read_error::floating_point_invalid, 1);
+    R_TEST(complex<long double>(), "{0}", cxon::read_error::unexpected, 2);
+    W_TEST("{0,0}", complex<long double>());
 TEST_END()
 
 

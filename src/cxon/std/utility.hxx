@@ -15,7 +15,7 @@ namespace cxon {
             template <typename II, typename Cx>
                 static bool value(std::pair<F, S>& t, II& i, II e, Cx& cx) {
                     return  io::consume<X>(X::list::beg, i, e, cx) &&
-                            read_value<X>(t.first, i, e, cx) && io::consume<X>(X::list::sep, i, e, cx) && read_value<X>(t.second, i, e, cx) &&
+                                read_value<X>(t.first, i, e, cx) && io::consume<X>(X::list::sep, i, e, cx) && read_value<X>(t.second, i, e, cx) &&
                             io::consume<X>(X::list::end, i, e, cx)
                     ;
                 }
