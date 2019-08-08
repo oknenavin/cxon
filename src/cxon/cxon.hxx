@@ -13,9 +13,7 @@
 #include <string>
 
 // TODO: decouple
-#include <array>
 #include <valarray> // std::begin
-#include <vector>
 
 #include <utility>
 #include <type_traits>
@@ -55,18 +53,18 @@ namespace cxon { // interface
 
     // interface helpers
 
-        template <typename II>
+        template <typename I, typename = void>
             struct is_continuous_iterator;
-        template <typename, typename = void>
+        template <typename I, typename = void>
             struct is_output_iterator;
 
-        template <typename, typename = void>
+        template <typename C, typename = void>
             struct is_back_insertable;
 
-        template <typename II, typename P = typename std::iterator_traits<II>::pointer>
-            constexpr auto continuous_range(II b, II e) -> enable_if_t< is_continuous_iterator<II>::value, std::pair<P, P>>;
-        template <typename II>
-            constexpr auto continuous_range(II b, II e) -> enable_if_t<!is_continuous_iterator<II>::value, std::pair<II, II>>;
+        template <typename I, typename P = typename std::iterator_traits<I>::pointer>
+            constexpr auto continuous_range(I b, I e) -> enable_if_t< is_continuous_iterator<I>::value, std::pair<P, P>>;
+        template <typename I>
+            constexpr auto continuous_range(I b, I e) -> enable_if_t<!is_continuous_iterator<I>::value, std::pair<I, I>>;
 
     // read
 
@@ -544,18 +542,10 @@ namespace cxon { namespace prms { // context parameters
 
 namespace cxon { // interface implementation
 
-    template <typename II>
-        struct is_continuous_iterator {
-            static const bool value =
-                std::is_same<II,                             typename std::iterator_traits<II>::pointer>        ::                 value ||
-                std::is_same<II, typename std::basic_string <typename std::iterator_traits<II>::value_type>     ::      iterator>::value ||
-                std::is_same<II, typename std::basic_string <typename std::iterator_traits<II>::value_type>     ::const_iterator>::value ||
-                std::is_same<II, typename std::vector       <typename std::iterator_traits<II>::value_type>     ::      iterator>::value ||
-                std::is_same<II, typename std::vector       <typename std::iterator_traits<II>::value_type>     ::const_iterator>::value ||
-                std::is_same<II, typename std::array        <typename std::iterator_traits<II>::value_type, 0>  ::      iterator>::value ||
-                std::is_same<II, typename std::array        <typename std::iterator_traits<II>::value_type, 0>  ::const_iterator>::value
-            ;
-        };
+    template <typename, typename>
+        struct is_continuous_iterator : std::false_type {};
+    template <typename I>
+        struct is_continuous_iterator<I, enable_if_t<std::is_pointer<I>::value>> : std::true_type {};
 
     template <typename, typename>
         struct is_output_iterator : std::false_type {};
@@ -567,10 +557,10 @@ namespace cxon { // interface implementation
     template <typename C>
         struct is_back_insertable<C, decltype(C().push_back(' '))> : std::true_type {};
 
-    template <typename II, typename P>
-        constexpr auto continuous_range(II b, II e) -> enable_if_t< is_continuous_iterator<II>::value, std::pair<P, P>>     { return std::make_pair(&*b, &*b + std::distance(b, e)); }
-    template <typename II>
-        constexpr auto continuous_range(II b, II e) -> enable_if_t<!is_continuous_iterator<II>::value, std::pair<II, II>>   { return std::make_pair(b, e); }
+    template <typename I, typename P>
+        constexpr auto continuous_range(I b, I e) -> enable_if_t< is_continuous_iterator<I>::value, std::pair<P, P>>    { return std::make_pair(&*b, &*b + std::distance(b, e)); }
+    template <typename I>
+        constexpr auto continuous_range(I b, I e) -> enable_if_t<!is_continuous_iterator<I>::value, std::pair<I, I>>    { return std::make_pair(b, e); }
 
 #   if defined(__GNUC__) || defined(__clang__)
 #       define CXON_FORCE_INLINE __attribute__((always_inline)) inline
