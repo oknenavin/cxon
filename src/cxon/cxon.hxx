@@ -12,9 +12,6 @@
 
 #include <string>
 
-// TODO: decouple
-#include <valarray> // std::begin
-
 #include <utility>
 #include <type_traits>
 #include <system_error>
