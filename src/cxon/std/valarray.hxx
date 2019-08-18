@@ -35,7 +35,7 @@ namespace cxon {
         struct write<X, std::valarray<T>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::valarray<T>& t, Cx& cx) {
-                    return container::write<X, list<X>>(o, t, cx);
+                    return container::write<X, list<X>>(o, std::begin(t), std::end(t), cx);
                 }
         };
 

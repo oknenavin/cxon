@@ -3,9 +3,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#if __cplusplus < 201402L
-#	include <valarray> // std::begin
-#endif
 #include "cxon/cxon.hxx"
 #include "cxon/pretty.hxx"
 #include "cxon/std/utility.hxx" // std::pair
