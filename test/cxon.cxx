@@ -23,6 +23,7 @@
 #include "cxon/std/unordered_map.hxx"
 #include "cxon/std/optional.hxx"
 #include "cxon/std/variant.hxx"
+#include "cxon/std/bitset.hxx"
 
 #include <cstdio>
 
@@ -1960,6 +1961,42 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[[]]", (list<vector<int>>{{}}));
         R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
         W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
+TEST_END()
+
+
+template <size_t N>
+    struct less {
+        constexpr bool operator()(const std::bitset<N>& l, const std::bitset<N>& r) const {
+            return l.to_string() < r.to_string();
+        }
+    };
+
+TEST_BEG(cxon::CXON<>) // bitset
+    using namespace std;
+    R_TEST(bitset<8>(85), "01010101");
+    R_TEST(bitset<8>(255), "11111111");
+    R_TEST(bitset<8>(255), "x1111111", cxon::read_error::unexpected, 0);
+    W_TEST("01010101", bitset<8>(85));
+    W_TEST("11111111", bitset<8>(255));
+    R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, "{01010101:1}");
+    W_TEST("{01010101:1}", map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}});
+TEST_END()
+
+TEST_BEG(cxon::JSON<>) // bitset
+    using namespace std;
+    R_TEST(bitset<8>(85), QS("01010101"));
+    R_TEST(bitset<8>(255), QS("11111111"));
+    R_TEST(bitset<8>(255), QS("x1111111"), cxon::read_error::unexpected, 1);
+    W_TEST(QS("01010101"), bitset<8>(85));
+    W_TEST(QS("11111111"), bitset<8>(255));
+    R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, "{\"01010101\":1}");
+    W_TEST("{\"01010101\":1}", map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}});
+TEST_END()
+
+TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
+    using namespace std;
+    R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, "{01010101:1}");
+    W_TEST("{01010101:1}", map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}});
 TEST_END()
 
 
