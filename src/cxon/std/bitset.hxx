@@ -36,14 +36,14 @@ namespace cxon {
 
     template <typename X, size_t N>
         struct read<X, std::bitset<N>> {
-            template <typename II, typename Cx, size_t S = N>
+            template <typename II, typename Cx>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
                     return bits::read_bits<X>(t, i, e, cx);
                 }
         };
     template <typename X, size_t N>
         struct read<JSON<X>, std::bitset<N>> {
-            template <typename II, typename Cx, size_t S = N>
+            template <typename II, typename Cx>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
                     return  bits::consume_str<JSON<X>>::beg(i, e, cx) &&
                                 bits::read_bits<JSON<X>>(t, i, e, cx) &&
@@ -54,14 +54,14 @@ namespace cxon {
 
     template <typename X, size_t N>
         struct write<X, std::bitset<N>> {
-            template <typename O, typename Cx, size_t S = N>
+            template <typename O, typename Cx>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
                     return bits::write_bits<X>(o, t, cx);
                 }
         };
     template <typename X, size_t N>
         struct write<JSON<X>, std::bitset<N>> {
-            template <typename O, typename Cx, size_t S = N>
+            template <typename O, typename Cx>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
                     return  io::poke<JSON<X>>(o, bits::str<JSON<X>>::beg, cx) &&
                                 bits::write_bits<JSON<X>>(o, t, cx) &&
