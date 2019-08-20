@@ -91,13 +91,6 @@ matrix:
           sources:  ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-8']
           packages: ['g++-8', 'clang-8']
 
-    - os: linux
-      env: CXX=clang++-9 TARGET=test
-      addons:
-        apt:
-          sources:  ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-9']
-          packages: ['g++-9', 'clang-9']
-
     # coverage
 
     - os: linux
