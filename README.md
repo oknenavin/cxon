@@ -44,7 +44,7 @@ namespace cxon {
 ###### Example
 
 ``` c++
-from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from itratoror (default format `JSON`)
+from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from iterator (default format `JSON`)
 from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (format `CBOR`)
 ```
 
@@ -63,10 +63,11 @@ from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (f
   - [`enumeration types`][cpp-enum]
   - [`class types`][cpp-class]
 - standard library types
-    - [`std::complex`][std-complex]
     - [`std::basic_string`][std-bstr]
     - [`std::tuple`][std-tuple]
     - [`std::pair`][std-pair]
+    - [`std::complex`][std-complex]
+    - [`std::bitset`][std-bitset]
     - [containers library][std-container]
     - [`std::optional`][std-opt]
     - [`std::variant`][std-var]
@@ -213,6 +214,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
 [std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
