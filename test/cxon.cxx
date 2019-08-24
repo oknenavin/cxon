@@ -1168,16 +1168,17 @@ TEST_BEG(cxon::JSON<base::force_input_iterator_traits>) // json number validatio
         R_TEST((double)1000, "1000000E-3");
         R_TEST((double)1000, "1e+3");
         R_TEST((double)1000, "1e+03");
+        R_TEST((double)0, "0e+03");
         R_TEST((double)0, "", cxon::read_error::unexpected, 0);
         R_TEST((double)0, "+0", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "01", cxon::read_error::ok, 1);
         R_TEST((double)0, "0.", cxon::read_error::floating_point_invalid, 2);
+        R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 2);
         R_TEST((double)0, ".0", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, ".", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "-", cxon::read_error::floating_point_invalid, 1);
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "0e", cxon::read_error::ok, 1);
         R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::overflow, 64); // cxon::num_len_max
     // integral
         W_TEST("0", (signed)0);
@@ -1206,6 +1207,7 @@ TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
         R_TEST((double)0, "-0");
         R_TEST((double)0, "0.0");
         R_TEST((double)1000, "1e3");
+        R_TEST((double)0, "0e3");
         R_TEST((double)1000, "1000000E-3");
         R_TEST((double)1000, "1e+3");
         R_TEST((double)1000, "1e+03");
@@ -1213,12 +1215,12 @@ TEST_BEG(cxon::JSON<number::strict_traits>) // json number validation
         R_TEST((double)0, "+0", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "01", cxon::read_error::ok, 1);
         R_TEST((double)0, "0.", cxon::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, ".0", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, ".", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "-", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "0e", cxon::read_error::ok, 1);
         using namespace special;
         R_TEST(-inf<double>(), QS("-inf"));
         R_TEST( inf<double>(), QS("inf"));
@@ -2032,12 +2034,41 @@ TEST_BEG(cxon::CXON<>) // enum
 #   endif
 TEST_END()
 
+TEST_BEG(cxon::CXON<base::force_input_iterator_traits>) // enum
+    R_TEST(Enum1::one, "one");
+    W_TEST("one", Enum1::one);
+    R_TEST(Enum1::two, "Two (2)");
+    W_TEST("Two (2)", Enum1::two);
+    R_TEST(Enum1::one, "", cxon::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "o", cxon::read_error::unexpected, 1);
+    R_TEST(Enum1::one, "{", cxon::read_error::unexpected, 1);
+    R_TEST(Enum1::one, "{}", cxon::read_error::unexpected, 2);
+    R_TEST(Enum1::one, "{{}}", cxon::read_error::unexpected, 4);
+    R_TEST(Enum1::one, "{\"}", cxon::read_error::unexpected,3);
+    R_TEST(Enum1::one, "{\"\"}", cxon::read_error::unexpected, 4);
+    R_TEST(Enum1::one, "{\"\\x\"}", cxon::read_error::unexpected, 6);
+#   ifdef NDEBUG
+        W_TEST("", Enum1::four);
+#   endif
+TEST_END()
+
 TEST_BEG(cxon::JSON<>)
     R_TEST(Enum1::one, QS("one"));
     W_TEST(QS("one"), Enum1::one);
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
     R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 0);
+#   ifdef NDEBUG
+        W_TEST("", Enum1::four);
+#   endif
+TEST_END()
+
+TEST_BEG(cxon::JSON<base::force_input_iterator_traits>)
+    R_TEST(Enum1::one, QS("one"));
+    W_TEST(QS("one"), Enum1::one);
+    R_TEST(Enum1::two, QS("Two (2)"));
+    W_TEST(QS("Two (2)"), Enum1::two);
+    R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 5);
 #   ifdef NDEBUG
         W_TEST("", Enum1::four);
 #   endif
