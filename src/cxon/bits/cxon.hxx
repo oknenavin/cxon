@@ -807,6 +807,7 @@ namespace cxon { namespace bits { // number conversion: read
                     trap_zero:
                         ;                                   CXON_NEXT()
                         if (c == '.')                       goto trap_fraction;
+                        if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_fraction:
                         ;                                   CXON_NEXT()
@@ -856,6 +857,7 @@ namespace cxon { namespace bits { // number conversion: read
                     trap_zero:
                         ;                                   c = io::next(i, e);
                         if (c == '.')                       goto trap_fraction;
+                        if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_fraction:
                         ;                                   c = io::next(i, e);
@@ -1499,7 +1501,8 @@ namespace cxon { namespace unquoted { namespace bits { // unquoted value
                 }
             template <typename BA, typename II>
                 static bool read(BA o, II& i, II e) {
-                    for (char c = *i; i != e; c = *++i) {
+                    for ( ; i != e; ++i) {
+                        char const c = *i;
                              if (c == X::map::beg)      { if (!skip<map<X>::beg, map<X>::end>(o, i, e))     return false; }
                         else if (c == X::list::beg)     { if (!skip<list<X>::beg, list<X>::end>(o, i, e))   return false; }
                         else if (c == X::string::beg)   { if (!skip(o, i, e))                               return false; }
