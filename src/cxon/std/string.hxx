@@ -10,16 +10,10 @@
 
 namespace cxon {
 
-    template <typename I>
-        struct is_continuous_iterator<
-            I,
-            enable_if_t<!std::is_pointer<I>::value && std::is_same<I, typename std::basic_string<typename std::iterator_traits<I>::value_type>::iterator>::value>
-        > : std::true_type {};
-    template <typename I>
-        struct is_continuous_iterator<
-            I,
-            enable_if_t<!std::is_pointer<I>::value && std::is_same<I, typename std::basic_string<typename std::iterator_traits<I>::value_type>::const_iterator>::value>
-        > : std::true_type {};
+    template <typename T, typename ...R>
+        struct continuous<std::basic_string<T, R...>> {
+            static auto range(const std::basic_string<T, R...>& i) -> std::pair<const T*, const T*> { return { &i[0], &i[0] + i.size() }; }
+        };
 
     template <typename X, typename T, typename ...R>
         struct read<X, std::basic_string<T, R...>> {
