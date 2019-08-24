@@ -24,6 +24,7 @@
 #include "cxon/std/optional.hxx"
 #include "cxon/std/variant.hxx"
 #include "cxon/std/bitset.hxx"
+#include "cxon/std/chrono.hxx"
 
 #include <cstdio>
 
@@ -2016,6 +2017,17 @@ TEST_BEG(cxon::CXON<>) // complex
     R_TEST(complex<long double>(), "{}", cxon::read_error::floating_point_invalid, 1);
     R_TEST(complex<long double>(), "{0}", cxon::read_error::unexpected, 2);
     W_TEST("{0,0}", complex<long double>());
+TEST_END()
+
+
+TEST_BEG(cxon::CXON<>) // chrono
+    using namespace std::chrono;
+    R_TEST(duration<unsigned>(42), "42");
+    R_TEST(duration<unsigned>(42), "x", cxon::read_error::integral_invalid, 0);
+    W_TEST("42", duration<unsigned>(42));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), "42");
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), "x", cxon::read_error::integral_invalid, 0);
+    W_TEST("42", time_point<system_clock>(system_clock::duration(42)));
 TEST_END()
 
 

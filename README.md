@@ -68,6 +68,8 @@ from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (f
     - [`std::pair`][std-pair]
     - [`std::complex`][std-complex]
     - [`std::bitset`][std-bitset]
+    - [`std::chrono::duration`][std-duration]
+    - [`std::chrono::time_point`][std-time-pt]
     - [containers library][std-container]
     - [`std::optional`][std-opt]
     - [`std::variant`][std-var]
@@ -215,6 +217,8 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
 [std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
+[std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
+[std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
 [std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
