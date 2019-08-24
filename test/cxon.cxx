@@ -2488,6 +2488,9 @@ TEST_BEG(cxon::CXON<>) // interface/read
     {   int r; std::vector<char> const i = {'1', '\0'};
         TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }
+    {   int r; std::array<char, 2> const i = {'1', '\0'};
+        TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
+    }
 TEST_END()
 
 TEST_BEG(cxon::CXON<>) // interface/write

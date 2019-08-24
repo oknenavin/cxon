@@ -51,17 +51,13 @@ namespace cxon { // interface
     // interface helpers
 
         template <typename I, typename = void>
-            struct is_continuous_iterator;
-        template <typename I, typename = void>
             struct is_output_iterator;
 
         template <typename C, typename = void>
             struct is_back_insertable;
 
-        template <typename I, typename P = typename std::iterator_traits<I>::pointer>
-            constexpr auto continuous_range(I b, I e) -> enable_if_t< is_continuous_iterator<I>::value, std::pair<P, P>>;
-        template <typename I>
-            constexpr auto continuous_range(I b, I e) -> enable_if_t<!is_continuous_iterator<I>::value, std::pair<I, I>>;
+        template <typename Iterable>
+            struct continuous /*{ static auto range(const Iterable& i) -> std::pair<It, It>; }*/;
 
     // read
 
@@ -540,11 +536,6 @@ namespace cxon { namespace prms { // context parameters
 namespace cxon { // interface implementation
 
     template <typename, typename>
-        struct is_continuous_iterator : std::false_type {};
-    template <typename I>
-        struct is_continuous_iterator<I, enable_if_t<std::is_pointer<I>::value>> : std::true_type {};
-
-    template <typename, typename>
         struct is_output_iterator : std::false_type {};
     template <typename I>
         struct is_output_iterator<I, enable_if_t<std::is_same<typename I::iterator_category, std::output_iterator_tag>::value>> : std::true_type {};
@@ -554,10 +545,10 @@ namespace cxon { // interface implementation
     template <typename C>
         struct is_back_insertable<C, decltype(C().push_back(' '))> : std::true_type {};
 
-    template <typename I, typename P>
-        constexpr auto continuous_range(I b, I e) -> enable_if_t< is_continuous_iterator<I>::value, std::pair<P, P>>    { return std::make_pair(&*b, &*b + std::distance(b, e)); }
     template <typename I>
-        constexpr auto continuous_range(I b, I e) -> enable_if_t<!is_continuous_iterator<I>::value, std::pair<I, I>>    { return std::make_pair(b, e); }
+        struct continuous {
+            static auto range(const I& i) -> std::pair<decltype(std::begin(i)), decltype(std::end(i))> { return { std::begin(i), std::end(i) }; }
+        };
 
 #   if defined(__GNUC__) || defined(__clang__)
 #       define CXON_FORCE_INLINE __attribute__((always_inline)) inline
@@ -575,13 +566,15 @@ namespace cxon { // interface implementation
             CXON_FORCE_INLINE auto from_bytes(T& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
                     if (b == e) return { read_error::unexpected, b };
                 read_context<CxPs...> cx(std::forward<CxPs>(p)...);
-                    auto g = continuous_range(b, e); auto const o = g.first;
-                    bool const r = read_value<X>(t, g.first, g.second, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
-                return { cx.ec, (std::advance(b, std::distance(o, g.first)), b) };
+                    bool const r = read_value<X>(t, b, e, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
+                return { cx.ec, b };
             }
         template <typename X, typename T, typename I, typename ...CxPs>
             CXON_FORCE_INLINE auto from_bytes(T& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
-                return interface::from_bytes<X>(t, std::begin(i), std::end(i), std::forward<CxPs>(p)...);
+                auto const c = continuous<I>::range(i);
+                auto const r = interface::from_bytes<X>(t, c.first, c.second, std::forward<CxPs>(p)...);
+                auto b = std::begin(i); std::advance(b, std::distance(c.first, r.end));
+                return { r.ec, b };
             }
 
     }
