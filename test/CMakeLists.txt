@@ -49,9 +49,14 @@ add_test (
     COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson
 )
 add_test (
-    NAME cxjson/pass|fail
+    NAME cxjson/pass
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson pass @../data/set.1-pass.in @../data/set.2-pass.in fail @../data/set.1-fail.in @../data/set.2-fail.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson pass @../data/set.1-pass.in @../data/set.2-pass.in
+)
+add_test (
+    NAME cxjson/fail
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson fail @../data/set.1-fail.in @../data/set.2-fail.in
 )
 
 find_program (CMAKE_BASH bash)
