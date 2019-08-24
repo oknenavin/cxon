@@ -55,7 +55,6 @@ types is as follow:
 
   type                                            | `JSON` type      | header
   ------------------------------------------------|------------------|------------------------------------------------------
-  [`std::complex`][std-complex]                   | `array`          | [`cxon/std/complex.hxx`](std/string.hxx)
   [`std::basic_string`][std-bstr]                 | `string`         | [`cxon/std/string.hxx`](std/string.hxx)
   [`std::array`][std-array]                       | `array`          | [`cxon/std/array.hxx`](std/array.hxx)
   [`std::vector`][std-vector]                     | `array`          | [`cxon/std/vector.hxx`](std/vector.hxx)
@@ -73,6 +72,8 @@ types is as follow:
   [`std::stack`][std-stack]                       | `array`          | [`cxon/std/stack.hxx`](std/stack.hxx)
   [`std::queue`][std-queue]                       | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
   [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
+  [`std::complex`][std-complex]                   | `array`          | [`cxon/std/complex.hxx`](std/complex.hxx)
+  [`std::bitset`][std-bitset]                     | `string`         | [`cxon/std/bitset.hxx`](std/bitset.hxx)
   [`std::tuple`][std-tuple]                       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
   [`std::pair`][std-pair]                         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
   [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](/optional.hxx)
@@ -927,6 +928,7 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
 [std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
