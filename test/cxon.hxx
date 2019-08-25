@@ -44,7 +44,7 @@ struct suite {
         void test() const override {
 #define TEST_END_()\
         }\
-    }   const TEST_CAT(TEST_, __COUNTER__);
+    }   TEST_CAT(TEST_, __COUNTER__);
 
 #define TEST_BEG(...) TEST_BEG_(__VA_ARGS__)
 #define TEST_END() TEST_END_()
