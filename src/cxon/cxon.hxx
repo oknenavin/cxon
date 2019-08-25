@@ -12,11 +12,6 @@
 
 #include <string>
 
-// TODO: decouple
-#include <array>
-#include <valarray> // std::begin
-#include <vector>
-
 #include <utility>
 #include <type_traits>
 #include <system_error>
@@ -55,18 +50,14 @@ namespace cxon { // interface
 
     // interface helpers
 
-        template <typename II>
-            struct is_continuous_iterator;
-        template <typename, typename = void>
+        template <typename I, typename = void>
             struct is_output_iterator;
 
-        template <typename, typename = void>
+        template <typename C, typename = void>
             struct is_back_insertable;
 
-        template <typename II, typename P = typename std::iterator_traits<II>::pointer>
-            constexpr auto continuous_range(II b, II e) -> enable_if_t< is_continuous_iterator<II>::value, std::pair<P, P>>;
-        template <typename II>
-            constexpr auto continuous_range(II b, II e) -> enable_if_t<!is_continuous_iterator<II>::value, std::pair<II, II>>;
+        template <typename Iterable>
+            struct continuous /*{ static auto range(const Iterable& i) -> std::pair<It, It>; }*/;
 
     // read
 
@@ -544,19 +535,6 @@ namespace cxon { namespace prms { // context parameters
 
 namespace cxon { // interface implementation
 
-    template <typename II>
-        struct is_continuous_iterator {
-            static const bool value =
-                std::is_same<II,                             typename std::iterator_traits<II>::pointer>        ::                 value ||
-                std::is_same<II, typename std::basic_string <typename std::iterator_traits<II>::value_type>     ::      iterator>::value ||
-                std::is_same<II, typename std::basic_string <typename std::iterator_traits<II>::value_type>     ::const_iterator>::value ||
-                std::is_same<II, typename std::vector       <typename std::iterator_traits<II>::value_type>     ::      iterator>::value ||
-                std::is_same<II, typename std::vector       <typename std::iterator_traits<II>::value_type>     ::const_iterator>::value ||
-                std::is_same<II, typename std::array        <typename std::iterator_traits<II>::value_type, 0>  ::      iterator>::value ||
-                std::is_same<II, typename std::array        <typename std::iterator_traits<II>::value_type, 0>  ::const_iterator>::value
-            ;
-        };
-
     template <typename, typename>
         struct is_output_iterator : std::false_type {};
     template <typename I>
@@ -567,10 +545,10 @@ namespace cxon { // interface implementation
     template <typename C>
         struct is_back_insertable<C, decltype(C().push_back(' '))> : std::true_type {};
 
-    template <typename II, typename P>
-        constexpr auto continuous_range(II b, II e) -> enable_if_t< is_continuous_iterator<II>::value, std::pair<P, P>>     { return std::make_pair(&*b, &*b + std::distance(b, e)); }
-    template <typename II>
-        constexpr auto continuous_range(II b, II e) -> enable_if_t<!is_continuous_iterator<II>::value, std::pair<II, II>>   { return std::make_pair(b, e); }
+    template <typename I>
+        struct continuous {
+            static auto range(const I& i) -> std::pair<decltype(std::begin(i)), decltype(std::end(i))> { return { std::begin(i), std::end(i) }; }
+        };
 
 #   if defined(__GNUC__) || defined(__clang__)
 #       define CXON_FORCE_INLINE __attribute__((always_inline)) inline
@@ -588,13 +566,15 @@ namespace cxon { // interface implementation
             CXON_FORCE_INLINE auto from_bytes(T& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
                     if (b == e) return { read_error::unexpected, b };
                 read_context<CxPs...> cx(std::forward<CxPs>(p)...);
-                    auto g = continuous_range(b, e); auto const o = g.first;
-                    bool const r = read_value<X>(t, g.first, g.second, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
-                return { cx.ec, (std::advance(b, std::distance(o, g.first)), b) };
+                    bool const r = read_value<X>(t, b, e, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
+                return { cx.ec, b };
             }
         template <typename X, typename T, typename I, typename ...CxPs>
             CXON_FORCE_INLINE auto from_bytes(T& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
-                return interface::from_bytes<X>(t, std::begin(i), std::end(i), std::forward<CxPs>(p)...);
+                auto const c = continuous<I>::range(i);
+                auto const r = interface::from_bytes<X>(t, c.first, c.second, std::forward<CxPs>(p)...);
+                auto b = std::begin(i); std::advance(b, std::distance(c.first, r.end));
+                return { r.ec, b };
             }
 
     }
@@ -674,12 +654,14 @@ namespace cxon { // errors
             CXON_ASSERT(0, "unexpected");
             return "unknown error";
         }
-        static read_error_category const value;
+        static const read_error_category& value() {
+            static read_error_category const v{};
+            return v;
+        }
     };
-    read_error_category const read_error_category::value {};
 
     inline std::error_condition make_error_condition(read_error e) noexcept {
-        return { static_cast<int>(e), read_error_category::value };
+        return { static_cast<int>(e), read_error_category::value() };
     }
 
     struct write_error_category : std::error_category {
@@ -695,12 +677,14 @@ namespace cxon { // errors
             CXON_ASSERT(0, "unexpected");
             return "unknown error";
         }
-        static write_error_category const value;
+        static const write_error_category& value() {
+            static write_error_category const v{};
+            return v;
+        }
     };
-    write_error_category const write_error_category::value {};
 
     inline std::error_condition make_error_condition(write_error e) noexcept {
-        return { static_cast<int>(e), write_error_category::value };
+        return { static_cast<int>(e), write_error_category::value() };
     }
 
 }   // cxon errors

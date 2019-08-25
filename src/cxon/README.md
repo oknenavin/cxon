@@ -18,15 +18,15 @@
 --------------------------------------------------------------------------------
 #### Introduction
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv]
 interface with these differences:
 
-- traits template parameter (see [`Format traits`](#format-traits))
-- trailing arbitrary parameters (see [`Context`](#context))
+- traits template parameter (to allow arbitrary serialization formats, see
+  [`Format traits`](README.md#format-traits))
+- trailing arbitrary and position-independent parameters (to allow passing of arbitrary
+  parameters to given type serializer, see [`Context`](README.md#context))
 - input and output iterators for I/O (allowing streams, containers and arrays,
-  see [`Interface`](#interface))
-
-and with these changes, an arbitrary serilaization format could be implementeed.
+  see [`Interface`](README.md#interface))
 
 The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
 types is as follow:
@@ -72,9 +72,13 @@ types is as follow:
   [`std::stack`][std-stack]                       | `array`          | [`cxon/std/stack.hxx`](std/stack.hxx)
   [`std::queue`][std-queue]                       | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
   [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
+  [`std::complex`][std-complex]                   | `array`          | [`cxon/std/complex.hxx`](std/complex.hxx)
+  [`std::bitset`][std-bitset]                     | `string`         | [`cxon/std/bitset.hxx`](std/bitset.hxx)
+  [`std::chrono::duration`][std-duration]         | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
+  [`std::chrono::time_point`][std-time-pt]        | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
   [`std::tuple`][std-tuple]                       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
   [`std::pair`][std-pair]                         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
-  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](/optional.hxx)
+  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](std/optional.hxx)
   [`std::variant`][std-variant]                   | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
   [`std::valarray`][std-valarray]                 | `array`          | [`cxon/std/valarray.hxx`](std/valarray.hxx)
 
@@ -87,7 +91,7 @@ specify this about object keys:*
 may be replaced or kept.*
 
 Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation
-may be found [at the end of the document](#example-json-rpc).
+may be found at the [end](#example-json-rpc) of the document.
 
 
 --------------------------------------------------------------------------------
@@ -126,16 +130,16 @@ namespace cxon {
 - `CxPs` - context parameter types (see [Context](#context))
 
 ###### Parameters
-- `t` - the out-parameter where the parsed value is stored if successful
+- `t` - the out-parameter where the parsed value is stored in case of success
 - `b`, `e` -  valid (`char`) range to parse
-- `i` - a parameter representing a valid (`char`) range to parse
+- `i` - an iterable type representing a valid (`char`) range to parse
 - `p...` - context parameters (see [Context](#context))
 
 ###### Context parameters
 
 Parameter      | Context | Type                     | Default                             | Description
 ---------------|---------|--------------------------|-------------------------------------|-------------------------
-`allocator`    | read    | [`Allocator`][cpp-alloc] | `std::allocator<T>`                 | `T*` allocator
+`allocator`    | read    | [`Allocator`][std-alloc] | `std::allocator<T>`                 | `T*` allocator
 `num_len_max`  | read    | `size_t`                 | 32 (integral) / 64 (floating-point) | number read buffer size
 `ids_len_max`  | read    | `size_t`                 | 64                                  | token read buffer size
 
@@ -143,7 +147,7 @@ Parameter      | Context | Type                     | Default                   
 On success, returns a value of type `from_bytes_result`, such that `end` is one-past-the-end iterator of
 the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
 On failure, returns a value of type `from_bytes_result`, such that `end` is an iterator pointing to
-the non-matching input, and `ec` contains the [error condition][cpp-err-cnd]. The value is in valid, but
+the non-matching input, and `ec` contains the [error condition][std-err-cnd]. The value is in valid, but
 unspecified state.
 
 Error code                         | Message
@@ -159,11 +163,11 @@ read_error::surrogate_invalid      | invalid surrogate
 
 ###### Exceptions
 Does not throw by itself, however specializations may throw or not:
-- of fundamental types - does not throw
-- of pointers - allocator and constructors may throw
-- of standard library types - constructing and adding of elements may throw with the same guarantees as
-  of the standard library
-- of user types - may or may not throw depending of the implementation
+- for fundamental types - does not throw
+- for pointers - allocators and constructors may throw
+- for standard library types - constructing and adding of elements may throw with
+  the same guarantees as given by the standard library
+- for user types - may throw or not depending of the implementation
 
 ###### Example
 
@@ -231,7 +235,7 @@ namespace cxon {
 - `o` - an output iterator to write to
 - `i` - a back insertable value to write to
 - `b`, `e` - a (`char`) range to write to
-- `t` - the value to convert to its representation 
+- `t` - serialization value
 - `p...` - context parameter (see [Context](#context))
 
 ###### Context parameters
@@ -392,7 +396,7 @@ in namespace `cxon`.
 
 The _implementation bridge_ however, bridges three additional methods of extension:
 
-- specialization of read/write structures for the type (non-intrusive)
+- specialization of read/write structures for the type (non-intrusive, allows partial specialization)
     ``` c++
     namespace cxon {
 
@@ -440,10 +444,10 @@ The _implementation bridge_ however, bridges three additional methods of extensi
     };
     ```
 
-For convenience, core library also provides a set of simple, non-intrusive and intrusive macros
-for binding of enumerations and compound types:
+For convenience, core library also provides a set of simple, non-intrusive and intrusive
+macros for binding of enumeration and class types:
 
-- [enumerations][cpp-enum]
+- [`enumeration types`][cpp-enum]
     ``` c++
     // implements the read interface for enum Type
     #define CXON_ENUM_READ(Type, ...)
@@ -479,7 +483,7 @@ for binding of enumerations and compound types:
         cxon::from_bytes(v1, s0);
     assert(v1 == v0);
     ```
-- [compound types][cpp-struct]
+- [`class types`][cpp-class]
     ``` c++
     // implements the read interface for type `Type`
     #define CXON_STRUCT_READ(Type, ...)
@@ -536,11 +540,11 @@ for binding of enumerations and compound types:
 
 `CXON` provides two ways for parametrization, serving different purposes:
 - [format-traits](#format-traits) - for parameterizing given serialization format,
-  usually meaning that some property of the format changes. As an example,
+  usually meaning that some properties of the format change. As an example,
   `unquoted_keys` parameter enables unquoted object keys.
 - [context](#context) - for parameterizing the serialization of given type
-  without changing of the format. As an example, `allocator` parameter allows
-  using of a custom [allocator][cpp-alloc] while reading of a pointer types.
+  without changing the format. As an example, `allocator` parameter allows
+  using of a custom [allocator][std-alloc] when reading pointer types.
 
 
 --------------------------------------------------------------------------------
@@ -566,7 +570,7 @@ namespace cxon {
 }
 ```
 
-for example, `map` is defined as this:
+for example, `map` is defined like this:
 
 ``` c++
 namespace cxon {
@@ -604,7 +608,7 @@ namespace cxon {
 }
 ```
 
-As changing of a `Traits` parameter requires new type, specialization for given format
+As changing of a `Traits` parameter introduces new type, specialization for given format
 is not directly possible and because of this, `CXON` uses so-called *format-selectors*
 defined like this:
 
@@ -654,7 +658,7 @@ namespace cxon {
 ```
 
 *Here, the helper type `cxon::enable_for_t` is a convenience typedef similar to 
-[`std::enable_if`][cpp-enab-if].*
+[`std::enable_if`][std-enab-if].*
 
 
 --------------------------------------------------------------------------------
@@ -684,17 +688,17 @@ Member type |Definition
 
 Member name |Type
 ------------|------------------------------------------
-`ec`        | [`std::error_condition`][cpp-err-cnd]
+`ec`        | [`std::error_condition`][std-err-cnd]
 `ps`        | `prms_type`
 
 ###### Member functions
 
-- `operator |` - assign error condition enum
+- `operator |` - assign an error condition enum
     ``` c++
     template <typename E>
         auto operator |(E e) noexcept;
     ```
-- `operator bool` - check if context is good (no error condition)
+- `operator bool` - check if the context is good (i.e., no error condition)
     ``` c++
     operator bool() const noexcept;
     ```
@@ -731,15 +735,13 @@ namespace cxon::prms {
 }
 ```
 
-- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise.
-- `(2)` - creates `constexpr` parameter `Tag` and type `Ty`.
-- `(3)` - creates parameter `Tag` and type `Ty`.
-- `(4)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise.
-- `(5)` - returns reference to parameter `Tag` as the type is the one of the creation type.
-  It's a compilation error if parameter `Tag` isn't set.
-- `(6)` - returns the value of parameter `Tag` as the type is the one of the creation type.
-  It's a compilation error if parameter `Tag` isn't set.
-- `(7)` - returns the value of parameter `Tag` if set, `dflt` otherwise.
+- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise
+- `(2)` - creates `constexpr` parameter `Tag` and type `Ty`
+- `(3)` - creates parameter `Tag` and type `Ty`
+- `(4)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise
+- `(5)` - returns a reference to parameter `Tag`, compilation error if not set
+- `(6)` - returns the value of parameter `Tag`, compilation error if not set
+- `(7)` - returns the value of parameter `Tag` if set, `dflt` otherwise
 
 For convenience, parameter type could be inherited from `prms::tag` - `CXON` provides
 simple macro for this.
@@ -791,8 +793,8 @@ int main() {
 --------------------------------------------------------------------------------
 ###### Example (`JSON-RPC`)
 
-A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and example of its
-usage with `CXON`.
+A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and an
+example of its usage with `CXON`.
 
 ``` c++
 #include "cxon/cxon.hxx"
@@ -916,7 +918,7 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
-[cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
 [cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
 [cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
@@ -927,7 +929,11 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
+[std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
 [std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
+[std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
 [std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
@@ -950,6 +956,6 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [std-optional]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-variant]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
 [std-valarray]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
-[cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
-[cpp-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
-[cpp-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
+[std-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
+[std-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
+[std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869

@@ -15,18 +15,20 @@
 --------------------------------------------------------------------------------
 
 
-`CXON` is a C++ serialization interface and also an implementation for `UTF-8` encoded `JSON`.  
-`CXON` is `C++11` compliant, self contained, header-only library.
+`CXON` is a C++ serialization interface and implementation for `UTF-8` encoded `JSON`.  
+`CXON` is `C++11` compliant, self contained, header-only library.  
 
 `CXON/JSON` strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
 
 #### Introduction
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv]
 interface with these differences:
 
-- traits template parameter (see [`Format traits`](src/cxon/README.md#format-traits))
-- trailing arbitrary parameters (see [`Context`](src/cxon/README.md#context))
+- traits template parameter (to allow arbitrary serialization formats, see
+  [`Format traits`](src/cxon/README.md#format-traits))
+- trailing arbitrary and position-independent parameters (to allow passing of arbitrary
+  parameters to given type serializer, see [`Context`](src/cxon/README.md#context))
 - input and output iterators for I/O (allowing streams, containers and arrays,
   see [`Interface`](src/cxon/README.md#interface))
 
@@ -39,12 +41,10 @@ namespace cxon {
 }
 ```
 
-and with these changes, an arbitrary serilaization format could be implementeed.
-
 ###### Example
 
 ``` c++
-from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from itratoror (default format `JSON`)
+from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from iterator (default format `JSON`)
 from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (format `CBOR`)
 ```
 
@@ -63,12 +63,16 @@ from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (f
   - [`enumeration types`][cpp-enum]
   - [`class types`][cpp-class]
 - standard library types
-    - [`std::basic_string`][cpp-bstr]
-    - [`std::tuple`][cpp-tuple]
-    - [`std::pair`][cpp-pair]
-    - [containers library][cpp-container]
-    - [`std::optional`][cpp-opt]
-    - [`std::variant`][cpp-var]
+    - [`std::basic_string`][std-bstr]
+    - [`std::tuple`][std-tuple]
+    - [`std::pair`][std-pair]
+    - [`std::complex`][std-complex]
+    - [`std::bitset`][std-bitset]
+    - [`std::chrono::duration`][std-duration]
+    - [`std::chrono::time_point`][std-time-pt]
+    - [containers library][std-container]
+    - [`std::optional`][std-opt]
+    - [`std::variant`][std-var]
 
 `CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
@@ -204,16 +208,20 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 [GitHub]: https://github.com/oknenavin/cxon
-[cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
 [cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
 [cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
-[cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
-[cpp-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
-[cpp-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
-[cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
-[cpp-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
-[cpp-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
+[std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
+[std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
+[std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
+[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
+[std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
+[std-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[std-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
+[std-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919

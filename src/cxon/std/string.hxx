@@ -10,6 +10,11 @@
 
 namespace cxon {
 
+    template <typename T, typename ...R>
+        struct continuous<std::basic_string<T, R...>> {
+            static auto range(const std::basic_string<T, R...>& i) -> std::pair<const T*, const T*> { return { &i[0], &i[0] + i.size() }; }
+        };
+
     template <typename X, typename T, typename ...R>
         struct read<X, std::basic_string<T, R...>> {
             template <typename II, typename Cx>
