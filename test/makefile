@@ -4,6 +4,9 @@ out = .out
 src = ../src/cxon
 dat = ../data
 
+cxon-test-src = cxon.cxx cxon.fundamental.cxx cxon.compound.cxx cxon.std.cxx
+cxjson-test-src = cxjson.cxx
+
 test: test-cxon test-cxjson
 
 test-cxon: $(out)/cxon-test
@@ -22,13 +25,13 @@ test-cxjson: $(out)/cxjson-test
                                     @$(dat)/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
-$(out)/cxon-test: cxon.cxx
+$(out)/cxon-test: $(cxon-test-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxon-test-src) -o $@
 
-$(out)/cxjson-test: cxjson.cxx
+$(out)/cxjson-test: $(cxjson-test-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxjson-test-src) -o $@
     
 clean:
 	@rm -fr $(out)

@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 #### `CXON`
 
-All tests are located in [cxon.cxx](cxon.cxx). A group of tests for given `Traits`
+All tests are located in `cxon.*.cxx`. A group of tests for given `Traits`
 can be defined as this:
 
 ``` c++
@@ -25,18 +25,18 @@ TEST_END()
 ```
 
 for non-trivial cases, free code can be used, provided that:
-- `TEST_A` shall be incremented for each new test
-- `TEST_F` shall be incremented if the test fails
+- `suite::all()` shall be incremented for each new test
+- `suite::err()` shall be incremented if a test fails
 - in case of failure, error message + `assert` shall be used to point out failure's location
 
 example:
 
 ``` c++
 TEST_BEG(cxon::JSON<>)
-    ++TEST_A;
+    ++suite::all();
     int r; char const i[] = "1";
     if (!cxon::from_bytes(r, std::begin(i), std::end(i)) || r != 1) {
-        ++TEST_F, fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+        ++suite::err(), fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
         CXON_ASSERT(false, "check failed");
     }
 TEST_END()

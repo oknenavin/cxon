@@ -299,12 +299,14 @@ namespace cxjson { // errors
                 default:                                return "unknown error";
             }
         }
-        static error_category const value;
+        static const error_category& value() {
+            static error_category const v{};
+            return v;
+        }
     };
-    error_category const error_category::value {};
 
     std::error_condition make_error_condition(error e) noexcept {
-        return { static_cast<int>(e), error_category::value };
+        return { static_cast<int>(e), error_category::value() };
     }
 
 }   // cxjson errors
