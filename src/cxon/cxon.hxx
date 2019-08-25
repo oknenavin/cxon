@@ -654,12 +654,14 @@ namespace cxon { // errors
             CXON_ASSERT(0, "unexpected");
             return "unknown error";
         }
-        static read_error_category const value;
+        static const read_error_category& value() {
+            static read_error_category const v{};
+            return v;
+        }
     };
-    read_error_category const read_error_category::value {};
 
     inline std::error_condition make_error_condition(read_error e) noexcept {
-        return { static_cast<int>(e), read_error_category::value };
+        return { static_cast<int>(e), read_error_category::value() };
     }
 
     struct write_error_category : std::error_category {
@@ -675,12 +677,14 @@ namespace cxon { // errors
             CXON_ASSERT(0, "unexpected");
             return "unknown error";
         }
-        static write_error_category const value;
+        static const write_error_category& value() {
+            static write_error_category const v{};
+            return v;
+        }
     };
-    write_error_category const write_error_category::value {};
 
     inline std::error_condition make_error_condition(write_error e) noexcept {
-        return { static_cast<int>(e), write_error_category::value };
+        return { static_cast<int>(e), write_error_category::value() };
     }
 
 }   // cxon errors

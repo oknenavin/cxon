@@ -18,7 +18,7 @@ endif ()
 include_directories (../src)
 
 add_executable (
-    cxon cxon.cxx
+    cxon cxon.cxx cxon.fundamental.cxx cxon.compound.cxx cxon.std.cxx
 )
 set_target_properties (
     cxon PROPERTIES

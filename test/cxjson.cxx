@@ -287,7 +287,7 @@ static unsigned self() {
         {   using namespace cxjson;
             std::error_condition ec;
             ec = error::ok;
-                CXON_ASSERT(ec.category() == error_category::value, "check failed");
+                CXON_ASSERT(ec.category() == error_category::value(), "check failed");
                 CXON_ASSERT(std::strcmp(ec.category().name(), "cxjson") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
             ec = error::invalid;
