@@ -18,7 +18,7 @@
 --------------------------------------------------------------------------------
 #### Introduction
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][cpp-charconv]
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv]
 interface with these differences:
 
 - traits template parameter (to allow arbitrary serialization formats, see
@@ -72,9 +72,13 @@ types is as follow:
   [`std::stack`][std-stack]                       | `array`          | [`cxon/std/stack.hxx`](std/stack.hxx)
   [`std::queue`][std-queue]                       | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
   [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
+  [`std::complex`][std-complex]                   | `array`          | [`cxon/std/complex.hxx`](std/complex.hxx)
+  [`std::bitset`][std-bitset]                     | `string`         | [`cxon/std/bitset.hxx`](std/bitset.hxx)
+  [`std::chrono::duration`][std-duration]         | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
+  [`std::chrono::time_point`][std-time-pt]        | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
   [`std::tuple`][std-tuple]                       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
   [`std::pair`][std-pair]                         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
-  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](/optional.hxx)
+  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](std/optional.hxx)
   [`std::variant`][std-variant]                   | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
   [`std::valarray`][std-valarray]                 | `array`          | [`cxon/std/valarray.hxx`](std/valarray.hxx)
 
@@ -135,7 +139,7 @@ namespace cxon {
 
 Parameter      | Context | Type                     | Default                             | Description
 ---------------|---------|--------------------------|-------------------------------------|-------------------------
-`allocator`    | read    | [`Allocator`][cpp-alloc] | `std::allocator<T>`                 | `T*` allocator
+`allocator`    | read    | [`Allocator`][std-alloc] | `std::allocator<T>`                 | `T*` allocator
 `num_len_max`  | read    | `size_t`                 | 32 (integral) / 64 (floating-point) | number read buffer size
 `ids_len_max`  | read    | `size_t`                 | 64                                  | token read buffer size
 
@@ -143,7 +147,7 @@ Parameter      | Context | Type                     | Default                   
 On success, returns a value of type `from_bytes_result`, such that `end` is one-past-the-end iterator of
 the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
 On failure, returns a value of type `from_bytes_result`, such that `end` is an iterator pointing to
-the non-matching input, and `ec` contains the [error condition][cpp-err-cnd]. The value is in valid, but
+the non-matching input, and `ec` contains the [error condition][std-err-cnd]. The value is in valid, but
 unspecified state.
 
 Error code                         | Message
@@ -540,7 +544,7 @@ macros for binding of enumeration and class types:
   `unquoted_keys` parameter enables unquoted object keys.
 - [context](#context) - for parameterizing the serialization of given type
   without changing the format. As an example, `allocator` parameter allows
-  using of a custom [allocator][cpp-alloc] when reading pointer types.
+  using of a custom [allocator][std-alloc] when reading pointer types.
 
 
 --------------------------------------------------------------------------------
@@ -654,7 +658,7 @@ namespace cxon {
 ```
 
 *Here, the helper type `cxon::enable_for_t` is a convenience typedef similar to 
-[`std::enable_if`][cpp-enab-if].*
+[`std::enable_if`][std-enab-if].*
 
 
 --------------------------------------------------------------------------------
@@ -684,7 +688,7 @@ Member type |Definition
 
 Member name |Type
 ------------|------------------------------------------
-`ec`        | [`std::error_condition`][cpp-err-cnd]
+`ec`        | [`std::error_condition`][std-err-cnd]
 `ps`        | `prms_type`
 
 ###### Member functions
@@ -914,7 +918,7 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
-[cpp-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
 [cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
 [cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
@@ -925,7 +929,11 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
+[std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
 [std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
+[std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
 [std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
@@ -948,6 +956,6 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [std-optional]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-variant]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
 [std-valarray]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
-[cpp-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
-[cpp-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
-[cpp-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
+[std-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
+[std-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
+[std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
