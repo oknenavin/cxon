@@ -177,10 +177,8 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
             ec = read_error::overflow;
                 CXON_ASSERT(ec.message() == "buffer overflow", "check failed");
-#           ifdef NDEBUG
-                ec = read_error(255);
-                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
-#           endif
+            ec = read_error(255);
+                CXON_ASSERT(ec.message() == "unknown error", "check failed");
     }
     {   std::error_condition ec;
             ec = write_error::ok;
@@ -191,10 +189,8 @@ TEST_BEG(cxon::CXON<>) // errors
                 CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
             ec = write_error::argument_invalid;
                 CXON_ASSERT(ec.message() == "invalid argument", "check failed");
-#           ifdef NDEBUG
-                ec = write_error(255);
-                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
-#           endif
+            ec = write_error(255);
+                CXON_ASSERT(ec.message() == "unknown error", "check failed");
     }
 TEST_END()
 
