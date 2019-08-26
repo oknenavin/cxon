@@ -728,21 +728,20 @@ TEST_BEG(cxon::CXON<>) // chrono
     W_TEST("42", time_point<system_clock>(system_clock::duration(42)));
 TEST_END()
 
-
-TEST_BEG(cxon::CXON<>) // optional
-    using namespace std;
-#   ifdef CXON_HAS_OPTIONAL
+#ifdef CXON_HAS_OPTIONAL
+    TEST_BEG(cxon::CXON<>) // optional
+        using namespace std;
         R_TEST(optional<int>(42), "42");
         W_TEST("42", optional<int>(42));
         R_TEST(optional<int>(), "null");
         W_TEST("null", optional<int>());
-#   endif
-TEST_END()
+    TEST_END()
+#endif
 
 
-TEST_BEG(cxon::CXON<>) // variant
-    using namespace std;
-#   ifdef CXON_HAS_VARIANT
+#ifdef CXON_HAS_VARIANT
+    TEST_BEG(cxon::CXON<>) // variant
+        using namespace std;
         R_TEST(variant<int, double>(in_place_index_t<0>(), 1), "{0:1}");
         R_TEST(variant<int, double>(in_place_index_t<1>(), 0), "{1:0}");
         R_TEST(variant<int, double>(in_place_index_t<1>(), 0), "{2:0}", cxon::read_error::unexpected, 1);
@@ -751,5 +750,5 @@ TEST_BEG(cxon::CXON<>) // variant
         R_TEST(variant<monostate, int>(), "{0:null}");
         R_TEST(variant<monostate, int>(), "{0:1}", cxon::read_error::unexpected, 3);
         W_TEST("{0:null}", variant<monostate, int>());
-#   endif
-TEST_END()
+    TEST_END()
+#endif

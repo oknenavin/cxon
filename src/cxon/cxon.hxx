@@ -650,9 +650,8 @@ namespace cxon { // errors
                 case read_error::escape_invalid:            return "invalid escape sequence";
                 case read_error::surrogate_invalid:         return "invalid surrogate";
                 case read_error::overflow:                  return "buffer overflow";
+                default:                                    return "unknown error";
             }
-            CXON_ASSERT(0, "unexpected");
-            return "unknown error";
         }
         static const read_error_category& value() {
             static read_error_category const v{};
@@ -673,9 +672,8 @@ namespace cxon { // errors
                 case write_error::ok:               return "no error";
                 case write_error::output_failure:   return "output cannot be written";
                 case write_error::argument_invalid: return "invalid argument";
+                default:                            return "unknown error";
             }
-            CXON_ASSERT(0, "unexpected");
-            return "unknown error";
         }
         static const write_error_category& value() {
             static write_error_category const v{};
@@ -855,7 +853,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
         inline bool write_value(O& o, E t, V vb, V ve, Cx& cx) {
             for ( ; vb != ve; ++vb) if (t == vb->value)
                 return io::poke<X>(o, cxon::bits::opqt<X>::beg, cx) && io::poke<X>(o, vb->name, cx) && io::poke<X>(o, cxon::bits::opqt<X>::end, cx);
-            return false;
+            return cx|write_error::argument_invalid;
         }
 
 }}  // cxon::enums enum reader/writer construction helpers
