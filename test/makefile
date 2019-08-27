@@ -4,15 +4,15 @@ out = .out
 src = ../src/cxon
 dat = ../data
 
-cxon-test-src = cxon.cxx cxon.fundamental.cxx cxon.compound.cxx cxon.std.cxx
-cxjson-test-src = cxjson.cxx
+cxon-check-src = cxon.cxx cxon.fundamental.cxx cxon.compound.cxx cxon.std.cxx
+cxjson-check-src = cxjson.cxx
 
-test: test-cxon test-cxjson
+check: check-cxon check-cxjson
 
-test-cxon: $(out)/cxon-test
+check-cxon: $(out)/cxon-check
 	@(cd $(out) && ../$<)
 
-test-cxjson: $(out)/cxjson-test
+check-cxjson: $(out)/cxjson-check
 	@(cd $(out) && ../$<)
 	@(cd $(out) && ../$< \
                             pass    @$(dat)/set.1-pass.in \
@@ -25,15 +25,15 @@ test-cxjson: $(out)/cxjson-test
                                     @$(dat)/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
-$(out)/cxon-test: $(cxon-test-src)
+$(out)/cxon-check: $(cxon-check-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxon-test-src) -o $@
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxon-check-src) -o $@
 
-$(out)/cxjson-test: $(cxjson-test-src)
+$(out)/cxjson-check: $(cxjson-check-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxjson-test-src) -o $@
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxjson-check-src) -o $@
     
 clean:
 	@rm -fr $(out)
 
-.PHONY: test test-cxon test-cxjson clean
+.PHONY: check check-cxon check-cxjson clean
