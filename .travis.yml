@@ -101,7 +101,7 @@ matrix:
     # coverage
 
     - os: linux
-      env: CXX=g++-8 CXXFLAGS=--coverage TARGET=test
+      env: CXX=g++-8 CXXFLAGS=--coverage
       addons:
         apt:
           sources:  ubuntu-toolchain-r-test
