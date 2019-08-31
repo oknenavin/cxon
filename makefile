@@ -23,6 +23,7 @@ cxon_std =      $(src)/std/array.hxx \
                 $(src)/std/set.hxx \
                 $(src)/std/stack.hxx \
                 $(src)/std/string.hxx \
+                $(src)/std/string_view.hxx \
                 $(src)/std/tuple.hxx \
                 $(src)/std/unordered_map.hxx \
                 $(src)/std/unordered_set.hxx \

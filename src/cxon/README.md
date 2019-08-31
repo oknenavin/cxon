@@ -55,32 +55,33 @@ types is as follow:
 
   type                                            | `JSON` type      | header
   ------------------------------------------------|------------------|------------------------------------------------------
+  [`std::pair`][std-pair]                         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
+  [`std::tuple`][std-tuple]                       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
+  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](std/optional.hxx)
+  [`std::variant`][std-variant]                   | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
   [`std::basic_string`][std-bstr]                 | `string`         | [`cxon/std/string.hxx`](std/string.hxx)
+  [`std::basic_string_view`][std-strv]            | `string`         | [`cxon/std/string_view.hxx`](std/string_view.hxx)
   [`std::array`][std-array]                       | `array`          | [`cxon/std/array.hxx`](std/array.hxx)
-  [`std::vector`][std-vector]                     | `array`          | [`cxon/std/vector.hxx`](std/vector.hxx)
   [`std::deque`][std-deque]                       | `array`          | [`cxon/std/deque.hxx`](std/deque.hxx)
   [`std::forward_list`][std-forward_list]         | `array`          | [`cxon/std/forward_list.hxx`](std/forward_list.hxx)
   [`std::list`][std-list]                         | `array`          | [`cxon/std/list.hxx`](std/list.hxx)
-  [`std::set`][std-set]                           | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
-  [`std::multiset`][std-multiset]                 | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
-  [`std::unordered_set`][std-uset]                | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
-  [`std::unordered_multiset`][std-umultiset]      | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
   [`std::map`][std-map]`(1)`                      | `object`         | [`cxon/std/map.hxx`](std/map.hxx)
   [`std::multimap`][std-multimap]`(1)`            | `object`         | [`cxon/std/map.hxx`](std/map.hxx)
-  [`std::unordered_map`][std-umap]`(1)`           | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
-  [`std::unordered_multimap`][std-umultimap]`(1)` | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
-  [`std::stack`][std-stack]                       | `array`          | [`cxon/std/stack.hxx`](std/stack.hxx)
-  [`std::queue`][std-queue]                       | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
+  [`std::multiset`][std-multiset]                 | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
   [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
-  [`std::complex`][std-complex]                   | `array`          | [`cxon/std/complex.hxx`](std/complex.hxx)
+  [`std::queue`][std-queue]                       | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
+  [`std::set`][std-set]                           | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
+  [`std::stack`][std-stack]                       | `array`          | [`cxon/std/stack.hxx`](std/stack.hxx)
+  [`std::unordered_map`][std-umap]`(1)`           | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
+  [`std::unordered_set`][std-uset]                | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
+  [`std::unordered_multimap`][std-umultimap]`(1)` | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
+  [`std::unordered_multiset`][std-umultiset]      | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
+  [`std::vector`][std-vector]                     | `array`          | [`cxon/std/vector.hxx`](std/vector.hxx)
   [`std::bitset`][std-bitset]                     | `string`         | [`cxon/std/bitset.hxx`](std/bitset.hxx)
+  [`std::complex`][std-complex]                   | `array`          | [`cxon/std/complex.hxx`](std/complex.hxx)
+  [`std::valarray`][std-valarr]                   | `array`          | [`cxon/std/valarray.hxx`](std/valarray.hxx)
   [`std::chrono::duration`][std-duration]         | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
   [`std::chrono::time_point`][std-time-pt]        | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
-  [`std::tuple`][std-tuple]                       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
-  [`std::pair`][std-pair]                         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
-  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](std/optional.hxx)
-  [`std::variant`][std-variant]                   | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
-  [`std::valarray`][std-valarray]                 | `array`          | [`cxon/std/valarray.hxx`](std/valarray.hxx)
 
 *`(1)` [`ECMA-404(6)`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
 specify this about object keys:*
@@ -930,8 +931,10 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-valarr]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
 [std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
-[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string&oldid=111300
+[std-strv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string_view&oldid=107572
 [std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
 [std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
 [std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
@@ -955,7 +958,6 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [std-priority_queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/priority_queue&oldid=103092
 [std-optional]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-variant]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
-[std-valarray]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
 [std-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
 [std-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
 [std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
