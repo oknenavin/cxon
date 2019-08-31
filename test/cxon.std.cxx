@@ -313,6 +313,8 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, false>>)
     // std::map<std::string, int>
         R_TEST((map<string, int>{}), "{}");
         W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"", 1}}), "{\"\":1}");
+        W_TEST("{\"\":1}", (map<string, int>{{"", 1}}));
         R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
         W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
         W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -351,6 +353,9 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
     // std::map<std::string, int>
         R_TEST((map<string, int>{}), "{}");
         W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"", 1}}), "{:1}");
+        R_TEST((map<string, int>{{"", 1}}), "{\"\":1}");
+        W_TEST("{:1}", (map<string, int>{{"", 1}}));
         R_TEST((map<string, int>{{"1:1", 1}}), "{1\\:1: 1}"); // ':'
         R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
@@ -366,6 +371,9 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
     // std::map<std::u16string, int>
         R_TEST((map<u16string, int>{}), "{}");
         W_TEST("{}", (map<u16string, int>{}));
+        R_TEST((map<u16string, int>{{u"", 1}}), "{:1}");
+        R_TEST((map<u16string, int>{{u"", 1}}), "{\"\":1}");
+        W_TEST("{:1}", (map<u16string, int>{{u"", 1}}));
         R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
         R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
@@ -380,6 +388,9 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
     // std::map<std::u32string, int>
         R_TEST((map<u32string, int>{}), "{}");
         W_TEST("{}", (map<u32string, int>{}));
+        R_TEST((map<u32string, int>{{U"", 1}}), "{:1}");
+        R_TEST((map<u32string, int>{{U"", 1}}), "{\"\":1}");
+        W_TEST("{:1}", (map<u32string, int>{{U"", 1}}));
         R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
         R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
@@ -394,6 +405,9 @@ TEST_BEG(cxon::CXON<key::unquoted<cxon::CXON<>, true>>)
     // std::map<std::wstring, int>
         R_TEST((map<wstring, int>{}), "{}");
         W_TEST("{}", (map<wstring, int>{}));
+        R_TEST((map<wstring, int>{{L"", 1}}), "{:1}");
+        R_TEST((map<wstring, int>{{L"", 1}}), "{\"\":1}");
+        W_TEST("{:1}", (map<wstring, int>{{L"", 1}}));
         R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
         R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
@@ -426,6 +440,8 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
     // std::map<std::string, int>
         R_TEST((map<string, int>{}), "{}");
         W_TEST("{}", (map<string, int>{}));
+        R_TEST((map<string, int>{{"", 1}}), "{\"\":1}");
+        W_TEST("{\"\":1}", (map<string, int>{{"", 1}}));
         R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
         W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
         W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
@@ -478,6 +494,9 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
     // std::map<std::u16string, int>
         R_TEST((map<u16string, int>{}), "{}");
         W_TEST("{}", (map<u16string, int>{}));
+        R_TEST((map<u16string, int>{{u"", 1}}), "{:1}");
+        R_TEST((map<u16string, int>{{u"", 1}}), "{\"\":1}");
+        W_TEST("{:1}", (map<u16string, int>{{u"", 1}}));
         R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
         R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
@@ -492,6 +511,9 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
     // std::map<std::u32string, int>
         R_TEST((map<u32string, int>{}), "{}");
         W_TEST("{}", (map<u32string, int>{}));
+        R_TEST((map<u32string, int>{{U"", 1}}), "{:1}");
+        R_TEST((map<u32string, int>{{U"", 1}}), "{\"\":1}");
+        W_TEST("{:1}", (map<u32string, int>{{U"", 1}}));
         R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
         R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
@@ -506,6 +528,9 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
     // std::map<std::wstring, int>
         R_TEST((map<wstring, int>{}), "{}");
         W_TEST("{}", (map<wstring, int>{}));
+        R_TEST((map<wstring, int>{{L"", 1}}), "{:1}");
+        R_TEST((map<wstring, int>{{L"", 1}}), "{\"\":1}");
+        W_TEST("{:1}", (map<wstring, int>{{L"", 1}}));
         R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
         R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
