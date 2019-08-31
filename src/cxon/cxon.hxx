@@ -36,6 +36,8 @@ namespace cxon { // interface
 
     template <bool C, typename T = void>
         using enable_if_t = typename std::enable_if<C, T>::type;
+    template <typename T>
+        constexpr bool unexpected() { return false; }
 
     // format selectors
 
