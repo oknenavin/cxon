@@ -29,7 +29,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::CXON<>) // base
+TEST_BEG(cxon::CXON<>) // string
     using namespace std;
     // std::basic_string<char> / std::string
         R_TEST(string("test"), QS("test"));
@@ -71,7 +71,7 @@ TEST_BEG(cxon::CXON<>) // base
         R_TEST(wstring(), QS("\\u001"), cxon::read_error::escape_invalid, 1);
 TEST_END()
 
-TEST_BEG(cxon::JSON<>) // base
+TEST_BEG(cxon::JSON<>) // string
     using namespace std;
     // std::basic_string<char> / std::string
         R_TEST(string("test"), QS("test"));

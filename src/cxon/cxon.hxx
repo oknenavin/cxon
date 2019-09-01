@@ -7,8 +7,8 @@
 #define CXON_CXON_HXX_
 
 #define CXON_VERSION_MAJOR 0
-#define CXON_VERSION_MINOR 47
-#define CXON_VERSION_PATCH 0
+#define CXON_VERSION_MINOR 48
+#define CXON_VERSION_PATCH 1
 
 #include <string>
 
@@ -27,7 +27,7 @@
 #       define CXON_ASSERT(e, m) _ASSERT_EXPR((e), m)
 #   endif
 #else
-#       define CXON_ASSERT(e, m) ((void)(e))
+#   define CXON_ASSERT(e, m) ((void)(e))
 #endif
 
 // interface //////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ namespace cxon { // interface
     template <bool C, typename T = void>
         using enable_if_t = typename std::enable_if<C, T>::type;
     template <typename T>
-        constexpr bool unexpected() { return false; }
+        constexpr bool unexpected();
 
     // format selectors
 
@@ -215,6 +215,9 @@ namespace cxon { // context parameters
 }   // cxon context parameters
 
 namespace cxon { // implementation bridge
+
+    template <typename T>
+        constexpr bool unexpected() { return false; }
 
     template <typename E, typename T, typename R = E>
         using enable_if_same_t = enable_if_t< std::is_same<E, T>::value, R>;
