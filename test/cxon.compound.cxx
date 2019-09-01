@@ -369,9 +369,7 @@ TEST_BEG(cxon::CXON<>) // enum
     R_TEST(Enum1::one, "{\"}", cxon::read_error::unexpected, 3);
     R_TEST(Enum1::one, "{\"\"}", cxon::read_error::unexpected, 0);
     R_TEST(Enum1::one, "{\"\\x\"}", cxon::read_error::unexpected, 0);
-#   ifdef NDEBUG
-        W_TEST("", Enum1::four);
-#   endif
+    W_TEST("", Enum1::four, cxon::write_error::argument_invalid);
 TEST_END()
 
 TEST_BEG(cxon::CXON<test::input_iterator_traits>) // enum
@@ -387,9 +385,7 @@ TEST_BEG(cxon::CXON<test::input_iterator_traits>) // enum
     R_TEST(Enum1::one, "{\"}", cxon::read_error::unexpected,3);
     R_TEST(Enum1::one, "{\"\"}", cxon::read_error::unexpected, 4);
     R_TEST(Enum1::one, "{\"\\x\"}", cxon::read_error::unexpected, 6);
-#   ifdef NDEBUG
-        W_TEST("", Enum1::four);
-#   endif
+    W_TEST("", Enum1::four, cxon::write_error::argument_invalid);
 TEST_END()
 
 TEST_BEG(cxon::JSON<>)
@@ -398,9 +394,7 @@ TEST_BEG(cxon::JSON<>)
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
     R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 0);
-#   ifdef NDEBUG
-        W_TEST("", Enum1::four);
-#   endif
+    W_TEST("", Enum1::four, cxon::write_error::argument_invalid);
 TEST_END()
 
 TEST_BEG(cxon::JSON<test::input_iterator_traits>)
@@ -409,9 +403,7 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>)
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
     R_TEST(Enum1::one, QS("noe"), cxon::read_error::unexpected, 5);
-#   ifdef NDEBUG
-        W_TEST("", Enum1::four);
-#   endif
+    W_TEST("", Enum1::four, cxon::write_error::argument_invalid);
 TEST_END()
 
 

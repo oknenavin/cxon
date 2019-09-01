@@ -63,16 +63,18 @@ from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (f
   - [`enumeration types`][cpp-enum]
   - [`class types`][cpp-class]
 - standard library types
-    - [`std::basic_string`][std-bstr]
-    - [`std::tuple`][std-tuple]
     - [`std::pair`][std-pair]
-    - [`std::complex`][std-complex]
-    - [`std::bitset`][std-bitset]
-    - [`std::chrono::duration`][std-duration]
-    - [`std::chrono::time_point`][std-time-pt]
-    - [containers library][std-container]
+    - [`std::tuple`][std-tuple]
     - [`std::optional`][std-opt]
     - [`std::variant`][std-var]
+    - [`std::basic_string`][std-bstr]
+    - [`std::basic_string_view`][std-strv]
+    - [`containers library`][std-container]
+    - [`std::bitset`][std-bitset]
+    - [`std::complex`][std-complex]
+    - [`std::valarray`][std-valarr]
+    - [`std::chrono::duration`][std-duration]
+    - [`std::chrono::time_point`][std-time-pt]
 
 `CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
@@ -216,10 +218,12 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-valarr]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
 [std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
 [std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
 [std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
-[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
+[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string&oldid=111300
+[std-strv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string_view&oldid=107572
 [std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
 [std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
 [std-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
