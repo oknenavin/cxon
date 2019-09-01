@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cmath> // isfinite, ...
 
-
 namespace cxon {namespace prms { namespace bits { // context parameters
 
     template <typename Ta, typename Ty, Ty c>
@@ -159,9 +158,9 @@ namespace cxon { namespace bits { // output iterator from a range
             constexpr output_iterator(FwIt b, FwIt e)
             :   b_(b), e_(e)
             {
-#                       if __cplusplus >= 201402L
+#               if __cplusplus >= 201402L
                     CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range");
-#                       endif
+#               endif
             }
 
             output_iterator& operator =(char c) {

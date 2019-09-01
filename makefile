@@ -11,6 +11,9 @@ cxon_bits =     $(src)/bits/cxon.hxx \
 cxon_core =     $(src)/core/fundamental.hxx \
                 $(src)/core/compound.hxx
 cxon_std =      $(src)/std/array.hxx \
+                $(src)/std/bitset.hxx \
+                $(src)/std/chrono.hxx \
+                $(src)/std/complex.hxx \
                 $(src)/std/deque.hxx \
                 $(src)/std/forward_list.hxx \
                 $(src)/std/list.hxx \
@@ -20,6 +23,7 @@ cxon_std =      $(src)/std/array.hxx \
                 $(src)/std/set.hxx \
                 $(src)/std/stack.hxx \
                 $(src)/std/string.hxx \
+                $(src)/std/string_view.hxx \
                 $(src)/std/tuple.hxx \
                 $(src)/std/unordered_map.hxx \
                 $(src)/std/unordered_set.hxx \
@@ -32,14 +36,14 @@ cxon_std_bits = $(src)/std/bits/map.hxx \
 cxon_cxjson =   $(src)/cxjson/cxjson.hxx \
                 $(src)/cxjson/pretty.hxx
 
-test:
-	@$(MAKE) -C test test
+check:
+	@$(MAKE) -C test check
 
-test-cxon:
-	@$(MAKE) -C test test-cxon
+check-cxon:
+	@$(MAKE) -C test check-cxon
 
-test-cxjson:
-	@$(MAKE) -C test test-cxjson
+check-cxjson:
+	@$(MAKE) -C test check-cxjson
 
 install: install-core install-std install-cxjson
 
@@ -73,4 +77,4 @@ uninstall-cxjson:
 clean:
 	@$(MAKE) -C test clean
 
-.PHONY: test test-cxon test-cxjson install uninstall clean
+.PHONY: check check-cxon check-cxjson install uninstall clean

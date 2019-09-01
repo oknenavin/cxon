@@ -7,8 +7,8 @@
 #define CXON_CXON_HXX_
 
 #define CXON_VERSION_MAJOR 0
-#define CXON_VERSION_MINOR 47
-#define CXON_VERSION_PATCH 0
+#define CXON_VERSION_MINOR 48
+#define CXON_VERSION_PATCH 1
 
 #include <string>
 
@@ -27,7 +27,7 @@
 #       define CXON_ASSERT(e, m) _ASSERT_EXPR((e), m)
 #   endif
 #else
-#       define CXON_ASSERT(e, m) ((void)(e))
+#   define CXON_ASSERT(e, m) ((void)(e))
 #endif
 
 // interface //////////////////////////////////////////////////////////////////
@@ -36,6 +36,8 @@ namespace cxon { // interface
 
     template <bool C, typename T = void>
         using enable_if_t = typename std::enable_if<C, T>::type;
+    template <typename T>
+        constexpr bool unexpected();
 
     // format selectors
 
@@ -213,6 +215,9 @@ namespace cxon { // context parameters
 }   // cxon context parameters
 
 namespace cxon { // implementation bridge
+
+    template <typename T>
+        constexpr bool unexpected() { return false; }
 
     template <typename E, typename T, typename R = E>
         using enable_if_same_t = enable_if_t< std::is_same<E, T>::value, R>;
@@ -650,9 +655,8 @@ namespace cxon { // errors
                 case read_error::escape_invalid:            return "invalid escape sequence";
                 case read_error::surrogate_invalid:         return "invalid surrogate";
                 case read_error::overflow:                  return "buffer overflow";
+                default:                                    return "unknown error";
             }
-            CXON_ASSERT(0, "unexpected");
-            return "unknown error";
         }
         static const read_error_category& value() {
             static read_error_category const v{};
@@ -673,9 +677,8 @@ namespace cxon { // errors
                 case write_error::ok:               return "no error";
                 case write_error::output_failure:   return "output cannot be written";
                 case write_error::argument_invalid: return "invalid argument";
+                default:                            return "unknown error";
             }
-            CXON_ASSERT(0, "unexpected");
-            return "unknown error";
         }
         static const write_error_category& value() {
             static write_error_category const v{};
@@ -855,7 +858,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
         inline bool write_value(O& o, E t, V vb, V ve, Cx& cx) {
             for ( ; vb != ve; ++vb) if (t == vb->value)
                 return io::poke<X>(o, cxon::bits::opqt<X>::beg, cx) && io::poke<X>(o, vb->name, cx) && io::poke<X>(o, cxon::bits::opqt<X>::end, cx);
-            return false;
+            return cx|write_error::argument_invalid;
         }
 
 }}  // cxon::enums enum reader/writer construction helpers

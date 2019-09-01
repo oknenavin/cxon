@@ -294,10 +294,8 @@ static unsigned self() {
                 CXON_ASSERT(ec.message() == "invalid json", "check failed");
             ec = error::recursion_depth_exceeded;
                 CXON_ASSERT(ec.message() == "recursion depth limit exceeded", "check failed");
-#           ifdef NDEBUG
-                ec = error(255);
-                    CXON_ASSERT(ec.message() == "unknown error", "check failed");
-#           endif
+            ec = error(255);
+                CXON_ASSERT(ec.message() == "unknown error", "check failed");
         }
     }
     {   // ex1
