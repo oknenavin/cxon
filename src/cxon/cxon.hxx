@@ -8,7 +8,7 @@
 
 #define CXON_VERSION_MAJOR 0
 #define CXON_VERSION_MINOR 48
-#define CXON_VERSION_PATCH 1
+#define CXON_VERSION_PATCH 2
 
 #include <string>
 
