@@ -235,7 +235,7 @@ namespace cxon { namespace bits { // <charconv>
             inline auto to_chars(char* f, char* l, T t, int precision) noexcept
                 -> enable_if_t< has_to_chars_p<T>::value, std::to_chars_result>
             {
-#               if defined(_MSC_VER) && _MSC_VER <= 1922
+#               if defined(_MSC_VER) && _MSC_VER <= 1923
                     auto const r = charconv::to_chars(f, l, t, precision);
                     return { r.ptr, r.ec };
 #               else
