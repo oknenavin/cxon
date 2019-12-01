@@ -709,7 +709,7 @@ namespace cxon { namespace bits { // number conversion: read
                 // floating point
                 template <typename II, typename N = T>
                     static auto consume(char* f, const char* l, II& i, II e)
-                        -> enable_if_t<!std::is_integral<N>::value, int>
+                        -> enable_if_t<std::is_floating_point<N>::value, int>
                     {
                         CXON_ASSERT(f && f < l, "unexpected");
                         char c = io::peek(i, e);
@@ -790,7 +790,7 @@ namespace cxon { namespace bits { // number conversion: read
             // floating point
             template <typename II, typename N = T>
                 static auto consume(char* f, const char* l, II& i, II e)
-                    -> enable_if_t<!std::is_integral<N>::value, int>
+                    -> enable_if_t<std::is_floating_point<N>::value, int>
                 {   // as in RFC7159
                     CXON_ASSERT(f && f < l, "unexpected");
                     char c = io::peek(i, e);
@@ -841,7 +841,7 @@ namespace cxon { namespace bits { // number conversion: read
                 }
             template <typename N = T>
                 static auto consume(const char*& i, const char* e)
-                    -> enable_if_t<!std::is_integral<N>::value, int>
+                    -> enable_if_t<std::is_floating_point<N>::value, int>
                 {   // as in RFC7159
                     char c = io::peek(i, e);
                         if (c == '"')                       goto trap_spec_beg;
@@ -912,7 +912,7 @@ namespace cxon { namespace bits { // number conversion: read
             // floating point
                 template <typename II, typename N, typename Cx>
                     static auto read(N& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
@@ -924,7 +924,7 @@ namespace cxon { namespace bits { // number conversion: read
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         auto const r = bits::from_chars(i, e, t);
                         return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
@@ -994,7 +994,7 @@ namespace cxon { namespace bits { // number conversion: read
                 // strict
                 template <typename II, typename N, typename Cx>
                     static auto read(N& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64U)];
@@ -1006,7 +1006,7 @@ namespace cxon { namespace bits { // number conversion: read
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value && X::number::strict, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value && X::number::strict, bool>
                     {
                         auto const b = i;
                         if (number_consumer<JSON<X>, T>::consume(i, e)) {
@@ -1019,7 +1019,7 @@ namespace cxon { namespace bits { // number conversion: read
                 // not strict
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value && !X::number::strict, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value && !X::number::strict, bool>
                     {
                         auto const r = from_chars(i, e, t);
                         return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
