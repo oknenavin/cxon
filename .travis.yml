@@ -131,10 +131,10 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main'
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
-          packages: clang-10
-      env: CXX=clang++-10 CXXFLAGS=-std=c++17
+          packages: clang-9
+      env: CXX=clang++-9 CXXFLAGS=-std=c++17
 
     # coverage
 
