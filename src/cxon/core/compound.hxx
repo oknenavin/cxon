@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 oknenavin.
+// Copyright (c) 2017-2020 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -19,11 +19,12 @@ namespace cxon { // pointer
                                 (t = nullptr, true)
                         ;
                     }
-                    auto a = allocator::value(cx.ps, std::allocator<T>());
-                        using al = std::allocator_traits<decltype(a)>;
-                    T *const n = al::allocate(a, 1); al::construct(a, n);
+                    auto ax = allocator::value(cx.ps, std::allocator<T>());
+                    typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
+                        using al = std::allocator_traits<decltype(at)>;
+                    T *const n = al::allocate(at, 1); al::construct(at, n);
                         if (!read_value<X>(*n, i, e, cx))
-                            return al::destroy(a, n), al::deallocate(a, n, 1), false;
+                            return al::destroy(at, n), al::deallocate(at, n, 1), false;
                     return t = n, true;
                 }
         };

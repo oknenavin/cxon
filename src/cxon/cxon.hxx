@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 oknenavin.
+// Copyright (c) 2017-2020 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -9,6 +9,8 @@
 #define CXON_VERSION_MAJOR 0
 #define CXON_VERSION_MINOR 48
 #define CXON_VERSION_PATCH 2
+
+#include "core/utility.hxx"
 
 #include <string>
 
@@ -33,11 +35,6 @@
 // interface //////////////////////////////////////////////////////////////////
 
 namespace cxon { // interface
-
-    template <bool C, typename T = void>
-        using enable_if_t = typename std::enable_if<C, T>::type;
-    template <typename T>
-        constexpr bool unexpected();
 
     // format selectors
 
@@ -115,63 +112,6 @@ namespace cxon { // errors
 
 }   // cxon errors
 
-namespace cxon { namespace prms { // context parameters
-
-    namespace bits { // forward
-        template <typename Ta, typename Ty, Ty c> struct ctt;
-        template <typename Ta, typename Ty> struct stt;
-        template <typename ...> struct pack;
-        template <typename Ta, typename Pa> struct pack_has;
-        template <typename Ta, typename Pa> struct pack_sbt;
-    }
-
-    template <typename T> struct unwrap_reference                               { using type = T; }; // C++20
-    template <typename T> struct unwrap_reference<std::reference_wrapper<T>>    { using type = T&; }; // C++20
- 
-    template <typename T> using unwrap_ref_decay    = unwrap_reference<typename std::decay<T>::type>; // C++20
-    template <typename T> using unwrap_ref_decay_t  = typename unwrap_ref_decay<T>::type; // C++20
-
-    template <typename ...P>
-        using pack = bits::pack<unwrap_ref_decay_t<P>...>;
-
-    template <typename ...P>
-        constexpr pack<P...> make(P&&... p) { return { std::forward<P>(p)... }; }
-
-    template <typename Ta>
-        struct tag {        
-            template <typename Ty, Ty c>    using ctt = bits::ctt<Ta, Ty, c>;
-            template <typename Ty>          using stt = bits::stt<Ta, Ty>;
-            template <typename Pa>          using in = bits::pack_has<Ta, Pa>;
-
-            template <typename Ty, Ty c>
-                static constexpr auto set() -> ctt<Ty, c>;
-
-            template <typename Ty>
-                static constexpr auto set(Ty&& v) -> stt<Ty>;
-            template <typename Ty>
-                static constexpr auto set(const Ty& v) -> stt<Ty>;
-
-            template <typename Pa>
-                using pack_of_tag = typename bits::pack_sbt<Ta, Pa>::type;
-
-            template <typename Pa, typename Ty>
-                static constexpr auto constant(Ty)      -> cxon::enable_if_t< in<Pa>::value, Ty>;
-            template <typename Pa, typename Ty>
-                static constexpr auto constant(Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>;
-
-            template <typename Pa>
-                static constexpr auto reference(Pa& p) -> typename pack_of_tag<Pa>::type::type&;
-            template <typename Pa>
-                static constexpr auto value(const Pa& p) -> typename pack_of_tag<Pa>::type::type;
-
-            template <typename Pa, typename Ty>
-                static constexpr auto value(const Pa& p, Ty)    -> cxon::enable_if_t< in<Pa>::value, Ty>;
-            template <typename Pa, typename Ty>
-                static constexpr auto value(const Pa&, Ty dflt) -> cxon::enable_if_t<!in<Pa>::value, Ty>;
-        };
-
-}}  // cxon::prms context parameters
-
 namespace cxon { // contexts
 
     template <typename ...Ps> // prms
@@ -182,7 +122,7 @@ namespace cxon { // contexts
             prms_type               ps;
 
             context(Ps&&... ps) :   ec(),
-                                    ps(prms::make(std::forward<Ps>(ps)...))
+                                    ps(prms::make_pack(std::forward<Ps>(ps)...))
             {
             }
 
@@ -203,21 +143,16 @@ namespace cxon { // contexts
 
 }   // cxon contexts
 
-#define CXON_PARAMETER(P) struct P : cxon::prms::tag<P> {}
-
 namespace cxon { // context parameters
 
-    CXON_PARAMETER(allocator);      // read: std::Allocator [default = std::allocator<T>()]: T*
-    CXON_PARAMETER(num_len_max);    // read: unsigned/constexpr [32U (integral), 64U (floating point)]: numbers
-    CXON_PARAMETER(ids_len_max);    // read: unsigned/constexpr [64U]: map, object key
-    CXON_PARAMETER(fp_precision);   // write: int/constexpr [std::numeric_limits<T>::max_digits10]: floating-points
+    CXON_PARAMETER(allocator, std::allocator<char>);    // read: T*
+    CXON_PARAMETER(num_len_max, unsigned);              // read: constexpr: numbers
+    CXON_PARAMETER(ids_len_max, unsigned);              // read: constexpr: object key
+    CXON_PARAMETER(fp_precision, int);                  // write: constexpr: floating-points
 
 }   // cxon context parameters
 
 namespace cxon { // implementation bridge
-
-    template <typename T>
-        constexpr bool unexpected() { return false; }
 
     template <typename E, typename T, typename R = E>
         using enable_if_same_t = enable_if_t< std::is_same<E, T>::value, R>;
@@ -501,42 +436,6 @@ namespace cxon { // format traits
 }   // cxon format traits
 
 #include "bits/cxon.hxx"
-
-namespace cxon { namespace prms { // context parameters
-
-    template <typename Ta> template <typename Ty, Ty c>
-        constexpr auto tag<Ta>::set() -> ctt<Ty, c>
-            { return {}; }
-
-    template <typename Ta> template <typename Ty>
-        constexpr auto tag<Ta>::set(Ty&& v) -> stt<Ty>
-            { return stt<Ty>(std::forward<Ty>(v)); }
-    template <typename Ta> template <typename Ty>
-        constexpr auto tag<Ta>::set(const Ty& v) -> stt<Ty>
-            { return stt<Ty>(v); }
-
-    template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::constant(Ty)        -> cxon::enable_if_t< in<Pa>::value, Ty>
-            { return pack_of_tag<Pa>::type::value; }
-    template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::constant(Ty dflt)   -> cxon::enable_if_t<!in<Pa>::value, Ty>
-            { return dflt; }
-
-    template <typename Ta> template <typename Pa>
-        constexpr auto tag<Ta>::reference(Pa& p) -> typename pack_of_tag<Pa>::type::type&
-            { return static_cast<pack_of_tag<Pa>&>(p).prm.value; }
-    template <typename Ta> template <typename Pa>
-        constexpr auto tag<Ta>::value(const Pa& p) -> typename pack_of_tag<Pa>::type::type
-            { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
-
-    template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::value(const Pa& p, Ty)      -> cxon::enable_if_t< in<Pa>::value, Ty>
-            { return static_cast<const pack_of_tag<Pa>&>(p).prm.value; }
-    template <typename Ta> template <typename Pa, typename Ty>
-        constexpr auto tag<Ta>::value(const Pa&, Ty dflt)   -> cxon::enable_if_t<!in<Pa>::value, Ty>
-            { return dflt; }
-
-}}  // cxon::prms context parameters
 
 namespace cxon { // interface implementation
 
@@ -847,7 +746,7 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
             io::consume<X>(i, e);
             II const o = i;
-                char id[ids_len_max::constant<prms_type<Cx>>(64U)];
+                char id[ids_len_max::constant<prms_type<Cx>>(64)];
                     if (!bits::read<X>::value(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;
@@ -938,7 +837,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
             if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
             if ( io::consume<X>(X::map::end, i, e)) return true;
-            for (char id[ids_len_max::constant<prms_type<Cx>>(64U)]; ; ) {
+            for (char id[ids_len_max::constant<prms_type<Cx>>(64)]; ; ) {
                 io::consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return false;
