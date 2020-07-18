@@ -107,6 +107,9 @@ matrix:
       env: CXX=clang++-8
 
     - os: linux
+      dist: bionic
+      language: cpp
+      compiler: clang-9
       addons:
         apt:
           sources:
@@ -117,6 +120,9 @@ matrix:
       env: CXX=clang++-9
 
     - os: linux
+      dist: bionic
+      language: cpp
+      compiler: clang-10
       addons:
         apt:
           sources:
