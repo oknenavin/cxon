@@ -44,14 +44,16 @@ matrix:
       env: CXX=g++-10
       addons:
         apt:
-          sources:  ubuntu-toolchain-r-test
-          packages: g++-10
+            sources:
+              - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            packages: g++-10
 
     - os: linux
       env: CXX=g++-10 CXXFLAGS=-std=c++17
       addons:
         apt:
-          sources:  ubuntu-toolchain-r-test
+          sources:
+              - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages: g++-10
 
     # clang
