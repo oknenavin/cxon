@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 oknenavin.
+// Copyright (c) 2017-2020 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -56,8 +56,8 @@ namespace cxjson { // node traits
 
 namespace cxjson { // context parameters
 
-    CXON_PARAMETER(recursion_guard);    // read/write: unsigned [0U]
-    CXON_PARAMETER(recursion_depth);    // read/write: unsigned/constexpr [64U]
+    CXON_PARAMETER(recursion_guard, unsigned);    // read/write
+    CXON_PARAMETER(recursion_depth, unsigned);    // read/write: constexpr
         
 }   // cxjson contexts
 
@@ -322,24 +322,24 @@ namespace cxon {
 
     template <typename X, typename Tr, typename II, typename ...CxPs>
         inline auto from_bytes(basic_node<Tr>& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
-            return interface::from_bytes<X>(t, b, e, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+            return interface::from_bytes<X>(t, b, e, recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
         inline auto from_bytes(basic_node<Tr>& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
-            return interface::from_bytes<X>(t, i, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+            return interface::from_bytes<X>(t, i, recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
 
     template <typename X, typename Tr, typename OI, typename ...CxPs>
         inline auto to_bytes(OI o, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
-            return interface::to_bytes<X>(o, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+            return interface::to_bytes<X>(o, t, recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
         inline auto to_bytes(I& i, const basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
-            return interface::to_bytes<X>(i, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+            return interface::to_bytes<X>(i, t, recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename FI, typename ...CxPs>
         inline auto to_bytes(FI b, FI e, const basic_node<Tr>& t, CxPs... p) -> to_bytes_result<FI> {
-            return interface::to_bytes<X>(b, e, t, recursion_guard::set(0U), std::forward<CxPs>(p)...);
+            return interface::to_bytes<X>(b, e, t, recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
 
 #   define CXJSON_RG()\
@@ -355,7 +355,7 @@ namespace cxon {
                     Cx& cx;
                     scinc(Cx& cx) : cx(cx)  { ++recursion_guard::reference(cx.ps); }
                     ~scinc()                { --recursion_guard::reference(cx.ps); }
-                    bool check() const      { return recursion_guard::value(cx.ps) < recursion_depth::constant<prms_type<Cx>>(64U); }
+                    bool check() const      { return recursion_guard::value(cx.ps) < recursion_depth::constant<prms_type<Cx>>(64); }
                 };
             template <typename Cx>
                 struct scinc<Cx, false> {

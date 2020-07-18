@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 oknenavin.
+// Copyright (c) 2017-2020 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -9,68 +9,6 @@
 #include "charconv.hxx"
 #include <algorithm>
 #include <cmath> // isfinite, ...
-
-namespace cxon {namespace prms { namespace bits { // context parameters
-
-    template <typename Ta, typename Ty, Ty c>
-        struct ctt {
-            using tag   = Ta;
-            using type  = Ty;
-            static constexpr type value = c;
-        };
-
-    template <typename Ta, typename Ty>
-        struct stt {
-            using tag   = Ta;
-            using type  = Ty;
-            type value;
-            stt()               : value() {}
-            stt(type&& v)       : value(std::move(v)) {}
-            stt(const type& v)  : value(v) {}
-        };
-
-    template <typename ...>
-        struct pack {
-            using head_type = void;
-            using tag       = void;
-            using type      = void;
-        };
-    template <typename P>
-        struct pack<P> : pack<> {
-            using head_type = pack<>;
-            using tag       = typename P::tag;
-            using type      = P;
-            type prm;
-            constexpr pack(type&& p)        : prm(std::move(p)) {}
-            constexpr pack(const type& p)   : prm(p) {}
-        };
-    template <typename P, typename ...T>
-        struct pack<P, T...> : pack<T...> {
-            using head_type = pack<T...>;
-            using tag       = typename P::tag;
-            using type      = P;
-            type prm;
-            constexpr pack(type&& p, T&&... t)      : head_type(std::forward<T>(t)...), prm(std::move(p)) {}
-            constexpr pack(const type& p, T&&... t) : head_type(std::forward<T>(t)...), prm(p) {}
-        };
-
-    template <typename Ta, typename Pa, bool V = std::is_same<typename Pa::head_type, void>::value, bool T = std::is_same<typename Pa::tag, Ta>::value>
-        struct pack_has_                        { static constexpr bool value = T; };
-    template <typename Ta, typename Pa>
-        struct pack_has_<Ta, Pa, false, false>  { static constexpr bool value = pack_has_<Ta, typename Pa::head_type>::value; };
-
-    template <typename Ta, typename Pa>
-        struct pack_has : pack_has_<Ta, Pa>     {};
-
-    template <typename Ta, typename Pa, bool V = std::is_same<typename Pa::head_type, void>::value, bool T = std::is_same<typename Pa::tag, Ta>::value>
-        struct pack_sbt_                        { using type = Pa; static_assert(T, "tag unknown"); };
-    template <typename Ta, typename Pa>
-        struct pack_sbt_<Ta, Pa, false, false>  { using type = typename pack_sbt_<Ta, typename Pa::head_type>::type; };
-
-    template <typename Ta, typename Pa>
-        struct pack_sbt : pack_sbt_<Ta, Pa>     {};
-
-}}} // cxon::prms::bits context parameters
 
 namespace cxon { namespace bits { // character classes
 
@@ -204,72 +142,66 @@ namespace cxon { namespace bits { // output write with error handling
             o.push_back(c);
         }
 
-#   define HAS_METH_DEF(name, M)\
-        template <typename, typename = void>\
-            struct has_##name : std::false_type {};\
-        template <typename T>\
-            struct has_##name<T, enable_if_t<std::is_same<void, decltype(std::declval<T>().M, void())>::value>> : std::true_type {}
+    template <typename O>
+        inline auto push_(option<1>, O& o, const char* s) -> decltype(o.append(s), void()) {
+            o.append(s);
+        }
+    template <typename O>
+        inline void push_(option<0>, O& o, const char* s) {
+            while (*s) push(o, *s), ++s;
+        }
+    template <typename O>
+        inline void push(O& o, const char* s) {
+            push_(option<1>(), o, s);
+        }
 
-    HAS_METH_DEF(append_s, append(std::declval<char*>()));
-        template <typename O>
-            inline auto push(O& o, const char* s) -> enable_if_t<!has_append_s<O>::value> {
-                while (*s) push(o, *s), ++s;
-            }
-        template <typename O>
-            inline auto push(O& o, const char* s) -> enable_if_t< has_append_s<O>::value> {
-                o.append(s);
-            }
+    template <typename O>
+        inline auto push_(option<1>, O& o, const char* s, size_t n) -> decltype(o.append(s, n), void()) {
+            o.append(s, n);
+        }
+    template <typename O>
+        inline void push_(option<0>, O& o, const char* s, size_t n) {
+            while (n) push(o, *s), ++s, --n;
+        }
+    template <typename O>
+        inline void push(O& o, const char* s, size_t n) {
+            push_(option<1>(), o, s, n);
+        }
 
-    HAS_METH_DEF(append_sn, append(std::declval<char*>(), 0));
-        template <typename O>
-            inline auto push(O& o, const char* s, size_t n) -> enable_if_t<!has_append_sn<O>::value> {
-                while (n) push(o, *s), ++s, --n;
-            }
-        template <typename O>
-            inline auto push(O& o, const char* s, size_t n) -> enable_if_t< has_append_sn<O>::value> {
-                o.append(s, n);
-            }
+    template <typename O>
+        inline auto push_(option<1>, O& o, unsigned n, char c) -> decltype(o.append(n, c), void()) {
+            o.append(n, c);
+        }
+    template <typename O>
+        inline void push_(option<0>, O& o, unsigned n, char c) {
+            while (n) push(o, c), --n;
+        }
+    template <typename O>
+        inline void push(O& o, unsigned n, char c) {
+            push_(option<1>(), o, n, c);
+        }
 
-    HAS_METH_DEF(append_nc, append(0, ' '));
-        template <typename O>
-            inline auto push(O& o, unsigned n, char c) -> enable_if_t<!has_append_nc<O>::value> {
-                while (n) push(o, c), --n;
-            }
-        template <typename O>
-            inline auto push(O& o, unsigned n, char c) -> enable_if_t< has_append_nc<O>::value> {
-                o.append(n, c);
-            }
+    template <typename O, typename ...P>
+        inline auto poke_(option<2>, O& o, P... p) -> decltype((bool)o) {
+            return push(o, p...), o;
+        }
+    template <typename O, typename ...P>
+        inline auto poke_(option<1>, O& o, P... p) -> decltype(o.good()) {
+            return push(o, p...), o.good();
+        }
+    template <typename O, typename ...P>
+        inline bool poke_(option<0>, O& o, P... p) {
+            return push(o, p...), true;
+        }
+    template <typename O, typename ...P>
+        inline bool poke(O& o, P... p) {
+            return poke_(option<2>(), o, p...);
+        }
 
-    HAS_METH_DEF(bool, operator bool());
-    HAS_METH_DEF(good, good());
-
-        template <typename O, typename ...P>
-            inline auto poke(O& o, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
-                return push(o, p...), true;
-            }
-        template <typename O, typename ...P>
-            inline auto poke(O& o, P... p) -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
-                return push(o, p...), o.good();
-            }
-        template <typename O, typename ...P>
-            inline auto poke(O& o, P... p) -> enable_if_t< has_bool<O>::value, bool> {
-                return push(o, p...), o;
-            }
-
-        template <typename X, typename O, typename Cx, typename ...P>
-            inline auto poke(O& o, Cx&, P... p)     -> enable_if_t<!has_bool<O>::value && !has_good<O>::value, bool> {
-                return push(o, p...), true;
-            }
-        template <typename X, typename O, typename Cx, typename ...P>
-            inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t<!has_bool<O>::value &&  has_good<O>::value, bool> {
-                return push(o, p...), o.good() || (cx|write_error::output_failure);
-            }
-        template <typename X, typename O, typename Cx, typename ...P>
-            inline auto poke(O& o, Cx& cx, P... p)  -> enable_if_t< has_bool<O>::value, bool> {
-                return push(o, p...), o || (cx|write_error::output_failure);
-            }
-
-#   undef HAS_METH_DEF
+    template <typename X, typename O, typename Cx, typename ...P>
+        inline bool poke(O& o, Cx& cx, P... p) {
+            return poke_(option<2>(), o, p...) || (cx|write_error::output_failure);
+        }
 
 }}  // cxon::bits output write with error handling
 
@@ -709,7 +641,7 @@ namespace cxon { namespace bits { // number conversion: read
                 // floating point
                 template <typename II, typename N = T>
                     static auto consume(char* f, const char* l, II& i, II e)
-                        -> enable_if_t<!std::is_integral<N>::value, int>
+                        -> enable_if_t<std::is_floating_point<N>::value, int>
                     {
                         CXON_ASSERT(f && f < l, "unexpected");
                         char c = io::peek(i, e);
@@ -790,7 +722,7 @@ namespace cxon { namespace bits { // number conversion: read
             // floating point
             template <typename II, typename N = T>
                 static auto consume(char* f, const char* l, II& i, II e)
-                    -> enable_if_t<!std::is_integral<N>::value, int>
+                    -> enable_if_t<std::is_floating_point<N>::value, int>
                 {   // as in RFC7159
                     CXON_ASSERT(f && f < l, "unexpected");
                     char c = io::peek(i, e);
@@ -841,7 +773,7 @@ namespace cxon { namespace bits { // number conversion: read
                 }
             template <typename N = T>
                 static auto consume(const char*& i, const char* e)
-                    -> enable_if_t<!std::is_integral<N>::value, int>
+                    -> enable_if_t<std::is_floating_point<N>::value, int>
                 {   // as in RFC7159
                     char c = io::peek(i, e);
                         if (c == '"')                       goto trap_spec_beg;
@@ -901,7 +833,7 @@ namespace cxon { namespace bits { // number conversion: read
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(32U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(32)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                    || (io::rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                    || (io::rewind(i, o), cx|read_error::integral_invalid)) &&
@@ -912,10 +844,10 @@ namespace cxon { namespace bits { // number conversion: read
             // floating point
                 template <typename II, typename N, typename Cx>
                     static auto read(N& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(64U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(64)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                    || (io::rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                    || (io::rewind(i, o), cx|read_error::floating_point_invalid)) &&
@@ -924,7 +856,7 @@ namespace cxon { namespace bits { // number conversion: read
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         auto const r = bits::from_chars(i, e, t);
                         return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
@@ -940,7 +872,7 @@ namespace cxon { namespace bits { // number conversion: read
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(32U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(32)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                    || (io::rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                    || (io::rewind(i, o), cx|read_error::integral_invalid)) &&
@@ -994,10 +926,10 @@ namespace cxon { namespace bits { // number conversion: read
                 // strict
                 template <typename II, typename N, typename Cx>
                     static auto read(N& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(64U)];
+                            char s[num_len_max::constant<prms_type<Cx>>(64)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
                                 return  (b != -1                                            || (io::rewind(i, o), cx|read_error::overflow)) &&
                                         (b !=  0                                            || (io::rewind(i, o), cx|read_error::floating_point_invalid)) &&
@@ -1006,7 +938,7 @@ namespace cxon { namespace bits { // number conversion: read
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value && X::number::strict, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value && X::number::strict, bool>
                     {
                         auto const b = i;
                         if (number_consumer<JSON<X>, T>::consume(i, e)) {
@@ -1019,7 +951,7 @@ namespace cxon { namespace bits { // number conversion: read
                 // not strict
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
-                        -> enable_if_t<!std::is_integral<N>::value && !X::number::strict, bool>
+                        -> enable_if_t<std::is_floating_point<N>::value && !X::number::strict, bool>
                     {
                         auto const r = from_chars(i, e, t);
                         return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
@@ -1224,22 +1156,23 @@ namespace cxon { namespace bits { // char arrays: read
             io::consume<X>(i, e);
             if (io::peek(i, e) == *X::id::nil && io::consume<X>(X::id::nil, i, e)) return true;
                 if (!consume_str<X>::beg(i, e, cx)) return false;
-            auto a = allocator::value(cx.ps, std::allocator<T>());
-                using al = std::allocator_traits<decltype(a)>;
-            T *b = al::allocate(a, 4), *p = b; T* be = b + 4;
+            auto ax = allocator::value(cx.ps, std::allocator<T>());
+            typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
+                using al = std::allocator_traits<decltype(at)>;
+            T *b = al::allocate(at, 4), *p = b; T* be = b + 4;
             for ( ; ; ) {
                 if (p + 4 > be) {
-                    T *const n = al::allocate(a, 2 * (be - b));
+                    T *const n = al::allocate(at, 2 * (be - b));
                         std::copy_n(b, p - b, n);
                     p = n + (p - b);
-                    al::deallocate(a, b, be - b);
+                    al::deallocate(at, b, be - b);
                     be = n + 2 * (be - b), b = n;
                 }
                 if (!is<X>::real(io::peek(i, e)))           goto err;
                 if (is_str<X>::end(io::peek(i, e)))         return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
                 if (!array_char_read<X>(p, be, i, e, cx))   goto err;
             }
-            err: return al::deallocate(a, b, be - b), cx|read_error::unexpected;
+            err: return al::deallocate(at, b, be - b), cx|read_error::unexpected;
         }
 
 }}  // cxon::bits char arrays: read

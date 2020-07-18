@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 oknenavin.
+// Copyright (c) 2017-2020 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -215,10 +215,10 @@ static unsigned self() {
                 cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
 #           if !defined(__GNUG__) || defined(__clang__)
-                cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+                cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<4>());
 #           else
                 cxon::to_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                    (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<int, 4>());
+                    (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<4>());
 #           endif
             std::string const s0 =
                 cxon::pretty(s1, 4, ' ');
@@ -260,10 +260,10 @@ static unsigned self() {
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
 #           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::to_bytes(cxon::make_indenter(s), n, cxjson::recursion_depth::set<unsigned, 4U>());
+                auto const r = cxon::to_bytes(cxon::make_indenter(s), n, cxjson::recursion_depth::set<4>());
 #           else
                 auto const r = cxon::to_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                    (cxon::make_indenter(s), n, cxjson::recursion_depth::set<unsigned, 4U>());
+                                    (cxon::make_indenter(s), n, cxjson::recursion_depth::set<4>());
 #           endif
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
@@ -273,10 +273,10 @@ static unsigned self() {
         }
         {   node jn;
 #           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::from_bytes(jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
+                auto const r = cxon::from_bytes(jn, "[[[[", cxjson::recursion_depth::set<4>());
 #           else
                 auto const r = cxon::from_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                    (jn, "[[[[", cxjson::recursion_depth::set<unsigned, 4U>());
+                                    (jn, "[[[[", cxjson::recursion_depth::set<4>());
 #           endif
             CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
         }
