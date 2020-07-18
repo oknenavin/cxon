@@ -9,7 +9,8 @@ cxon =          $(src)/cxon.hxx \
 cxon_bits =     $(src)/bits/cxon.hxx \
                 $(src)/bits/charconv.hxx
 cxon_core =     $(src)/core/fundamental.hxx \
-                $(src)/core/compound.hxx
+                $(src)/core/compound.hxx \
+                $(src)/core/utility.hxx
 cxon_std =      $(src)/std/array.hxx \
                 $(src)/std/bitset.hxx \
                 $(src)/std/chrono.hxx \

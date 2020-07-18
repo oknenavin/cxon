@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2019 oknenavin.
+// Copyright (c) 2017-2020 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
 
 #ifndef CXON_BITS_CHARCONV_HXX_
 #define CXON_BITS_CHARCONV_HXX_
+
+#include "../core/utility.hxx"
 
 #include <cstdlib>
 #include <cstdio>
@@ -190,58 +192,73 @@ namespace cxon { namespace bits { namespace charconv {
 namespace cxon { namespace bits { // <charconv>
 
 #   ifdef CXON_HAS_CHARCONV
-#       define HAS_FUNC_DEF(name, R, F)\
-            template <typename, typename = void>\
-                struct has_##name : std::false_type {};\
-            template <typename T>\
-                struct has_##name<T, enable_if_t<std::is_same<R, decltype(F)>::value>> : std::true_type {}
-
-        HAS_FUNC_DEF(from_chars_b, std::from_chars_result, std::from_chars(std::declval<char*>(), std::declval<char*>(), std::declval<T&>(), 0));
         template <typename T>
-            inline auto from_chars(const char* f, const char* l, T& t, int base = 10) noexcept
-                -> enable_if_t<std::is_integral<T>::value &&  has_from_chars_b<T>::value, std::from_chars_result>
+            inline auto from_chars_i_(option<1>, const char* f, const char* l, T& t, int base = 10)
+                    noexcept
+                ->  decltype(std::from_chars(f, l, t, base), std::from_chars_result())
             {
                 return std::from_chars(f, l, t, base);
             }
         template <typename T>
-            inline auto from_chars(const char* f, const char* l, T& t, int base = 10)
-                -> enable_if_t<std::is_integral<T>::value && !has_from_chars_b<T>::value, std::from_chars_result>
+            inline auto from_chars_i_(option<0>, const char* f, const char* l, T& t, int base = 10)
+                ->  std::from_chars_result
             {
                 auto const r = charconv::from_chars(f, l, t, base);
                 return { r.ptr, r.ec };
             }
-
-        HAS_FUNC_DEF(from_chars_f, std::from_chars_result, std::from_chars(std::declval<char*>(), std::declval<char*>(), std::declval<T&>()));
         template <typename T>
-            inline auto from_chars(const char* f, const char* l, T& t) noexcept
-                -> enable_if_t<std::is_floating_point<T>::value &&  has_from_chars_f<T>::value, std::from_chars_result>
+            inline auto from_chars(const char* f, const char* l, T& t, int base = 10)
+                    noexcept(noexcept(from_chars_i_(option<1>(), f, l, t, base)))
+                ->  enable_if_t<std::is_integral<T>::value, std::from_chars_result>
+            {
+                return from_chars_i_(option<1>(), f, l, t, base);
+            }
+        std::from_chars_result from_chars(const char*, const char*, bool&, int = 10) = delete;
+
+        template <typename T>
+            inline auto from_chars_f_(option<1>, const char* f, const char* l, T& t)
+                    noexcept
+                ->  decltype(std::from_chars(f, l, t), std::from_chars_result())
             {
                 return std::from_chars(f, l, t);
             }
         template <typename T>
-            inline auto from_chars(const char* f, const char* l, T& t)
-                -> enable_if_t<std::is_floating_point<T>::value && !has_from_chars_f<T>::value, std::from_chars_result>
+            inline auto from_chars_f_(option<0>, const char* f, const char* l, T& t)
+                ->  std::from_chars_result
             {
                 auto const r = charconv::from_chars(f, l, t);
                 return { r.ptr, r.ec };
             }
-
-        HAS_FUNC_DEF(to_chars, std::to_chars_result, std::to_chars(std::declval<char*>(), std::declval<char*>(), std::declval<T>(), 0));
-        HAS_FUNC_DEF(to_chars_p, std::to_chars_result, std::to_chars(std::declval<char*>(), std::declval<char*>(), std::declval<T>(), (std::chars_format)0, 0));
+        template <typename T>
+            inline auto from_chars(const char* f, const char* l, T& t)
+                    noexcept(noexcept(from_chars_f_(option<1>(), f, l, t)))
+                ->  enable_if_t<std::is_floating_point<T>::value, std::from_chars_result>
+            {
+                return from_chars_f_(option<1>(), f, l, t);
+            }
 
         template <typename T>
-            inline auto to_chars(char* f, char* l, T t, int base = 10) noexcept
-                -> enable_if_t<std::is_integral<T>::value &&  has_to_chars<T>::value, std::to_chars_result>
+            inline auto to_chars_i_(option<1>, char* f, char* l, T t, int base = 10)
+                    noexcept
+                ->  decltype(std::to_chars(f, l, t, base), std::to_chars_result())
             {
                 return std::to_chars(f, l, t, base);
             }
         template <typename T>
-            inline auto to_chars(char* f, char* l, T t, int base = 10)
-                -> enable_if_t<std::is_integral<T>::value && !has_to_chars<T>::value, std::to_chars_result>
+            inline auto to_chars_i_(option<0>, char* f, char* l, T t, int base = 10)
+                ->  std::to_chars_result
             {
                 auto const r = charconv::to_chars(f, l, t, base);
                 return { r.ptr, r.ec };
             }
+        template <typename T>
+            inline auto to_chars(char* f, char* l, T& t, int base = 10)
+                    noexcept(noexcept(to_chars_i_(option<1>(), f, l, t, base)))
+                ->  enable_if_t<std::is_integral<T>::value, std::to_chars_result>
+            {
+                return to_chars_i_(option<1>(), f, l, t, base);
+            }
+        std::to_chars_result to_chars(char*, char*, bool, int = 10) = delete;
 
         // gc++: error: 'general' is not a member of 'std::chars_format'
         template <typename T, typename = void>
@@ -254,8 +271,9 @@ namespace cxon { namespace bits { // <charconv>
             };
 
         template <typename T>
-            inline auto to_chars(char* f, char* l, T t, int precision) noexcept
-                -> enable_if_t<std::is_floating_point<T>::value &&  has_to_chars_p<T>::value, std::to_chars_result>
+            inline auto to_chars_f_(option<2>, char* f, char* l, T t, int precision)
+                    noexcept
+                ->  decltype(std::to_chars(f, l, t, (std::chars_format)0, precision), std::to_chars_result())
             {
 #               if defined(_MSC_VER) && _MSC_VER <= 1923
                     auto const r = charconv::to_chars(f, l, t, precision);
@@ -265,20 +283,26 @@ namespace cxon { namespace bits { // <charconv>
 #               endif
             }
         template <typename T>
-            inline auto to_chars(char* f, char* l, T t, int) noexcept
-                -> enable_if_t<std::is_floating_point<T>::value && !has_to_chars_p<T>::value &&  has_to_chars<T>::value, std::to_chars_result>
+            inline auto to_chars_f_(option<1>, char* f, char* l, T t, int)
+                    noexcept
+                ->  decltype(std::to_chars(f, l, t), std::to_chars_result())
             {
                 return std::to_chars(f, l, t);
             }
         template <typename T>
-            inline auto to_chars(char* f, char* l, T t, int precision)
-                -> enable_if_t<std::is_floating_point<T>::value && !has_to_chars_p<T>::value && !has_to_chars<T>::value, std::to_chars_result>
+            inline auto to_chars_f_(option<0>, char* f, char* l, T t, int precision)
+                ->  std::to_chars_result
             {
                 auto const r = charconv::to_chars(f, l, t, precision);
                 return { r.ptr, r.ec };
             }
-
-#       undef HAS_FUNC_DEF
+        template <typename T>
+            inline auto to_chars(char* f, char* l, T& t, int precision)
+                    noexcept(noexcept(to_chars_f_(option<1>(), f, l, t, precision)))
+                ->  enable_if_t<std::is_floating_point<T>::value, std::to_chars_result>
+            {
+                return to_chars_f_(option<2>(), f, l, t, precision);
+            }
 #   else
         using charconv::from_chars;
         using charconv::to_chars;

@@ -706,49 +706,52 @@ Member name |Type
 
 
 `ps`'s type is a tagged tuple with parameter types as tags. Concrete type is
-an implementation detail and the code shall access it by the `tag` interface.
+an implementation detail and the code shall access it by the `parameter` interface.
 
 ``` c++
 namespace cxon::prms {
-    template <typename Tag>
-        struct tag {
-            template <typename Pa>
+    template <typename Tag, typename Type>
+        struct parameter {
+            using tag = Tag;
+            using tag_type = Type;
+
+            template <typename Pk>
                 struct in {                                     (1)
                     static bool value;
                 }
 
-            template <typename Ty, Ty c>
+            template <Type c>
                 static constexpr auto set();                    (2)
-            template <typename Ty>
-                static constexpr auto set(Ty&& v);              (3)
+            static constexpr auto set(Type&& v);                (3)
+            static constexpr auto set(const Type& v);           (4)
 
-            template <typename Pa, typename Ty>
-                static constexpr Ty constant(Ty dflt);          (4)
+            template <typename Pk>
+                static constexpr Type constant(Type dflt);      (5)
 
-            template <typename Pa>
-                static auto reference(Pa& p);                   (5)
-            template <typename Pa>
-                static auto value(const Pa& p);                 (6)
+            template <typename Pk>
+                static Type& reference(Pk& p);                  (6)
+            template <typename Pk>
+                static Type value(const Pk& p);                 (7)
 
-            template <typename Pa, typename Ty>
-                static Ty value(const Pa&, Ty dflt);            (7)
+            template <typename Pk>
+                static Type value(const Pk&, Type dflt);        (8)
         };
 }
 ```
 
 - `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise
-- `(2)` - creates `constexpr` parameter `Tag` and type `Ty`
-- `(3)` - creates parameter `Tag` and type `Ty`
-- `(4)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise
-- `(5)` - returns a reference to parameter `Tag`, compilation error if not set
-- `(6)` - returns the value of parameter `Tag`, compilation error if not set
-- `(7)` - returns the value of parameter `Tag` if set, `dflt` otherwise
+- `(2)` - creates `constexpr` parameter `Tag` and type `Type`
+- `(3)`, `(4)` - creates parameter `Tag` and type `Type`
+- `(5)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise
+- `(6)` - returns a reference to parameter `Tag`, compilation error if not set
+- `(7)` - returns the value of parameter `Tag`, compilation error if not set
+- `(8)` - returns the value of parameter `Tag` if set, `dflt` otherwise
 
 For convenience, parameter type could be inherited from `prms::tag` - `CXON` provides
 simple macro for this.
 
 ``` c++
-#define CXON_PARAMETER(P) struct P : cxon::prms::tag<P> {}
+#define CXON_PARAMETER(P, T) struct P : cxon::prms::parameter<P, T> {}
 ```
 
 ###### Example
@@ -756,8 +759,8 @@ simple macro for this.
 ``` c++
 #include "cxon/cxon.hxx"
 
-CXON_PARAMETER(my_constant);
-CXON_PARAMETER(my_state);
+CXON_PARAMETER(my_constant, unsigned);
+CXON_PARAMETER(my_state, int);
 
 struct my_type { ... };
 
@@ -767,7 +770,7 @@ namespace cxon {
             // specialize if my_state is set
             -> enable_if_t< my_state::in<prms_type<Cx>>::value, bool>
         {
-            char buffer[my_constant::constant<prms_type<Cx>>(32U)]; // 32U if not set
+            char buffer[my_constant::constant<prms_type<Cx>>(32)]; // 32 if not set
             auto& state = my_state::reference(cx.ps);
             ...
         }
@@ -784,7 +787,7 @@ namespace cxon {
 int main() {
     my_type mv;
         auto res = cxon::from_bytes(mv, "...",
-            my_constant::set<unsigned, 42U>(), // constexpr parameter
+            my_constant::set<42>(), // constexpr parameter
             my_state::set(42) // runtime parameter
         );
 }
