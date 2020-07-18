@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 oknenavin.
+// Copyright (c) 2017-2020 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -56,6 +56,11 @@ namespace cxon {
                 indent_iterator& operator ++() noexcept { return *this; }
                 indent_iterator& operator *() noexcept { return *this; }
 
+#               if defined(__GNUG__) && !defined(__clang__) && __cplusplus < 201703L
+#                   pragma GCC diagnostic push
+#                   pragma GCC diagnostic ignored "-Wimplicit-fallthrough="
+#               endif
+
                 indent_iterator& operator =(char c) {
                     switch (stt()) {
                         case quo:
@@ -88,6 +93,10 @@ namespace cxon {
                     }
                     return *this;
                 }
+
+#               if defined(__GNUG__) && !defined(__clang__) && __cplusplus < 201703L
+#                   pragma GCC diagnostic pop
+#               endif
 
                 template <typename VI>
                     bool indent_value(VI indent_value) {
