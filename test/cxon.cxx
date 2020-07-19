@@ -8,6 +8,7 @@
 #include "cxon/std/array.hxx"
 #include "cxon/std/vector.hxx"
 #include "cxon/std/string.hxx"
+#include "cxon/std/string_view.hxx"
 #include "cxon/std/list.hxx"
 #include "cxon/std/map.hxx"
 
@@ -33,6 +34,11 @@ TEST_BEG(cxon::CXON<>) // interface/read
     {   int r; std::string const i = "1";
         TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }
+#   ifdef CXON_HAS_STRING_VIEW
+    {   int r; std::string_view const i("1", 1);
+        TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
+    }
+#   endif
     {   int r; std::vector<char> const i = {'1', '\0'};
         TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }
