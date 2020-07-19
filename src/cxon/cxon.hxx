@@ -20,18 +20,6 @@
 
 #include <cstring> // strcmp
 
-#ifndef NDEBUG
-#   if !defined(_MSC_VER)
-#       include <cassert>
-#       define CXON_ASSERT(e, m) assert(e)
-#   else
-#       include <crtdbg.h>
-#       define CXON_ASSERT(e, m) _ASSERT_EXPR((e), m)
-#   endif
-#else
-#   define CXON_ASSERT(e, m) ((void)(e))
-#endif
-
 // interface //////////////////////////////////////////////////////////////////
 
 namespace cxon { // interface
@@ -46,17 +34,6 @@ namespace cxon { // interface
 
     template <typename X, template <typename> class S, typename R = void>
         using enable_for_t = enable_if_t<std::is_same<X, S<typename X::traits>>::value, R>;
-
-    // interface helpers
-
-        template <typename I, typename = void>
-            struct is_output_iterator;
-
-        template <typename C, typename = void>
-            struct is_back_insertable;
-
-        template <typename Iterable>
-            struct continuous /*{ static auto range(const Iterable& i) -> std::pair<It, It>; }*/;
 
     // read
 
@@ -211,20 +188,12 @@ namespace cxon { // implementation bridge
 
 }   // cxon implementation bridge
 
-namespace cxon { namespace bits { // forward: iterator category
-    template <typename, typename = void> struct is_forward_iterator;
-}}
-
-namespace cxon { namespace bits { // forward: output iterator from a range
-    template <typename FwIt> struct output_iterator;
-}}
-
 namespace cxon { namespace io { // I/O
 
     template<typename II>
-        inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::bits::is_forward_iterator<II>::value>;
+        inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::is_forward_iterator<II>::value>;
     template<typename II>
-        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::bits::is_forward_iterator<II>::value>;
+        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value>;
 
     // input
 
@@ -250,12 +219,6 @@ namespace cxon { namespace io { // I/O
         constexpr bool consume(std::nullptr_t t, II& i, II e, Cx& cx); // read nothing
 
     // output
-
-    template <typename FwIt>
-        using output_iterator = cxon::bits::output_iterator<FwIt>;
-
-    template <typename FwIt>
-        constexpr auto make_output_iterator(FwIt b, FwIt e) -> output_iterator<FwIt>;
 
     template <typename O>
         inline bool poke(O& o, char c); // write a character
@@ -439,21 +402,6 @@ namespace cxon { // format traits
 
 namespace cxon { // interface implementation
 
-    template <typename, typename>
-        struct is_output_iterator : std::false_type {};
-    template <typename I>
-        struct is_output_iterator<I, enable_if_t<std::is_same<typename I::iterator_category, std::output_iterator_tag>::value>> : std::true_type {};
-
-    template <typename, typename>
-        struct is_back_insertable : std::false_type {};
-    template <typename C>
-        struct is_back_insertable<C, decltype(C().push_back(' '))> : std::true_type {};
-
-    template <typename I>
-        struct continuous {
-            static auto range(const I& i) -> std::pair<decltype(std::begin(i)), decltype(std::end(i))> { return { std::begin(i), std::end(i) }; }
-        };
-
 #   if defined(__GNUC__) || defined(__clang__)
 #       define CXON_FORCE_INLINE __attribute__((always_inline)) inline
 #   elif defined(_MSC_VER)
@@ -513,7 +461,7 @@ namespace cxon { // interface implementation
         template <typename X, typename T, typename FI, typename ...CxPs>
             CXON_FORCE_INLINE auto to_bytes(FI b, FI e, const T& t, CxPs... p) -> to_bytes_result<FI> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
-                    auto o = io::make_output_iterator(b, e);
+                    auto o = make_output_iterator(b, e);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
@@ -599,9 +547,9 @@ namespace std { // cxon errors
 namespace cxon { namespace io { // I/O
 
     template<typename II>
-        inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::bits::is_forward_iterator<II>::value> {}
+        inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::is_forward_iterator<II>::value> {}
     template<typename II>
-        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::bits::is_forward_iterator<II>::value> { i = o; }
+        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value> { i = o; }
 
     // input
 
@@ -643,11 +591,6 @@ namespace cxon { namespace io { // I/O
         constexpr bool consume(std::nullptr_t, II&, II, Cx&) { return true; }
 
     // output
-
-    template <typename FwIt>
-        constexpr output_iterator<FwIt> make_output_iterator(FwIt b, FwIt e) {
-            return output_iterator<FwIt>(b, e);
-        }
 
     template <typename O>
         inline bool poke(O& o, char c)                  { return bits::poke(o, c); }
