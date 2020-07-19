@@ -22,7 +22,7 @@ namespace cxon { // interface
     template <typename X = JSON<>, typename Insertable>
         constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<Insertable>::value, indent_iterator<X, Insertable&>>;
     template <typename X = JSON<>, typename FwIt>
-        constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indent_iterator<X, io::output_iterator<FwIt>>;
+        constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indent_iterator<X, range_output_iterator<FwIt>>;
 
     template <typename X = JSON<>, typename OutIt, typename InIt>
         inline auto pretty(OutIt o, InIt b, InIt e, unsigned tab = 1, char pad = '\t')      -> enable_if_t<is_output_iterator<OutIt>::value, void>;
@@ -172,9 +172,9 @@ namespace cxon {
             return indent_iterator<X, I&>{i, tab, pad};
         }
     template <typename X, typename FI>
-        constexpr auto make_indenter(FI b, FI e, unsigned tab, char pad) -> indent_iterator<X, io::output_iterator<FI>> {
-            using O = io::output_iterator<FI>;
-            return indent_iterator<X, O>{io::make_output_iterator(b, e), tab, pad};
+        constexpr auto make_indenter(FI b, FI e, unsigned tab, char pad) -> indent_iterator<X, range_output_iterator<FI>> {
+            using O = range_output_iterator<FI>;
+            return indent_iterator<X, O>{make_output_iterator(b, e), tab, pad};
         }
 
     template <typename X, typename OI, typename II>

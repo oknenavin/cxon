@@ -69,68 +69,6 @@ namespace cxon { namespace bits { // character classes
 
 }}  // cxon::bits character classes
 
-namespace cxon { namespace bits { // iterator category
-
-    template <typename, typename/* = void*/>
-        struct is_forward_iterator : std::false_type {};
-    template <typename I>
-        struct is_forward_iterator<I, enable_if_t<
-                !std::is_same<typename std::iterator_traits<I>::iterator_category, std::input_iterator_tag>::value
-            >> : std::true_type {};
-
-}}  // cxon::bits iterator category
-
-namespace cxon { namespace bits { // output iterator from a range
-
-    template <typename FwIt>
-        struct output_iterator {
-            using iterator_category = std::output_iterator_tag;
-            using value_type        = char;
-            using difference_type   = void;
-            using pointer           = void;
-            using reference         = void;
-
-            output_iterator& operator ++() noexcept { return *this; }
-            output_iterator& operator *() noexcept  { return *this; }
-
-            constexpr output_iterator(FwIt b, FwIt e)
-            :   b_(b), e_(e)
-            {
-#               if __cplusplus >= 201402L
-                    CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range");
-#               endif
-            }
-
-            output_iterator& operator =(char c) {
-                CXON_ASSERT(*this, "unexpected state");
-                *b_ = c, ++b_;
-                return *this;
-            }
-            void append(const char* s) {
-                CXON_ASSERT(*this, "unexpected state");
-                for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
-            }
-            void append(const char* s, size_t n) {
-                CXON_ASSERT(*this, "unexpected state");
-                n = std::min<size_t>(n, e_ - b_);
-                std::copy_n(s, n, b_), std::advance(b_, n);
-            }
-            void append(size_t n, char c) {
-                CXON_ASSERT(*this, "unexpected state");
-                n = std::min<size_t>(n, e_ - b_);
-                std::fill_n(b_, n, c), std::advance(b_, n);
-            }
-
-            operator bool() const noexcept { return b_ != e_; }
-            operator FwIt() const noexcept { return b_; }
-
-        private:
-            FwIt        b_;
-            FwIt const  e_;
-        };
-
-}}  // cxon::bits output iterator from a range
-
 namespace cxon { namespace bits { // output write with error handling
 
     template <typename O>
