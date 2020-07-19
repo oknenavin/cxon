@@ -34,10 +34,10 @@ interface with these differences:
 
 ```c++
 namespace cxon {
-    template <typename Traits, ..., typename ...CxPs>
-        ... from_bytes(..., CxPs... ps);
-    template <typename Traits, ..., typename ...CxPs>
-        ... to_bytes(..., CxPs... ps);
+    template <typename Traits, ..., typename ...Parameters>
+        auto from_bytes(..., Parameters... ps);
+    template <typename Traits, ..., typename ...Parameters>
+        auto to_bytes(..., Parameters... ps);
 }
 ```
 
@@ -63,13 +63,13 @@ from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (f
   - [`enumeration types`][cpp-enum]
   - [`class types`][cpp-class]
 - standard library types
+    - [`containers library`][std-container]
     - [`std::pair`][std-pair]
     - [`std::tuple`][std-tuple]
     - [`std::optional`][std-opt]
     - [`std::variant`][std-var]
     - [`std::basic_string`][std-bstr]
     - [`std::basic_string_view`][std-strv]
-    - [`containers library`][std-container]
     - [`std::bitset`][std-bitset]
     - [`std::complex`][std-complex]
     - [`std::valarray`][std-valarr]
@@ -172,9 +172,9 @@ or run the test suites with:
 
 ``` bash
 # g++
-$ make test
+$ make check
 # clang++
-$ make CXX=clang++ test
+$ make CXX=clang++ check
 ```
 
 #### Documentation
