@@ -61,15 +61,23 @@ TEST_BEG(cxon::CXON<>) // interface/write
     // range
     {   char o[16]; char const e[] = QS("1");
         auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "1");
-        TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+    {   char o[3]; char const e[] = QS("1");
+        auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "1");
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
     }
         {   char o[1];
-            auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "1");
+            auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "42");
             TEST_CHECK(r.ec == cxon::write_error::output_failure);
         }
     {   char o[16]; char const e[] = "1";
         auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 1);
-        TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+    {   char o[2]; char const e[] = "42";
+        auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 42);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 42);
@@ -77,7 +85,11 @@ TEST_BEG(cxon::CXON<>) // interface/write
         }
     {   char o[16]; char const e[] = "true";
         auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
-        TEST_CHECK(r && std::strncmp(o, e, r.end - std::begin(o)) == 0);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+    {   char o[4]; char const e[] = "true";
+        auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);

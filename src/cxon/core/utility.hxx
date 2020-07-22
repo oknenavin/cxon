@@ -92,37 +92,37 @@ namespace cxon {
 
             range_output_iterator& operator =(const value_type& c) {
                 CXON_ASSERT(*this, "unexpected state");
-                return *b_ = c, ++b_, *this;
+                return b_ != e_ ? (*b_ = c, ++b_, *this) : (g_ = false, *this);
             }
 
             template <typename T = value_type>
                 auto append(const T* s) -> enable_if_t<is_character<T>::value, range_output_iterator&> {
                     CXON_ASSERT(*this, "unexpected state");
                     for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
-                    CXON_ASSERT(*s == (T)0, "unexpected state");
-                    return *this;
+                    return (g_ = *s == (T)0), *this;
                 }
             auto append(const value_type* s, size_t n) -> range_output_iterator& {
                 CXON_ASSERT(*this, "unexpected state");
-                CXON_ASSERT(n <= (size_t)std::distance(b_, e_), "range too small");
+                g_ = n <= (size_t)std::distance(b_, e_);
                 n = std::min<size_t>(n, std::distance(b_, e_));
                 std::copy_n(s, n, b_), std::advance(b_, n);
                 return *this;
             }
             auto append(size_t n, const value_type& c) -> range_output_iterator& {
                 CXON_ASSERT(*this, "unexpected state");
-                CXON_ASSERT(n <= (size_t)std::distance(b_, e_), "range too small");
+                g_ = n <= (size_t)std::distance(b_, e_);
                 n = std::min<size_t>(n, std::distance(b_, e_));
                 std::fill_n(b_, n, c), std::advance(b_, n);
                 return *this;
             }
 
-            operator bool() const noexcept { return b_ != e_; }
+            operator bool() const noexcept { return g_; }
             operator FwIt() const noexcept { return b_; }
 
             private:
                 FwIt        b_;
                 FwIt const  e_;
+                bool        g_ = true;
         };
 
     template <typename FwIt>
