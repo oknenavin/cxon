@@ -6,6 +6,7 @@
 #ifndef CXON_CORE_UTILITY_HXX_
 #define CXON_CORE_UTILITY_HXX_
 
+#include <type_traits>
 #include <utility>
 #include <iterator>
 #include <algorithm>
@@ -31,10 +32,19 @@ namespace cxon {
     template <typename ...>
         constexpr bool unexpected() { return false; }
 
-    template <std::size_t N>
-        struct option : option<N - 1>   {};
-    template<>
-        struct option<0>                {};
+    template <std::size_t N>    struct option : option<N - 1>   {};
+    template<>                  struct option<0>                {};
+
+    // type traits
+
+    template <typename T>   struct is_character : std::false_type {};
+    template <>             struct is_character<char> : std::true_type {};
+    template <>             struct is_character<wchar_t> : std::true_type {};
+#   if __cplusplus >= 202002L
+        template <>             struct is_character<char8_t> : std::true_type {};
+#   endif
+    template <>             struct is_character<char16_t> : std::true_type {};
+    template <>             struct is_character<char32_t> : std::true_type {};
 
     // iterators
 
@@ -58,61 +68,66 @@ namespace cxon {
 
     template <typename I>
         struct continuous {
-            static auto range(const I& i) -> decltype(std::make_pair(std::begin(i), std::end(i))) {
+            static constexpr auto range(const I& i) -> decltype(std::make_pair(std::begin(i), std::end(i))) {
                 return std::make_pair(std::begin(i), std::end(i));
             }
         };
 
     template <typename FwIt>
         struct range_output_iterator {
+            static_assert(is_forward_iterator<FwIt>::value, "expecting forward iterator");
+
             using iterator_category = std::output_iterator_tag;
-            using value_type        = char;
+            using value_type        = typename std::iterator_traits<FwIt>::value_type;
             using difference_type   = void;
             using pointer           = void;
             using reference         = void;
 
             range_output_iterator& operator ++() noexcept { return *this; }
-            range_output_iterator& operator *() noexcept  { return *this; }
+            range_output_iterator& operator  *() noexcept { return *this; }
 
-            constexpr range_output_iterator(FwIt b, FwIt e)
+            range_output_iterator(FwIt b, FwIt e)
             :   b_(b), e_(e)
-            {
-#               if __cplusplus >= 201402L
-                    CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range");
-#               endif
+            { CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range"); }
+
+            range_output_iterator& operator =(const value_type& c) {
+                CXON_ASSERT(*this, "unexpected state");
+                return *b_ = c, ++b_, *this;
             }
 
-            range_output_iterator& operator =(char c) {
+            template <typename T = value_type>
+                auto append(const T* s) -> enable_if_t<is_character<T>::value, range_output_iterator&> {
+                    CXON_ASSERT(*this, "unexpected state");
+                    for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
+                    CXON_ASSERT(*s == (T)0, "unexpected state");
+                    return *this;
+                }
+            auto append(const value_type* s, size_t n) -> range_output_iterator& {
                 CXON_ASSERT(*this, "unexpected state");
-                *b_ = c, ++b_;
+                CXON_ASSERT(n <= (size_t)std::distance(b_, e_), "range too small");
+                n = std::min<size_t>(n, std::distance(b_, e_));
+                std::copy_n(s, n, b_), std::advance(b_, n);
                 return *this;
             }
-            void append(const char* s) {
+            auto append(size_t n, const value_type& c) -> range_output_iterator& {
                 CXON_ASSERT(*this, "unexpected state");
-                for ( ; b_ != e_ && *s; ++s, ++b_) *b_ = *s;
-            }
-            void append(const char* s, size_t n) {
-                CXON_ASSERT(*this, "unexpected state");
-                n = std::min<size_t>(n, e_ - b_);
-                std::copy_n(s, n, b_), std::advance(b_, n);
-            }
-            void append(size_t n, char c) {
-                CXON_ASSERT(*this, "unexpected state");
-                n = std::min<size_t>(n, e_ - b_);
+                CXON_ASSERT(n <= (size_t)std::distance(b_, e_), "range too small");
+                n = std::min<size_t>(n, std::distance(b_, e_));
                 std::fill_n(b_, n, c), std::advance(b_, n);
+                return *this;
             }
 
             operator bool() const noexcept { return b_ != e_; }
             operator FwIt() const noexcept { return b_; }
 
-        private:
-            FwIt        b_;
-            FwIt const  e_;
+            private:
+                FwIt        b_;
+                FwIt const  e_;
         };
 
     template <typename FwIt>
         constexpr range_output_iterator<FwIt> make_output_iterator(FwIt b, FwIt e) {
-            return range_output_iterator<FwIt>(b, e);
+            return { b, e };
         }
 
 }
@@ -159,6 +174,7 @@ namespace cxon { namespace prms {
                     static constexpr auto get_(Pk& p) -> enable_if_t<!is_same_tag<X, Pk, Sz - 1>::value, tag_type_t<X>&> {
                         return pack_<X, Pk, Sz - 1>::get(p);
                     }
+
                 template <typename X = Tg>
                     static constexpr auto get_() -> enable_if_t< is_same_tag<X, Pk, Sz - 1>::value, tag_type_t<X>> {
                         return tuple_element_t<Sz - 1, Pk>::value;
