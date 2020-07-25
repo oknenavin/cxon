@@ -1,19 +1,19 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2020 oknenavin
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_OPTIONAL_HXX_
-#define CXON_OPTIONAL_HXX_
+#ifndef CXON_JSON_LIB_STD_OPTIONAL_HXX_
+#define CXON_JSON_LIB_STD_OPTIONAL_HXX_
 
 #if __cplusplus >= 201703L
 #   if defined(__has_include) && __has_include(<optional>)
 #       include <optional>
-#       define CXON_HAS_OPTIONAL
+#       define CXON_HAS_JSON_LIB_STD_OPTIONAL
 #   endif
 #endif
 
-#ifdef CXON_HAS_OPTIONAL
+#ifdef CXON_HAS_JSON_LIB_STD_OPTIONAL
 
 namespace cxon {
 
@@ -42,6 +42,6 @@ namespace cxon {
 
 }   // cxon
 
-#endif // CXON_HAS_OPTIONAL
+#endif // CXON_HAS_JSON_LIB_STD_OPTIONAL
 
-#endif // CXON_OPTIONAL_HXX_
+#endif // CXON_JSON_LIB_STD_OPTIONAL_HXX_

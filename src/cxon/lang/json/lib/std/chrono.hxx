@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2020 oknenavin
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHRONO_HXX_
-#define CXON_CHRONO_HXX_
+#ifndef CXON_JSON_LIB_STD_CHRONO_HXX_
+#define CXON_JSON_LIB_STD_CHRONO_HXX_
 
 #include <chrono>
 
@@ -46,4 +46,4 @@ namespace cxon {
 
 }   // cxon
 
-#endif // CXON_CHRONO_HXX_
+#endif // CXON_JSON_LIB_STD_CHRONO_HXX_

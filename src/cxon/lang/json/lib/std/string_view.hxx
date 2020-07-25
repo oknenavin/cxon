@@ -1,19 +1,19 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2020 oknenavin
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_STRING_VIEW_HXX_
-#define CXON_STRING_VIEW_HXX_
+#ifndef CXON_JSON_LIB_STD_STRING_VIEW_HXX_
+#define CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 
 #if __cplusplus >= 201703L
 #   if defined(__has_include) && __has_include(<string_view>)
 #       include <string_view>
-#       define CXON_HAS_STRING_VIEW
+#       define CXON_HAS_JSON_LIB_STD_STRING_VIEW
 #   endif
 #endif
 
-#ifdef CXON_HAS_STRING_VIEW
+#ifdef CXON_HAS_JSON_LIB_STD_STRING_VIEW
 
 namespace cxon { namespace bits {
     template <typename ...A> struct is_quoted< std::basic_string_view<A...> > : std::true_type {};
@@ -54,6 +54,6 @@ namespace cxon {
 
 }   // cxon
 
-#endif //CXON_HAS_STRING_VIEW
+#endif // CXON_HAS_JSON_LIB_STD_STRING_VIEW
 
-#endif // CXON_STRING_VIEW_HXX_
+#endif // CXON_JSON_LIB_STD_STRING_VIEW_HXX_
