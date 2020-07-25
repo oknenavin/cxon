@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2020 oknenavin
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_UTILITY_HXX_
-#define CXON_UTILITY_HXX_
+#ifndef CXON_JSON_LIB_STD_UTILITY_HXX_
+#define CXON_JSON_LIB_STD_UTILITY_HXX_
 
 #include <utility>
 
@@ -34,4 +34,4 @@ namespace cxon {
 
 }   // cxon
 
-#endif // CXON_UTILITY_HXX_
+#endif // CXON_JSON_LIB_STD_UTILITY_HXX_

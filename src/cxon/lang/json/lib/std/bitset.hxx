@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2020 oknenavin
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_BITSET_HXX_
-#define CXON_BITSET_HXX_
+#ifndef CXON_JSON_LIB_STD_BITSET_HXX_
+#define CXON_JSON_LIB_STD_BITSET_HXX_
 
 #include <bitset>
 
@@ -72,4 +72,4 @@ namespace cxon {
 
 }   // cxon
 
-#endif // CXON_BITSET_HXX_
+#endif // CXON_JSON_LIB_STD_BITSET_HXX_
