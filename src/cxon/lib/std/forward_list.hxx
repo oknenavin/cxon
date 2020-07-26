@@ -9,7 +9,7 @@
 #   include <forward_list>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/forward_list.hxx"
+#       include "cxon/lang/json/lib/std/forward_list.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_FORWARD_LIST_

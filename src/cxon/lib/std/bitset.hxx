@@ -9,7 +9,7 @@
 #   include <bitset>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/bitset.hxx"
+#       include "cxon/lang/json/lib/std/bitset.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_BITSET_

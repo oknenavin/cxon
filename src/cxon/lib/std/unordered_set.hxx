@@ -9,7 +9,7 @@
 #   include <unordered_set>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/unordered_set.hxx"
+#       include "cxon/lang/json/lib/std/unordered_set.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_UNORDERED_SET_HXX_

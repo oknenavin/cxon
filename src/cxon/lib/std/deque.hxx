@@ -9,7 +9,7 @@
 #   include <deque>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/deque.hxx"
+#       include "cxon/lang/json/lib/std/deque.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_DEQUE_

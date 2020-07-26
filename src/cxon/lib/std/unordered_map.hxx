@@ -9,7 +9,7 @@
 #   include <unordered_map>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/unordered_map.hxx"
+#       include "cxon/lang/json/lib/std/unordered_map.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_UNORDERED_MAP_HXX_

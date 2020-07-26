@@ -9,7 +9,7 @@
 #   include <chrono>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/chrono.hxx"
+#       include "cxon/lang/json/lib/std/chrono.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_CHRONO_

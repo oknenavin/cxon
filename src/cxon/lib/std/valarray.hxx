@@ -9,7 +9,7 @@
 #   include <valarray>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/valarray.hxx"
+#       include "cxon/lang/json/lib/std/valarray.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_VALARRAY_HXX_

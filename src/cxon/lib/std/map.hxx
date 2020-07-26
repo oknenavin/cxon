@@ -9,7 +9,7 @@
 #   include <map>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/map.hxx"
+#       include "cxon/lang/json/lib/std/map.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_MAP_

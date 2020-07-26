@@ -6,7 +6,7 @@
 #ifndef CXON_TEST_CXON_HXX
 #define CXON_TEST_CXON_HXX
 
-#include "cxon/cxon.hxx"
+#include "cxon/json.hxx"
 #include "cxon/pretty.hxx"
 
 #include <string>

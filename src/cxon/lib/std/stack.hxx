@@ -9,7 +9,7 @@
 #   include <stack>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/stack.hxx"
+#       include "cxon/lang/json/lib/std/stack.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_STACK_HXX_

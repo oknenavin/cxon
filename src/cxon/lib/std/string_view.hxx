@@ -15,7 +15,7 @@
 
 #   ifdef CXON_HAS_LIB_STD_STRING_VIEW
 #       ifdef CXON_JSON_DEFINED
-#           include "../lang/json/lib/std/string_view.hxx"
+#           include "cxon/lang/json/lib/std/string_view.hxx"
 #       endif
 #   endif // CXON_HAS_LIB_STD_STRING_VIEW
 
