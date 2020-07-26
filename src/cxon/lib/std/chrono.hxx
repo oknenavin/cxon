@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_CHRONO_
 #   define CXON_LIB_STD_CHRONO_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <chrono>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/chrono.hxx"
 #   endif
 

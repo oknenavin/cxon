@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_STACK_HXX_
 #define CXON_JSON_LIB_STD_STACK_HXX_
 
-#include <stack>
-
 namespace cxon {
 
     template <typename X, typename T, typename ...R>

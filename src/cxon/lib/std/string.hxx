@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_STRING_HXX_
 #   define CXON_LIB_STD_STRING_HXX_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <string>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/string.hxx"
 #   endif
 

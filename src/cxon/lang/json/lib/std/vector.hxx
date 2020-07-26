@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_VECTOR_HXX_
 #define CXON_JSON_LIB_STD_VECTOR_HXX_
 
-#include <vector>
-
 namespace cxon {
 
     template <typename T, typename ...R>

@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_COMPLEX_HXX_
 #define CXON_JSON_LIB_STD_COMPLEX_HXX_
 
-#include <complex>
-
 namespace cxon {
 
     template <typename X, typename T>

@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_VALARRAY_HXX_
 #define CXON_JSON_LIB_STD_VALARRAY_HXX_
 
-#include <valarray>
-
 namespace cxon {
 
     template <typename X, typename T>

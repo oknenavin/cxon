@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_DEQUE_
 #   define CXON_LIB_STD_DEQUE_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <deque>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/deque.hxx"
 #   endif
 

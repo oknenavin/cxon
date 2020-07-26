@@ -6,7 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_MAP_HXX_
 #define CXON_JSON_LIB_STD_MAP_HXX_
 
-#include <map>
 #include "bits/map.hxx"
 
 namespace cxon {

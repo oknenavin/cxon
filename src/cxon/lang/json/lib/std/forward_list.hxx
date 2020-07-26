@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_FORWARD_LIST_HXX_
 #define CXON_JSON_LIB_STD_FORWARD_LIST_HXX_
 
-#include <forward_list>
-
 namespace cxon {
 
     template <typename X, typename T, typename ...R>

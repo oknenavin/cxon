@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_ARRAY_
 #   define CXON_LIB_STD_ARRAY_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <array>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/array.hxx"
 #   endif
 

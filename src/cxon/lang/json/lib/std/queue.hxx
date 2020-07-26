@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_QUEUE_HXX_
 #define CXON_JSON_LIB_STD_QUEUE_HXX_
 
-#include <queue>
-
 namespace cxon {
 
     template <typename X, typename T, typename ...R>

@@ -6,15 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_VARIANT_HXX_
 #define CXON_JSON_LIB_STD_VARIANT_HXX_
 
-#if __cplusplus >= 201703L
-#   if defined(__has_include) && __has_include(<variant>)
-#       include <variant>
-#       define CXON_HAS_JSON_LIB_STD_VARIANT
-#   endif
-#endif
-
-#ifdef CXON_HAS_JSON_LIB_STD_VARIANT
-
 namespace cxon {
 
     namespace bits {
@@ -79,7 +70,5 @@ namespace cxon {
         };
 
 }   // cxon
-
-#endif // CXON_HAS_JSON_LIB_STD_VARIANT
 
 #endif // CXON_JSON_LIB_STD_VARIANT_HXX_

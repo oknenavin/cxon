@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_ARRAY_HXX_
 #define CXON_JSON_LIB_STD_ARRAY_HXX_
 
-#include <array>
-
 namespace cxon {
 
     template <typename T, size_t N>

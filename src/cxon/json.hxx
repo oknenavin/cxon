@@ -6,6 +6,6 @@
 #ifndef CXON_JSON_HXX_
 #   define CXON_JSON_HXX_
 
-#   define CXON_JSON_DEFINED_ /* tell the world that JSON is specified */
+#   define CXON_JSON_DEFINED /* tell the world that JSON is in use */
 
 #endif // CXON_JSON_HXX_

@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_LIST_
 #   define CXON_LIB_STD_LIST_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <list>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/list.hxx"
 #   endif
 

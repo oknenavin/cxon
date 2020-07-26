@@ -6,7 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_SET_HXX_
 #define CXON_JSON_LIB_STD_SET_HXX_
 
-#include <set>
 #include "bits/set.hxx"
 
 namespace cxon {
