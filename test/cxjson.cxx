@@ -3,11 +3,11 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "cxon/cxon.hxx"
+#include "cxon/json.hxx"
 #include "cxon/pretty.hxx"
-#include "cxon/std/list.hxx"
-#include "cxon/cxjson/cxjson.hxx"
-#include "cxon/cxjson/pretty.hxx"
+#include "cxon/lib/std/list.hxx"
+#include "cxon/lang/json/node/cxjson.hxx"
+#include "cxon/lang/json/node/pretty.hxx"
 
 #include <fstream>
 #include <memory>

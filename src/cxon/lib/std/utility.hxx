@@ -9,7 +9,7 @@
 #   include <utility>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/utility.hxx"
+#       include "cxon/lang/json/lib/std/utility.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_UTILITY_HXX_

@@ -6,7 +6,7 @@
 #ifndef CXON_BITS_CHARCONV_HXX_
 #define CXON_BITS_CHARCONV_HXX_
 
-#include "../core/utility.hxx"
+#include "cxon/utility.hxx"
 
 #include <cstdlib>
 #include <cstdio>

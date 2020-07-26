@@ -9,7 +9,7 @@
 #   include <tuple>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/tuple.hxx"
+#       include "cxon/lang/json/lib/std/tuple.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_TUPLE_HXX_

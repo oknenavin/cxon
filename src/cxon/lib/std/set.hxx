@@ -9,7 +9,7 @@
 #   include <set>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/set.hxx"
+#       include "cxon/lang/json/lib/std/set.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_SET_HXX_

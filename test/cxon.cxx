@@ -5,12 +5,12 @@
 
 #include "cxon.hxx"
 
-#include "cxon/std/array.hxx"
-#include "cxon/std/vector.hxx"
-#include "cxon/std/string.hxx"
-#include "cxon/std/string_view.hxx"
-#include "cxon/std/list.hxx"
-#include "cxon/std/map.hxx"
+#include "cxon/lib/std/array.hxx"
+#include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/string_view.hxx"
+#include "cxon/lib/std/list.hxx"
+#include "cxon/lib/std/map.hxx"
 
 #include <cstdio>
 

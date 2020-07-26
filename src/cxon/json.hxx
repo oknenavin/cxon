@@ -8,4 +8,7 @@
 
 #   define CXON_JSON_DEFINED /* tell the world that JSON is in use */
 
+#   include "cxon.hxx"
+#   include "lang/json/json.hxx"
+
 #endif // CXON_JSON_HXX_

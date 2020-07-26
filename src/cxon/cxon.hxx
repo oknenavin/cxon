@@ -10,7 +10,7 @@
 #define CXON_VERSION_MINOR 49
 #define CXON_VERSION_PATCH 0
 
-#include "core/utility.hxx"
+#include "utility.hxx"
 
 #include <string>
 
@@ -398,8 +398,6 @@ namespace cxon { // format traits
 
 }   // cxon format traits
 
-#include "bits/cxon.hxx"
-
 namespace cxon { // interface implementation
 
 #   if defined(__GNUC__) || defined(__clang__)
@@ -484,6 +482,8 @@ namespace cxon { // interface implementation
 #   undef CXON_FORCE_INLINE
 
 }   // cxon interface implementation
+
+#include "lang/cxon.hxx"
 
 namespace cxon { // errors
 
@@ -815,8 +815,5 @@ namespace cxon { // structs::skip_type read
         };
 
 }   // cxon structs::skip_type read
-
-#include "core/fundamental.hxx"
-#include "core/compound.hxx"
 
 #endif // CXON_CXON_HXX_

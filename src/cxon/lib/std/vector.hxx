@@ -9,7 +9,7 @@
 #   include <vector>
 
 #   ifdef CXON_JSON_DEFINED
-#       include "../lang/json/lib/std/vector.hxx"
+#       include "cxon/lang/json/lib/std/vector.hxx"
 #   endif
 
 #endif // CXON_LIB_STD_VECTOR_HXX_
