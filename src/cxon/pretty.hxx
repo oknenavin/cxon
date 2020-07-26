@@ -145,7 +145,7 @@ namespace cxon {
                     static bool qub(char c) { return c == X::string::beg; }
                     static bool que(char c) { return c == X::string::end; }
                     static bool esc(char c) { return c == '\\'; }
-                    static bool spc(char c) { return cxon::bits::is<X>::space(c); }
+                    static bool spc(char c) { return cxon::charclass::is<X>::space(c); }
                     static bool nsp(char c) { return !spc(c); }
                 };
 

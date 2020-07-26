@@ -6,8 +6,8 @@
 #ifndef CXON_CHARIO_HXX_
 #define CXON_CHARIO_HXX_
 
-#include "cxon/utility.hxx"
-#include "cxon.hxx"
+#include "bits/chario.hxx"
+#include "charclass.hxx"
 
 namespace cxon { namespace chario {
 
@@ -29,7 +29,7 @@ namespace cxon { namespace chario {
 
     template <typename X, typename II>
         inline void consume(II& i, II e) {
-            while (cxon::bits::is<X>::space(peek(i, e))) next(i, e);
+            while (charclass::is<X>::space(peek(i, e))) next(i, e);
         }
 
     template <typename X, typename II>

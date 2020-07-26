@@ -188,62 +188,6 @@ namespace cxon { // implementation bridge
 
 }   // cxon implementation bridge
 
-namespace cxon { namespace io { // I/O
-
-    template<typename II>
-        inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::is_forward_iterator<II>::value>;
-    template<typename II>
-        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value>;
-
-    // input
-
-    template <typename II>
-        inline char peek(II i, II e); // *i or 0xFF 
-    template <typename II>
-        inline char next(II& i, II e); // *++i or 0xFF
-
-    template <typename X, typename II>
-        inline void consume(II& i, II e); // skip spaces
-
-    template <typename X, typename II>
-        inline bool consume(char c, II& i, II e); // try to read a character (skip spaces first)
-    template <typename X, typename II, typename Cx>
-        inline bool consume(char c, II& i, II e, Cx& cx); // try to read a character, error on failure (skip spaces first)
-
-    template <typename X, typename II>
-        inline bool consume(const char* s, II& i, II e); // try to read a string (skip spaces first)
-
-    template <typename X, typename II>
-        constexpr bool consume(std::nullptr_t t, II& i, II e); // read nothing
-    template <typename X, typename II, typename Cx>
-        constexpr bool consume(std::nullptr_t t, II& i, II e, Cx& cx); // read nothing
-
-    // output
-
-    template <typename O>
-        inline bool poke(O& o, char c); // write a character
-    template <typename O>
-        inline bool poke(O& o, const char* s); // write a string
-    template <typename O>
-        inline bool poke(O& o, const char* s, size_t n); // write first n characters of a string
-    template <typename O>
-        inline bool poke(O& o, unsigned n, char c); // write a character n times
-    template <typename O>
-        inline bool poke(O& o, std::nullptr_t t) noexcept; // write nothing
-
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, char c, Cx& cx);
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, Cx& cx);
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, size_t n, Cx& cx);
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, unsigned n, char c, Cx& cx);
-    template <typename X, typename O, typename Cx>
-        constexpr bool poke(O& o, std::nullptr_t t, Cx& cx);
-
-}}   // cxon::io I/O
-
 namespace cxon {  // key read/write
 
     template <typename X, typename T, typename II, typename Cx>
@@ -253,26 +197,6 @@ namespace cxon {  // key read/write
         inline bool write_key(O& o, const T& t, Cx& cx);
 
 }   // cxon key read/write
-
-namespace cxon { namespace container { // list read/write helpers
-
-    // read
-
-    template <typename X, typename Cr, typename II, typename Cx, typename EA>
-        inline bool read(II& i, II e, Cx& cx, EA element_add);
-
-    // write
-
-    template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
-        inline bool write(O& o, II b, II e, Cx& cx, L element_write);
-    template <typename X, typename Cr, typename O, typename T, typename Cx, typename L>
-        inline bool write(O& o, const T& t, Cx& cx, L element_write);
-    template <typename X, typename Cr, typename O, typename II, typename Cx>
-        inline bool write(O& o, II b, II e, Cx& cx);
-    template <typename X, typename Cr, typename O, typename T, typename Cx>
-        inline bool write(O& o, const T& t, Cx& cx);
-
-}}  // cxon::container list read/write helpers
 
 namespace cxon { namespace unquoted { // unquoted value
 
@@ -483,7 +407,7 @@ namespace cxon { // interface implementation
 
 }   // cxon interface implementation
 
-#include "lang/cxon.hxx"
+#include "lang/common/cxon.hxx"
 
 namespace cxon { // errors
 
@@ -544,78 +468,6 @@ namespace std { // cxon errors
     template <> struct is_error_condition_enum<cxon::write_error> : true_type {};
 }   // std cxon errors
 
-namespace cxon { namespace io { // I/O
-
-    template<typename II>
-        inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::is_forward_iterator<II>::value> {}
-    template<typename II>
-        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value> { i = o; }
-
-    // input
-
-    template <typename II>
-        inline char peek(II i, II e) {
-            return i != e ? *i : '\xFF';
-        }
-    template <typename II>
-        inline char next(II& i, II e) {
-            return ++i, peek(i, e);
-        }
-
-    template <typename X, typename II>
-        inline void consume(II& i, II e) {
-            while (cxon::bits::is<X>::space(peek(i, e))) next(i, e);
-        }
-
-    template <typename X, typename II>
-        inline bool consume(char c, II& i, II e) {
-            consume<X>(i, e);
-            return c == peek(i, e) && (next(i, e), true);
-        }
-    template <typename X, typename II, typename Cx>
-        inline bool consume(char c, II& i, II e, Cx& cx) {
-            consume<X>(i, e);
-            return (c == peek(i, e) && (next(i, e), true)) || (cx|read_error::unexpected);
-        }
-
-    template <typename X, typename II>
-        inline bool consume(const char* s, II& i, II e) {
-            consume<X>(i, e);
-            for (char c = peek(i, e); *s && *s == c; c = next(i, e), ++s) ;
-            return *s == '\0';
-        }
-
-    template <typename X, typename II>
-        constexpr bool consume(std::nullptr_t, II&, II) { return true; }
-    template <typename X, typename II, typename Cx>
-        constexpr bool consume(std::nullptr_t, II&, II, Cx&) { return true; }
-
-    // output
-
-    template <typename O>
-        inline bool poke(O& o, char c)                  { return bits::poke(o, c); }
-    template <typename O>
-        inline bool poke(O& o, const char* s)           { return bits::poke(o, s); }
-    template <typename O>
-        inline bool poke(O& o, const char* s, size_t n) { return bits::poke(o, s, n); }
-    template <typename O>
-        inline bool poke(O& o, unsigned n, char c)      { return bits::poke(o, n, c); }
-    template <typename O>
-        inline bool poke(O&, std::nullptr_t) noexcept   { return true; }
-
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, char c, Cx& cx)                  { return bits::poke<X>(o, cx, c); }
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, Cx& cx)           { return bits::poke<X>(o, cx, s); }
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return bits::poke<X>(o, cx, s, n); }
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return bits::poke<X>(o, cx, n, c); }
-    template <typename X, typename O, typename Cx>
-        constexpr bool poke(O&, std::nullptr_t, Cx&)            { return true; }
-
-}}   // cxon::io
-
 namespace cxon {  // key read/write
 
     template <typename X, typename T, typename II, typename Cx>
@@ -629,41 +481,6 @@ namespace cxon {  // key read/write
         }
 
 }   // cxon key read/write
-
-namespace cxon { namespace container { // container read/write helpers
-
-    // read
-
-    template <typename X, typename Cr, typename II, typename Cx, typename EA>
-        inline bool read(II& i, II e, Cx& cx, EA element_add) {
-            if (!io::consume<X>(Cr::beg, i, e, cx)) return false;
-            if ( io::consume<X>(Cr::end, i, e))     return true;
-            return bits::list_read<X, Cr>(i, e, element_add), !cx.ec && io::consume<X>(Cr::end, i, e, cx);
-        }
-
-    // write
-
-    template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
-        inline bool write(O& o, II b, II e, Cx& cx, L element_write) {
-            if (!io::poke<X>(o, Cr::beg, cx)) return false;
-            return bits::list_write<X, Cr>(o, b, e, cx, element_write), !cx.ec && io::poke<X>(o, Cr::end, cx);
-        }
-    template <typename X, typename Cr, typename O, typename T, typename Cx, typename L>
-        inline bool write(O& o, const T& t, Cx& cx, L element_write) {
-            return write<X, Cr>(o, std::begin(t), std::end(t), cx, element_write);
-        }
-    template <typename X, typename Cr, typename O, typename II, typename Cx>
-        inline bool write(O& o, II b, II e, Cx& cx) {
-            return write<X, Cr>(o, b, e, cx, [&](const decltype(*b)& e) {
-                return write_value<X>(o, e, cx);
-            });
-        }
-    template <typename X, typename Cr, typename O, typename T, typename Cx>
-        inline bool write(O& o, const T& t, Cx& cx) {
-            return write<X, Cr>(o, std::begin(t), std::end(t), cx);
-        }
-
-}}  // cxon::container read/write helpers
 
 namespace cxon { namespace unquoted { // unquoted value
 

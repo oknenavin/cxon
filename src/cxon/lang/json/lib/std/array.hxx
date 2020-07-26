@@ -6,6 +6,8 @@
 #ifndef CXON_JSON_LIB_STD_ARRAY_HXX_
 #define CXON_JSON_LIB_STD_ARRAY_HXX_
 
+#include "cxon/lang/common/container.hxx"
+
 namespace cxon {
 
     template <typename T, size_t N>
@@ -21,7 +23,7 @@ namespace cxon {
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return container::read<X, list<X>>(i, e, cx, [&] {
+                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
                         return (p != N || (io::rewind(i, o), cx|read_error::overflow)) &&
                                 read_value<X>(t[p++], i, e, cx)
                         ;
@@ -40,7 +42,7 @@ namespace cxon {
         struct write<X, std::array<T, S>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::array<T, S>& t, Cx& cx) {
-                    return container::write<X, list<X>>(o, t, cx);
+                    return chario::container::write<X, list<X>>(o, t, cx);
                 }
         };
 

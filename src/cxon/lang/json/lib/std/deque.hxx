@@ -6,13 +6,15 @@
 #ifndef CXON_JSON_LIB_STD_DEQUE_HXX_
 #define CXON_JSON_LIB_STD_DEQUE_HXX_
 
+#include "cxon/lang/common/container.hxx"
+
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct read<X, std::deque<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::deque<T, R...>& t, II& i, II e, Cx& cx) {
-                    return container::read<X, list<X>>(i, e, cx, [&] {
+                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace_back();
                             return read_value<X>(t.back(), i, e, cx);
@@ -27,7 +29,7 @@ namespace cxon {
         struct write<X, std::deque<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::deque<T, R...>& t, Cx& cx) {
-                    return container::write<X, list<X>>(o, t, cx);
+                    return chario::container::write<X, list<X>>(o, t, cx);
                 }
         };
 
