@@ -34,7 +34,7 @@ TEST_BEG(cxon::CXON<>) // interface/read
     {   int r; std::string const i = "1";
         TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }
-#   ifdef CXON_HAS_STRING_VIEW
+#   ifdef CXON_HAS_LIB_STD_STRING_VIEW
     {   int r; std::string_view const i("1", 1);
         TEST_CHECK(cxon::from_bytes(r, i) && r == 1);
     }

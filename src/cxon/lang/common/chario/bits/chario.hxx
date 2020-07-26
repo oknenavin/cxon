@@ -6,8 +6,6 @@
 #ifndef CXON_BITS_CHARIO_HXX_
 #define CXON_BITS_CHARIO_HXX_
 
-#include "cxon/utility.hxx"
-
 namespace cxon { namespace chario { namespace bits { // output write with error handling
 
     template <typename O>

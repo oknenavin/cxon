@@ -7,6 +7,7 @@
 #define CXON_BITS_CXON_HXX_
 
 #include "charconv.hxx"
+#include "key.hxx"
 #include "chario.hxx"
 #include <algorithm>
 #include <cmath> // isfinite, ...
@@ -802,26 +803,9 @@ namespace cxon { namespace bits { // number conversion: write
 
 }}  // cxon::bits number conversion: write
 
-namespace cxon { namespace bits { // key quoting
-
-    template <typename T> struct is_quoted : std::false_type {};
-#   define CXON_QUOTED(T)\
-        template <size_t N>         struct is_quoted<T[N]>                          : std::true_type  {};\
-        template <size_t N>         struct is_quoted<const T[N]>                    : std::true_type  {};\
-        template <>                 struct is_quoted<T*>                            : std::true_type  {};\
-        template <>                 struct is_quoted<const T*>                      : std::true_type  {};\
-        template <typename ...R>    struct is_quoted<std::basic_string<T, R...>>    : std::true_type  {};
-        CXON_QUOTED(char)
-        CXON_QUOTED(char16_t)
-        CXON_QUOTED(char32_t)
-        CXON_QUOTED(wchar_t)
-#   undef CXON_QUOTED
-
-    template <typename S> struct UQKEY : S { using X = S; };
-
-}}  // cxon::bits key quoting
-
 namespace cxon { namespace bits { // string quoting: read
+
+    using namespace chario::bits; // TODO
 
     template <typename X>
         struct is_str {
@@ -1041,107 +1025,7 @@ namespace cxon { namespace bits { // char arrays: write
 
 namespace cxon { namespace bits { // key: read
 
-    template <typename X> struct key_read;
-
-    template <typename X, template <typename> class S>
-        struct key_read<S<X>> {
-            template <typename T, typename II, typename Cx, typename E = S<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return read_value<S<UQKEY<X>>>(t, i, e, cx);
-                }
-            template <typename T, typename II, typename Cx, typename E = S<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value || !E::map::unquoted_keys, bool>
-                {
-                    return read_value<E>(t, i, e, cx);
-                }
-        };
-    template <typename X>
-        struct key_read<JSON<X>> {
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return read_value<JSON<UQKEY<X>>>(t, i, e, cx);
-                }
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
-                {
-                    return read_value<E>(t, i, e, cx);
-                }
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return read_value<E>(t, i, e, cx);
-                }
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
-                {
-                    return  io::consume<E>(E::string::beg, i, e, cx) &&
-                                read_value<E>(t, i, e, cx) &&
-                            io::consume<E>(E::string::end, i, e, cx)
-                    ;
-                }
-        };
-
 }}  // cxon::bits key: read
-
-namespace cxon { namespace bits { // key: write
-
-    template <typename X> struct key_write;
-
-    template <typename X, template <typename> class S>
-        struct key_write<S<X>> {
-            template <typename T, typename O, typename Cx, typename E = S<X>>
-                static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return write_value<S<UQKEY<X>>>(o, t, cx);
-                }
-            template <typename T, typename O, typename Cx, typename E = S<X>>
-                static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value || !E::map::unquoted_keys, bool>
-                {
-                    return write_value<E>(o, t, cx);
-                }
-        };
-    template <typename X>
-        struct key_write<JSON<X>> {
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
-                static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return write_value<JSON<UQKEY<X>>>(o, t, cx);
-                }
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
-                static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
-                {
-                    return write_value<E>(o, t, cx);
-                }
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
-                static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return write_value<E>(o, t, cx);
-                }
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
-                static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
-                {
-                    return  io::poke<E>(o, E::string::beg, cx) &&
-                                write_value<E>(o, t, cx) &&
-                            io::poke<E>(o, E::string::end, cx)
-                    ;
-                }
-        };
-
-}}  // cxon::bits key: write
 
 namespace cxon { namespace bits { // std::basic_string read
 

@@ -6,8 +6,9 @@
 #ifndef CXON_CHARIO_HXX_
 #define CXON_CHARIO_HXX_
 
-#include "bits/chario.hxx"
+#include "cxon/utility.hxx"
 #include "charclass.hxx"
+#include "bits/chario.hxx"
 
 namespace cxon { namespace chario {
 
