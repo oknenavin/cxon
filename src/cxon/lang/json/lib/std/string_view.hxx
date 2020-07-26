@@ -6,7 +6,21 @@
 #ifndef CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 #define CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 
+namespace cxon { namespace chario { namespace bits {
+
+#   define CXON_QUOTED(T)\
+        template <typename ...R> struct is_quoted<std::basic_string_view<T, R...>> : std::true_type  {};
+        CXON_QUOTED(char)
+        CXON_QUOTED(char16_t)
+        CXON_QUOTED(char32_t)
+        CXON_QUOTED(wchar_t)
+#   undef CXON_QUOTED
+
+}}} // cxon::chario::bits
+
 namespace cxon {
+
+    using namespace chario::bits; // TODO: UQKEY
 
     template <typename T, typename ...R>
         struct continuous<std::basic_string_view<T, R...>> {
@@ -32,7 +46,7 @@ namespace cxon {
                 }
         };
     template <typename X, template <typename> class S, typename T, typename ...R>
-        struct write<S<bits::UQKEY<X>>, std::basic_string_view<T, R...>> {
+        struct write<S<UQKEY<X>>, std::basic_string_view<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
                     return bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);

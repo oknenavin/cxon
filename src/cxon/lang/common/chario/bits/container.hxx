@@ -6,8 +6,6 @@
 #ifndef CXON_BITS_CHARIO_CONTAINER_HXX_
 #define CXON_BITS_CHARIO_CONTAINER_HXX_
 
-#include "bits/container.hxx"
-
 namespace cxon { namespace chario { namespace container { namespace bits { // container read/write helpers
 
     template <typename X, typename Cr, typename II, typename EA>

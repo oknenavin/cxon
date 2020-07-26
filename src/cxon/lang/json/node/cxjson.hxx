@@ -7,7 +7,7 @@
 #define CXJSON_CXJSON_HXX_
 
 #include "cxon/json.hxx"
-#include "cxon/lang/common/container.hxx"
+#include "cxon/lang/common/chario/container.hxx"
 #include "cxon//lib/std/string.hxx"
 #include "cxon//lib/std/vector.hxx"
 #include "cxon//lib/std/map.hxx"
@@ -433,7 +433,7 @@ namespace cxon {
 #                   else
                         auto& o = t.emplace_back();
 #                   endif
-                    return read_key<X>(o.first, i, e, cx) && read_value<X>(o.second, i, e, cx);
+                    return chario::read_key<X>(o.first, i, e, cx) && read_value<X>(o.second, i, e, cx);
                 });
             }
 
@@ -441,7 +441,7 @@ namespace cxon {
             inline bool write_value(O& o, const ordered::object<K, V, R...>& t, Cx& cx) {
                 using value_type = typename ordered::object<K, V, R...>::value_type;
                 return chario::container::write<X, map<X>>(o, t, cx, [&](const value_type& e) {
-                    return write_key<X>(o, e.first, cx) && write_value<X>(o, e.second, cx);
+                    return chario::write_key<X>(o, e.first, cx) && write_value<X>(o, e.second, cx);
                 });
             }
 

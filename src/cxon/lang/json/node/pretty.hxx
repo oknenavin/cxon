@@ -26,7 +26,7 @@ namespace cxon {
                         lvl += tab;
                             CXJSON_CHECK((
                                 io::poke(out, "{\n") && io::poke(out, lvl, pad) &&
-                                write_key<X>(out, i->first, cx), io::poke(out, ' ') &&
+                                chario::write_key<X>(out, i->first, cx), io::poke(out, ' ') &&
                                     write_value<X>(o, i->second, cx)
                             ));
                             if (j.size() > 1) {
@@ -34,7 +34,7 @@ namespace cxon {
                                 while (++i != e) {
                                     CXJSON_CHECK((
                                         io::poke(out, ",\n") && io::poke(out, lvl, pad) &&
-                                        write_key<X>(out, i->first, cx), io::poke(out, ' ') &&
+                                        chario::write_key<X>(out, i->first, cx), io::poke(out, ' ') &&
                                             write_value<X>(o, i->second, cx)
                                     ));
                                 }

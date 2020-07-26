@@ -188,16 +188,6 @@ namespace cxon { // implementation bridge
 
 }   // cxon implementation bridge
 
-namespace cxon {  // key read/write
-
-    template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx);
-
-    template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx);
-
-}   // cxon key read/write
-
 namespace cxon { namespace unquoted { // unquoted value
 
     template <typename X, typename T, size_t N, typename II, typename Cx>
@@ -407,7 +397,8 @@ namespace cxon { // interface implementation
 
 }   // cxon interface implementation
 
-#include "lang/common/cxon.hxx"
+#include "lang/common/chario/cxon.hxx"
+#include "lang/common/chario/key.hxx"
 
 namespace cxon { // errors
 
@@ -467,20 +458,6 @@ namespace std { // cxon errors
     template <> struct is_error_condition_enum<cxon::read_error> : true_type {};
     template <> struct is_error_condition_enum<cxon::write_error> : true_type {};
 }   // std cxon errors
-
-namespace cxon {  // key read/write
-
-    template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx) {
-            return bits::key_read<X>::value(t, i, e, cx) && io::consume<X>(X::map::div, i, e, cx);
-        }
-
-    template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx) {
-            return bits::key_write<X>::value(o, t, cx) && io::poke<X>(o, X::map::div, cx);
-        }
-
-}   // cxon key read/write
 
 namespace cxon { namespace unquoted { // unquoted value
 
@@ -548,13 +525,13 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             inline auto write_field(O& o, const S& s, F f, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
             {
-                return write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.mptr, cx);
+                return chario::write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.mptr, cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
             inline auto write_field(O& o, const S&, F f, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
             {
-                return write_key<X>(o, f.name, cx) && write_value<X>(o, *f.mptr, cx);
+                return chario::write_key<X>(o, f.name, cx) && write_value<X>(o, *f.mptr, cx);
             }
     template <>
         struct field<skip_type> {
@@ -600,7 +577,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             for (char id[ids_len_max::constant<prms_type<Cx>>(64)]; ; ) {
                 io::consume<X>(i, e);
                 II const o = i;
-                    if (!read_key<X>(id, i, e, cx)) return false;
+                    if (!chario::read_key<X>(id, i, e, cx)) return false;
                     if (!bits::read<X, S, F...>::fields(s, id, f, i, e, cx))
                         return cx && (io::rewind(i, o), cx|read_error::unexpected);
                     if (io::consume<X>(X::map::sep, i, e)) continue;

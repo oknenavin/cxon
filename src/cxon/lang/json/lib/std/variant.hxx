@@ -25,7 +25,7 @@ namespace cxon {
                 static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
                 static bool index(size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return read_key<X>(n, i, e, cx) && (n < cnt_ || (io::rewind(i, o), cx|read_error::unexpected));
+                    return chario::read_key<X>(n, i, e, cx) && (n < cnt_ || (io::rewind(i, o), cx|read_error::unexpected));
                 }
                 static bool read(V& t, II& i, II e, Cx& cx) {
                     size_t n;
@@ -62,7 +62,7 @@ namespace cxon {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
                     return  io::poke(o, X::map::beg) &&
-                                write_key<X>(o, t.index(), cx) &&
+                                chario::write_key<X>(o, t.index(), cx) &&
                                 std::visit([&](auto&& v) { return write_value<X>(o, v, cx); }, t) &&
                             io::poke(o, X::map::end)
                     ;

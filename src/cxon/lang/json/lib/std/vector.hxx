@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_VECTOR_HXX_
 #define CXON_JSON_LIB_STD_VECTOR_HXX_
 
-#include "cxon/lang/common/container.hxx"
+#include "cxon/lang/common/chario/container.hxx"
 
 namespace cxon {
 

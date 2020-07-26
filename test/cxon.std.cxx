@@ -758,17 +758,26 @@ TEST_BEG(cxon::CXON<>) // std::chrono
 TEST_END()
 
 
-#ifdef CXON_HAS_STRING_VIEW
+#ifdef CXON_HAS_LIB_STD_STRING_VIEW
     TEST_BEG(cxon::CXON<>) // std::string_view
         using namespace std;
         char const s[] = "1";
         //R_TEST(string_view(s), QS("1")); // std::string_view cannot be modified
         W_TEST(QS("1"), string_view(s));
-        W_TEST("{1:1}", map<string_view, int>{{string_view(s), 1}});
+        W_TEST("{1:1}", map<string_view, int>{{string_view(s), 1}}); // TODO: wrong, the key must be quoted?
     TEST_END()
 #endif
 
-#ifdef CXON_HAS_STRING_VIEW
+#ifdef CXON_HAS_LIB_STD_STRING_VIEW
+    TEST_BEG(cxon::JSON<>) // std::string_view
+        using namespace std;
+        char const s[] = "1";
+        W_TEST(QS("1"), string_view(s));
+        W_TEST("{\"1\":1}", map<string_view, int>{{string_view(s), 1}});
+    TEST_END()
+#endif
+
+#ifdef CXON_HAS_LIB_STD_STRING_VIEW
     TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>) // std::string_view
         using namespace std;
         char const s[] = "1";
@@ -778,7 +787,7 @@ TEST_END()
 #endif
 
 
-#ifdef CXON_HAS_OPTIONAL
+#ifdef CXON_HAS_LIB_STD_OPTIONAL
     TEST_BEG(cxon::CXON<>) // std::optional
         using namespace std;
         R_TEST(optional<int>(42), "42");
@@ -789,7 +798,7 @@ TEST_END()
 #endif
 
 
-#ifdef CXON_HAS_VARIANT
+#ifdef CXON_HAS_LIB_STD_VARIANT
     TEST_BEG(cxon::CXON<>) // std::variant
         using namespace std;
         R_TEST(variant<int, double>(in_place_index_t<0>(), 1), "{0:1}");
