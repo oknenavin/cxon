@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_UTILITY_HXX_
 #   define CXON_LIB_STD_UTILITY_HXX_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <utility>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/utility.hxx"
 #   endif
 

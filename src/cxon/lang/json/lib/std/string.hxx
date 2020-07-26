@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_STRING_HXX_
 #define CXON_JSON_LIB_STD_STRING_HXX_
 
-#include <string>
-
 namespace cxon {
 
     template <typename T, typename ...R>

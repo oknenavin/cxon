@@ -6,7 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_UNORDERED_MAP_HXX_
 #define CXON_JSON_LIB_STD_UNORDERED_MAP_HXX_
 
-#include <unordered_map>
 #include "bits/map.hxx"
 
 namespace cxon {

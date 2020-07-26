@@ -6,15 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_OPTIONAL_HXX_
 #define CXON_JSON_LIB_STD_OPTIONAL_HXX_
 
-#if __cplusplus >= 201703L
-#   if defined(__has_include) && __has_include(<optional>)
-#       include <optional>
-#       define CXON_HAS_JSON_LIB_STD_OPTIONAL
-#   endif
-#endif
-
-#ifdef CXON_HAS_JSON_LIB_STD_OPTIONAL
-
 namespace cxon {
 
     template <typename X, typename T>
@@ -41,7 +32,5 @@ namespace cxon {
         };
 
 }   // cxon
-
-#endif // CXON_HAS_JSON_LIB_STD_OPTIONAL
 
 #endif // CXON_JSON_LIB_STD_OPTIONAL_HXX_

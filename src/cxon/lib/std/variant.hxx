@@ -6,8 +6,17 @@
 #ifndef CXON_LIB_STD_VARIANT_HXX_
 #   define CXON_LIB_STD_VARIANT_HXX_
 
-#   ifdef CXON_JSON_DEFINED_
-#       include "../lang/json/lib/std/variant.hxx"
+#   if __cplusplus >= 201703L
+#       if defined(__has_include) && __has_include(<variant>)
+#           include <variant>
+#           define CXON_HAS_LIB_STD_VARIANT
+#       endif
 #   endif
+
+#   ifdef CXON_HAS_LIB_STD_VARIANT
+#       ifdef CXON_JSON_DEFINED
+#           include "../lang/json/lib/std/variant.hxx"
+#       endif
+#   endif // CXON_HAS_LIB_STD_VARIANT
 
 #endif // CXON_LIB_STD_VARIANT_HXX_

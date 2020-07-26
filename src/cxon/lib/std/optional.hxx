@@ -6,8 +6,17 @@
 #ifndef CXON_LIB_STD_OPTIONAL_HXX_
 #   define CXON_LIB_STD_OPTIONAL_HXX_
 
-#   ifdef CXON_JSON_DEFINED_
-#       include "../lang/json/lib/std/optional.hxx"
+#   if __cplusplus >= 201703L
+#       if defined(__has_include) && __has_include(<optional>)
+#           include <optional>
+#           define CXON_HAS_LIB_STD_OPTIONAL
+#       endif
 #   endif
+
+#   ifdef CXON_HAS_LIB_STD_OPTIONAL
+#       ifdef CXON_JSON_DEFINED
+#           include "../lang/json/lib/std/optional.hxx"
+#       endif
+#   endif // CXON_HAS_LIB_STD_OPTIONAL
 
 #endif // CXON_LIB_STD_OPTIONAL_HXX_

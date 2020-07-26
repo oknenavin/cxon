@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_DEQUE_HXX_
 #define CXON_JSON_LIB_STD_DEQUE_HXX_
 
-#include <deque>
-
 namespace cxon {
 
     template <typename X, typename T, typename ...R>

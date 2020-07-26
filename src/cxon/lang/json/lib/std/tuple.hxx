@@ -6,8 +6,6 @@
 #ifndef CXON_JSON_LIB_STD_TUPLE_HXX_
 #define CXON_JSON_LIB_STD_TUPLE_HXX_
 
-#include <tuple>
-
 namespace cxon { namespace bits { // read/write
 
     template <typename X, typename T, unsigned N, unsigned L>

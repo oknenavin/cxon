@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_QUEUE_HXX_
 #   define CXON_LIB_STD_QUEUE_HXX_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <queue>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/queue.hxx"
 #   endif
 

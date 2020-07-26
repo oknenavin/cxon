@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_COMPLEX_
 #   define CXON_LIB_STD_COMPLEX_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <complex>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/complex.hxx"
 #   endif
 

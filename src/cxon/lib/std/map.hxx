@@ -6,7 +6,9 @@
 #ifndef CXON_LIB_STD_MAP_
 #   define CXON_LIB_STD_MAP_
 
-#   ifdef CXON_JSON_DEFINED_
+#   include <map>
+
+#   ifdef CXON_JSON_DEFINED
 #       include "../lang/json/lib/std/map.hxx"
 #   endif
 
