@@ -6,6 +6,8 @@
 #ifndef CXON_COMPOUND_HXX_
 #define CXON_COMPOUND_HXX_
 
+#include "cxon/lang/common/container.hxx"
+
 namespace cxon { // pointer
 
     template <typename X, typename T>
@@ -47,7 +49,7 @@ namespace cxon { // array
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return container::read<X, list<X>>(i, e, cx, [&] {
+                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
                         return (p != N || (io::rewind(i, o), cx|read_error::overflow)) &&
                                 read_value<X>(t[p++], i, e, cx)
                         ;
@@ -59,7 +61,7 @@ namespace cxon { // array
         struct write<X, T[N]> {
             template <typename O, typename Cx>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return container::write<X, list<X>>(o, t, cx);
+                    return chario::container::write<X, list<X>>(o, t, cx);
                 }
         };
 

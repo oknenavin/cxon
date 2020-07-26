@@ -6,6 +6,8 @@
 #ifndef CXON_JSON_LIB_STD_VECTOR_HXX_
 #define CXON_JSON_LIB_STD_VECTOR_HXX_
 
+#include "cxon/lang/common/container.hxx"
+
 namespace cxon {
 
     template <typename T, typename ...R>
@@ -19,7 +21,7 @@ namespace cxon {
         struct read<X, std::vector<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::vector<T, R...>& t, II& i, II e, Cx& cx) {
-                    return container::read<X, list<X>>(i, e, cx, [&] {
+                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace_back();
                             return read_value<X>(t.back(), i, e, cx);
@@ -34,7 +36,7 @@ namespace cxon {
         struct write<X, std::vector<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::vector<T, R...>& t, Cx& cx) {
-                    return container::write<X, list<X>>(o, t, cx);
+                    return chario::container::write<X, list<X>>(o, t, cx);
                 }
         };
 

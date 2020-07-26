@@ -6,6 +6,8 @@
 #ifndef CXON_JSON_LIB_STD_VALARRAY_HXX_
 #define CXON_JSON_LIB_STD_VALARRAY_HXX_
 
+#include "cxon/lang/common/container.hxx"
+
 namespace cxon {
 
     template <typename X, typename T>
@@ -14,7 +16,7 @@ namespace cxon {
                 static bool value(std::valarray<T>& t, II& i, II e, Cx& cx) { // no, it sucks
                     std::valarray<T> v(4);
                     size_t p = 0;
-                    bool const r = container::read<X, list<X>>(i, e, cx, [&] {
+                    bool const r = chario::container::read<X, list<X>>(i, e, cx, [&] {
                         if (p >= v.size()) {
                             std::valarray<T> n(std::move(v));
                             v.resize(p + p);
@@ -33,7 +35,7 @@ namespace cxon {
         struct write<X, std::valarray<T>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::valarray<T>& t, Cx& cx) {
-                    return container::write<X, list<X>>(o, std::begin(t), std::end(t), cx);
+                    return chario::container::write<X, list<X>>(o, std::begin(t), std::end(t), cx);
                 }
         };
 
