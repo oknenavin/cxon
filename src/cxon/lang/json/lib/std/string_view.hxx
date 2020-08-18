@@ -16,7 +16,7 @@ namespace cxon { namespace chio { namespace bits {
         CXON_QUOTED(wchar_t)
 #   undef CXON_QUOTED
 
-}}} // cxon::chario::bits
+}}} // cxon::chio::bits
 
 namespace cxon {
 
