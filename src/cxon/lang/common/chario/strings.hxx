@@ -6,16 +6,15 @@
 #ifndef CXON_BITS_STRINGS_HXX_
 #define CXON_BITS_STRINGS_HXX_
 
-#include "chario.hxx"
+#include "chio.hxx"
 #include "key.hxx"
 #include "chars.hxx"
 #include <algorithm>
 
 namespace cxon { namespace strs { // string quoting: read
 
-    namespace io = cxon::chario;
-    using namespace cxon::charclass;
-    using namespace chario::bits; // TODO
+    using namespace cxon::chcls;
+    using namespace chio::bits; // TODO
 
     template <typename X>
         struct is_str {
@@ -30,8 +29,8 @@ namespace cxon { namespace strs { // string quoting: read
 
     template <typename X>
         struct consume_str {
-            template <typename II, typename Cx> static bool      beg(II& i, II e, Cx& cx) { return io::consume<X>(X::string::beg, i, e, cx); }
-            template <typename II, typename Cx> static bool      end(II& i, II e, Cx& cx) { return io::consume<X>(X::string::end, i, e, cx); }
+            template <typename II, typename Cx> static bool      beg(II& i, II e, Cx& cx) { return chio::consume<X>(X::string::beg, i, e, cx); }
+            template <typename II, typename Cx> static bool      end(II& i, II e, Cx& cx) { return chio::consume<X>(X::string::end, i, e, cx); }
             template <typename II, typename Cx> static char32_t  chr(II& i, II e, Cx& cx) {
                 return  chars::str_to_utf32<X>(i, e, cx);
             }
@@ -41,8 +40,8 @@ namespace cxon { namespace strs { // string quoting: read
             template <typename II, typename Cx> static constexpr bool    beg(II&, II, Cx&)          { return true; }
             template <typename II, typename Cx> static constexpr bool    end(II&, II, Cx&)          { return true; }
             template <typename II, typename Cx> static char32_t          chr(II& i, II e, Cx& cx)   {
-                if (io::peek(i, e) == '\\') {
-                    char const c = io::next(i, e);
+                if (chio::peek(i, e) == '\\') {
+                    char const c = chio::next(i, e);
                     return !is_str<S<UQKEY<X>>>::esc(c) ?
                         chars::esc_to_utf32<S<X>>(i, e, cx) :
                         (++i, char32_t(c))
@@ -75,7 +74,7 @@ namespace cxon { namespace strs { // char arrays: read
         inline bool array_char_read(char*& t, const char* te, II& i, II ie, Cx& cx) {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
-                    if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
+                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
                 char b[4]; int const n = chars::utf32_to_utf8(b, c32);
                     if (n == 0 || t + n > te) return cx|read_error::overflow;
                 std::copy_n(b, n, t);
@@ -87,7 +86,7 @@ namespace cxon { namespace strs { // char arrays: read
         {
             II const o = i;
                 char32_t c32 = consume_str<X>::chr(i, ie, cx);
-                    if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
+                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
                     *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|read_error::overflow;
@@ -104,7 +103,7 @@ namespace cxon { namespace strs { // char arrays: read
         {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
-                    if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
+                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
             return *t = T(c32), ++t, true;
         }
 
@@ -113,11 +112,11 @@ namespace cxon { namespace strs { // char arrays: read
             II const o = i;
                 if (!consume_str<X>::beg(i, ie, cx)) return false;
                     while (t < te) {
-                        if (!is<X>::real(io::peek(i, ie)))          return consume_str<X>::end(i, ie, cx);
-                        if (is_str<X>::end(io::peek(i, ie)))        return *t = '\0', consume_str<X>::end(i, ie, cx);
-                        if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == read_error::overflow && (io::rewind(i, o), false);
+                        if (!is<X>::real(chio::peek(i, ie)))        return consume_str<X>::end(i, ie, cx);
+                        if (is_str<X>::end(chio::peek(i, ie)))      return *t = '\0', consume_str<X>::end(i, ie, cx);
+                        if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == read_error::overflow && (chio::rewind(i, o), false);
                     }
-                return (is_str<X>::end(io::peek(i, ie)) || (io::rewind(i, o), cx|read_error::overflow)) &&
+                return (is_str<X>::end(chio::peek(i, ie)) || (chio::rewind(i, o), cx|read_error::overflow)) &&
                         consume_str<X>::end(i, ie, cx)
                 ;
         }
@@ -126,7 +125,7 @@ namespace cxon { namespace strs { // char arrays: read
         struct array {
             template <typename T, typename II, typename Cx>
                 static bool read(T* t, const T* te, II& i, II ie, Cx& cx) {
-                    io::consume<X>(i, ie);
+                    chio::consume<X>(i, ie);
                     return array_read<X>(t, te, i, ie, cx);
                 }
         };
@@ -134,8 +133,8 @@ namespace cxon { namespace strs { // char arrays: read
         struct array<S<UQKEY<X>>> {
             template <typename T, typename II, typename Cx>
                 static bool read(T* t, const T* te, II& i, II ie, Cx& cx) {
-                    io::consume<S<X>>(i, ie);
-                    return io::peek(i, ie) == S<X>::string::beg ?
+                    chio::consume<S<X>>(i, ie);
+                    return chio::peek(i, ie) == S<X>::string::beg ?
                         array_read<S<X>>(t, te, i, ie, cx) :
                         array_read<S<UQKEY<X>>>(t, te, i, ie, cx)
                     ;
@@ -144,8 +143,8 @@ namespace cxon { namespace strs { // char arrays: read
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool pointer_read(T*& t, II& i, II e, Cx& cx) {
-            io::consume<X>(i, e);
-            if (io::peek(i, e) == *X::id::nil && io::consume<X>(X::id::nil, i, e)) return true;
+            chio::consume<X>(i, e);
+            if (chio::peek(i, e) == *X::id::nil && chio::consume<X>(X::id::nil, i, e)) return true;
                 if (!consume_str<X>::beg(i, e, cx)) return false;
             auto ax = allocator::value(cx.ps, std::allocator<T>());
             typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
@@ -159,8 +158,8 @@ namespace cxon { namespace strs { // char arrays: read
                     al::deallocate(at, b, be - b);
                     be = n + 2 * (be - b), b = n;
                 }
-                if (!is<X>::real(io::peek(i, e)))           goto err;
-                if (is_str<X>::end(io::peek(i, e)))         return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
+                if (!is<X>::real(chio::peek(i, e)))           goto err;
+                if (is_str<X>::end(chio::peek(i, e)))         return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
                 if (!array_char_read<X>(p, be, i, e, cx))   goto err;
             }
             err: return al::deallocate(at, b, be - b), cx|read_error::unexpected;
@@ -179,34 +178,34 @@ namespace cxon { namespace strs { // char arrays: write
 
     template <typename X, typename O, typename T, typename Cx>
         inline bool array_write(O& o, const T* t, const T* te, Cx& cx) {
-            if (!io::poke<X>(o, X::string::beg, cx)) return false;
+            if (!chio::poke<X>(o, X::string::beg, cx)) return false;
                 if (*(te - 1) == T(0)) --te;
-            return chars::encode<X, T>::range(o, t, te, cx) && io::poke<X>(o, X::string::end, cx);
+            return chars::encode<X, T>::range(o, t, te, cx) && chio::poke<X>(o, X::string::end, cx);
         }
 
     template <typename X, typename O, typename T, typename Cx>
         inline bool pointer_write(O& o, const T* t, size_t s, Cx& cx) {
-            return  io::poke<X>(o, X::string::beg, cx) &&
+            return  chio::poke<X>(o, X::string::beg, cx) &&
                         chars::encode<X, T>::range(o, t, t + s, cx) &&
-                    io::poke<X>(o, X::string::end, cx)
+                    chio::poke<X>(o, X::string::end, cx)
             ;
         }
     template <typename X, typename O, typename T, typename Cx>
         inline bool pointer_write(O& o, const T* t, Cx& cx) {
             return t ?
                 pointer_write<X>(o, t, ptrlen(t), cx) :
-                io::poke<X>(o, X::id::nil, cx)
+                chio::poke<X>(o, X::id::nil, cx)
             ;
         }
     template <typename X, typename O, typename T, typename Cx>
         inline bool uqkey_pointer_write(O& o, const T* t, size_t s, Cx& cx) {
             for (auto e = t + s; t != e; ++t) {
                 switch (*t) {
-                    case ' ':           if (!io::poke<X>(o, '\\', cx) || !io::poke<X>(o, ' ', cx))          return false;   break;
-                    case '"':           if (!io::poke<X>(o, '"', cx))                                       return false;   break;
-                    case '\'':          if (!io::poke<X>(o, '\'', cx))                                      return false;   break;
-                    case X::map::div:   if (!io::poke<X>(o, '\\', cx) || !io::poke<X>(o, X::map::div, cx))  return false;   break;
-                    default:            if (!chars::encode<X, T>::value(o, t, e, cx))                       return false;
+                    case ' ':           if (!chio::poke<X>(o, '\\', cx) || !chio::poke<X>(o, ' ', cx))          return false;   break;
+                    case '"':           if (!chio::poke<X>(o, '"', cx))                                         return false;   break;
+                    case '\'':          if (!chio::poke<X>(o, '\'', cx))                                        return false;   break;
+                    case X::map::div:   if (!chio::poke<X>(o, '\\', cx) || !chio::poke<X>(o, X::map::div, cx))  return false;   break;
+                    default:            if (!chars::encode<X, T>::value(o, t, e, cx))                           return false;
                 }
             }
             return true;
@@ -215,7 +214,7 @@ namespace cxon { namespace strs { // char arrays: write
         inline bool uqkey_pointer_write(O& o, const T* t, Cx& cx) {
             return t ?
                 uqkey_pointer_write<X>(o, t, ptrlen(t), cx) :
-                io::poke<X>(o, X::id::nil, cx)
+                chio::poke<X>(o, X::id::nil, cx)
             ;
         }
 
@@ -242,7 +241,7 @@ namespace cxon { namespace strs { // std::basic_string read
         inline bool basic_string_char_read(std::basic_string<char, R...>& t, II& i, II e, Cx& cx) {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
+                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
                 char b[4]; t.append(b, chars::utf32_to_utf8(b, c32));
             return true;
         }
@@ -252,7 +251,7 @@ namespace cxon { namespace strs { // std::basic_string read
         {
             II const o = i;
                 char32_t c32 = consume_str<X>::chr(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
+                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
                     t.push_back(char16_t(0xD800 | (c32 >> 10)));
@@ -269,14 +268,14 @@ namespace cxon { namespace strs { // std::basic_string read
         {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
+                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
             return t.push_back(T(c32)), true;
         }
 
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline bool basic_string_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
             if (!consume_str<X>::beg(i, e, cx)) return false;
-                for (char c = io::peek(i, e); is<X>::real(c); c = io::peek(i, e)) {
+                for (char c = chio::peek(i, e); is<X>::real(c); c = chio::peek(i, e)) {
                     if (is_str<X>::end(c))                          return consume_str<X>::end(i, e, cx);
                     if (!basic_string_char_read<X>(t, i, e, cx))    return false;
                 }

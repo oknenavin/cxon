@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 #define CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 
-namespace cxon { namespace chario { namespace bits {
+namespace cxon { namespace chio { namespace bits {
 
 #   define CXON_QUOTED(T)\
         template <typename ...R> struct is_quoted<std::basic_string_view<T, R...>> : std::true_type  {};
@@ -20,7 +20,7 @@ namespace cxon { namespace chario { namespace bits {
 
 namespace cxon {
 
-    using namespace chario::bits; // TODO: UQKEY
+    using namespace chio::bits; // TODO: UQKEY
 
     template <typename T, typename ...R>
         struct continuous<std::basic_string_view<T, R...>> {

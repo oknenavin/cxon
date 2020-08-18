@@ -13,9 +13,9 @@ namespace cxon {
             template <typename II, typename Cx>
                 static bool value(std::complex<T>& t, II& i, II e, Cx& cx) {
                     T rl, mg;
-                    return  io::consume<X>(X::list::beg, i, e, cx) &&
-                                read_value<X>(rl, i, e, cx) && io::consume<X>(X::list::sep, i, e, cx) && read_value<X>(mg, i, e, cx) &&
-                            io::consume<X>(X::list::end, i, e, cx) &&
+                    return  chio::consume<X>(X::list::beg, i, e, cx) &&
+                                read_value<X>(rl, i, e, cx) && chio::consume<X>(X::list::sep, i, e, cx) && read_value<X>(mg, i, e, cx) &&
+                            chio::consume<X>(X::list::end, i, e, cx) &&
                             (t.real(rl), t.imag(mg), true)
                     ;
                 }
@@ -25,9 +25,9 @@ namespace cxon {
         struct write<X, std::complex<T>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::complex<T>& t, Cx& cx) {
-                    return  io::poke<X>(o, X::list::beg, cx) &&
-                                write_value<X>(o, t.real(), cx) && io::poke<X>(o, X::list::sep, cx) && write_value<X>(o, t.imag(), cx) &&
-                            io::poke<X>(o, X::list::end, cx)
+                    return  chio::poke<X>(o, X::list::beg, cx) &&
+                                write_value<X>(o, t.real(), cx) && chio::poke<X>(o, X::list::sep, cx) && write_value<X>(o, t.imag(), cx) &&
+                            chio::poke<X>(o, X::list::end, cx)
                     ;
                 }
         };

@@ -6,7 +6,7 @@
 #ifndef CXON_CHARIO_ENUMS_HXX_
 #define CXON_CHARIO_ENUMS_HXX_
 
-#include "chario.hxx"
+#include "chio.hxx"
 #include "unquoted-value.hxx"
 
 namespace cxon { namespace enums { // enum reader/writer construction helpers
@@ -50,19 +50,19 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
 
     template <typename X, typename E, typename V, typename II, typename Cx>
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
-            io::consume<X>(i, e);
+            chio::consume<X>(i, e);
             II const o = i;
                 char id[ids_len_max::constant<prms_type<Cx>>(64)];
                     if (!bits::read<X>::value(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;
-            return io::rewind(i, o), cx|read_error::unexpected;
+            return chio::rewind(i, o), cx|read_error::unexpected;
         }
 
     template <typename X, typename E, typename V, typename O, typename Cx>
         inline bool write_value(O& o, E t, V vb, V ve, Cx& cx) {
             for ( ; vb != ve; ++vb) if (t == vb->value)
-                return io::poke<X>(o, bits::opqt<X>::beg, cx) && io::poke<X>(o, vb->name, cx) && io::poke<X>(o, bits::opqt<X>::end, cx);
+                return chio::poke<X>(o, bits::opqt<X>::beg, cx) && chio::poke<X>(o, vb->name, cx) && chio::poke<X>(o, bits::opqt<X>::end, cx);
             return cx|write_error::argument_invalid;
         }
 

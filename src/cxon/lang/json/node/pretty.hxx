@@ -21,48 +21,48 @@ namespace cxon {
                     case node_kind::object: {
                         CXJSON_RG();
                         auto& j = get<typename json::object>(t);
-                        if (j.empty()) return io::poke(out, "{}");
+                        if (j.empty()) return chio::poke(out, "{}");
                         auto i = std::begin(j);
                         lvl += tab;
                             CXJSON_CHECK((
-                                io::poke(out, "{\n") && io::poke(out, lvl, pad) &&
-                                chario::write_key<X>(out, i->first, cx), io::poke(out, ' ') &&
+                                chio::poke(out, "{\n") && chio::poke(out, lvl, pad) &&
+                                chio::write_key<X>(out, i->first, cx), chio::poke(out, ' ') &&
                                     write_value<X>(o, i->second, cx)
                             ));
                             if (j.size() > 1) {
                                 auto const e = std::end(j);
                                 while (++i != e) {
                                     CXJSON_CHECK((
-                                        io::poke(out, ",\n") && io::poke(out, lvl, pad) &&
-                                        chario::write_key<X>(out, i->first, cx), io::poke(out, ' ') &&
+                                        chio::poke(out, ",\n") && chio::poke(out, lvl, pad) &&
+                                        chio::write_key<X>(out, i->first, cx), chio::poke(out, ' ') &&
                                             write_value<X>(o, i->second, cx)
                                     ));
                                 }
                             }
                         lvl -= tab;
-                        return io::poke(out, '\n') && io::poke(out, lvl, pad) && io::poke(out, '}');
+                        return chio::poke(out, '\n') && chio::poke(out, lvl, pad) && chio::poke(out, '}');
                     }
                     case node_kind::array: {
                         CXJSON_RG();
                         auto& j = get<typename json::array>(t);
-                        if (j.empty()) return io::poke(out, "[]");
+                        if (j.empty()) return chio::poke(out, "[]");
                         auto i = std::begin(j);
                         lvl += tab;
                             CXJSON_CHECK((
-                                io::poke(out, "[\n") && io::poke(out, lvl, pad) &&
+                                chio::poke(out, "[\n") && chio::poke(out, lvl, pad) &&
                                     write_value<X>(o, *i, cx)
                             ));
                             if (j.size() > 1) {
                                 auto const e = std::end(j);
                                 while (++i != e) {
                                     CXJSON_CHECK((
-                                        io::poke(out, ",\n") && io::poke(out, lvl, pad) &&
+                                        chio::poke(out, ",\n") && chio::poke(out, lvl, pad) &&
                                             write_value<X>(o, *i, cx)
                                     ));
                                 }
                             }
                         lvl -= tab;
-                        return io::poke(out, '\n') && io::poke(out, lvl, pad) && io::poke(out, ']');
+                        return chio::poke(out, '\n') && chio::poke(out, lvl, pad) && chio::poke(out, ']');
                     }
                     case node_kind::string:
                         return write_value<X>(out, get<typename json::string>(t), cx);

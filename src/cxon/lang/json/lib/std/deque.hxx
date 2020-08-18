@@ -14,7 +14,7 @@ namespace cxon {
         struct read<X, std::deque<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::deque<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
+                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace_back();
                             return read_value<X>(t.back(), i, e, cx);
@@ -29,7 +29,7 @@ namespace cxon {
         struct write<X, std::deque<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::deque<T, R...>& t, Cx& cx) {
-                    return chario::container::write<X, list<X>>(o, t, cx);
+                    return chio::container::write<X, list<X>>(o, t, cx);
                 }
         };
 

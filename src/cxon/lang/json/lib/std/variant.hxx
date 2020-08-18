@@ -25,7 +25,7 @@ namespace cxon {
                 static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
                 static bool index(size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return chario::read_key<X>(n, i, e, cx) && (n < cnt_ || (io::rewind(i, o), cx|read_error::unexpected));
+                    return chio::read_key<X>(n, i, e, cx) && (n < cnt_ || (chio::rewind(i, o), cx|read_error::unexpected));
                 }
                 static bool read(V& t, II& i, II e, Cx& cx) {
                     size_t n;
@@ -38,33 +38,33 @@ namespace cxon {
     template <typename X, typename II, typename Cx>
         inline bool read_value(std::monostate&, II& i, II e, Cx& cx) {
             II const o = i;
-            return io::consume<X>(X::id::nil, i, e) || (io::rewind(i, o), cx|read_error::unexpected);
+            return chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|read_error::unexpected);
         }
 
     template <typename X, typename ...T>
         struct read<X, std::variant<T...>> {
             template <typename II, typename Cx>
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
-                    return  io::consume<X>(X::map::beg, i, e, cx) &&
+                    return  chio::consume<X>(X::map::beg, i, e, cx) &&
                                 bits::variant<X, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
-                            io::consume<X>(X::map::end, i, e, cx)
+                            chio::consume<X>(X::map::end, i, e, cx)
                     ;
                 }
         };
 
     template <typename X, typename O, typename Cx>
         inline bool write_value(O& o, std::monostate, Cx& cx) {
-            return io::poke<X>(o, X::id::nil, cx);
+            return chio::poke<X>(o, X::id::nil, cx);
         }
 
     template <typename X, typename ...T>
         struct write<X, std::variant<T...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
-                    return  io::poke(o, X::map::beg) &&
-                                chario::write_key<X>(o, t.index(), cx) &&
+                    return  chio::poke(o, X::map::beg) &&
+                                chio::write_key<X>(o, t.index(), cx) &&
                                 std::visit([&](auto&& v) { return write_value<X>(o, v, cx); }, t) &&
-                            io::poke(o, X::map::end)
+                            chio::poke(o, X::map::end)
                     ;
                 }
         };

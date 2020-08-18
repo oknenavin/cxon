@@ -26,8 +26,8 @@ namespace cxon {
         struct read<S<strs::UQKEY<X>>, std::basic_string<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    io::consume<S<X>>(i, e);
-                    return (io::peek(i, e) == S<X>::string::beg && strs::basic_string_read<S<X>>(t, i, e, cx)) ||
+                    chio::consume<S<X>>(i, e);
+                    return (chio::peek(i, e) == S<X>::string::beg && strs::basic_string_read<S<X>>(t, i, e, cx)) ||
                             strs::basic_string_read<S<strs::UQKEY<X>>>(t, i, e, cx)
                     ;
                 }

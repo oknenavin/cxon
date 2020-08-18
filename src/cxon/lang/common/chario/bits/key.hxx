@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_BITS_KEY_HXX_
-#define CXON_CHARIO_BITS_KEY_HXX_
+#ifndef CXON_CHIO_BITS_KEY_HXX_
+#define CXON_CHIO_BITS_KEY_HXX_
 
-namespace cxon { namespace chario { namespace bits { // key quoting
+namespace cxon { namespace chio { namespace bits { // key quoting
 
     template <typename T> struct is_quoted : std::false_type {};
 #   define CXON_QUOTED(T)\
@@ -25,7 +25,7 @@ namespace cxon { namespace chario { namespace bits { // key quoting
 
 }}} // cxon::bits key quoting
 
-namespace cxon { namespace chario { namespace bits { // key read/write helpers
+namespace cxon { namespace chio { namespace bits { // key read/write helpers
 
     // read
 
@@ -70,9 +70,9 @@ namespace cxon { namespace chario { namespace bits { // key read/write helpers
                 static auto value(T& t, II& i, II e, Cx& cx)
                     -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
                 {
-                    return  chario::consume<E>(E::string::beg, i, e, cx) &&
+                    return  chio::consume<E>(E::string::beg, i, e, cx) &&
                                 read_value<E>(t, i, e, cx) &&
-                            chario::consume<E>(E::string::end, i, e, cx)
+                            chio::consume<E>(E::string::end, i, e, cx)
                     ;
                 }
         };
@@ -120,13 +120,13 @@ namespace cxon { namespace chario { namespace bits { // key read/write helpers
                 static auto value(O& o, const T& t, Cx& cx)
                     -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
                 {
-                    return  chario::poke<E>(o, E::string::beg, cx) &&
+                    return  chio::poke<E>(o, E::string::beg, cx) &&
                                 write_value<E>(o, t, cx) &&
-                            chario::poke<E>(o, E::string::end, cx)
+                            chio::poke<E>(o, E::string::end, cx)
                     ;
                 }
         };
 
-}}} // cxon::chario::bits key read/write helpers
+}}} // cxon::chio::bits key read/write helpers
 
-#endif // CXON_CHARIO_BITS_KEY_HXX_
+#endif // CXON_CHIO_BITS_KEY_HXX_

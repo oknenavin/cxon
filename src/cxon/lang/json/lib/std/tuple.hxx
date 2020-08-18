@@ -13,7 +13,7 @@ namespace cxon { namespace bits { // read/write
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
                     if (!read_value<X>(std::get<N>(t), i, e, cx)) return false;
-                    if (N + 1 != L) if (!io::consume<X>(X::list::sep, i, e, cx)) return false;
+                    if (N + 1 != L) if (!chio::consume<X>(X::list::sep, i, e, cx)) return false;
                     return tuple_read<X, T, N + 1, L>::value(t, i, e, cx);
                 }
         };
@@ -28,7 +28,7 @@ namespace cxon { namespace bits { // read/write
         struct tuple_write {
             template <typename O, typename Cx>
                 static bool value(O& o, const T& t, Cx& cx) {
-                    return  write_value<X>(o, std::get<N>(t), cx) && io::poke<X>(o, X::list::sep, cx) &&
+                    return  write_value<X>(o, std::get<N>(t), cx) && chio::poke<X>(o, X::list::sep, cx) &&
                             tuple_write<X, T, N + 1, L>::value(o, t, cx)
                     ;
                 }
@@ -51,9 +51,9 @@ namespace cxon {
             template <typename II, typename Cx>
                 static bool value(std::tuple<H, T...>& t, II& i, II e, Cx& cx) {
                     using U = std::tuple<H, T...>;
-                    return  io::consume<X>(X::list::beg, i, e, cx) &&
-                            bits::tuple_read<X, U, 0, std::tuple_size<U>::value>::value(t, i, e, cx) &&
-                            io::consume<X>(X::list::end, i, e, cx)
+                    return  chio::consume<X>(X::list::beg, i, e, cx) &&
+                                bits::tuple_read<X, U, 0, std::tuple_size<U>::value>::value(t, i, e, cx) &&
+                            chio::consume<X>(X::list::end, i, e, cx)
                     ;
                 }
         };
@@ -63,9 +63,9 @@ namespace cxon {
             using U = std::tuple<T...>;
             template <typename O, typename Cx>
                 static bool value(O& o, const U& t, Cx& cx) {
-                    return  io::poke<X>(o, X::list::beg, cx) &&
+                    return  chio::poke<X>(o, X::list::beg, cx) &&
                                 bits::tuple_write<X, U, 0, std::tuple_size<U>::value - 1>::value(o, t, cx) &&
-                            io::poke<X>(o, X::list::end, cx)
+                            chio::poke<X>(o, X::list::end, cx)
                     ;
                 }
         };

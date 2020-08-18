@@ -3,27 +3,25 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_CONTAINER_HXX_
-#define CXON_CHARIO_CONTAINER_HXX_
+#ifndef CXON_CHIO_CONTAINER_HXX_
+#define CXON_CHIO_CONTAINER_HXX_
 
-#include "chario.hxx"
+#include "chio.hxx"
 
-namespace cxon { namespace chario { namespace container { // container read/write helpers
-
-    namespace io = cxon::chario;
+namespace cxon { namespace chio { namespace container { // container read/write helpers
 
     namespace bits {
 
         template <typename X, typename Cr, typename II, typename EA>
             inline void list_read(II& i, II e, EA element_add) {
                 // expects non-empty list
-                while (element_add() && io::consume<X>(Cr::sep, i, e)) ;
+                while (element_add() && chio::consume<X>(Cr::sep, i, e)) ;
             }
 
         template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
             inline void list_write(O& o, II b, II e, Cx& cx, L element_write) {
                 if (b != e && element_write(*b)) {
-                    while (++b != e && io::poke<X>(o, Cr::sep, cx) && element_write(*b)) ;
+                    while (++b != e && chio::poke<X>(o, Cr::sep, cx) && element_write(*b)) ;
                 }
             }
 
@@ -33,17 +31,17 @@ namespace cxon { namespace chario { namespace container { // container read/writ
 
     template <typename X, typename Cr, typename II, typename Cx, typename EA>
         inline bool read(II& i, II e, Cx& cx, EA element_add) {
-            if (!io::consume<X>(Cr::beg, i, e, cx)) return false;
-            if ( io::consume<X>(Cr::end, i, e))     return true;
-            return bits::list_read<X, Cr>(i, e, element_add), !cx.ec && io::consume<X>(Cr::end, i, e, cx);
+            if (!chio::consume<X>(Cr::beg, i, e, cx)) return false;
+            if ( chio::consume<X>(Cr::end, i, e))     return true;
+            return bits::list_read<X, Cr>(i, e, element_add), !cx.ec && chio::consume<X>(Cr::end, i, e, cx);
         }
 
     // write
 
     template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
         inline bool write(O& o, II b, II e, Cx& cx, L element_write) {
-            if (!io::poke<X>(o, Cr::beg, cx)) return false;
-            return bits::list_write<X, Cr>(o, b, e, cx, element_write), !cx.ec && io::poke<X>(o, Cr::end, cx);
+            if (!chio::poke<X>(o, Cr::beg, cx)) return false;
+            return bits::list_write<X, Cr>(o, b, e, cx, element_write), !cx.ec && chio::poke<X>(o, Cr::end, cx);
         }
     template <typename X, typename Cr, typename O, typename T, typename Cx, typename L>
         inline bool write(O& o, const T& t, Cx& cx, L element_write) {
@@ -60,6 +58,6 @@ namespace cxon { namespace chario { namespace container { // container read/writ
             return write<X, Cr>(o, std::begin(t), std::end(t), cx);
         }
 
-}}} //cxon::chario::container container read/write helpers
+}}} //cxon::chio::container container read/write helpers
 
-#endif // CXON_CHARIO_CONTAINER_HXX_
+#endif // CXON_CHIO_CONTAINER_HXX_

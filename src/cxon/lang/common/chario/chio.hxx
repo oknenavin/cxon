@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_HXX_
-#define CXON_CHARIO_HXX_
+#ifndef CXON_CHIO_HXX_
+#define CXON_CHIO_HXX_
 
 #include "cxon/utility.hxx"
-#include "charclass.hxx"
-#include "bits/chario.hxx"
+#include "chcls.hxx"
+#include "bits/chio.hxx"
 
-namespace cxon { namespace chario {
+namespace cxon { namespace chio {
 
     template<typename II>
         inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::is_forward_iterator<II>::value> {}
@@ -30,7 +30,7 @@ namespace cxon { namespace chario {
 
     template <typename X, typename II>
         inline void consume(II& i, II e) {
-            while (charclass::is<X>::space(peek(i, e))) next(i, e);
+            while (chcls::is<X>::space(peek(i, e))) next(i, e);
         }
 
     template <typename X, typename II>
@@ -80,6 +80,6 @@ namespace cxon { namespace chario {
     template <typename X, typename O, typename Cx>
         constexpr bool poke(O&, std::nullptr_t, Cx&)            { return true; }
 
-}}  //cxon::chario
+}}  //cxon::chio
 
-#endif // CXON_CHARIO_HXX_
+#endif // CXON_CHIO_HXX_

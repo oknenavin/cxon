@@ -9,21 +9,19 @@
 #include "cxon/lang/common/chario/numbers.hxx"
 #include "cxon/lang/common/chario/strings.hxx"
 
-namespace io = cxon::chario;
-
 namespace cxon { // nullptr_t
 
     template <typename X, typename II, typename Cx>
         inline bool read_value(std::nullptr_t& t, II& i, II e, Cx& cx) {
             II const o = i;
-            return (io::consume<X>(X::id::nil, i, e) || (io::rewind(i, o), cx|read_error::unexpected)) &&
+            return (chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|read_error::unexpected)) &&
                     (t = nullptr, true)
             ;
         }
 
     template <typename X, typename O, typename Cx>
         inline bool write_value(O& o, std::nullptr_t, Cx& cx) {
-            return io::poke<X>(o, X::id::nil, cx);
+            return chio::poke<X>(o, X::id::nil, cx);
         }
 
 }   // cxon nullptr_t
@@ -34,15 +32,15 @@ namespace cxon { // bool
         inline bool read_value(bool& t, II& i, II e, Cx& cx) {
             static_assert(*X::id::pos != *X::id::neg, "boolean literals ambiguous"); // for input-iterator, id must be consumed
             II const o = i;
-                char const c = (io::consume<X>(i, e), io::peek(i, e));
-                     if (c == *X::id::pos && io::consume<X>(X::id::pos, i, e))  return t = true,  true;
-                else if (c == *X::id::neg && io::consume<X>(X::id::neg, i, e))  return t = false, true;
-            return io::rewind(i, o), cx|read_error::boolean_invalid;
+                char const c = (chio::consume<X>(i, e), chio::peek(i, e));
+                     if (c == *X::id::pos && chio::consume<X>(X::id::pos, i, e))  return t = true,  true;
+                else if (c == *X::id::neg && chio::consume<X>(X::id::neg, i, e))  return t = false, true;
+            return chio::rewind(i, o), cx|read_error::boolean_invalid;
         }
 
     template <typename X, typename O, typename Cx>
         inline bool write_value(O& o, bool t, Cx& cx) {
-            return io::poke<X>(o, t ? X::id::pos : X::id::neg, cx);
+            return chio::poke<X>(o, t ? X::id::pos : X::id::neg, cx);
         }
 
 }   // cxon bool
@@ -51,33 +49,33 @@ namespace cxon { // character
 
     template <typename X, typename II, typename Cx>
         inline bool read_value(char& t, II& i, II e, Cx& cx) {
-            if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
+            if (!chio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
                     char32_t const c32 = chars::str_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF)  return io::rewind(i, o), false;
-                        if (c32 > 0XFF)         return io::rewind(i, o), cx|read_error::character_invalid;
-            return io::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
+                        if (c32 == 0xFFFFFFFF)  return chio::rewind(i, o), false;
+                        if (c32 > 0XFF)         return chio::rewind(i, o), cx|read_error::character_invalid;
+            return chio::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t)), bool>
         {
-            if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
+            if (!chio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
                     char32_t const c32 = chars::str_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF)  return io::rewind(i, o), false;
-                        if (c32 > 0XFFFF)       return io::rewind(i, o), cx|read_error::character_invalid;
-            return io::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
+                        if (c32 == 0xFFFFFFFF)  return chio::rewind(i, o), false;
+                        if (c32 > 0XFFFF)       return chio::rewind(i, o), cx|read_error::character_invalid;
+            return chio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t)), bool>
         {
-            if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
+            if (!chio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
                     char32_t const c32 = chars::str_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
-            return io::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
+                        if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
+            return chio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
 
     template <typename X, typename O, typename Cx>

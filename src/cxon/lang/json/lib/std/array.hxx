@@ -23,8 +23,8 @@ namespace cxon {
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
-                        return (p != N || (io::rewind(i, o), cx|read_error::overflow)) &&
+                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
+                        return (p != N || (chio::rewind(i, o), cx|read_error::overflow)) &&
                                 read_value<X>(t[p++], i, e, cx)
                         ;
                     });
@@ -34,7 +34,7 @@ namespace cxon {
         struct read<X, std::array<T, 0>> {
             template <typename II, typename Cx>
                 static bool value(std::array<T, 0>&, II& i, II e, Cx& cx) {
-                    return io::consume<X>(X::list::beg, i, e, cx) && io::consume<X>(X::list::end, i, e, cx);
+                    return chio::consume<X>(X::list::beg, i, e, cx) && chio::consume<X>(X::list::end, i, e, cx);
                 }
         };
 
@@ -42,7 +42,7 @@ namespace cxon {
         struct write<X, std::array<T, S>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::array<T, S>& t, Cx& cx) {
-                    return chario::container::write<X, list<X>>(o, t, cx);
+                    return chio::container::write<X, list<X>>(o, t, cx);
                 }
         };
 

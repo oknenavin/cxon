@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARCLASS_HXX_
-#define CXON_CHARCLASS_HXX_
+#ifndef CXON_CHCLS_HXX_
+#define CXON_CHCLS_HXX_
 
-namespace cxon { namespace charclass {
+namespace cxon { namespace chcls {
 
     enum : unsigned char {
         CTRL    = 1 << 0,       // control
@@ -63,6 +63,6 @@ namespace cxon { namespace charclass {
             static bool space  (char c) noexcept { return JSSP & is_x_[(unsigned char)c]; }
         };
 
-}}  //cxon::charclass
+}}  //cxon::chcls
 
-#endif // CXON_CHARCLASS_HXX_
+#endif // CXON_CHCLS_HXX_
