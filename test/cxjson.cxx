@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon/json.hxx"
-#include "cxon/lang/common/chario/structs.hxx"
+#include "cxon/lang/common/chio/structs.hxx"
 #include "cxon/pretty.hxx"
 #include "cxon/lib/std/list.hxx"
 #include "cxon/lang/json/node/cxjson.hxx"

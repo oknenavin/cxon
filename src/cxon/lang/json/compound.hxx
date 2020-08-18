@@ -6,7 +6,7 @@
 #ifndef CXON_COMPOUND_HXX_
 #define CXON_COMPOUND_HXX_
 
-#include "cxon/lang/common/chario/container.hxx"
+#include "cxon/lang/common/chio/container.hxx"
 
 namespace cxon { // pointer
 

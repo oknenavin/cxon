@@ -6,8 +6,8 @@
 #ifndef CXON_FUNDAMENTAL_HXX_
 #define CXON_FUNDAMENTAL_HXX_
 
-#include "cxon/lang/common/chario/numbers.hxx"
-#include "cxon/lang/common/chario/strings.hxx"
+#include "cxon/lang/common/chio/numbers.hxx"
+#include "cxon/lang/common/chio/strings.hxx"
 
 namespace cxon { // nullptr_t
 
