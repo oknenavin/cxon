@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_ENUMS_HXX_
-#define CXON_CHARIO_ENUMS_HXX_
+#ifndef CXON_CHIO_ENUMS_HXX_
+#define CXON_CHIO_ENUMS_HXX_
 
 #include "chio.hxx"
 #include "unquoted-value.hxx"
@@ -98,4 +98,4 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
 
 #endif // enumeration
 
-#endif // CXON_CHARIO_ENUMS_HXX_
+#endif // CXON_CHIO_ENUMS_HXX_

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_STRUCTS_HXX_
-#define CXON_CHARIO_STRUCTS_HXX_
+#ifndef CXON_CHIO_STRUCTS_HXX_
+#define CXON_CHIO_STRUCTS_HXX_
 
 #include "chio.hxx"
 #include "unquoted-value.hxx"
@@ -224,4 +224,4 @@ namespace cxon { // structs::skip_type read
 
 #endif // cxon class
 
-#endif // CXON_CHARIO_STRUCTS_HXX_
+#endif // CXON_CHIO_STRUCTS_HXX_
