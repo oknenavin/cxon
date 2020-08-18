@@ -19,16 +19,16 @@ namespace cxon {
         struct read<X, std::basic_string<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    return bits::basic_string_read<X>(t, i, e, cx);
+                    return strs::basic_string_read<X>(t, i, e, cx);
                 }
         };
     template <typename X, template <typename> class S, typename T, typename ...R>
-        struct read<S<bits::UQKEY<X>>, std::basic_string<T, R...>> {
+        struct read<S<strs::UQKEY<X>>, std::basic_string<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
                     io::consume<S<X>>(i, e);
-                    return (io::peek(i, e) == S<X>::string::beg && bits::basic_string_read<S<X>>(t, i, e, cx)) ||
-                            bits::basic_string_read<S<bits::UQKEY<X>>>(t, i, e, cx)
+                    return (io::peek(i, e) == S<X>::string::beg && strs::basic_string_read<S<X>>(t, i, e, cx)) ||
+                            strs::basic_string_read<S<strs::UQKEY<X>>>(t, i, e, cx)
                     ;
                 }
         };
@@ -37,14 +37,14 @@ namespace cxon {
         struct write<X, std::basic_string<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return bits::pointer_write<X>(o, t.data(), t.size(), cx);
+                    return strs::pointer_write<X>(o, t.data(), t.size(), cx);
                 }
         };
     template <typename X, template <typename> class S, typename T, typename ...R>
-        struct write<S<bits::UQKEY<X>>, std::basic_string<T, R...>> {
+        struct write<S<strs::UQKEY<X>>, std::basic_string<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
+                    return strs::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
                 }
         };
 

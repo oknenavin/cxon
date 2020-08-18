@@ -7,11 +7,27 @@
 #define CXON_CHARIO_CONTAINER_HXX_
 
 #include "chario.hxx"
-#include "bits/container.hxx"
 
 namespace cxon { namespace chario { namespace container { // container read/write helpers
 
     namespace io = cxon::chario;
+
+    namespace bits {
+
+        template <typename X, typename Cr, typename II, typename EA>
+            inline void list_read(II& i, II e, EA element_add) {
+                // expects non-empty list
+                while (element_add() && io::consume<X>(Cr::sep, i, e)) ;
+            }
+
+        template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
+            inline void list_write(O& o, II b, II e, Cx& cx, L element_write) {
+                if (b != e && element_write(*b)) {
+                    while (++b != e && io::poke<X>(o, Cr::sep, cx) && element_write(*b)) ;
+                }
+            }
+
+    }
 
     // read
 

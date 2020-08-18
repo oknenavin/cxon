@@ -6,6 +6,11 @@
 #ifndef CXON_FUNDAMENTAL_HXX_
 #define CXON_FUNDAMENTAL_HXX_
 
+#include "cxon/lang/common/chario/numbers.hxx"
+#include "cxon/lang/common/chario/strings.hxx"
+
+namespace io = cxon::chario;
+
 namespace cxon { // nullptr_t
 
     template <typename X, typename II, typename Cx>
@@ -48,7 +53,7 @@ namespace cxon { // character
         inline bool read_value(char& t, II& i, II e, Cx& cx) {
             if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
-                    char32_t const c32 = bits::str_to_utf32<X>(i, e, cx);
+                    char32_t const c32 = chars::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF)  return io::rewind(i, o), false;
                         if (c32 > 0XFF)         return io::rewind(i, o), cx|read_error::character_invalid;
             return io::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
@@ -59,7 +64,7 @@ namespace cxon { // character
         {
             if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
-                    char32_t const c32 = bits::str_to_utf32<X>(i, e, cx);
+                    char32_t const c32 = chars::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF)  return io::rewind(i, o), false;
                         if (c32 > 0XFFFF)       return io::rewind(i, o), cx|read_error::character_invalid;
             return io::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
@@ -70,19 +75,19 @@ namespace cxon { // character
         {
             if (!io::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
-                    char32_t const c32 = bits::str_to_utf32<X>(i, e, cx);
+                    char32_t const c32 = chars::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF) return io::rewind(i, o), false;
             return io::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
 
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, char t, Cx& cx)       { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, char t, Cx& cx)       { return chars::character_write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, char16_t t, Cx& cx)   { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, char16_t t, Cx& cx)   { return chars::character_write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, char32_t t, Cx& cx)   { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, char32_t t, Cx& cx)   { return chars::character_write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline bool write_value(O& o, wchar_t t, Cx& cx)    { return bits::character_write<X>(o, t, cx); }
+        inline bool write_value(O& o, wchar_t t, Cx& cx)    { return chars::character_write<X>(o, t, cx); }
 
 }   // cxon character
 
@@ -91,7 +96,7 @@ namespace cxon { // numeric
 #   define CXON_READ_DEF(T)\
         template <typename X, typename II, typename Cx>\
             inline bool read_value(T& t, II& i, II e, Cx& cx) {\
-                return bits::number_read<X>(t, i, e, cx);\
+                return nums::number_read<X>(t, i, e, cx);\
             }
         CXON_READ_DEF(signed char)
         CXON_READ_DEF(unsigned char)
@@ -111,7 +116,7 @@ namespace cxon { // numeric
 #   define CXON_WRITE_DEF(T)\
         template <typename X, typename O, typename Cx>\
             inline bool write_value(O& o, const T& t, Cx& cx) {\
-                return bits::number_write<X>(o, t, cx);\
+                return nums::number_write<X>(o, t, cx);\
             }
         CXON_WRITE_DEF(signed char)
         CXON_WRITE_DEF(unsigned char)

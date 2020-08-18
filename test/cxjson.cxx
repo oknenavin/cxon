@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon/json.hxx"
+#include "cxon/lang/common/chario/structs.hxx"
 #include "cxon/pretty.hxx"
 #include "cxon/lib/std/list.hxx"
 #include "cxon/lang/json/node/cxjson.hxx"
@@ -530,7 +531,7 @@ int main(int argc, char *argv[]) {
             node result;
             auto const e = std::istreambuf_iterator<char>();
             if (auto r = cxon::from_bytes(result, std::istreambuf_iterator<char>(is), e)) {
-                cxon::io::consume<cxon::JSON<>>(r.end, e);
+                cxon::chario::consume<cxon::JSON<>>(r.end, e);
                     if (r.end != e) continue; // trailing chars
                 std::string pass; cxon::to_bytes(pass, result);
                 ++err, c.error += "must fail: '" + c.source + "' (passed as '" + pass + "')";
