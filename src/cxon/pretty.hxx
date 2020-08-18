@@ -64,32 +64,32 @@ namespace cxon {
                 indent_iterator& operator =(char c) {
                     switch (stt()) {
                         case quo:
-                                              io::poke(o_, c);
+                                              chio::poke(o_, c);
                             if (is::que(c)) { mut(grn);     break; }
                             if (is::esc(c)) { mut(qes);     break; }
                             break;
                         case qes:
-                                              mut(quo), io::poke(o_, c);
+                                              mut(quo), chio::poke(o_, c);
                             break;
                         case ges:
-                                              mut(grn), io::poke(o_, c);
+                                              mut(grn), chio::poke(o_, c);
                             break;
                         case con:
-                            if (is::spc(c))                                                             break;
+                            if (is::spc(c))                                                                 break;
                                               mut(grn);
-                            if (is::end(c)) { io::poke(o_, c);                                          break; }
-                                        if  (!io::poke(o_, '\n') || !io::poke(o_, lvl_ += tab_, pad_))  break;
+                            if (is::end(c)) { chio::poke(o_, c);                                            break; }
+                                        if  (!chio::poke(o_, '\n') || !chio::poke(o_, lvl_ += tab_, pad_))  break;
 #                           if __cplusplus >= 201703L
                                 [[fallthrough]];
 #                           endif
                         default:
-                            if (is::beg(c)) { mut(con), io::poke(o_, c);                                                                        break; }
-                            if (is::end(c)) {           io::poke(o_, '\n') && io::poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && io::poke(o_, c); break; }
-                            if (is::sep(c)) {           io::poke(o_, c) && io::poke(o_, '\n') && io::poke(o_, lvl_, pad_);                      break; }
-                            if (is::map(c)) {           io::poke(o_, c) && io::poke(o_, ' ');                                                   break; }
-                            if (is::qub(c)) { mut(quo), io::poke(o_, c);                                                                        break; }
-                            if (is::esc(c)) { mut(ges), io::poke(o_, c);                                                                        break; }
-                            if (is::nsp(c)) {           io::poke(o_, c);                                                                        break; }
+                            if (is::beg(c)) { mut(con), chio::poke(o_, c);                                                                              break; }
+                            if (is::end(c)) {           chio::poke(o_, '\n') && chio::poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && chio::poke(o_, c);   break; }
+                            if (is::sep(c)) {           chio::poke(o_, c) && chio::poke(o_, '\n') && chio::poke(o_, lvl_, pad_);                        break; }
+                            if (is::map(c)) {           chio::poke(o_, c) && chio::poke(o_, ' ');                                                       break; }
+                            if (is::qub(c)) { mut(quo), chio::poke(o_, c);                                                                              break; }
+                            if (is::esc(c)) { mut(ges), chio::poke(o_, c);                                                                              break; }
+                            if (is::nsp(c)) {           chio::poke(o_, c);                                                                              break; }
                     }
                     return *this;
                 }
@@ -101,7 +101,7 @@ namespace cxon {
                 template <typename VI>
                     bool indent_value(VI indent_value) {
                         if (stt() == con) {
-                            mut(grn), io::poke(o_, '\n') && io::poke(o_, lvl_ += tab_, pad_);
+                            mut(grn), chio::poke(o_, '\n') && chio::poke(o_, lvl_ += tab_, pad_);
                         }
                         return indent_value(o_, lvl_, tab_, pad_);
                     }
@@ -116,14 +116,14 @@ namespace cxon {
                     template <typename S = out_type>
                         auto append(const char* s, size_t n) -> enable_if_t<has_append_sn<S>::value> {
                             indent_value([&](out_type out, unsigned&, unsigned, char) {
-                                return io::poke(out, s, n);
+                                return chio::poke(out, s, n);
                             });
                         }
                 HAS_METH_DEF(append_s, append(std::declval<char*>()));
                     template <typename S = out_type>
                         auto append(const char* s) -> enable_if_t<has_append_s<S>::value> {
                             indent_value([&](out_type out, unsigned&, unsigned, char) {
-                                return io::poke(out, s);
+                                return chio::poke(out, s);
                             });
                         }
 
@@ -145,7 +145,7 @@ namespace cxon {
                     static bool qub(char c) { return c == X::string::beg; }
                     static bool que(char c) { return c == X::string::end; }
                     static bool esc(char c) { return c == '\\'; }
-                    static bool spc(char c) { return cxon::charclass::is<X>::space(c); }
+                    static bool spc(char c) { return chcls::is<X>::space(c); }
                     static bool nsp(char c) { return !spc(c); }
                 };
 

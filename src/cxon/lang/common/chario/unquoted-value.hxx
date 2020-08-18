@@ -6,7 +6,7 @@
 #ifndef CXON_CHARIO_UNQUOTED_VALUE_HXX_
 #define CXON_CHARIO_UNQUOTED_VALUE_HXX_
 
-#include "chario.hxx"
+#include "chio.hxx"
 #include "bits/unquoted-value.hxx"
 
 namespace cxon { namespace unquoted { // unquoted value
@@ -15,7 +15,7 @@ namespace cxon { namespace unquoted { // unquoted value
         inline bool read_value(T (&t)[N], II& i, II e, Cx& cx) {
             II const o = i;
                 if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
-                    return cx.ec == read_error::overflow ? (io::rewind(i, o), false) : cx|read_error::unexpected;
+                    return cx.ec == read_error::overflow ? (chio::rewind(i, o), false) : cx|read_error::unexpected;
                 }
             return true;
         }

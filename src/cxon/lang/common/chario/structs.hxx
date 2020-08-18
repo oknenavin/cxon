@@ -6,7 +6,7 @@
 #ifndef CXON_CHARIO_STRUCTS_HXX_
 #define CXON_CHARIO_STRUCTS_HXX_
 
-#include "chario.hxx"
+#include "chio.hxx"
 #include "unquoted-value.hxx"
 
 namespace cxon { namespace structs { // structured types reader/writer construction helpers
@@ -47,13 +47,13 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             inline auto write_field(O& o, const S& s, F f, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
             {
-                return chario::write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.mptr, cx);
+                return chio::write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.mptr, cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
             inline auto write_field(O& o, const S&, F f, Cx& cx)
                 -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
             {
-                return chario::write_key<X>(o, f.name, cx) && write_value<X>(o, *f.mptr, cx);
+                return chio::write_key<X>(o, f.name, cx) && write_value<X>(o, *f.mptr, cx);
             }
     template <>
         struct field<skip_type> {
@@ -116,16 +116,16 @@ namespace cxon { namespace structs { // structured types reader/writer construct
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
-            if (!io::consume<X>(X::map::beg, i, e, cx)) return false;
-            if ( io::consume<X>(X::map::end, i, e)) return true;
+            if (!chio::consume<X>(X::map::beg, i, e, cx)) return false;
+            if ( chio::consume<X>(X::map::end, i, e)) return true;
             for (char id[ids_len_max::constant<prms_type<Cx>>(64)]; ; ) {
-                io::consume<X>(i, e);
+                chio::consume<X>(i, e);
                 II const o = i;
-                    if (!chario::read_key<X>(id, i, e, cx)) return false;
+                    if (!chio::read_key<X>(id, i, e, cx)) return false;
                     if (!bits::read<X, S, F...>::fields(s, id, f, i, e, cx))
-                        return cx && (io::rewind(i, o), cx|read_error::unexpected);
-                    if (io::consume<X>(X::map::sep, i, e)) continue;
-                return io::consume<X>(X::map::end, i, e, cx);
+                        return cx && (chio::rewind(i, o), cx|read_error::unexpected);
+                    if (chio::consume<X>(X::map::sep, i, e)) continue;
+                return chio::consume<X>(X::map::end, i, e, cx);
             }
             return true;
         }
@@ -138,7 +138,7 @@ namespace cxon { namespace structs { // structured types reader/writer construct
             struct write {
                 template <typename O, typename Cx>
                     static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        return  write_field<X>(o, t, f.field, cx) && io::poke<X>(o, X::map::sep, cx) &&
+                        return  write_field<X>(o, t, f.field, cx) && chio::poke<X>(o, X::map::sep, cx) &&
                                 write<X, S, T...>::fields(o, t, f.next, cx)
                         ;
                     }
@@ -155,9 +155,9 @@ namespace cxon { namespace structs { // structured types reader/writer construct
 
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx) {
-            return  io::poke<X>(o, X::map::beg, cx) &&
+            return  chio::poke<X>(o, X::map::beg, cx) &&
                         bits::write<X, S, F...>::fields(o, s, f, cx) &&
-                    io::poke<X>(o, X::map::end, cx)
+                    chio::poke<X>(o, X::map::end, cx)
             ;
         }
 

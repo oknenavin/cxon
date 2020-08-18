@@ -14,10 +14,10 @@ namespace cxon { // pointer
         struct read<X, T*> {
             template <typename II, typename Cx>
                 static bool value(T*& t, II& i, II e, Cx& cx) {
-                    io::consume<X>(i, e);
-                    if (io::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
+                    chio::consume<X>(i, e);
+                    if (chio::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
-                        return  (io::consume<X>(X::id::nil, i, e) || (io::rewind(i, o), cx|read_error::unexpected)) &&
+                        return  (chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|read_error::unexpected)) &&
                                 (t = nullptr, true)
                         ;
                     }
@@ -35,7 +35,7 @@ namespace cxon { // pointer
         struct write<X, T*> {
             template <typename O, typename Cx>
                 static bool value(O& o, const T* t, Cx& cx) {
-                    return t ? write_value<X>(o, *t, cx) : io::poke<X>(o, X::id::nil, cx);
+                    return t ? write_value<X>(o, *t, cx) : chio::poke<X>(o, X::id::nil, cx);
                 }
         };
 
@@ -49,8 +49,8 @@ namespace cxon { // array
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
-                        return (p != N || (io::rewind(i, o), cx|read_error::overflow)) &&
+                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
+                        return (p != N || (chio::rewind(i, o), cx|read_error::overflow)) &&
                                 read_value<X>(t[p++], i, e, cx)
                         ;
                     });
@@ -61,7 +61,7 @@ namespace cxon { // array
         struct write<X, T[N]> {
             template <typename O, typename Cx>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return chario::container::write<X, list<X>>(o, t, cx);
+                    return chio::container::write<X, list<X>>(o, t, cx);
                 }
         };
 

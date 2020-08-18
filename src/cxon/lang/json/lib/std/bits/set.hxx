@@ -14,7 +14,7 @@ namespace cxon { namespace bits {
         struct set_reader {
             template <typename II, typename Cx>
                 static bool value(S& t, II& i, II e, Cx& cx) {
-                    return chario::container::read<X, list<X>>(i, e, cx, [&] {
+                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
                         typename S::value_type o{};
                         return  read_value<X>(o, i, e, cx) &&
                                 (t.emplace(std::move(o)), true)
@@ -27,7 +27,7 @@ namespace cxon { namespace bits {
         struct set_writer {
             template <typename O, typename Cx>
                 static bool value(O& o, const S& t, Cx& cx) {
-                    return chario::container::write<X, list<X>>(o, t, cx);
+                    return chio::container::write<X, list<X>>(o, t, cx);
                 }
         };
 

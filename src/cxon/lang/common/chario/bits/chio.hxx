@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_BITS_CHARIO_HXX_
-#define CXON_BITS_CHARIO_HXX_
+#ifndef CXON_BITS_CHIO_HXX_
+#define CXON_BITS_CHIO_HXX_
 
-namespace cxon { namespace chario { namespace bits { // output write with error handling
+namespace cxon { namespace chio { namespace bits { // output write with error handling
 
     template <typename O>
         inline auto push(O& o, char c) -> enable_if_t<is_output_iterator<O>::value> {
@@ -78,6 +78,6 @@ namespace cxon { namespace chario { namespace bits { // output write with error 
             return poke_(option<2>(), o, p...) || (cx|write_error::output_failure);
         }
 
-}}} //cxon::chario::bits output write with error handling
+}}} //cxon::chio::bits output write with error handling
 
-#endif // CXON_BITS_CHARIO_HXX_
+#endif // CXON_BITS_CHIO_HXX_
