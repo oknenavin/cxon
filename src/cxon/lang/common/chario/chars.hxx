@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_CHARS_HXX_
-#define CXON_CHARIO_CHARS_HXX_
+#ifndef CXON_CHIO_CHARS_HXX_
+#define CXON_CHIO_CHARS_HXX_
 
 #include "chio.hxx"
 #include "chcls.hxx"
@@ -378,4 +378,4 @@ namespace cxon { namespace chars { // character conversion: write
 
 }}  // cxon::bits character conversion: write
 
-#endif // CXON_CHARIO_CHARS_HXX_
+#endif // CXON_CHIO_CHARS_HXX_

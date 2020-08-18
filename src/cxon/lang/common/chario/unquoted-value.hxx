@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_UNQUOTED_VALUE_HXX_
-#define CXON_CHARIO_UNQUOTED_VALUE_HXX_
+#ifndef CXON_CHIO_UNQUOTED_VALUE_HXX_
+#define CXON_CHIO_UNQUOTED_VALUE_HXX_
 
 #include "chio.hxx"
 #include "bits/unquoted-value.hxx"
@@ -27,4 +27,4 @@ namespace cxon { namespace unquoted { // unquoted value
 
 }}  // cxon::unquoted value
 
-#endif // CXON_CHARIO_UNQUOTED_VALUE_HXX_
+#endif // CXON_CHIO_UNQUOTED_VALUE_HXX_
