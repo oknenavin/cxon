@@ -42,14 +42,14 @@ namespace cxon {
         struct write<X, std::basic_string_view<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return bits::pointer_write<X>(o, t.data(), t.size(), cx);
+                    return strs::pointer_write<X>(o, t.data(), t.size(), cx);
                 }
         };
     template <typename X, template <typename> class S, typename T, typename ...R>
         struct write<S<UQKEY<X>>, std::basic_string_view<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
+                    return strs::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
                 }
         };
 

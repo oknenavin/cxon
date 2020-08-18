@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon.hxx"
+#include "cxon/lang/common/chario/enums.hxx"
+#include "cxon/lang/common/chario/structs.hxx"
 #include "cxon/lib/std/string.hxx"
 
 ///////////////////////////////////////////////////////////////////////////////
