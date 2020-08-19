@@ -8,6 +8,7 @@
 
 #include "chio.hxx"
 #include "unquoted-value.hxx"
+#include <cstring> // strcmp
 
 namespace cxon { namespace chio { namespace structs { // structured types reader/writer construction helpers
 
