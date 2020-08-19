@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_BITS_CHARCONV_HXX_
-#define CXON_BITS_CHARCONV_HXX_
+#ifndef CXON_CHARCONV_HXX_
+#define CXON_CHARCONV_HXX_
 
 #include "cxon/utility.hxx"
 
@@ -26,7 +26,7 @@
 #   endif
 #endif
 
-namespace cxon { namespace bits { namespace charconv {
+namespace cxon { namespace charconv { namespace bits {
 
     using namespace std;
 
@@ -187,9 +187,9 @@ namespace cxon { namespace bits { namespace charconv {
         CXON_TO_CHARS(long double)
 #   undef CXON_TO_CHARS
 
-}}}   // cxon::bits::charconv
+}}}   // cxon::charconv::bits
 
-namespace cxon { namespace bits { // <charconv>
+namespace cxon { namespace charconv { // <charconv>
 
 #   ifdef CXON_HAS_CHARCONV
         template <typename T>
@@ -203,7 +203,7 @@ namespace cxon { namespace bits { // <charconv>
             inline auto from_chars_i_(option<0>, const char* f, const char* l, T& t, int base = 10)
                 ->  std::from_chars_result
             {
-                auto const r = charconv::from_chars(f, l, t, base);
+                auto const r = bits::from_chars(f, l, t, base);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -226,7 +226,7 @@ namespace cxon { namespace bits { // <charconv>
             inline auto from_chars_f_(option<0>, const char* f, const char* l, T& t)
                 ->  std::from_chars_result
             {
-                auto const r = charconv::from_chars(f, l, t);
+                auto const r = bits::from_chars(f, l, t);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -248,7 +248,7 @@ namespace cxon { namespace bits { // <charconv>
             inline auto to_chars_i_(option<0>, char* f, char* l, T t, int base = 10)
                 ->  std::to_chars_result
             {
-                auto const r = charconv::to_chars(f, l, t, base);
+                auto const r = bits::to_chars(f, l, t, base);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -276,7 +276,7 @@ namespace cxon { namespace bits { // <charconv>
                 ->  decltype(std::to_chars(f, l, t, (std::chars_format)0, precision), std::to_chars_result())
             {
 #               if defined(_MSC_VER) && _MSC_VER <= 1923
-                    auto const r = charconv::to_chars(f, l, t, precision);
+                    auto const r = bits::to_chars(f, l, t, precision);
                     return { r.ptr, r.ec };
 #               else
                     return std::to_chars(f, l, t, general<std::chars_format>::value, precision);
@@ -293,7 +293,7 @@ namespace cxon { namespace bits { // <charconv>
             inline auto to_chars_f_(option<0>, char* f, char* l, T t, int precision)
                 ->  std::to_chars_result
             {
-                auto const r = charconv::to_chars(f, l, t, precision);
+                auto const r = bits::to_chars(f, l, t, precision);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -304,10 +304,10 @@ namespace cxon { namespace bits { // <charconv>
                 return to_chars_f_(option<2>(), f, l, t, precision);
             }
 #   else
-        using charconv::from_chars;
-        using charconv::to_chars;
+        using bits::from_chars;
+        using bits::to_chars;
 #   endif
 
-}}  //cxon::bits <charconv>
+}}  //cxon::charconv <charconv>
 
-#endif // CXON_BITS_CHARCONV_HXX_
+#endif // CXON_CHARCONV_HXX_

@@ -259,7 +259,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                            || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                            || (rewind(i, o), cx|read_error::integral_invalid)) &&
-                                    (cxon::bits::from_chars(s, s + sizeof(s), t, b).ec == std::errc()   || (rewind(i, o), cx|read_error::integral_invalid))
+                                    (charconv::from_chars(s, s + sizeof(s), t, b).ec == std::errc()   || (rewind(i, o), cx|read_error::integral_invalid))
                             ;
                     }
                 // no optimization for const char* because of numeric bases (0, 0b, 0x)
@@ -273,14 +273,14 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                        || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
-                                    (cxon::bits::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))
+                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))
                             ;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
                         -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
-                        auto const r = cxon::bits::from_chars(i, e, t);
+                        auto const r = charconv::from_chars(i, e, t);
                         return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
                                 (i = r.ptr, true);
                     }
@@ -298,7 +298,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                        || (rewind(i, o), cx|read_error::integral_invalid)) &&
-                                    (cxon::bits::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::integral_invalid))
+                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::integral_invalid))
                             ;
                     }
                 template <typename N, typename Cx>
@@ -308,7 +308,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         auto const b = i;
                         if (number_consumer<JSON<X>, T>::consume(i, e)) {
                             if (*b == '0' && i - b == 1) return t = 0, true;
-                            auto const r = cxon::bits::from_chars(b, i, t);
+                            auto const r = charconv::from_chars(b, i, t);
                             if (r.ec == std::errc() && r.ptr == i) return true;
                         }
                         return i = b, cx|read_error::integral_invalid;
@@ -318,31 +318,31 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
                         -> enable_if_t<std::is_integral<N>::value && !X::number::strict, bool>
                     {
-                        auto const r = cxon::bits::from_chars(i, e, t);
+                        auto const r = charconv::from_chars(i, e, t);
                         return (r.ec == std::errc() && (i = r.ptr, true)) || (cx|read_error::integral_invalid);
                     }
             // floating point
                 template <typename N>
-                    static cxon::bits::charconv::from_chars_result from_chars(const char* b, const char* e, N& t) {
+                    static charconv::bits::from_chars_result from_chars(const char* b, const char* e, N& t) {
                         if (*b == '"') {
                             if (b[1] == '-') {
                                 if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<N>::infinity(),
-                                    cxon::bits::charconv::from_chars_result{ b + 6, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    charconv::bits::from_chars_result{ b + 6, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                                 return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
-                                    cxon::bits::charconv::from_chars_result{ b + 6, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    charconv::bits::from_chars_result{ b + 6, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                             }
                             else {
                                 if (b[1] == 'i') return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ? t =  std::numeric_limits<N>::infinity(),
-                                    cxon::bits::charconv::from_chars_result{ b + 5, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    charconv::bits::from_chars_result{ b + 5, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                                 return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
-                                    cxon::bits::charconv::from_chars_result{ b + 5, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    charconv::bits::from_chars_result{ b + 5, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                             }
                         }
-                        auto const r = cxon::bits::from_chars(b, e, t);
+                        auto const r = charconv::from_chars(b, e, t);
                         return { r.ptr, r.ec };
                     }
                 // strict
@@ -403,7 +403,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: write
     template <typename X, typename T, typename O, typename Cx>
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
             char s[std::numeric_limits<T>::digits10 + 3];
-            auto const r = cxon::bits::to_chars(s, s + sizeof(s) / sizeof(char), t);
+            auto const r = charconv::to_chars(s, s + sizeof(s) / sizeof(char), t);
             return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
                     poke<X>(o, s, r.ptr - s, cx)
             ;
@@ -420,7 +420,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: write
                 return poke<X>(o, opqt<X>::beg, cx) && poke<X>(o, "nan", cx) && poke<X>(o, opqt<X>::end, cx);
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
-            auto const r = cxon::bits::to_chars(
+            auto const r = charconv::to_chars(
                 s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
             );
             return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
