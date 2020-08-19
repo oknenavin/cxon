@@ -12,13 +12,9 @@
 
 #include "utility.hxx"
 
-#include <string>
-
 #include <utility>
 #include <type_traits>
 #include <system_error>
-
-#include <cstring> // strcmp
 
 // interface //////////////////////////////////////////////////////////////////
 

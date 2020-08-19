@@ -219,7 +219,7 @@ static unsigned self() {
                 cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
                 cxon::to_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                    (cxon::make_indenter(s1, 4, ' '), n, cxon::fp_precision::set<4>());
+                    (cxon::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           endif
             std::string const s0 =
                 cxon::pretty(s1, 4, ' ');
