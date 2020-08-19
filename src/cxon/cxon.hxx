@@ -69,15 +69,15 @@ namespace cxon { // interface
 
 namespace cxon { // contexts
 
-    template <typename ...Ps> // prms
+    template <typename ...Ps> // ... named parameters
         struct context {
-            using prms_type = prms::pack<Ps...>;
+            using napa_type = napa::pack<Ps...>;
 
             std::error_condition    ec;
-            prms_type               ps;
+            napa_type               ps;
 
             context(Ps&&... ps) :   ec(),
-                                    ps(prms::make_pack(std::forward<Ps>(ps)...))
+                                    ps(napa::make_pack(std::forward<Ps>(ps)...))
             {
             }
 
@@ -94,7 +94,7 @@ namespace cxon { // contexts
         using write_context = context<P...>;
 
     template <typename Cx>
-        using prms_type = typename Cx::prms_type;
+        using napa_type = typename Cx::napa_type;
 
 }   // cxon contexts
 

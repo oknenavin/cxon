@@ -351,12 +351,12 @@ namespace cxon {
         using cxjson::recursion_depth;
 
         namespace bits {
-            template <typename Cx, bool G = recursion_guard::in<prms_type<Cx>>::value>
+            template <typename Cx, bool G = recursion_guard::in<napa_type<Cx>>::value>
                 struct scinc {
                     Cx& cx;
                     scinc(Cx& cx) : cx(cx)  { ++recursion_guard::reference(cx.ps); }
                     ~scinc()                { --recursion_guard::reference(cx.ps); }
-                    bool check() const      { return recursion_guard::value(cx.ps) < recursion_depth::constant<prms_type<Cx>>(64); }
+                    bool check() const      { return recursion_guard::value(cx.ps) < recursion_depth::constant<napa_type<Cx>>(64); }
                 };
             template <typename Cx>
                 struct scinc<Cx, false> {

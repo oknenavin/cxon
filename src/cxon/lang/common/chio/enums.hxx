@@ -52,7 +52,7 @@ namespace cxon { namespace chio { namespace enums { // enum reader/writer constr
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
             consume<X>(i, e);
             II const o = i;
-                char id[ids_len_max::constant<prms_type<Cx>>(64)];
+                char id[ids_len_max::constant<napa_type<Cx>>(64)];
                     if (!bits::read<X>::value(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;

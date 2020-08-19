@@ -683,14 +683,14 @@ namespace cxon {
 
 Member type |Definition
 ------------|------------------------------------------
-`prms_type` | `prms::pack_type<Ps...>`
+`napa_type` | `napa::pack_type<Ps...>`
 
 ###### Member objects
 
 Member name |Type
 ------------|------------------------------------------
 `ec`        | [`std::error_condition`][std-err-cnd]
-`ps`        | `prms_type`
+`ps`        | `napa_type`
 
 ###### Member functions
 
@@ -709,7 +709,7 @@ Member name |Type
 an implementation detail and the code shall access it by the `parameter` interface.
 
 ``` c++
-namespace cxon::prms {
+namespace cxon::napa {
     template <typename Tag, typename Type>
         struct parameter {
             using tag = Tag;
@@ -747,11 +747,11 @@ namespace cxon::prms {
 - `(7)` - returns the value of parameter `Tag`, compilation error if not set
 - `(8)` - returns the value of parameter `Tag` if set, `dflt` otherwise
 
-For convenience, parameter type could be inherited from `prms::tag` - `CXON` provides
+For convenience, parameter type could be inherited from `napa::tag` - `CXON` provides
 simple macro for this.
 
 ``` c++
-#define CXON_PARAMETER(P, T) struct P : cxon::prms::parameter<P, T> {}
+#define CXON_PARAMETER(P, T) struct P : cxon::napa::parameter<P, T> {}
 ```
 
 ###### Example
@@ -768,16 +768,16 @@ namespace cxon {
     template <typename X, typename II, typename Cx>
         inline auto read_value(my_type& t, II& i, II e, Cx& cx)
             // specialize if my_state is set
-            -> enable_if_t< my_state::in<prms_type<Cx>>::value, bool>
+            -> enable_if_t< my_state::in<napa_type<Cx>>::value, bool>
         {
-            char buffer[my_constant::constant<prms_type<Cx>>(32)]; // 32 if not set
+            char buffer[my_constant::constant<napa_type<Cx>>(32)]; // 32 if not set
             auto& state = my_state::reference(cx.ps);
             ...
         }
     template <typename X, typename II, typename Cx>
         inline auto read_value(my_type& t, II& i, II e, Cx& cx)
             // specialize if my_state isn't set
-            -> enable_if_t<!my_state::in<prms_type<Cx>>::value, bool>
+            -> enable_if_t<!my_state::in<napa_type<Cx>>::value, bool>
         {
             auto par = my_state::value(cx.ps, 0); // 0 if not set
             ...

@@ -132,7 +132,7 @@ namespace cxon {
 
 }
 
-namespace cxon { namespace prms {
+namespace cxon { namespace napa { // named parameters
 
     template <typename ...Tg>
         using pack = std::tuple<Tg...>;
@@ -279,7 +279,7 @@ namespace cxon { namespace prms {
                 static constexpr cst<Tg, Tp, c> set() { return {}; }
         };
 
-#   define CXON_PARAMETER(P, T) struct P : cxon::prms::parameter<P, T> {}
+#   define CXON_PARAMETER(P, T) struct P : cxon::napa::parameter<P, T> {}
 
 }}
 
