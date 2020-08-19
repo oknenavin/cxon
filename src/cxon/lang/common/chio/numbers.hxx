@@ -255,7 +255,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(32)];
+                            char s[num_len_max::constant<napa_type<Cx>>(32)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                            || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                            || (rewind(i, o), cx|read_error::integral_invalid)) &&
@@ -269,7 +269,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(64)];
+                            char s[num_len_max::constant<napa_type<Cx>>(64)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                        || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
@@ -294,7 +294,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         -> enable_if_t<std::is_integral<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(32)];
+                            char s[num_len_max::constant<napa_type<Cx>>(32)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                        || (rewind(i, o), cx|read_error::integral_invalid)) &&
@@ -351,7 +351,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
                         II const o = i;
-                            char s[num_len_max::constant<prms_type<Cx>>(64)];
+                            char s[num_len_max::constant<napa_type<Cx>>(64)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
                                 return  (b != -1                                            || (rewind(i, o), cx|read_error::overflow)) &&
                                         (b !=  0                                            || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
@@ -421,7 +421,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: write
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
             auto const r = cxon::bits::to_chars(
-                s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<prms_type<Cx>>(std::numeric_limits<T>::max_digits10)
+                s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
             );
             return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
                     poke<X>(o, s, r.ptr - s, cx)

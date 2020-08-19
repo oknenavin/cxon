@@ -118,7 +118,7 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
             if (!consume<X>(X::map::beg, i, e, cx)) return false;
             if ( consume<X>(X::map::end, i, e)) return true;
-            for (char id[ids_len_max::constant<prms_type<Cx>>(64)]; ; ) {
+            for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
                 consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return false;
