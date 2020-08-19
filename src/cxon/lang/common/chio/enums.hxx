@@ -9,7 +9,7 @@
 #include "chio.hxx"
 #include "unquoted-value.hxx"
 
-namespace cxon { namespace enums { // enum reader/writer construction helpers
+namespace cxon { namespace chio { namespace enums { // enum reader/writer construction helpers
 
     template <typename E>
         struct value {
@@ -50,27 +50,27 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
 
     template <typename X, typename E, typename V, typename II, typename Cx>
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
-            chio::consume<X>(i, e);
+            consume<X>(i, e);
             II const o = i;
                 char id[ids_len_max::constant<prms_type<Cx>>(64)];
                     if (!bits::read<X>::value(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;
-            return chio::rewind(i, o), cx|read_error::unexpected;
+            return rewind(i, o), cx|read_error::unexpected;
         }
 
     template <typename X, typename E, typename V, typename O, typename Cx>
         inline bool write_value(O& o, E t, V vb, V ve, Cx& cx) {
             for ( ; vb != ve; ++vb) if (t == vb->value)
-                return chio::poke<X>(o, bits::opqt<X>::beg, cx) && chio::poke<X>(o, vb->name, cx) && chio::poke<X>(o, bits::opqt<X>::end, cx);
+                return poke<X>(o, bits::opqt<X>::beg, cx) && poke<X>(o, vb->name, cx) && poke<X>(o, bits::opqt<X>::end, cx);
             return cx|write_error::argument_invalid;
         }
 
-}}  // cxon::enums enum reader/writer construction helpers
+}}} // cxon::chio::enums enum reader/writer construction helpers
 
 #if 1 // cxon enumeration
 
-#   define CXON_ENUM_VALUE(T, N, V)     enums::make_value(N, T::V)
+#   define CXON_ENUM_VALUE(T, N, V)     cxon::chio::enums::make_value(N, T::V)
 #   define CXON_ENUM_VALUE_NAME(N, V)   CXON_ENUM_VALUE(T, N, V)
 #   define CXON_ENUM_VALUE_ASIS(V)      CXON_ENUM_VALUE(T, #V, V)
 
@@ -79,8 +79,8 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
             template <typename X, typename II, typename Cx>\
                 inline bool read_value(Type& t, II& i, II e, Cx& cx) {\
                     using T = Type;\
-                    static constexpr enums::value<Type> v[] = { __VA_ARGS__ };\
-                    return enums::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
+                    static constexpr chio::enums::value<Type> v[] = { __VA_ARGS__ };\
+                    return chio::enums::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
                 }\
         }
 #   define CXON_ENUM_WRITE(Type, ...)\
@@ -88,8 +88,8 @@ namespace cxon { namespace enums { // enum reader/writer construction helpers
             template <typename X, typename O, typename Cx>\
                 inline bool write_value(O& o, const Type& t, Cx& cx) {\
                     using T = Type;\
-                    static constexpr enums::value<Type> v[] = { __VA_ARGS__ };\
-                    return enums::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
+                    static constexpr chio::enums::value<Type> v[] = { __VA_ARGS__ };\
+                    return chio::enums::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
                 }\
         }
 #   define CXON_ENUM(Type, ...)\

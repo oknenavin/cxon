@@ -6,6 +6,7 @@
 #ifndef CXON_COMPOUND_HXX_
 #define CXON_COMPOUND_HXX_
 
+#include "cxon/lang/common/chio/strings.hxx"
 #include "cxon/lang/common/chio/container.hxx"
 
 namespace cxon { // pointer
@@ -17,7 +18,7 @@ namespace cxon { // pointer
                     chio::consume<X>(i, e);
                     if (chio::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
-                        return  (chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|read_error::unexpected)) &&
+                        return  (chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|chio::read_error::unexpected)) &&
                                 (t = nullptr, true)
                         ;
                     }
@@ -49,8 +50,8 @@ namespace cxon { // array
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
-                        return (p != N || (chio::rewind(i, o), cx|read_error::overflow)) &&
+                    return chio::container::read<X, lstacc<X>>(i, e, cx, [&] {
+                        return (p != N || (chio::rewind(i, o), cx|chio::read_error::overflow)) &&
                                 read_value<X>(t[p++], i, e, cx)
                         ;
                     });
@@ -61,7 +62,7 @@ namespace cxon { // array
         struct write<X, T[N]> {
             template <typename O, typename Cx>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return chio::container::write<X, list<X>>(o, t, cx);
+                    return chio::container::write<X, lstacc<X>>(o, t, cx);
                 }
         };
 
@@ -73,7 +74,7 @@ namespace cxon { // character pointer & array
         template <typename X, size_t N>\
             struct read<X, T[N]> {\
                 template <typename II, typename Cx>\
-                    static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return strs::array<X>::read(t, t + N, i, e, cx); }\
+                    static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return chio::strs::array<X>::read(t, t + N, i, e, cx); }\
             };
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
@@ -97,7 +98,7 @@ namespace cxon { // character pointer & array
         template <typename X>\
             struct read<X, T*> {\
                 template <typename II, typename Cx>\
-                    static bool value(T*& t, II& i, II e, Cx& cx)       { return strs::pointer_read<X>(t, i, e, cx); }\
+                    static bool value(T*& t, II& i, II e, Cx& cx)       { return chio::strs::pointer_read<X>(t, i, e, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
@@ -109,7 +110,7 @@ namespace cxon { // character pointer & array
         template <typename X, size_t N>\
             struct write<X, T[N]> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, const T (&t)[N], Cx& cx)    { return strs::array_write<X>(o, t, t + N, cx); }\
+                    static bool value(O& o, const T (&t)[N], Cx& cx)    { return chio::strs::array_write<X>(o, t, t + N, cx); }\
             };
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
@@ -121,7 +122,7 @@ namespace cxon { // character pointer & array
         template <typename X>\
             struct write<X, const T*> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, const T* t, Cx& cx)         { return strs::pointer<X>::write(o, t, cx); }\
+                    static bool value(O& o, const T* t, Cx& cx)         { return chio::strs::pointer<X>::write(o, t, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)

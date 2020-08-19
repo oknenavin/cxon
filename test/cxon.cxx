@@ -4,8 +4,6 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon.hxx"
-#include "cxon/lang/common/chio/enums.hxx"
-#include "cxon/lang/common/chio/structs.hxx"
 
 #include "cxon/lib/std/array.hxx"
 #include "cxon/lib/std/vector.hxx"
@@ -71,7 +69,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "42");
-            TEST_CHECK(r.ec == cxon::write_error::output_failure);
+            TEST_CHECK(r.ec == chio::write_error::output_failure);
         }
     {   char o[16]; char const e[] = "1";
         auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 1);
@@ -83,7 +81,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 42);
-            TEST_CHECK(r.ec == cxon::write_error::output_failure);
+            TEST_CHECK(r.ec == chio::write_error::output_failure);
         }
     {   char o[16]; char const e[] = "true";
         auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
@@ -95,7 +93,7 @@ TEST_BEG(cxon::CXON<>) // interface/write
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
-            TEST_CHECK(r.ec == cxon::write_error::output_failure);
+            TEST_CHECK(r.ec == chio::write_error::output_failure);
         }
     // container/std::string (push_back, append)
     {   std::string r; std::string const e = QS("1");
@@ -149,67 +147,67 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
     }
     {   unsigned r = 0; std::string const i = "123";
         auto const e = cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
+        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '1');
     }
     {   double r = 0; std::list<char> const i = {'1', '2', '3'};
         TEST_CHECK(cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<4>()) && r == 123);
     }
     {   float r = 0; std::list<char> const i = {'1', '2', '3'};
         auto const e = cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == '1');
+        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '1');
     }
     {   Enum11 r = Enum11::one;
         TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("three"), cxon::ids_len_max::set<6>()) && r == Enum11::three);
     }
     {   Enum11 r = Enum11::one; std::string const i = "three";
         auto const e = cxon::from_bytes<XXON>(r, i, cxon::ids_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 't');
+        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == 't');
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
         TEST_CHECK(cxon::from_bytes<XXON>(r, "{ field: 42 }", cxon::ids_len_max::set<6>()) && r == Struct11(42));
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
         auto const e = cxon::from_bytes<XXON>(r, i, cxon::ids_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == cxon::read_error::overflow && *e.end == 'f');
+        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == 'f');
     }
 TEST_END()
 
 TEST_BEG(cxon::CXON<>) // errors
     using namespace cxon;
     {   std::error_condition ec;
-            ec = read_error::ok;
-                CXON_ASSERT(ec.category() == read_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/read") == 0, "check failed");
+            ec = chio::read_error::ok;
+                CXON_ASSERT(ec.category() == chio::read_error_category::value(), "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/chio/read") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
-            ec = read_error::unexpected;
+            ec = chio::read_error::unexpected;
                 CXON_ASSERT(ec.message() == "unexpected input", "check failed");
-            ec = read_error::character_invalid;
+            ec = chio::read_error::character_invalid;
                 CXON_ASSERT(ec.message() == "invalid character", "check failed");
-            ec = read_error::integral_invalid;
+            ec = chio::read_error::integral_invalid;
                 CXON_ASSERT(ec.message() == "invalid integral or value out of range", "check failed");
-            ec = read_error::floating_point_invalid;
+            ec = chio::read_error::floating_point_invalid;
                 CXON_ASSERT(ec.message() == "invalid floating point", "check failed");
-            ec = read_error::boolean_invalid;
+            ec = chio::read_error::boolean_invalid;
                 CXON_ASSERT(ec.message() == "invalid boolean", "check failed");
-            ec = read_error::escape_invalid;
+            ec = chio::read_error::escape_invalid;
                 CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
-            ec = read_error::surrogate_invalid;
+            ec = chio::read_error::surrogate_invalid;
                 CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
-            ec = read_error::overflow;
+            ec = chio::read_error::overflow;
                 CXON_ASSERT(ec.message() == "buffer overflow", "check failed");
-            ec = read_error(255);
+            ec = chio::read_error(255);
                 CXON_ASSERT(ec.message() == "unknown error", "check failed");
     }
     {   std::error_condition ec;
-            ec = write_error::ok;
-                CXON_ASSERT(ec.category() == write_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/write") == 0, "check failed");
+            ec = chio::write_error::ok;
+                CXON_ASSERT(ec.category() == chio::write_error_category::value(), "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/chio/write") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
-            ec = write_error::output_failure;
+            ec = chio::write_error::output_failure;
                 CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
-            ec = write_error::argument_invalid;
+            ec = chio::write_error::argument_invalid;
                 CXON_ASSERT(ec.message() == "invalid argument", "check failed");
-            ec = write_error(255);
+            ec = chio::write_error(255);
                 CXON_ASSERT(ec.message() == "unknown error", "check failed");
     }
 TEST_END()

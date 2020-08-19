@@ -7,14 +7,16 @@
 #define CXON_JSON_LIB_STD_BITSET_HXX_
 
 namespace cxon { namespace chio { namespace bits {
-
     template <size_t N> struct is_quoted<std::bitset<N>> : std::true_type {};
+}}}
+
+namespace cxon { namespace bits {
 
     template <typename X, size_t N, typename II, typename Cx>
         inline bool read_bits(std::bitset<N>& t, II& i, II e, Cx& cx) {
             for (size_t p = N; p != 0; ) {
                 char const c = chio::peek(i, e);
-                    if (c != '0' && c != '1') return cx|read_error::unexpected;
+                    if (c != '0' && c != '1') return cx|chio::read_error::unexpected;
                 t.set(--p, c == '1'), chio::next(i, e);
             }
             return true;
@@ -28,7 +30,7 @@ namespace cxon { namespace chio { namespace bits {
             return true;
         }
 
-}}} // cxon::chio::bits
+}}  // cxon::bits
 
 namespace cxon {
 
@@ -36,16 +38,16 @@ namespace cxon {
         struct read<X, std::bitset<N>> {
             template <typename II, typename Cx>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
-                    return chio::bits::read_bits<X>(t, i, e, cx);
+                    return bits::read_bits<X>(t, i, e, cx);
                 }
         };
     template <typename X, size_t N>
         struct read<JSON<X>, std::bitset<N>> {
             template <typename II, typename Cx>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
-                    return  strs::consume_str<JSON<X>>::beg(i, e, cx) &&
-                                chio::bits::read_bits<JSON<X>>(t, i, e, cx) &&
-                            strs::consume_str<JSON<X>>::end(i, e, cx)
+                    return  chio::strs::consume_str<JSON<X>>::beg(i, e, cx) &&
+                                bits::read_bits<JSON<X>>(t, i, e, cx) &&
+                            chio::strs::consume_str<JSON<X>>::end(i, e, cx)
                     ;
                 }
         };
@@ -54,16 +56,16 @@ namespace cxon {
         struct write<X, std::bitset<N>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
-                    return chio::bits::write_bits<X>(o, t, cx);
+                    return bits::write_bits<X>(o, t, cx);
                 }
         };
     template <typename X, size_t N>
         struct write<JSON<X>, std::bitset<N>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
-                    return  chio::poke<JSON<X>>(o, strs::str<JSON<X>>::beg, cx) &&
-                                chio::bits::write_bits<JSON<X>>(o, t, cx) &&
-                            chio::poke<JSON<X>>(o, strs::str<JSON<X>>::end, cx)
+                    return  chio::poke<JSON<X>>(o, chio::strs::str<JSON<X>>::beg, cx) &&
+                                bits::write_bits<JSON<X>>(o, t, cx) &&
+                            chio::poke<JSON<X>>(o, chio::strs::str<JSON<X>>::end, cx)
                     ;
                 }
         };

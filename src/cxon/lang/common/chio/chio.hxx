@@ -8,6 +8,7 @@
 
 #include "cxon/utility.hxx"
 #include "chcls.hxx"
+#include "errors.hxx"
 #include "bits/chio.hxx"
 
 namespace cxon { namespace chio {
@@ -30,7 +31,7 @@ namespace cxon { namespace chio {
 
     template <typename X, typename II>
         inline void consume(II& i, II e) {
-            while (chcls::is<X>::space(peek(i, e))) next(i, e);
+            while (is<X>::space(peek(i, e))) next(i, e);
         }
 
     template <typename X, typename II>

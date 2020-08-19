@@ -5,7 +5,7 @@
 
 #include "cxon.hxx"
 
-#include "cxon/lib/std/string.hxx"
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -33,9 +33,9 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("true", true);
         R_TEST(false, "false");
         W_TEST("false", false);
-        R_TEST(false, "t", cxon::read_error::boolean_invalid, 0);
-        R_TEST(false, "f", cxon::read_error::boolean_invalid, 0);
-        R_TEST(false, "", cxon::read_error::unexpected, 0);
+        R_TEST(false, "t", chio::read_error::boolean_invalid, 0);
+        R_TEST(false, "f", chio::read_error::boolean_invalid, 0);
+        R_TEST(false, "", chio::read_error::boolean_invalid, 0);
     // char
         R_TEST('\0', QS("\\0"));
         W_TEST(QS("\\0"), '\0');
@@ -51,8 +51,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST(QS("\x8f"), '\x8f');
         R_TEST('\xff', QS("\\xff")); // invalid utf-8
         W_TEST(QS("\xff"), '\xff'); // invalid utf-8
-        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
-        R_TEST('\0', QS("\\u1111"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), chio::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST('\0', QS("\\u1111"), chio::read_error::character_invalid, 1);
     // char16_t
         R_TEST(u'a', QS("a"));
         W_TEST(QS("a"), u'a');
@@ -60,22 +60,22 @@ TEST_BEG(cxon::CXON<>)
         W_TEST(QS("\xCE\xB1"), u'\x3B1');
         R_TEST(u'\xFFFF', QS("\xEF\xBF\xBF"));
         W_TEST(QS("\xEF\xBF\xBF"), u'\xFFFF');
-        R_TEST(u'\0', QS("\xF0\x90\x80\x80"), cxon::read_error::character_invalid, 1);
+        R_TEST(u'\0', QS("\xF0\x90\x80\x80"), chio::read_error::character_invalid, 1);
     // char32_t
         R_TEST(U'a', QS("a"));
-        R_TEST(U'\0', QS("\x80"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\x80"), chio::read_error::character_invalid, 1);
         W_TEST(QS("a"), U'a');
         R_TEST(U'\x3B1', QS("\xCE\xB1"));
-        R_TEST(U'\0', QS("\xCE"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xCE"), chio::read_error::character_invalid, 1);
         W_TEST(QS("\xCE\xB1"), U'\x3B1');
         R_TEST(U'\x389A', QS("\xE3\xA2\x9A"));
-        R_TEST(U'\0', QS("\xE3\xA2"), cxon::read_error::character_invalid, 1);
-        R_TEST(U'\0', QS("\xE3"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xE3\xA2"), chio::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xE3"), chio::read_error::character_invalid, 1);
         W_TEST(QS("\xE3\xA2\x9A"), U'\x389A');
         R_TEST(U'\x28440', QS("\xF0\xA8\x91\x80"));
-        R_TEST(U'\0', QS("\xF0\xA8\x91"), cxon::read_error::character_invalid, 1);
-        R_TEST(U'\0', QS("\xF0\xA8"), cxon::read_error::character_invalid, 1);
-        R_TEST(U'\0', QS("\xF0"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xF0\xA8\x91"), chio::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xF0\xA8"), chio::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xF0"), chio::read_error::character_invalid, 1);
         W_TEST(QS("\xF0\xA8\x91\x80"), U'\x28440');
     // wchar_t
         R_TEST(L'a', QS("a"));
@@ -90,8 +90,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("0", (signed char)0);
         R_TEST(tmax<signed char>(), smax<signed char>());
         W_TEST(smax<signed char>(), tmax<signed char>());
-        R_TEST(tmin<signed char>(), omin<signed char>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<signed char>(), omax<signed char>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<signed char>(), omin<signed char>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<signed char>(), omax<signed char>(), chio::read_error::integral_invalid, 0);
     // unsigned char
         R_TEST((unsigned char)42, "0b101010");
         R_TEST((unsigned char)052, "052");
@@ -102,8 +102,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("127", (unsigned char)0x7F);
         R_TEST(tmax<unsigned char>(), smax<unsigned char>());
         W_TEST(smax<unsigned char>(), tmax<unsigned char>());
-        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), chio::read_error::integral_invalid, 0);
     // short
         R_TEST((short)42, "0b101010");
         R_TEST((short)052, "052");
@@ -114,8 +114,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("0", (short)0);
         R_TEST(tmax<short>(), smax<short>());
         W_TEST(smax<short>(), tmax<short>());
-        R_TEST(tmin<short>(), omin<short>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<short>(), omax<short>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<short>(), omin<short>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<short>(), omax<short>(), chio::read_error::integral_invalid, 0);
     // unsigned short
         R_TEST((unsigned short)42, "0b101010");
         R_TEST((unsigned short)052, "052");
@@ -126,8 +126,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("255", (unsigned short)0xFF);
         R_TEST(tmax<unsigned short>(), smax<unsigned short>());
         W_TEST(smax<unsigned short>(), tmax<unsigned short>());
-        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), chio::read_error::integral_invalid, 0);
     // int
         R_TEST((int)42, "0b101010");
         R_TEST((int)052, "052");
@@ -138,8 +138,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("0", (int)0);
         R_TEST(tmax<int>(), smax<int>());
         W_TEST(smax<int>(), tmax<int>());
-        R_TEST(tmin<int>(), omin<int>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<int>(), omax<int>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<int>(), omin<int>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<int>(), omax<int>(), chio::read_error::integral_invalid, 0);
     // unsigned int
         R_TEST((unsigned int)42, "0b101010");
         R_TEST((unsigned int)052, "052");
@@ -150,7 +150,7 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("65535", (unsigned int)0xFFFF);
         R_TEST(tmax<unsigned int>(), smax<unsigned int>());
         W_TEST(smax<unsigned int>(), tmax<unsigned int>());
-        R_TEST(tmax<unsigned int>(), omax<unsigned int>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned int>(), omax<unsigned int>(), chio::read_error::integral_invalid, 0);
     // long
         R_TEST((long)42, "0b101010");
         R_TEST((long)052, "052");
@@ -161,8 +161,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("0", (long)0);
         R_TEST(tmax<long>(), smax<long>());
         W_TEST(smax<long>(), tmax<long>());
-        R_TEST(tmin<long>(), omin<long>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<long>(), omax<long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<long>(), omin<long>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<long>(), omax<long>(), chio::read_error::integral_invalid, 0);
     // unsigned long
         R_TEST((unsigned long)42, "0b101010");
         R_TEST((unsigned long)052, "052");
@@ -173,7 +173,7 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("65535", (unsigned long)0xFFFF);
         R_TEST(tmax<unsigned long>(), smax<unsigned long>());
         W_TEST(smax<unsigned long>(), tmax<unsigned long>());
-        R_TEST(tmax<unsigned long>(), omax<unsigned long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned long>(), omax<unsigned long>(), chio::read_error::integral_invalid, 0);
     // long long
         R_TEST((long long)42, "0b101010");
         R_TEST((long long)052, "052");
@@ -184,8 +184,8 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("0", (long long)0);
         R_TEST(tmax<long long>(), smax<long long>());
         W_TEST(smax<long long>(), tmax<long long>());
-        R_TEST(tmin<long long>(), omin<long long>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<long long>(), omax<long long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<long long>(), omin<long long>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<long long>(), omax<long long>(), chio::read_error::integral_invalid, 0);
     // unsigned long long
         R_TEST((unsigned long long)42, "0b101010");
         R_TEST((unsigned long long)052, "052");
@@ -196,7 +196,7 @@ TEST_BEG(cxon::CXON<>)
         W_TEST("4294967295", (unsigned long long)0xFFFFFFFF);
         R_TEST(tmax<unsigned long long>(), smax<unsigned long long>());
         W_TEST(smax<unsigned long long>(), tmax<unsigned long long>());
-        R_TEST(tmax<unsigned long long>(), omax<unsigned long long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned long long>(), omax<unsigned long long>(), chio::read_error::integral_invalid, 0);
     // float
         R_TEST(tmin<float>(), smin<float>());
         W_TEST(smin<float>(), tmin<float>());
@@ -221,9 +221,9 @@ TEST_BEG(cxon::CXON<>)
     // nullptr_t
         R_TEST(nullptr, "null");
         W_TEST("null", nullptr);
-        R_TEST(nullptr, "", cxon::read_error::unexpected, 0);
-        R_TEST(nullptr, "nu", cxon::read_error::unexpected, 0);
-        R_TEST(nullptr, "a", cxon::read_error::unexpected, 0);
+        R_TEST(nullptr, "", chio::read_error::unexpected, 0);
+        R_TEST(nullptr, "nu", chio::read_error::unexpected, 0);
+        R_TEST(nullptr, "a", chio::read_error::unexpected, 0);
 TEST_END()
 
 TEST_BEG(cxon::JSON<>)
@@ -233,9 +233,9 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("true", true);
         R_TEST(false, "false");
         W_TEST("false", false);
-        R_TEST(false, "t", cxon::read_error::boolean_invalid, 0);
-        R_TEST(false, "f", cxon::read_error::boolean_invalid, 0);
-        R_TEST(false, "", cxon::read_error::unexpected, 0);
+        R_TEST(false, "t", chio::read_error::boolean_invalid, 0);
+        R_TEST(false, "f", chio::read_error::boolean_invalid, 0);
+        R_TEST(false, "", chio::read_error::boolean_invalid, 0);
     // char
         R_TEST('\0', QS("\\u0000"));
         W_TEST(QS("\\u0000"), '\0');
@@ -251,9 +251,9 @@ TEST_BEG(cxon::JSON<>)
         W_TEST(QS("\x8f"), '\x8f');
         R_TEST('\xff', QS("\\u00ff")); // invalid utf-8
         W_TEST(QS("\xff"), '\xff'); // invalid utf-8
-        R_TEST('\0', QS("\xff"), cxon::read_error::character_invalid, 1); // invalid utf-8
-        R_TEST('\0', QS("\\z"), cxon::read_error::escape_invalid, 1);
-        R_TEST('\0', QS("\\u1111"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\xff"), chio::read_error::character_invalid, 1); // invalid utf-8
+        R_TEST('\0', QS("\\z"), chio::read_error::escape_invalid, 1);
+        R_TEST('\0', QS("\\u1111"), chio::read_error::character_invalid, 1);
     // char16_t
         R_TEST(u'a', QS("a"));
         W_TEST(QS("a"), u'a');
@@ -261,25 +261,25 @@ TEST_BEG(cxon::JSON<>)
         W_TEST(QS("\xCE\xB1"), u'\x3B1');
         R_TEST(u'\xFFFF', QS("\xEF\xBF\xBF"));
         W_TEST(QS("\xEF\xBF\xBF"), u'\xFFFF');
-        R_TEST(u'\0', QS("\xFF"), cxon::read_error::character_invalid, 1);
-        R_TEST(u'\0', QS("\xF0\x90\x80\x80"), cxon::read_error::character_invalid, 1);
+        R_TEST(u'\0', QS("\xFF"), chio::read_error::character_invalid, 1);
+        R_TEST(u'\0', QS("\xF0\x90\x80\x80"), chio::read_error::character_invalid, 1);
     // char32_t
         R_TEST(U'a', QS("a"));
-        R_TEST(U'\0', QS("\x80"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\x80"), chio::read_error::character_invalid, 1);
         W_TEST(QS("a"), U'a');
         R_TEST(U'\x3B1', QS("\xCE\xB1"));
-        R_TEST(U'\0', QS("\xCE"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xCE"), chio::read_error::character_invalid, 1);
         W_TEST(QS("\xCE\xB1"), U'\x3B1');
         R_TEST(U'\x389A', QS("\xE3\xA2\x9A"));
-        R_TEST(U'\0', QS("\xE3\xA2"), cxon::read_error::character_invalid, 1);
-        R_TEST(U'\0', QS("\xE3"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xE3\xA2"), chio::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xE3"), chio::read_error::character_invalid, 1);
         W_TEST(QS("\xE3\xA2\x9A"), U'\x389A');
         R_TEST(U'\x28440', QS("\xF0\xA8\x91\x80"));
-        R_TEST(U'\0', QS("\\udbff\\ue000"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(U'\0', QS("\\udbff\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(U'\0', QS("\xF0\xA8\x91"), cxon::read_error::character_invalid, 1);
-        R_TEST(U'\0', QS("\xF0\xA8"), cxon::read_error::character_invalid, 1);
-        R_TEST(U'\0', QS("\xF0"), cxon::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\\udbff\\ue000"), chio::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(U'\0', QS("\\udbff\\udbff"), chio::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST(U'\0', QS("\xF0\xA8\x91"), chio::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xF0\xA8"), chio::read_error::character_invalid, 1);
+        R_TEST(U'\0', QS("\xF0"), chio::read_error::character_invalid, 1);
         W_TEST(QS("\xF0\xA8\x91\x80"), U'\x28440');
         W_TEST(QS(""), U'\x200000');
     // wchar_t
@@ -292,8 +292,8 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("0", (signed char)0);
         R_TEST(tmax<signed char>(), smax<signed char>());
         W_TEST(smax<signed char>(), tmax<signed char>());
-        R_TEST(tmin<signed char>(), omin<signed char>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<signed char>(), omax<signed char>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<signed char>(), omin<signed char>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<signed char>(), omax<signed char>(), chio::read_error::integral_invalid, 0);
     // unsigned char
         R_TEST(tmin<unsigned char>(), smin<unsigned char>());
         W_TEST(smin<unsigned char>(), tmin<unsigned char>());
@@ -301,8 +301,8 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("127", (unsigned char)0x7F);
         R_TEST(tmax<unsigned char>(), smax<unsigned char>());
         W_TEST(smax<unsigned char>(), tmax<unsigned char>());
-        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned char>(), omax<unsigned char>(), chio::read_error::integral_invalid, 0);
     // short
         R_TEST(tmin<short>(), smin<short>());
         W_TEST(smin<short>(), tmin<short>());
@@ -310,8 +310,8 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("0", (short)0);
         R_TEST(tmax<short>(), smax<short>());
         W_TEST(smax<short>(), tmax<short>());
-        R_TEST(tmin<short>(), omin<short>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<short>(), omax<short>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<short>(), omin<short>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<short>(), omax<short>(), chio::read_error::integral_invalid, 0);
     // unsigned short
         R_TEST(tmin<unsigned short>(), smin<unsigned short>());
         W_TEST(smin<unsigned short>(), tmin<unsigned short>());
@@ -319,8 +319,8 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("255", (unsigned short)0xFF);
         R_TEST(tmax<unsigned short>(), smax<unsigned short>());
         W_TEST(smax<unsigned short>(), tmax<unsigned short>());
-        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned short>(), omax<unsigned short>(), chio::read_error::integral_invalid, 0);
     // int
         R_TEST(tmin<int>(), smin<int>());
         W_TEST(smin<int>(), tmin<int>());
@@ -328,8 +328,8 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("0", (int)0);
         R_TEST(tmax<int>(), smax<int>());
         W_TEST(smax<int>(), tmax<int>());
-        R_TEST(tmin<int>(), omin<int>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<int>(), omax<int>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<int>(), omin<int>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<int>(), omax<int>(), chio::read_error::integral_invalid, 0);
     // unsigned int
         R_TEST(tmin<unsigned int>(), smin<unsigned int>());
         W_TEST(smin<unsigned int>(), tmin<unsigned int>());
@@ -337,7 +337,7 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("65535", (unsigned int)0xFFFF);
         R_TEST(tmax<unsigned int>(), smax<unsigned int>());
         W_TEST(smax<unsigned int>(), tmax<unsigned int>());
-        R_TEST(tmax<unsigned int>(), omax<unsigned int>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned int>(), omax<unsigned int>(), chio::read_error::integral_invalid, 0);
     // long
         R_TEST(tmin<long>(), smin<long>());
         W_TEST(smin<long>(), tmin<long>());
@@ -345,8 +345,8 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("0", (long)0);
         R_TEST(tmax<long>(), smax<long>());
         W_TEST(smax<long>(), tmax<long>());
-        R_TEST(tmin<long>(), omin<long>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<long>(), omax<long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<long>(), omin<long>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<long>(), omax<long>(), chio::read_error::integral_invalid, 0);
     // unsigned long
         R_TEST(tmin<unsigned long>(), smin<unsigned long>());
         W_TEST(smin<unsigned long>(), tmin<unsigned long>());
@@ -354,7 +354,7 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("65535", (unsigned long)0xFFFF);
         R_TEST(tmax<unsigned long>(), smax<unsigned long>());
         W_TEST(smax<unsigned long>(), tmax<unsigned long>());
-        R_TEST(tmax<unsigned long>(), omax<unsigned long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned long>(), omax<unsigned long>(), chio::read_error::integral_invalid, 0);
     // long long
         R_TEST(tmin<long long>(), smin<long long>());
         W_TEST(smin<long long>(), tmin<long long>());
@@ -362,8 +362,8 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("0", (long long)0);
         R_TEST(tmax<long long>(), smax<long long>());
         W_TEST(smax<long long>(), tmax<long long>());
-        R_TEST(tmin<long long>(), omin<long long>(), cxon::read_error::integral_invalid, 0);
-        R_TEST(tmax<long long>(), omax<long long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmin<long long>(), omin<long long>(), chio::read_error::integral_invalid, 0);
+        R_TEST(tmax<long long>(), omax<long long>(), chio::read_error::integral_invalid, 0);
     // unsigned long long
         R_TEST(tmin<unsigned long long>(), smin<unsigned long long>());
         W_TEST(smin<unsigned long long>(), tmin<unsigned long long>());
@@ -371,7 +371,7 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("4294967295", (unsigned long long)0xFFFFFFFF);
         R_TEST(tmax<unsigned long long>(), smax<unsigned long long>());
         W_TEST(smax<unsigned long long>(), tmax<unsigned long long>());
-        R_TEST(tmax<unsigned long long>(), omax<unsigned long long>(), cxon::read_error::integral_invalid, 0);
+        R_TEST(tmax<unsigned long long>(), omax<unsigned long long>(), chio::read_error::integral_invalid, 0);
     // float
         R_TEST(tmin<float>(), smin<float>());
         W_TEST(smin<float>(), tmin<float>());
@@ -396,9 +396,9 @@ TEST_BEG(cxon::JSON<>)
     // nullptr_t
         R_TEST(nullptr, "null");
         W_TEST("null", nullptr);
-        R_TEST(nullptr, "", cxon::read_error::unexpected, 0);
-        R_TEST(nullptr, "nu", cxon::read_error::unexpected, 0);
-        R_TEST(nullptr, "a", cxon::read_error::unexpected, 0);
+        R_TEST(nullptr, "", chio::read_error::unexpected, 0);
+        R_TEST(nullptr, "nu", chio::read_error::unexpected, 0);
+        R_TEST(nullptr, "a", chio::read_error::unexpected, 0);
 TEST_END()
 
 
@@ -420,16 +420,16 @@ namespace test {
 TEST_BEG(cxon::CXON<>) // special numbers
     using namespace test;
     // float
-        R_TEST( -inf<float>(), omin<float>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST( -inf<float>(), omin<float>(), chio::read_error::floating_point_invalid, 0);
         R_TEST( -inf<float>(), "-inf");
         W_TEST("-inf", -inf<float>());
-        R_TEST(  inf<float>(), omax<float>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<float>(), omax<float>(), chio::read_error::floating_point_invalid, 0);
         R_TEST(  inf<float>(), "inf");
-        R_TEST(  inf<float>(), "+inf", cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<float>(), "+inf", chio::read_error::floating_point_invalid, 0);
         W_TEST( "inf",  inf<float>());
         R_TEST(  nan<float>(), "nan");
-        R_TEST(  nan<float>(), "+nan", cxon::read_error::floating_point_invalid, 0); 
-        R_TEST(  nan<float>(), "-nan"/*, cxon::read_error::floating_point_invalid, 0*/); // TODO: disallow?
+        R_TEST(  nan<float>(), "+nan", chio::read_error::floating_point_invalid, 0); 
+        R_TEST(  nan<float>(), "-nan"/*, chio::read_error::floating_point_invalid, 0*/); // TODO: disallow?
         W_TEST( "nan", nan<float>());
         W_TEST( "nan", bfp<float>(0x7fffffff));
         W_TEST( "nan", bfp<float>(0x7f80ffff));
@@ -440,16 +440,16 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", float(0.0 * -inf<float>()));
         W_TEST( "nan", inf<float>() + -inf<float>());
     // double
-        R_TEST( -inf<double>(), omin<double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST( -inf<double>(), omin<double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST( -inf<double>(), "-inf");
         W_TEST("-inf", -inf<double>());
-        R_TEST(  inf<double>(), omax<double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<double>(), omax<double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST(  inf<double>(), "inf");
-        R_TEST(  inf<double>(), "+inf", cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<double>(), "+inf", chio::read_error::floating_point_invalid, 0);
         W_TEST( "inf",  inf<double>());
         R_TEST(  nan<double>(), "nan");
-        R_TEST(  nan<double>(), "+nan", cxon::read_error::floating_point_invalid, 0); 
-        R_TEST(  nan<double>(), "-nan"/*, cxon::read_error::floating_point_invalid, 0*/); // TODO: disallow?
+        R_TEST(  nan<double>(), "+nan", chio::read_error::floating_point_invalid, 0); 
+        R_TEST(  nan<double>(), "-nan"/*, chio::read_error::floating_point_invalid, 0*/); // TODO: disallow?
         W_TEST( "nan", nan<double>());
         W_TEST( "nan", bfp<double>(0x7fffffffffffffff));
         W_TEST( "nan", bfp<double>(0x7ff0ffffffffffff));
@@ -460,16 +460,16 @@ TEST_BEG(cxon::CXON<>) // special numbers
         W_TEST( "nan", 0.0 * -inf<double>());
         W_TEST( "nan", inf<double>() + -inf<double>());
     // long double
-        R_TEST( -inf<long double>(), omin<long double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST( -inf<long double>(), omin<long double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST( -inf<long double>(), "-inf");
         W_TEST("-inf", -inf<long double>());
-        R_TEST(  inf<long double>(), omax<long double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<long double>(), omax<long double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST(  inf<long double>(), "inf");
-        R_TEST(  inf<long double>(), "+inf", cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<long double>(), "+inf", chio::read_error::floating_point_invalid, 0);
         W_TEST( "inf",  inf<long double>());
         R_TEST(  nan<long double>(), "nan");
-        R_TEST(  nan<long double>(), "+nan", cxon::read_error::floating_point_invalid, 0); 
-        R_TEST(  nan<long double>(), "-nan"/*, cxon::read_error::floating_point_invalid, 0*/); // TODO: disallow?
+        R_TEST(  nan<long double>(), "+nan", chio::read_error::floating_point_invalid, 0); 
+        R_TEST(  nan<long double>(), "-nan"/*, chio::read_error::floating_point_invalid, 0*/); // TODO: disallow?
         W_TEST( "nan", nan<long double>());
         //W_TEST( "nan", bfp<long double>(0x));
         //W_TEST( "nan", bfp<long double>(0x));
@@ -484,16 +484,16 @@ TEST_END()
 TEST_BEG(cxon::JSON<>) // special numbers
     using namespace test;
     // float
-        R_TEST( -inf<float>(), omin<float>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST( -inf<float>(), omin<float>(), chio::read_error::floating_point_invalid, 0);
         R_TEST( -inf<float>(), QS("-inf"));
         W_TEST(QS("-inf"), -inf<float>());
-        R_TEST(  inf<float>(), omax<float>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<float>(), omax<float>(), chio::read_error::floating_point_invalid, 0);
         R_TEST(  inf<float>(), QS("inf"));
-        R_TEST(  inf<float>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<float>(), QS("+inf"), chio::read_error::floating_point_invalid, 0);
         W_TEST(QS("inf"),  inf<float>());
         R_TEST(  nan<float>(), QS("nan"));
-        R_TEST(  nan<float>(), QS("+nan"), cxon::read_error::floating_point_invalid, 0); 
-        R_TEST(  nan<float>(), QS("-nan")/*, cxon::read_error::floating_point_invalid, 0*/); // TODO: disallow?
+        R_TEST(  nan<float>(), QS("+nan"), chio::read_error::floating_point_invalid, 0); 
+        R_TEST(  nan<float>(), QS("-nan")/*, chio::read_error::floating_point_invalid, 0*/); // TODO: disallow?
         W_TEST(QS("nan"), nan<float>());
         W_TEST(QS("nan"), bfp<float>(0x7fffffff));
         W_TEST(QS("nan"), bfp<float>(0x7f80ffff));
@@ -504,16 +504,16 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), 0.0 * -inf<float>());
         W_TEST(QS("nan"), inf<float>() + -inf<float>());
     // double
-        R_TEST( -inf<double>(), omin<double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST( -inf<double>(), omin<double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST( -inf<double>(), QS("-inf"));
         W_TEST(QS("-inf"), -inf<double>());
-        R_TEST(  inf<double>(), omax<double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<double>(), omax<double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST(  inf<double>(), QS("inf"));
-        R_TEST(  inf<double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<double>(), QS("+inf"), chio::read_error::floating_point_invalid, 0);
         W_TEST(QS("inf"),  inf<double>());
         R_TEST(  nan<double>(), QS("nan"));
-        R_TEST(  nan<double>(), QS("+nan"), cxon::read_error::floating_point_invalid, 0); 
-        R_TEST(  nan<double>(), QS("-nan")/*, cxon::read_error::floating_point_invalid, 0*/); // TODO: disallow?
+        R_TEST(  nan<double>(), QS("+nan"), chio::read_error::floating_point_invalid, 0); 
+        R_TEST(  nan<double>(), QS("-nan")/*, chio::read_error::floating_point_invalid, 0*/); // TODO: disallow?
         W_TEST(QS("nan"), nan<double>());
         W_TEST(QS("nan"), bfp<double>(0x7fffffffffffffff));
         W_TEST(QS("nan"), bfp<double>(0x7ff0ffffffffffff));
@@ -524,16 +524,16 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), 0.0 * -inf<double>());
         W_TEST(QS("nan"), inf<double>() + -inf<double>());
     // long double
-        R_TEST( -inf<long double>(), omin<long double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST( -inf<long double>(), omin<long double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST( -inf<long double>(), QS("-inf"));
         W_TEST(QS("-inf"), -inf<long double>());
-        R_TEST(  inf<long double>(), omax<long double>(), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<long double>(), omax<long double>(), chio::read_error::floating_point_invalid, 0);
         R_TEST(  inf<long double>(), QS("inf"));
-        R_TEST(  inf<long double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<long double>(), QS("+inf"), chio::read_error::floating_point_invalid, 0);
         W_TEST(QS("inf"),  inf<long double>());
         R_TEST(  nan<long double>(), QS("nan"));
-        R_TEST(  nan<long double>(), QS("+nan"), cxon::read_error::floating_point_invalid, 0); 
-        R_TEST(  nan<long double>(), QS("-nan")/*, cxon::read_error::floating_point_invalid, 0*/); // TODO: disallow?
+        R_TEST(  nan<long double>(), QS("+nan"), chio::read_error::floating_point_invalid, 0); 
+        R_TEST(  nan<long double>(), QS("-nan")/*, chio::read_error::floating_point_invalid, 0*/); // TODO: disallow?
         W_TEST(QS("nan"), nan<long double>());
         //W_TEST( QS("nan"), bfp<long double>(0x));
         //W_TEST( QS("nan"), bfp<long double>(0x));
@@ -556,7 +556,7 @@ TEST_BEG(cxon::CXON<test::input_iterator_traits>) // special numbers
     W_TEST("-inf", -inf<double>());
     R_TEST(inf<double>(), "inf");
     W_TEST("inf", inf<double>());
-    R_TEST(inf<double>(), "+inf", cxon::read_error::floating_point_invalid, 0);
+    R_TEST(inf<double>(), "+inf", chio::read_error::floating_point_invalid, 0);
     R_TEST(nan<double>(), "nan");
     W_TEST("nan", nan<double>());
 TEST_END()
@@ -573,7 +573,7 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>) // special numbers
     W_TEST(QS("-inf"), -inf<double>());
     R_TEST(inf<double>(), QS("inf"));
     W_TEST(QS("inf"), inf<double>());
-    R_TEST(inf<double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 1);
+    R_TEST(inf<double>(), QS("+inf"), chio::read_error::floating_point_invalid, 1);
     R_TEST(nan<double>(), QS("nan"));
     W_TEST(QS("nan"), nan<double>());
     R_TEST(nan<double>(), QS("-nan"));
@@ -593,14 +593,14 @@ TEST_BEG(cxon::CXON<test::input_iterator_traits>) // cxon number validation
         R_TEST((double)1000, "1000000E-3");
         R_TEST((double)1000, "1e+3");
         R_TEST((double)1000, "1e+03");
-        R_TEST((double)0, "", cxon::read_error::unexpected, 0);
-        R_TEST((double)0, "+0", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, ".", cxon::read_error::floating_point_invalid, 1);
-        R_TEST((double)0, "-", cxon::read_error::floating_point_invalid, 1);
-        R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 2);
-        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::overflow, 64); // cxon::num_len_max
+        R_TEST((double)0, "", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "+0", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, ".", chio::read_error::floating_point_invalid, 1);
+        R_TEST((double)0, "-", chio::read_error::floating_point_invalid, 1);
+        R_TEST((double)0, "+", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "e", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "0e", chio::read_error::floating_point_invalid, 2);
+        R_TEST((double)0, std::string(64 + 1, '1'), chio::read_error::overflow, 64); // cxon::num_len_max
     // integral
         // bin
         R_TEST((signed)0, "0b0");
@@ -631,19 +631,19 @@ TEST_BEG(cxon::CXON<test::input_iterator_traits>) // cxon number validation
         R_TEST((unsigned)0, "0x0");
         R_TEST((unsigned)16, "0x10");
         // invalid
-        R_TEST((signed)0, "", cxon::read_error::unexpected, 0);
-        R_TEST((signed)0, "+0", cxon::read_error::integral_invalid, 0);
-        R_TEST((unsigned)0, "-0", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, ".", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "-", cxon::read_error::integral_invalid, 1);
-        R_TEST((signed)0, "+", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "e", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "0b", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, "0b2", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, "08", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "0x", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, "0xg", cxon::read_error::integral_invalid, 2);
-        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::overflow, 32); // cxon::num_len_max
+        R_TEST((signed)0, "", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "+0", chio::read_error::integral_invalid, 0);
+        R_TEST((unsigned)0, "-0", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, ".", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "-", chio::read_error::integral_invalid, 1);
+        R_TEST((signed)0, "+", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "e", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "0b", chio::read_error::integral_invalid, 2);
+        R_TEST((signed)0, "0b2", chio::read_error::integral_invalid, 2);
+        R_TEST((signed)0, "08", chio::read_error::ok, 1);
+        R_TEST((signed)0, "0x", chio::read_error::integral_invalid, 2);
+        R_TEST((signed)0, "0xg", chio::read_error::integral_invalid, 2);
+        R_TEST((signed)0, std::string(32 + 1, '1'), chio::read_error::overflow, 32); // cxon::num_len_max
 TEST_END()
 
 TEST_BEG(cxon::JSON<test::input_iterator_traits>) // json number validation
@@ -656,34 +656,34 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>) // json number validation
         R_TEST((double)1000, "1e+3");
         R_TEST((double)1000, "1e+03");
         R_TEST((double)0, "0e+03");
-        R_TEST((double)0, "", cxon::read_error::unexpected, 0);
-        R_TEST((double)0, "+0", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "01", cxon::read_error::ok, 1);
-        R_TEST((double)0, "0.", cxon::read_error::floating_point_invalid, 2);
-        R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 2);
-        R_TEST((double)0, ".0", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, ".", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "-", cxon::read_error::floating_point_invalid, 1);
-        R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, std::string(64 + 1, '1'), cxon::read_error::overflow, 64); // cxon::num_len_max
+        R_TEST((double)0, "", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "+0", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "01", chio::read_error::ok, 1);
+        R_TEST((double)0, "0.", chio::read_error::floating_point_invalid, 2);
+        R_TEST((double)0, "0e", chio::read_error::floating_point_invalid, 2);
+        R_TEST((double)0, ".0", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, ".", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "-", chio::read_error::floating_point_invalid, 1);
+        R_TEST((double)0, "+", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "e", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, std::string(64 + 1, '1'), chio::read_error::overflow, 64); // cxon::num_len_max
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
         R_TEST((signed)10, "10");
         R_TEST((signed)-10, "-10");
-        R_TEST((signed)0, "", cxon::read_error::unexpected, 0);
-        R_TEST((signed)0, "+0", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, ".", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "-", cxon::read_error::integral_invalid, 1);
-        R_TEST((signed)0, "+", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "e", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "0b", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "0b2", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "08", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "0x", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "0xg", cxon::read_error::ok, 1);
-        R_TEST((signed)0, std::string(32 + 1, '1'), cxon::read_error::overflow, 32); // cxon::num_len_max
+        R_TEST((signed)0, "", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "+0", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, ".", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "-", chio::read_error::integral_invalid, 1);
+        R_TEST((signed)0, "+", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "e", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "0b", chio::read_error::ok, 1);
+        R_TEST((signed)0, "0b2", chio::read_error::ok, 1);
+        R_TEST((signed)0, "08", chio::read_error::ok, 1);
+        R_TEST((signed)0, "0x", chio::read_error::ok, 1);
+        R_TEST((signed)0, "0xg", chio::read_error::ok, 1);
+        R_TEST((signed)0, std::string(32 + 1, '1'), chio::read_error::overflow, 32); // cxon::num_len_max
 TEST_END()
 
 namespace test {
@@ -706,20 +706,20 @@ TEST_BEG(cxon::JSON<test::strict_number_traits>) // json number validation
         R_TEST((double)1000, "1000000E-3");
         R_TEST((double)1000, "1e+3");
         R_TEST((double)1000, "1e+03");
-        R_TEST((double)0, "", cxon::read_error::unexpected, 0);
-        R_TEST((double)0, "+0", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "01", cxon::read_error::ok, 1);
-        R_TEST((double)0, "0.", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "0e", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, ".0", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, ".", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "-", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "+", cxon::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, "e", cxon::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "+0", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "01", chio::read_error::ok, 1);
+        R_TEST((double)0, "0.", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "0e", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, ".0", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, ".", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "-", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "+", chio::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "e", chio::read_error::floating_point_invalid, 0);
         using namespace test;
         R_TEST(-inf<double>(), QS("-inf"));
         R_TEST( inf<double>(), QS("inf"));
-        R_TEST( inf<double>(), QS("+inf"), cxon::read_error::floating_point_invalid, 0);
+        R_TEST( inf<double>(), QS("+inf"), chio::read_error::floating_point_invalid, 0);
         R_TEST( nan<double>(), QS("nan"));
         R_TEST( nan<double>(), QS("-nan"));
         W_TEST(QS("inf"), inf<double>());
@@ -729,17 +729,17 @@ TEST_BEG(cxon::JSON<test::strict_number_traits>) // json number validation
         R_TEST((signed)0, "0");
         R_TEST((signed)10, "10");
         R_TEST((signed)-10, "-10");
-        R_TEST((signed)0, "", cxon::read_error::unexpected, 0);
-        R_TEST((signed)0, "+0", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, ".", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "-", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "+", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "e", cxon::read_error::integral_invalid, 0);
-        R_TEST((signed)0, "0b", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "0b2", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "08", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "0x", cxon::read_error::ok, 1);
-        R_TEST((signed)0, "0xg", cxon::read_error::ok, 1);
+        R_TEST((signed)0, "", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "+0", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, ".", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "-", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "+", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "e", chio::read_error::integral_invalid, 0);
+        R_TEST((signed)0, "0b", chio::read_error::ok, 1);
+        R_TEST((signed)0, "0b2", chio::read_error::ok, 1);
+        R_TEST((signed)0, "08", chio::read_error::ok, 1);
+        R_TEST((signed)0, "0x", chio::read_error::ok, 1);
+        R_TEST((signed)0, "0xg", chio::read_error::ok, 1);
 TEST_END()
 
 
@@ -762,26 +762,26 @@ TEST_BEG(cxon::CXON<>) // cxon
         R_TEST("\077", QS("\\077"));
         R_TEST("\117", QS("\\117"));
         R_TEST("\0007", QS("\\0007")); // one more
-        R_TEST("", QS("\\ "), cxon::read_error::escape_invalid, 1); // none
-        R_TEST(std::string(), QS("\\"), cxon::read_error::unexpected, 3); // escaped string end
+        R_TEST("", QS("\\ "), chio::read_error::escape_invalid, 1); // none
+        R_TEST("\"", QS("\\"), chio::read_error::unexpected, 3); // escaped string end
         R_TEST("\x8", QS("\\x8"));
         R_TEST("\x08", QS("\\x08"));
         R_TEST("\x16", QS("\\x16"));
         R_TEST("\x3f", QS("\\x3f"));
         R_TEST("\000f", QS("\\x00f")); // one more
-        R_TEST("", QS("\\x"), cxon::read_error::escape_invalid, 1); // none
+        R_TEST("", QS("\\x"), chio::read_error::escape_invalid, 1); // none
         R_TEST("\u0008", QS("\\u0008"));
         R_TEST("\0008", QS("\\u00008")); // one more
-        R_TEST("", QS("\\u008"), cxon::read_error::escape_invalid, 1); // one less
-        R_TEST("", QS("\\u"), cxon::read_error::escape_invalid, 1); // none
+        R_TEST("", QS("\\u008"), chio::read_error::escape_invalid, 1); // one less
+        R_TEST("", QS("\\u"), chio::read_error::escape_invalid, 1); // none
         R_TEST("\U00000008", QS("\\U00000008"));
         R_TEST("\0008", QS("\\U000000008")); // one more
-        R_TEST("", QS("\\U0000008"), cxon::read_error::escape_invalid, 1); // one less
-        R_TEST("", QS("\\U"), cxon::read_error::escape_invalid, 1); // none
+        R_TEST("", QS("\\U0000008"), chio::read_error::escape_invalid, 1); // one less
+        R_TEST("", QS("\\U"), chio::read_error::escape_invalid, 1); // none
         R_TEST("\xf4\x8f\xbf\xbf", QS("\\udbff\\udfff")); // surrogate
-        R_TEST("", QS("\\udbff\\ue000"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST("", QS("\\udbff\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST("", QS("\\udbff"), cxon::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST("", QS("\\udbff\\ue000"), chio::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST("", QS("\\udbff\\udbff"), chio::read_error::surrogate_invalid, 1); // invalid surrogate
+        R_TEST("", QS("\\udbff"), chio::read_error::surrogate_invalid, 1); // invalid surrogate
         W_TEST(QS("\\1"), "\1");
         W_TEST(QS("\\2"), "\2");
         W_TEST(QS("\\3"), "\3");
@@ -832,7 +832,7 @@ TEST_BEG(cxon::JSON<>) // json
         W_TEST(QS("\x8f"), '\x8f');
         R_TEST('\xff', QS("\\u00ff")); // invalid utf-8
         W_TEST(QS("\xff"), '\xff'); // invalid utf-8
-        R_TEST('\0', QS("\\u1111"), cxon::read_error::character_invalid, 1);
+        R_TEST('\0', QS("\\u1111"), chio::read_error::character_invalid, 1);
     // escapes
         R_TEST("\"", QS("\\\""));
         R_TEST("\\", QS("\\\\"));
@@ -844,8 +844,8 @@ TEST_BEG(cxon::JSON<>) // json
         R_TEST("\t", QS("\\t"));
         R_TEST("\u0008", QS("\\u0008"));
         R_TEST("\0008", QS("\\u00008")); // one more
-        R_TEST("", QS("\\u008"), cxon::read_error::escape_invalid, 1); // one less
-        R_TEST("", QS("\\u"), cxon::read_error::escape_invalid, 1); // none
+        R_TEST("", QS("\\u008"), chio::read_error::escape_invalid, 1); // one less
+        R_TEST("", QS("\\u"), chio::read_error::escape_invalid, 1); // none
         W_TEST(QS("\\u0001"), "\1");
         W_TEST(QS("\\u0002"), "\2");
         W_TEST(QS("\\u0003"), "\3");

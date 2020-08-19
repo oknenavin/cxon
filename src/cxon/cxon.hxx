@@ -26,14 +26,14 @@ namespace cxon { // interface
 
     // format selectors
 
-    template <typename T = struct cxon_format_traits>
-        struct CXON : T { using traits = T; };
+    template <typename T>
+        struct format_selector : T { using traits = T; };
 
-    template <typename T = struct json_format_traits>
-        struct JSON : T { using traits = T; };
+    template <typename X, template <typename> class S>
+        using is_same_format = std::is_same<X, S<typename X::traits>>;
 
     template <typename X, template <typename> class S, typename R = void>
-        using enable_for_t = enable_if_t<std::is_same<X, S<typename X::traits>>::value, R>;
+        using enable_for_t = enable_if_t<is_same_format<X, S>::value, R>;
 
     // read
 
@@ -44,9 +44,9 @@ namespace cxon { // interface
             operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X = JSON<>, typename T, typename InIt, typename ...CxPs>
+    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename InIt, typename ...CxPs>
         inline auto     from_bytes(T& t, InIt b, InIt e, CxPs... p)       -> from_bytes_result<InIt>;
-    template <typename X = JSON<>, typename T, typename Iterable, typename ...CxPs>
+    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename Iterable, typename ...CxPs>
         inline auto     from_bytes(T& t, const Iterable& i, CxPs... p)    -> from_bytes_result<decltype(std::begin(i))>;
 
     // write
@@ -58,36 +58,14 @@ namespace cxon { // interface
             operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X = JSON<>, typename T, typename OutIt, typename ...CxPs>
+    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename OutIt, typename ...CxPs>
         inline auto     to_bytes(OutIt o, const T& t, CxPs... p)          -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
-    template <typename X = JSON<>, typename T, typename Insertable, typename ...CxPs>
+    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename Insertable, typename ...CxPs>
         inline auto     to_bytes(Insertable& i, const T& t, CxPs... p)    -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
-    template <typename X = JSON<>, typename T, typename FwIt, typename ...CxPs>
+    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename FwIt, typename ...CxPs>
         inline auto     to_bytes(FwIt b, FwIt e, const T& t, CxPs... p)   -> to_bytes_result<FwIt>;
 
 }   // cxon interface
-
-namespace cxon { // errors
-
-    enum class read_error : int {
-        ok,                     // no error
-        unexpected,             // unexpected input
-        character_invalid,      // character invalid
-        integral_invalid,       // integral invalid or out of range
-        floating_point_invalid, // floating-point invalid
-        boolean_invalid,        // boolean invalid
-        escape_invalid,         // invalid escape sequence
-        surrogate_invalid,      // invalid surrogate
-        overflow                // buffer overflow
-    };
-
-    enum class write_error : int {
-        ok,                     // no error
-        output_failure,         // output cannot be written
-        argument_invalid        // argument invalid
-    };
-
-}   // cxon errors
 
 namespace cxon { // contexts
 
@@ -190,58 +168,6 @@ namespace cxon { // implementation bridge
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { // format traits
-
-    struct format_traits {
-        struct map {
-            static constexpr char                   beg             = '{';
-            static constexpr char                   end             = '}';
-            static constexpr char                   div             = ':';
-            static constexpr char                   sep             = ',';
-            static constexpr bool                   unquoted_keys   = true;
-        };
-        struct list {
-            static constexpr char                   beg             = '{';
-            static constexpr char                   end             = '}';
-            static constexpr char                   sep             = ',';
-        };
-        struct string {
-            static constexpr char                   beg             = '"';
-            static constexpr char                   end             = '"';
-        };
-        struct number {
-            static constexpr bool                   strict          = false;
-        };
-        struct id {
-            static constexpr char const*            nil             = "null";
-            static constexpr char const*            pos             = "true";
-            static constexpr char const*            neg             = "false";
-        };
-    };
-    static_assert(format_traits::string::beg == format_traits::string::end && (format_traits::string::beg == '"' || format_traits::string::beg == '\''), "not supported");
-
-    struct cxon_format_traits : format_traits {};
-
-    struct json_format_traits : format_traits {
-        struct map : format_traits::map {
-            static constexpr bool                   unquoted_keys   = false;
-        };
-        struct list : format_traits::list {
-            static constexpr char                   beg             = '[';
-            static constexpr char                   end             = ']';
-        };
-        static constexpr bool                       strict_js       = false;
-    };
-
-    // access
-
-    template <typename X>
-        using map = typename X::map;
-    template <typename X>
-        using list = typename X::list;
-
-}   // cxon format traits
-
 namespace cxon { // interface implementation
 
 #   if defined(__GNUC__) || defined(__clang__)
@@ -258,7 +184,6 @@ namespace cxon { // interface implementation
 
         template <typename X, typename T, typename II, typename ...CxPs>
             CXON_FORCE_INLINE auto from_bytes(T& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
-                    if (b == e) return { read_error::unexpected, b };
                 read_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     bool const r = read_value<X>(t, b, e, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, b };
@@ -326,64 +251,5 @@ namespace cxon { // interface implementation
 #   undef CXON_FORCE_INLINE
 
 }   // cxon interface implementation
-
-namespace cxon { // errors
-
-    struct read_error_category : std::error_category {
-        const char* name() const noexcept override {
-            return "cxon/read";
-        }
-        std::string message(int ev) const override {
-            switch (static_cast<read_error>(ev)) {
-                case read_error::ok:                        return "no error";
-                case read_error::unexpected:                return "unexpected input";
-                case read_error::character_invalid:         return "invalid character";
-                case read_error::integral_invalid:          return "invalid integral or value out of range";
-                case read_error::floating_point_invalid:    return "invalid floating point";
-                case read_error::boolean_invalid:           return "invalid boolean";
-                case read_error::escape_invalid:            return "invalid escape sequence";
-                case read_error::surrogate_invalid:         return "invalid surrogate";
-                case read_error::overflow:                  return "buffer overflow";
-                default:                                    return "unknown error";
-            }
-        }
-        static const read_error_category& value() {
-            static read_error_category const v{};
-            return v;
-        }
-    };
-
-    inline std::error_condition make_error_condition(read_error e) noexcept {
-        return { static_cast<int>(e), read_error_category::value() };
-    }
-
-    struct write_error_category : std::error_category {
-        const char* name() const noexcept override {
-            return "cxon/write";
-        }
-        std::string message(int ev) const override {
-            switch (static_cast<write_error>(ev)) {
-                case write_error::ok:               return "no error";
-                case write_error::output_failure:   return "output cannot be written";
-                case write_error::argument_invalid: return "invalid argument";
-                default:                            return "unknown error";
-            }
-        }
-        static const write_error_category& value() {
-            static write_error_category const v{};
-            return v;
-        }
-    };
-
-    inline std::error_condition make_error_condition(write_error e) noexcept {
-        return { static_cast<int>(e), write_error_category::value() };
-    }
-
-}   // cxon errors
-
-namespace std { // cxon errors
-    template <> struct is_error_condition_enum<cxon::read_error> : true_type {};
-    template <> struct is_error_condition_enum<cxon::write_error> : true_type {};
-}   // std cxon errors
 
 #endif // CXON_CXON_HXX_
