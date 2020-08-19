@@ -19,16 +19,16 @@ namespace cxon {
         struct read<X, std::basic_string<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    return strs::basic_string_read<X>(t, i, e, cx);
+                    return chio::strs::basic_string_read<X>(t, i, e, cx);
                 }
         };
     template <typename X, template <typename> class S, typename T, typename ...R>
-        struct read<S<strs::UQKEY<X>>, std::basic_string<T, R...>> {
+        struct read<S<chio::strs::UQKEY<X>>, std::basic_string<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
                     chio::consume<S<X>>(i, e);
-                    return (chio::peek(i, e) == S<X>::string::beg && strs::basic_string_read<S<X>>(t, i, e, cx)) ||
-                            strs::basic_string_read<S<strs::UQKEY<X>>>(t, i, e, cx)
+                    return (chio::peek(i, e) == S<X>::string::beg && chio::strs::basic_string_read<S<X>>(t, i, e, cx)) ||
+                            chio::strs::basic_string_read<S<chio::strs::UQKEY<X>>>(t, i, e, cx)
                     ;
                 }
         };
@@ -37,14 +37,14 @@ namespace cxon {
         struct write<X, std::basic_string<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return strs::pointer_write<X>(o, t.data(), t.size(), cx);
+                    return chio::strs::pointer_write<X>(o, t.data(), t.size(), cx);
                 }
         };
     template <typename X, template <typename> class S, typename T, typename ...R>
-        struct write<S<strs::UQKEY<X>>, std::basic_string<T, R...>> {
+        struct write<S<chio::strs::UQKEY<X>>, std::basic_string<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return strs::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
+                    return chio::strs::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
                 }
         };
 

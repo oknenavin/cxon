@@ -23,7 +23,7 @@ namespace cxon { namespace chio { namespace bits { // key quoting
 
     template <typename S> struct UQKEY : S { using X = S; };
 
-}}} // cxon::bits key quoting
+}}} // cxon::chio::bits key quoting
 
 namespace cxon { namespace chio { namespace bits { // key read/write helpers
 

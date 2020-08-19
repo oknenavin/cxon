@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CORE_UTILITY_HXX_
-#define CXON_CORE_UTILITY_HXX_
+#ifndef CXON_UTILITY_HXX_
+#define CXON_UTILITY_HXX_
 
 #include <type_traits>
 #include <utility>
@@ -283,4 +283,4 @@ namespace cxon { namespace prms {
 
 }}
 
-#endif // CXON_CORE_UTILITY_HXX_
+#endif // CXON_UTILITY_HXX_

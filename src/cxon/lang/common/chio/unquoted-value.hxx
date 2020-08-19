@@ -9,13 +9,13 @@
 #include "chio.hxx"
 #include "bits/unquoted-value.hxx"
 
-namespace cxon { namespace unquoted { // unquoted value
+namespace cxon { namespace chio { namespace unquoted { // unquoted value
 
     template <typename X, typename T, size_t N, typename II, typename Cx>
         inline bool read_value(T (&t)[N], II& i, II e, Cx& cx) {
             II const o = i;
                 if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
-                    return cx.ec == read_error::overflow ? (chio::rewind(i, o), false) : cx|read_error::unexpected;
+                    return cx.ec == read_error::overflow ? (rewind(i, o), false) : cx|read_error::unexpected;
                 }
             return true;
         }
@@ -25,6 +25,6 @@ namespace cxon { namespace unquoted { // unquoted value
             return bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) || (cx|read_error::unexpected);
         }
 
-}}  // cxon::unquoted value
+}}} // cxon::chio::unquoted value
 
 #endif // CXON_CHIO_UNQUOTED_VALUE_HXX_

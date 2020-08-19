@@ -14,7 +14,7 @@ namespace cxon {
         struct read<X, std::stack<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::stack<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
+                    return chio::container::read<X, lstacc<X>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace();
                             return read_value<X>(t.top(), i, e, cx);
@@ -31,7 +31,7 @@ namespace cxon {
             template <typename O, typename Cx>
                 static bool value(O& o, const A& t, Cx& cx) {
                     auto const& c =  bits::adaptor<A>::container(t);
-                    return chio::container::write<X, list<X>>(o, c.rbegin(), c.rend(), cx);
+                    return chio::container::write<X, lstacc<X>>(o, c.rbegin(), c.rend(), cx);
                 }
         };
 

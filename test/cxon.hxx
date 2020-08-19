@@ -41,7 +41,8 @@ struct suite {
 #define TEST_BEG_(...)\
     static struct : suite {\
         using XXON = __VA_ARGS__;\
-        void test() const override {
+        void test() const override {\
+        using namespace cxon;
 #define TEST_END_()\
         }\
     }   TEST_CAT(TEST_, __COUNTER__);
@@ -62,6 +63,8 @@ struct suite {
 
 namespace test {
 
+    using namespace cxon;
+
     template <typename I>
         struct force_input_iterator;
 
@@ -75,20 +78,18 @@ namespace test {
     template <typename X, typename T>
         static bool verify_read(const T& ref, const std::string& sbj);
     template <typename X, typename T>
-        static bool verify_read(const T& ref, const std::string& sbj, cxon::read_error err, int pos = -1);
+        static bool verify_read(const T& ref, const std::string& sbj, chio::read_error err, int pos = -1);
 
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj);
     template <typename X, typename T>
-        static bool verify_write(const std::string& ref, const T& sbj, cxon::write_error err);
+        static bool verify_write(const std::string& ref, const T& sbj, chio::write_error err);
 
 }   // test
 
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace test {
-
-    using namespace cxon;
 
     template <typename X, typename T>
         inline std::string to_string(const T& t) {
@@ -238,7 +239,7 @@ namespace test {
             return r && r.end == sbj.end() && match<T>::values(res, ref);
         }
     template <typename X, typename T>
-        static bool verify_read(const T&, const std::string& sbj, cxon::read_error err, int pos) {
+        static bool verify_read(const T&, const std::string& sbj, chio::read_error err, int pos) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
             return r.ec.value() == (int)err && (pos == -1 || std::distance(sbj.begin(), r.end) == pos);
@@ -251,7 +252,7 @@ namespace test {
             return r && ref == res;
         }
     template <typename X, typename T>
-        static bool verify_write(const std::string&, const T& sbj, cxon::write_error err) {
+        static bool verify_write(const std::string&, const T& sbj, chio::write_error err) {
             std::string res;
                 auto const r = cxon::to_bytes<X>(res, sbj);
             return r.ec.value() == (int)err;

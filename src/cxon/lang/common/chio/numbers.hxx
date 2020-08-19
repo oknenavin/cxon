@@ -3,16 +3,15 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_NUMBERS_HXX_
-#define CXON_CHARIO_NUMBERS_HXX_
+#ifndef CXON_CHIO_NUMBERS_HXX_
+#define CXON_CHIO_NUMBERS_HXX_
 
 #include "chio.hxx"
+#include "chcls.hxx"
 #include "charconv.hxx"
 #include <cmath> // isfinite, ...
 
-namespace cxon { namespace nums { // number conversion: read
-
-    using namespace cxon::chcls;
+namespace cxon { namespace chio { namespace nums { // number conversion: read
 
     template <typename T>
         inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool> {
@@ -23,7 +22,7 @@ namespace cxon { namespace nums { // number conversion: read
             return false;
         }
 
-#   define CXON_NEXT() { if (f == l) return -1; *f = c, c = chio::next(i, e), ++f; }
+#   define CXON_NEXT() { if (f == l) return -1; *f = c, c = next(i, e), ++f; }
 
         template <typename X, typename T>
             struct number_consumer {
@@ -34,7 +33,7 @@ namespace cxon { namespace nums { // number conversion: read
                     {
                         CXON_ASSERT(f && f < l, "unexpected");
                         int b = 2;
-                        char c = chio::peek(i, e);
+                        char c = peek(i, e);
                             if (is_sign<T>(c))              CXON_NEXT()
                             if (c == '0')                   goto trap_oct;
                         // trap_dec:
@@ -42,7 +41,7 @@ namespace cxon { namespace nums { // number conversion: read
                             while ( is<X>::digit10(c))      CXON_NEXT()
                             b = 10;                         goto trap_end;
                         trap_oct:
-                            ;                               c = chio::next(i, e);
+                            ;                               c = next(i, e);
                             if (c == 'x')                   goto trap_hex;
                             if (c == 'b')                   goto trap_bin;
                             if (!is<X>::digit8(c)) {        *f = '0', ++f;
@@ -50,12 +49,12 @@ namespace cxon { namespace nums { // number conversion: read
                             while (is<X>::digit8(c))        CXON_NEXT()
                             b = 8;                          goto trap_end;
                         trap_hex:
-                            ;                               c = chio::next(i, e);
+                            ;                               c = next(i, e);
                                if (!is<X>::digit16(c))      return 0;
                             while ( is<X>::digit16(c))      CXON_NEXT()
                             b = 16;                         goto trap_end;
                         trap_bin:
-                            ;                               c = chio::next(i, e);
+                            ;                               c = next(i, e);
                                if (c != '0' && c != '1')    return 0;
                             while (c == '0' || c == '1')    CXON_NEXT()
                         trap_end:
@@ -67,7 +66,7 @@ namespace cxon { namespace nums { // number conversion: read
                         -> enable_if_t<std::is_floating_point<N>::value, int>
                     {
                         CXON_ASSERT(f && f < l, "unexpected");
-                        char c = chio::peek(i, e);
+                        char c = peek(i, e);
                             if (is_sign<T>(c))          CXON_NEXT()
                             if (c == '.')               goto trap_fraction_0;
                             if (c == 'i')               goto trap_inf;
@@ -115,7 +114,7 @@ namespace cxon { namespace nums { // number conversion: read
                     -> enable_if_t<std::is_integral<N>::value, int>
                 {
                     CXON_ASSERT(f && f < l, "unexpected");
-                    char c = chio::peek(i, e);
+                    char c = peek(i, e);
                         if (is_sign<T>(c))                  CXON_NEXT()
                         if (c == '0') {                     CXON_NEXT()
                                                             goto trap_end; }
@@ -129,16 +128,16 @@ namespace cxon { namespace nums { // number conversion: read
                     -> enable_if_t<std::is_integral<N>::value, int>
                 {
                     chio::consume<JSON<X>>(i, e);
-                    char c = chio::peek(i, e);
+                    char c = peek(i, e);
                     if (is_sign<T>(c)) goto trap_neg;
                     // trap_pos
                         if (c == '0') return ++i, 1;
-                        while (is<JSON<X>>::digit10(c)) c = chio::next(i, e);
+                        while (is<JSON<X>>::digit10(c)) c = next(i, e);
                         goto trap_end;
                     trap_neg:
-                        c = chio::next(i, e);
+                        c = next(i, e);
                             if (c == '0' || !is<JSON<X>>::digit10(c)) return 0;
-                        while (is<JSON<X>>::digit10(c)) c = chio::next(i, e);
+                        while (is<JSON<X>>::digit10(c)) c = next(i, e);
                     trap_end:
                         return 1;
                 }
@@ -148,7 +147,7 @@ namespace cxon { namespace nums { // number conversion: read
                     -> enable_if_t<std::is_floating_point<N>::value, int>
                 {   // as in RFC7159
                     CXON_ASSERT(f && f < l, "unexpected");
-                    char c = chio::peek(i, e);
+                    char c = peek(i, e);
                         if (c == '"')                       goto trap_spec_beg;
                         if (is_sign<T>(c))                  CXON_NEXT()
                         if (c == '0')                       goto trap_zero;
@@ -198,48 +197,48 @@ namespace cxon { namespace nums { // number conversion: read
                 static auto consume(const char*& i, const char* e)
                     -> enable_if_t<std::is_floating_point<N>::value, int>
                 {   // as in RFC7159
-                    char c = chio::peek(i, e);
+                    char c = peek(i, e);
                         if (c == '"')                       goto trap_spec_beg;
-                        if (is_sign<T>(c))                  c = chio::next(i, e);
+                        if (is_sign<T>(c))                  c = next(i, e);
                         if (c == '0')                       goto trap_zero;
                     //trap_whole:
                             if (!is<JSON<X>>::digit10(c))   return 0;
-                        while (is<JSON<X>>::digit10(c))     c = chio::next(i, e);
+                        while (is<JSON<X>>::digit10(c))     c = next(i, e);
                         if (c == '.')                       goto trap_fraction;
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_zero:
-                        ;                                   c = chio::next(i, e);
+                        ;                                   c = next(i, e);
                         if (c == '.')                       goto trap_fraction;
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_fraction:
-                        ;                                   c = chio::next(i, e);
+                        ;                                   c = next(i, e);
                            if (!is<JSON<X>>::digit10(c))    return 0;
-                        while ( is<JSON<X>>::digit10(c))    c = chio::next(i, e);
+                        while ( is<JSON<X>>::digit10(c))    c = next(i, e);
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_exponent:
-                        ;                                   c = chio::next(i, e);
-                        if (c == '-' || c == '+')           c = chio::next(i, e);
+                        ;                                   c = next(i, e);
+                        if (c == '-' || c == '+')           c = next(i, e);
                            if (!is<JSON<X>>::digit10(c))    return 0;
-                        while ( is<JSON<X>>::digit10(c))    c = chio::next(i, e);
+                        while ( is<JSON<X>>::digit10(c))    c = next(i, e);
                         ;                                   goto trap_end;
                     trap_spec_beg:
-                        ;                                   c = chio::next(i, e);
-                        if (is_sign<T>(c))                  c = chio::next(i, e);
+                        ;                                   c = next(i, e);
+                        if (is_sign<T>(c))                  c = next(i, e);
                         if (c == 'i')                       goto trap_inf;
                         if (c == 'n')                       goto trap_nan;
                         ;                                   return 0;
                     trap_inf:
-                        c = chio::next(i, e); if (c != 'n') return 0;
-                        c = chio::next(i, e); if (c != 'f') return 0;
+                        c = next(i, e); if (c != 'n')       return 0;
+                        c = next(i, e); if (c != 'f')       return 0;
                         ;                                   goto trap_spec_end;
                     trap_nan:
-                        c = chio::next(i, e); if (c != 'a') return 0;
-                        c = chio::next(i, e); if (c != 'n') return 0;
+                        c = next(i, e); if (c != 'a')       return 0;
+                        c = next(i, e); if (c != 'n')       return 0;
                     trap_spec_end:
-                        c = chio::next(i, e); if (c != '"') return 0;
+                        c = next(i, e); if (c != '"')       return 0;
                         ++i;
                     trap_end:
                         return 1;
@@ -258,9 +257,9 @@ namespace cxon { namespace nums { // number conversion: read
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                            return  (b != -1                                                    || (chio::rewind(i, o), cx|read_error::overflow)) &&
-                                    (b !=  0                                                    || (chio::rewind(i, o), cx|read_error::integral_invalid)) &&
-                                    (bits::from_chars(s, s + sizeof(s), t, b).ec == std::errc() || (chio::rewind(i, o), cx|read_error::integral_invalid))
+                            return  (b != -1                                                            || (rewind(i, o), cx|read_error::overflow)) &&
+                                    (b !=  0                                                            || (rewind(i, o), cx|read_error::integral_invalid)) &&
+                                    (cxon::bits::from_chars(s, s + sizeof(s), t, b).ec == std::errc()   || (rewind(i, o), cx|read_error::integral_invalid))
                             ;
                     }
                 // no optimization for const char* because of numeric bases (0, 0b, 0x)
@@ -272,16 +271,16 @@ namespace cxon { namespace nums { // number conversion: read
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                            return  (b != -1                                                    || (chio::rewind(i, o), cx|read_error::overflow)) &&
-                                    (b !=  0                                                    || (chio::rewind(i, o), cx|read_error::floating_point_invalid)) &&
-                                    (bits::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (chio::rewind(i, o), cx|read_error::floating_point_invalid))
+                            return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
+                                    (b !=  0                                                        || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
+                                    (cxon::bits::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))
                             ;
                     }
                 template <typename N, typename Cx>
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
                         -> enable_if_t<std::is_floating_point<N>::value, bool>
                     {
-                        auto const r = bits::from_chars(i, e, t);
+                        auto const r = cxon::bits::from_chars(i, e, t);
                         return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
                                 (i = r.ptr, true);
                     }
@@ -297,9 +296,9 @@ namespace cxon { namespace nums { // number conversion: read
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(32)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
-                            return  (b != -1                                                    || (chio::rewind(i, o), cx|read_error::overflow)) &&
-                                    (b !=  0                                                    || (chio::rewind(i, o), cx|read_error::integral_invalid)) &&
-                                    (bits::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (chio::rewind(i, o), cx|read_error::integral_invalid))
+                            return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
+                                    (b !=  0                                                        || (rewind(i, o), cx|read_error::integral_invalid)) &&
+                                    (cxon::bits::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::integral_invalid))
                             ;
                     }
                 template <typename N, typename Cx>
@@ -309,7 +308,7 @@ namespace cxon { namespace nums { // number conversion: read
                         auto const b = i;
                         if (number_consumer<JSON<X>, T>::consume(i, e)) {
                             if (*b == '0' && i - b == 1) return t = 0, true;
-                            auto const r = bits::from_chars(b, i, t);
+                            auto const r = cxon::bits::from_chars(b, i, t);
                             if (r.ec == std::errc() && r.ptr == i) return true;
                         }
                         return i = b, cx|read_error::integral_invalid;
@@ -319,31 +318,31 @@ namespace cxon { namespace nums { // number conversion: read
                     static auto read(N& t, const char*& i, const char* e, Cx& cx)
                         -> enable_if_t<std::is_integral<N>::value && !X::number::strict, bool>
                     {
-                        auto const r = bits::from_chars(i, e, t);
+                        auto const r = cxon::bits::from_chars(i, e, t);
                         return (r.ec == std::errc() && (i = r.ptr, true)) || (cx|read_error::integral_invalid);
                     }
             // floating point
                 template <typename N>
-                    static bits::charconv::from_chars_result from_chars(const char* b, const char* e, N& t) {
+                    static cxon::bits::charconv::from_chars_result from_chars(const char* b, const char* e, N& t) {
                         if (*b == '"') {
                             if (b[1] == '-') {
                                 if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<N>::infinity(),
-                                    bits::charconv::from_chars_result{ b + 6, std::errc() } : bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    cxon::bits::charconv::from_chars_result{ b + 6, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                                 return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
-                                    bits::charconv::from_chars_result{ b + 6, std::errc() } : bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    cxon::bits::charconv::from_chars_result{ b + 6, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                             }
                             else {
                                 if (b[1] == 'i') return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ? t =  std::numeric_limits<N>::infinity(),
-                                    bits::charconv::from_chars_result{ b + 5, std::errc() } : bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    cxon::bits::charconv::from_chars_result{ b + 5, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                                 return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
-                                    bits::charconv::from_chars_result{ b + 5, std::errc() } : bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
+                                    cxon::bits::charconv::from_chars_result{ b + 5, std::errc() } : cxon::bits::charconv::from_chars_result{ b, std::errc::invalid_argument }
                                 ;
                             }
                         }
-                        auto const r = bits::from_chars(b, e, t);
+                        auto const r = cxon::bits::from_chars(b, e, t);
                         return { r.ptr, r.ec };
                     }
                 // strict
@@ -354,9 +353,9 @@ namespace cxon { namespace nums { // number conversion: read
                         II const o = i;
                             char s[num_len_max::constant<prms_type<Cx>>(64)];
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
-                                return  (b != -1                                            || (chio::rewind(i, o), cx|read_error::overflow)) &&
-                                        (b !=  0                                            || (chio::rewind(i, o), cx|read_error::floating_point_invalid)) &&
-                                        (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (chio::rewind(i, o), cx|read_error::floating_point_invalid))
+                                return  (b != -1                                            || (rewind(i, o), cx|read_error::overflow)) &&
+                                        (b !=  0                                            || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
+                                        (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))
                                 ;
                     }
                 template <typename N, typename Cx>
@@ -385,13 +384,13 @@ namespace cxon { namespace nums { // number conversion: read
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool number_read(T& t, II& i, II e, Cx& cx) {
-            chio::consume<X>(i, e);
+            consume<X>(i, e);
             return number_reader<X, T>::read(t, i, e, cx);
         }
 
-}}  // cxon::nums number conversion: read
+}}} // cxon::chio::nums number conversion: read
 
-namespace cxon { namespace nums { // number conversion: write
+namespace cxon { namespace chio { namespace nums { // number conversion: write
 
     template <typename X>
         struct opqt {
@@ -404,31 +403,31 @@ namespace cxon { namespace nums { // number conversion: write
     template <typename X, typename T, typename O, typename Cx>
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
             char s[std::numeric_limits<T>::digits10 + 3];
-            auto const r = bits::to_chars(s, s + sizeof(s) / sizeof(char), t);
+            auto const r = cxon::bits::to_chars(s, s + sizeof(s) / sizeof(char), t);
             return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
-                    chio::poke<X>(o, s, r.ptr - s, cx)
+                    poke<X>(o, s, r.ptr - s, cx)
             ;
         }
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
             if (std::isinf(t)) {
-                if (!chio::poke<X>(o, opqt<X>::beg, cx)) return false;
-                if (std::signbit(t) && !chio::poke<X>(o, '-', cx)) return false;
-                return chio::poke<X>(o, "inf", cx) && chio::poke<X>(o, opqt<X>::end, cx);
+                if (!poke<X>(o, opqt<X>::beg, cx)) return false;
+                if (std::signbit(t) && !poke<X>(o, '-', cx)) return false;
+                return poke<X>(o, "inf", cx) && poke<X>(o, opqt<X>::end, cx);
             }
             if (std::isnan(t))
-                return chio::poke<X>(o, opqt<X>::beg, cx) && chio::poke<X>(o, "nan", cx) && chio::poke<X>(o, opqt<X>::end, cx);
+                return poke<X>(o, opqt<X>::beg, cx) && poke<X>(o, "nan", cx) && poke<X>(o, opqt<X>::end, cx);
             CXON_ASSERT(std::isfinite(t), "unexpected");
             char s[std::numeric_limits<T>::max_digits10 * 2];
-            auto const r = bits::to_chars(
+            auto const r = cxon::bits::to_chars(
                 s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<prms_type<Cx>>(std::numeric_limits<T>::max_digits10)
             );
             return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
-                    chio::poke<X>(o, s, r.ptr - s, cx)
+                    poke<X>(o, s, r.ptr - s, cx)
             ;
         }
 
-}}  // cxon::nums number conversion: write
+}}}  // cxon::chio::nums number conversion: write
 
-#endif // CXON_CHARIO_NUMBERS_HXX_
+#endif // CXON_CHIO_NUMBERS_HXX_

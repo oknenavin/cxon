@@ -6,7 +6,7 @@
 #ifndef CXON_CHIO_BITS_UNQUOTED_VALUE_HXX_
 #define CXON_CHIO_BITS_UNQUOTED_VALUE_HXX_
 
-namespace cxon { namespace unquoted { namespace bits { // unquoted value
+namespace cxon { namespace chio { namespace unquoted { namespace bits { // unquoted value
 
     template <typename X>
         struct value {
@@ -43,13 +43,13 @@ namespace cxon { namespace unquoted { namespace bits { // unquoted value
                 static bool read(BA o, II& i, II e) {
                     for ( ; i != e; ++i) {
                         char const c = *i;
-                             if (c == X::map::beg)      { if (!skip<map<X>::beg, map<X>::end>(o, i, e))     return false; }
-                        else if (c == X::list::beg)     { if (!skip<list<X>::beg, list<X>::end>(o, i, e))   return false; }
-                        else if (c == X::string::beg)   { if (!skip(o, i, e))                               return false; }
-                        else if (c == X::map::sep)                                                          break;
-                        else if (c == X::map::end)                                                          break;
-                        else if (c == X::list::end)                                                         break;
-                        else                            { if (!o.add(*i))                                   return false; }
+                             if (c == X::map::beg)      { if (!skip<mapacc<X>::beg, mapacc<X>::end>(o, i, e))   return false; }
+                        else if (c == X::list::beg)     { if (!skip<lstacc<X>::beg, lstacc<X>::end>(o, i, e))   return false; }
+                        else if (c == X::string::beg)   { if (!skip(o, i, e))                                   return false; }
+                        else if (c == X::map::sep)                                                              break;
+                        else if (c == X::map::end)                                                              break;
+                        else if (c == X::list::end)                                                             break;
+                        else                            { if (!o.add(*i))                                       return false; }
                     }
                     return o.add('\0');
                 }
@@ -69,6 +69,6 @@ namespace cxon { namespace unquoted { namespace bits { // unquoted value
             constexpr bool add(T) const { return true; }
         };
 
-}}} // cxon::unquoted::bits unquoted value
+}}}}// cxon::unquoted::bits unquoted value
 
 #endif // CXON_CHIO_BITS_UNQUOTED_VALUE_HXX_

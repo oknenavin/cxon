@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHARIO_KEY_HXX_
-#define CXON_CHARIO_KEY_HXX_
+#ifndef CXON_CHIO_KEY_HXX_
+#define CXON_CHIO_KEY_HXX_
 
 #include "chio.hxx"
 #include "bits/key.hxx"
@@ -13,14 +13,14 @@ namespace cxon { namespace chio { // key read/write helpers
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_key(T& t, II& i, II e, Cx& cx) {
-            return bits::key_read<X>::value(t, i, e, cx) && chio::consume<X>(X::map::div, i, e, cx);
+            return bits::key_read<X>::value(t, i, e, cx) && consume<X>(X::map::div, i, e, cx);
         }
 
     template <typename X, typename T, typename O, typename Cx>
         inline bool write_key(O& o, const T& t, Cx& cx) {
-            return bits::key_write<X>::value(o, t, cx) && chio::poke<X>(o, X::map::div, cx);
+            return bits::key_write<X>::value(o, t, cx) && poke<X>(o, X::map::div, cx);
         }
 
 }}  //cxon::chio key read/write helpers
 
-#endif // CXON_CHARIO_KEY_HXX_
+#endif // CXON_CHIO_KEY_HXX_

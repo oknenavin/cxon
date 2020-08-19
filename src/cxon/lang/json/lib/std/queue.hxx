@@ -14,7 +14,7 @@ namespace cxon {
         struct read<X, std::queue<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::queue<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
+                    return chio::container::read<X, lstacc<X>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace();
                             return read_value<X>(t.back(), i, e, cx);
@@ -29,7 +29,7 @@ namespace cxon {
         struct read<X, std::priority_queue<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::priority_queue<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, list<X>>(i, e, cx, [&] {
+                    return chio::container::read<X, lstacc<X>>(i, e, cx, [&] {
                         T o{};
                         return read_value<X>(o, i, e, cx) && (t.emplace(std::move(o)), true);
                     });
@@ -51,7 +51,7 @@ namespace cxon {
             template <typename O, typename Cx>
                 static bool value(O& o, const A& t, Cx& cx) {
                     auto const& c = bits::adaptor<A>::container(t);
-                    return chio::container::write<X, list<X>>(o, c.begin(), c.end(), cx);
+                    return chio::container::write<X, lstacc<X>>(o, c.begin(), c.end(), cx);
                 }
         };
 
@@ -61,7 +61,7 @@ namespace cxon {
             template <typename O, typename Cx>
                 static bool value(O& o, const A& t, Cx& cx) {
                     auto const& c = bits::adaptor<A>::container(t);
-                    return chio::container::write<X, list<X>>(o, c.begin(), c.end(), cx);
+                    return chio::container::write<X, lstacc<X>>(o, c.begin(), c.end(), cx);
                 }
         };
 
