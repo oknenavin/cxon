@@ -61,9 +61,9 @@ namespace cxon { // interface
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename FwIt, typename ...CxPs>
         inline auto     to_bytes(FwIt b, FwIt e, const T& t, CxPs... p)   -> to_bytes_result<FwIt>;
 
-}   // cxon interface
+}
 
-namespace cxon { // contexts
+namespace cxon { // implementation bridge contexts
 
     template <typename ...Ps> // ... named parameters
         struct context {
@@ -92,7 +92,7 @@ namespace cxon { // contexts
     template <typename Cx>
         using napa_type = typename Cx::napa_type;
 
-}   // cxon contexts
+}
 
 namespace cxon { // implementation bridge
 
@@ -151,32 +151,24 @@ namespace cxon { // implementation bridge
             return t.template write_value<X>(o, cx);
         }
 
-}   // cxon implementation bridge
+}
 
 // implementation /////////////////////////////////////////////////////////////
 
 namespace cxon { // interface implementation
-
-#   if defined(__GNUC__) || defined(__clang__)
-#       define CXON_FORCE_INLINE __attribute__((always_inline)) inline
-#   elif defined(_MSC_VER)
-#       define CXON_FORCE_INLINE __forceinline
-#   else
-#       define CXON_FORCE_INLINE inline
-#   endif
 
     // read
 
     namespace interface {
 
         template <typename X, typename T, typename II, typename ...CxPs>
-            CXON_FORCE_INLINE auto from_bytes(T& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
+            inline auto from_bytes(T& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
                 read_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     bool const r = read_value<X>(t, b, e, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, b };
             }
         template <typename X, typename T, typename I, typename ...CxPs>
-            CXON_FORCE_INLINE auto from_bytes(T& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
+            inline auto from_bytes(T& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
                 auto const c = continuous<I>::range(i);
                 auto const r = interface::from_bytes<X>(t, c.first, c.second, std::forward<CxPs>(p)...);
                 auto b = std::begin(i); std::advance(b, std::distance(c.first, r.end));
@@ -199,13 +191,13 @@ namespace cxon { // interface implementation
     namespace interface {
 
         template <typename X, typename T, typename OI, typename ...CxPs>
-            CXON_FORCE_INLINE auto to_bytes(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
+            inline auto to_bytes(OI o, const T& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
         template <typename X, typename T, typename I, typename ...CxPs>
-            CXON_FORCE_INLINE auto to_bytes(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
+            inline auto to_bytes(I& i, const T& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto const s = std::distance(std::begin(i), std::end(i));
                     bool const r = write_value<X>(i, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
@@ -213,7 +205,7 @@ namespace cxon { // interface implementation
                 return { cx.ec, b };
             }
         template <typename X, typename T, typename FI, typename ...CxPs>
-            CXON_FORCE_INLINE auto to_bytes(FI b, FI e, const T& t, CxPs... p) -> to_bytes_result<FI> {
+            inline auto to_bytes(FI b, FI e, const T& t, CxPs... p) -> to_bytes_result<FI> {
                 write_context<CxPs...> cx(std::forward<CxPs>(p)...);
                     auto o = make_output_iterator(b, e);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
@@ -235,8 +227,6 @@ namespace cxon { // interface implementation
             return interface::to_bytes<X>(b, e, t, std::forward<CxPs>(p)...);
         }
 
-#   undef CXON_FORCE_INLINE
-
-}   // cxon interface implementation
+}
 
 #endif // CXON_CXON_HXX_
