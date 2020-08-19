@@ -257,9 +257,9 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         II const o = i;
                             char s[num_len_max::constant<napa_type<Cx>>(32)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                            return  (b != -1                                                            || (rewind(i, o), cx|read_error::overflow)) &&
-                                    (b !=  0                                                            || (rewind(i, o), cx|read_error::integral_invalid)) &&
-                                    (charconv::from_chars(s, s + sizeof(s), t, b).ec == std::errc()   || (rewind(i, o), cx|read_error::integral_invalid))
+                            return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
+                                    (b !=  0                                                        || (rewind(i, o), cx|read_error::integral_invalid)) &&
+                                    (charconv::from_chars(s, s + sizeof(s), t, b).ec == std::errc() || (rewind(i, o), cx|read_error::integral_invalid))
                             ;
                     }
                 // no optimization for const char* because of numeric bases (0, 0b, 0x)
@@ -273,7 +273,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                        || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
-                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))
+                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (rewind(i, o), cx|read_error::floating_point_invalid))
                             ;
                     }
                 template <typename N, typename Cx>
@@ -298,7 +298,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                             int const b = number_consumer<JSON<X>, T>::consume(s, s + sizeof(s), i, e);
                             return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
                                     (b !=  0                                                        || (rewind(i, o), cx|read_error::integral_invalid)) &&
-                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::integral_invalid))
+                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (rewind(i, o), cx|read_error::integral_invalid))
                             ;
                     }
                 template <typename N, typename Cx>

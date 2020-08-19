@@ -3,13 +3,13 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_HXX_
-#define CXON_CHIO_HXX_
+#ifndef CXON_CHIO_IO_HXX_
+#define CXON_CHIO_IO_HXX_
 
 #include "cxon/utility.hxx"
 #include "chcls.hxx"
 #include "errors.hxx"
-#include "bits/chio.hxx"
+#include "bits/io.hxx"
 
 namespace cxon { namespace chio {
 
@@ -83,4 +83,4 @@ namespace cxon { namespace chio {
 
 }}  //cxon::chio
 
-#endif // CXON_CHIO_HXX_
+#endif // CXON_CHIO_IO_HXX_

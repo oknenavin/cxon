@@ -95,4 +95,13 @@ namespace cxon { namespace json {
     using write_error_category = chio::write_error_category;
 }}
 
+namespace cxon { namespace json { // context parameters
+
+    using allocator = chio::allocator;          // read: T*
+    using num_len_max = chio::num_len_max;      // read: constexpr: numbers
+    using ids_len_max = chio::ids_len_max;      // read: constexpr: object key
+    using fp_precision = chio::fp_precision;    // write: constexpr: floating-points
+
+}}  // cxon::json context parameters
+
 #endif // CXON_JSON_JSON_HXX_

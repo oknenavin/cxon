@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_BITS_CHIO_HXX_
-#define CXON_BITS_CHIO_HXX_
+#ifndef CXON_CHIO_BITS_IO_HXX_
+#define CXON_CHIO_BITS_IO_HXX_
 
 namespace cxon { namespace chio { namespace bits { // output write with error handling
 
@@ -80,4 +80,4 @@ namespace cxon { namespace chio { namespace bits { // output write with error ha
 
 }}} //cxon::chio::bits output write with error handling
 
-#endif // CXON_BITS_CHIO_HXX_
+#endif // CXON_CHIO_BITS_IO_HXX_
