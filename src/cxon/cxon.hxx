@@ -98,15 +98,6 @@ namespace cxon { // contexts
 
 }   // cxon contexts
 
-namespace cxon { // context parameters
-
-    CXON_PARAMETER(allocator, std::allocator<char>);    // read: T*
-    CXON_PARAMETER(num_len_max, unsigned);              // read: constexpr: numbers
-    CXON_PARAMETER(ids_len_max, unsigned);              // read: constexpr: object key
-    CXON_PARAMETER(fp_precision, int);                  // write: constexpr: floating-points
-
-}   // cxon context parameters
-
 namespace cxon { // implementation bridge
 
     template <typename E, typename T, typename R = E>

@@ -22,7 +22,7 @@ namespace cxon { // pointer
                                 (t = nullptr, true)
                         ;
                     }
-                    auto ax = allocator::value(cx.ps, std::allocator<T>());
+                    auto ax = chio::allocator::value(cx.ps, std::allocator<T>());
                     typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
                         using al = std::allocator_traits<decltype(at)>;
                     T *const n = al::allocate(at, 1); al::construct(at, n);

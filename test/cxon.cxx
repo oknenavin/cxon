@@ -137,37 +137,37 @@ struct Struct11 {
 
 TEST_BEG(cxon::CXON<>) // interface/parameters
     {   std::string r; std::string const e = "3.142";
-        TEST_CHECK(cxon::to_bytes<XXON>(r, 3.1415926, cxon::fp_precision::set<4>()) && r == e);
+        TEST_CHECK(cxon::to_bytes<XXON>(r, 3.1415926, cxon::json::fp_precision::set<4>()) && r == e);
     }
     {   int *r = nullptr;
-        TEST_CHECK(cxon::from_bytes<XXON>(r, "42", cxon::allocator::set(std::allocator<char>())) && *r == 42);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, "42", cxon::json::allocator::set(std::allocator<char>())) && *r == 42);
     }
     {   size_t r = 0;
-        TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("123"), cxon::num_len_max::set<4>()) && r == 123);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("123"), cxon::json::num_len_max::set<4>()) && r == 123);
     }
     {   unsigned r = 0; std::string const i = "123";
-        auto const e = cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<2>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::num_len_max::set<2>());
         TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '1');
     }
     {   double r = 0; std::list<char> const i = {'1', '2', '3'};
-        TEST_CHECK(cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<4>()) && r == 123);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, i, cxon::json::num_len_max::set<4>()) && r == 123);
     }
     {   float r = 0; std::list<char> const i = {'1', '2', '3'};
-        auto const e = cxon::from_bytes<XXON>(r, i, cxon::num_len_max::set<2>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::num_len_max::set<2>());
         TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '1');
     }
     {   Enum11 r = Enum11::one;
-        TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("three"), cxon::ids_len_max::set<6>()) && r == Enum11::three);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("three"), cxon::json::ids_len_max::set<6>()) && r == Enum11::three);
     }
     {   Enum11 r = Enum11::one; std::string const i = "three";
-        auto const e = cxon::from_bytes<XXON>(r, i, cxon::ids_len_max::set<2>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::ids_len_max::set<2>());
         TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == 't');
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
-        TEST_CHECK(cxon::from_bytes<XXON>(r, "{ field: 42 }", cxon::ids_len_max::set<6>()) && r == Struct11(42));
+        TEST_CHECK(cxon::from_bytes<XXON>(r, "{ field: 42 }", cxon::json::ids_len_max::set<6>()) && r == Struct11(42));
     }
     {   Struct11 r(42); std::string const i = "{ field: 42 }";
-        auto const e = cxon::from_bytes<XXON>(r, i, cxon::ids_len_max::set<2>());
+        auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::ids_len_max::set<2>());
         TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == 'f');
     }
 TEST_END()
