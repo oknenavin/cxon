@@ -427,7 +427,7 @@ namespace cxon {
 
         template <typename X, typename K, typename V, typename ...R, typename II, typename Cx>
             inline bool read_value(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
-                return chio::container::read<X, mapacc<X>>(i, e, cx, [&] {
+                return chio::container::read<X, chio::map<X>>(i, e, cx, [&] {
 #                   if __cplusplus < 201703L
                         auto& o = (t.emplace_back(), t.back());
 #                   else
@@ -440,7 +440,7 @@ namespace cxon {
         template <typename X, typename K, typename V, typename ...R, typename O, typename Cx>
             inline bool write_value(O& o, const ordered::object<K, V, R...>& t, Cx& cx) {
                 using value_type = typename ordered::object<K, V, R...>::value_type;
-                return chio::container::write<X, mapacc<X>>(o, t, cx, [&](const value_type& e) {
+                return chio::container::write<X, chio::map<X>>(o, t, cx, [&](const value_type& e) {
                     return chio::write_key<X>(o, e.first, cx) && write_value<X>(o, e.second, cx);
                 });
             }

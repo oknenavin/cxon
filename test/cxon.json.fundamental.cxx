@@ -342,7 +342,7 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>) // json number validation
 TEST_END()
 
 namespace test {
-    struct strict_number_traits : cxon::format_traits {
+    struct strict_number_traits : cxon::json::format_traits {
         struct number {
             static constexpr bool strict = true;
         };
@@ -463,7 +463,7 @@ TEST_BEG(cxon::JSON<>) // json
 TEST_END()
 
 namespace test {
-    struct strict_js_traits : cxon::json_format_traits {
+    struct strict_js_traits : cxon::json::format_traits {
         static constexpr bool strict_js = true;
     };
 }

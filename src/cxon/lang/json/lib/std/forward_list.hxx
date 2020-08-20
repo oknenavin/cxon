@@ -14,7 +14,7 @@ namespace cxon {
         struct read<X, std::forward_list<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::forward_list<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, lstacc<X>>(i, e, cx, [&] {
+                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace_front();
                             return read_value<X>(t.front(), i, e, cx);
@@ -30,7 +30,7 @@ namespace cxon {
         struct write<X, std::forward_list<T, R...>> {
             template <typename O, typename Cx>
                 static bool value(O& o, const std::forward_list<T, R...>& t, Cx& cx) {
-                    return chio::container::write<X, lstacc<X>>(o, t, cx);
+                    return chio::container::write<X, chio::list<X>>(o, t, cx);
                 }
         };
 
