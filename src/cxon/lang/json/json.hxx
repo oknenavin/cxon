@@ -14,11 +14,11 @@ namespace cxon { // format traits
             static constexpr char                   end             = '}';
             static constexpr char                   div             = ':';
             static constexpr char                   sep             = ',';
-            static constexpr bool                   unquoted_keys   = true;
+            static constexpr bool                   unquoted_keys   = false;
         };
         struct list {
-            static constexpr char                   beg             = '{';
-            static constexpr char                   end             = '}';
+            static constexpr char                   beg             = '[';
+            static constexpr char                   end             = ']';
             static constexpr char                   sep             = ',';
         };
         struct string {
@@ -33,21 +33,11 @@ namespace cxon { // format traits
             static constexpr char const*            pos             = "true";
             static constexpr char const*            neg             = "false";
         };
+        static constexpr bool                       strict_js       = false;
     };
     static_assert(format_traits::string::beg == format_traits::string::end && (format_traits::string::beg == '"' || format_traits::string::beg == '\''), "not supported");
 
-    struct cxon_format_traits : format_traits {};
-
-    struct json_format_traits : format_traits {
-        struct map : format_traits::map {
-            static constexpr bool                   unquoted_keys   = false;
-        };
-        struct list : format_traits::list {
-            static constexpr char                   beg             = '[';
-            static constexpr char                   end             = ']';
-        };
-        static constexpr bool                       strict_js       = false;
-    };
+    struct json_format_traits : format_traits {};
 
     // access
 
@@ -60,9 +50,6 @@ namespace cxon { // format traits
 
 namespace cxon { // format selectors
 
-    template <typename T = struct cxon_format_traits>
-        struct CXON;
-
     template <typename T = struct json_format_traits>
         struct JSON;
 
@@ -74,9 +61,6 @@ namespace cxon { // format selectors
 #   include "cxon/cxon.hxx"
 
 namespace cxon { // format selectors
-
-    template <typename T>
-        struct CXON : format_selector<T> {};
 
     template <typename T>
         struct JSON : format_selector<T> {};

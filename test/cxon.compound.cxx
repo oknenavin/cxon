@@ -9,174 +9,174 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::CXON<>)
-    // T[]
-        {   int a[] = {1, 2, 3};
-            R_TEST(a, "{1,2,3}");
-            W_TEST("{1,2,3}", a);
-        }
-        {   int a[] = {1, 2, 0};
-            R_TEST(a, "{1,2}");
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::integral_invalid, 1);
-        }
-        {   int a[] = {1, 2, 3};
-            R_TEST(a, "{1,2,3,4}", chio::read_error::overflow, 0);
-        }
-    // char[]
-        R_TEST("", QS(""));
-        R_TEST("123", QS("123"));
-        {   char a[] = {'1', '2', '3', '\0'};
-            R_TEST(a, QS("123"));
-            R_TEST(a, QS("123\\0"));
-            W_TEST(QS("123"), a);
-        }
-        {   char a[] = {'1', '2', '3', '\0', '4', '\0'};
-            R_TEST(a, QS("123\\0004"));
-            W_TEST(QS("123\\04"), a);
-        }
-        {   char a[] = {'1', '2', '3'};
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
-            R_TEST(a, QS("12\\u2728"), chio::read_error::overflow, 0);
-        }
-        {   char a[] = {'1', '2', '\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
-        }
-    // char16_t[]
-        R_TEST(u"", QS(""));
-        R_TEST(u"\xD83C\xDF7A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
-        R_TEST(u"\x2764\xD83C\xDF7Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-        R_TEST(u"\x2764x\xD83C\xDF7A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-        {   char16_t a[] = {u'\xD83C', u'\xDF7A', u'\x2764', u'x', u'\0'};
-            R_TEST(a, QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"));
-            W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"), a);
-        }
-        {   char16_t a[] = {u'\x2764', u'\xD83C', u'\xDF7A', u'x', u'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-            W_TEST(QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"), a);
-        }
-        {   char16_t a[] = {u'\x2764', u'x', u'\xD83C', u'\xDF7A', u'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-            W_TEST(QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"), a);
-        }
-        {   char16_t a[] = {u'1', u'2', u'3', u'\0', u'4', u'\0'};
-            R_TEST(a, QS("123\\0004"));
-            W_TEST(QS("123\\04"), a);
-        }
-        {   char16_t a[] = {u'1', u'2', u'3'};
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), chio::read_error::overflow, 0);
-        }
-        {   char16_t a[] = {u'1', u'2', u'\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
-        }
-    // char32_t[]
-        R_TEST(U"", QS(""));
-        R_TEST(U"\x01F37A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
-        R_TEST(U"\x2764\x01F37Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-        R_TEST(U"\x2764x\x01F37A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-        {   char32_t a[] = {U'\x01F37A', U'\x2764', U'x', U'\0'};
-            R_TEST(a, QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"));
-            W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"), a);
-        }
-        {   char32_t a[] = {U'\x2764', U'\x01F37A', U'x', U'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
-            W_TEST(QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"), a);
-        }
-        {   char32_t a[] = {U'\x2764', U'x', U'\x01F37A', U'\0'};
-            R_TEST(a, QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
-            W_TEST(QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"), a);
-        }
-        {   char32_t a[] = {U'1', U'2', U'3', U'\0', U'4', U'\0'};
-            R_TEST(a, QS("123\\0004"));
-            W_TEST(QS("123\\04"), a);
-        }
-        {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
-        }
-        {   char32_t a[] = {U'1', U'2', U'\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
-        }
-    // wchar_t[]
-        R_TEST(L"", QS(""));
-        {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
-            R_TEST(a, QS("123\\0004"));
-            W_TEST(QS("123\\04"), a);
-        }
-        {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
-        }
-        {   wchar_t a[] = {L'1', L'2', L'\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
-        }
-    // const char*
-        R_TEST((const char*)"test", QS("test"));
-        R_TEST((const char*)nullptr, "null");
-        W_TEST(QS("test"), (const char*)"test");
-        W_TEST("null", (const char*)nullptr);
-        R_TEST((const char*)nullptr, "nil", chio::read_error::unexpected, 1);
-        R_TEST((const char*)nullptr, "\"nil", chio::read_error::unexpected, 4);
-    // const char16_t*
-        R_TEST((const char16_t*)u"test", QS("test"));
-        W_TEST(QS("test"), (const char16_t*)u"test");
-        R_TEST((const char16_t*)nullptr, "\"", chio::read_error::unexpected, 1);
-    // const char32_t*
-        R_TEST((const char32_t*)U"test", QS("test"));
-        W_TEST(QS("test"), (const char32_t*)U"test");
-        R_TEST((const char32_t*)nullptr, "\"", chio::read_error::unexpected, 1);
-    // const wchar_t*
-        R_TEST((const wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (const wchar_t*)L"test");
-        R_TEST((const wchar_t*)nullptr, "\"", chio::read_error::unexpected, 1);
-    // char*
-        R_TEST((char*)"test", QS("test"));
-        W_TEST(QS("test"), (char*)"test");
-        R_TEST((char*)nullptr, "null");
-        W_TEST("null", (char*)nullptr);
-    // char16_t*
-        R_TEST((char16_t*)u"test", QS("test"));
-        W_TEST(QS("test"), (char16_t*)u"test");
-    // char32_t*
-        R_TEST((char32_t*)U"test", QS("test"));
-        W_TEST(QS("test"), (char32_t*)U"test");
-    // wchar_t*
-        R_TEST((wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (wchar_t*)L"test");
-TEST_END()
+//TEST_BEG(cxon::CXON<>)
+//    // T[]
+//        {   int a[] = {1, 2, 3};
+//            R_TEST(a, "{1,2,3}");
+//            W_TEST("{1,2,3}", a);
+//        }
+//        {   int a[] = {1, 2, 0};
+//            R_TEST(a, "{1,2}");
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{", chio::read_error::integral_invalid, 1);
+//        }
+//        {   int a[] = {1, 2, 3};
+//            R_TEST(a, "{1,2,3,4}", chio::read_error::overflow, 0);
+//        }
+//    // char[]
+//        R_TEST("", QS(""));
+//        R_TEST("123", QS("123"));
+//        {   char a[] = {'1', '2', '3', '\0'};
+//            R_TEST(a, QS("123"));
+//            R_TEST(a, QS("123\\0"));
+//            W_TEST(QS("123"), a);
+//        }
+//        {   char a[] = {'1', '2', '3', '\0', '4', '\0'};
+//            R_TEST(a, QS("123\\0004"));
+//            W_TEST(QS("123\\04"), a);
+//        }
+//        {   char a[] = {'1', '2', '3'};
+//            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
+//            R_TEST(a, QS("12\\u2728"), chio::read_error::overflow, 0);
+//        }
+//        {   char a[] = {'1', '2', '\0'};
+//            R_TEST(a, "12", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
+//            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+//        }
+//    // char16_t[]
+//        R_TEST(u"", QS(""));
+//        R_TEST(u"\xD83C\xDF7A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
+//        R_TEST(u"\x2764\xD83C\xDF7Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
+//        R_TEST(u"\x2764x\xD83C\xDF7A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
+//        {   char16_t a[] = {u'\xD83C', u'\xDF7A', u'\x2764', u'x', u'\0'};
+//            R_TEST(a, QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"));
+//            W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"), a);
+//        }
+//        {   char16_t a[] = {u'\x2764', u'\xD83C', u'\xDF7A', u'x', u'\0'};
+//            R_TEST(a, QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
+//            W_TEST(QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"), a);
+//        }
+//        {   char16_t a[] = {u'\x2764', u'x', u'\xD83C', u'\xDF7A', u'\0'};
+//            R_TEST(a, QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
+//            W_TEST(QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"), a);
+//        }
+//        {   char16_t a[] = {u'1', u'2', u'3', u'\0', u'4', u'\0'};
+//            R_TEST(a, QS("123\\0004"));
+//            W_TEST(QS("123\\04"), a);
+//        }
+//        {   char16_t a[] = {u'1', u'2', u'3'};
+//            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
+//            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), chio::read_error::overflow, 0);
+//        }
+//        {   char16_t a[] = {u'1', u'2', u'\0'};
+//            R_TEST(a, "12", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
+//            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+//        }
+//    // char32_t[]
+//        R_TEST(U"", QS(""));
+//        R_TEST(U"\x01F37A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
+//        R_TEST(U"\x2764\x01F37Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
+//        R_TEST(U"\x2764x\x01F37A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
+//        {   char32_t a[] = {U'\x01F37A', U'\x2764', U'x', U'\0'};
+//            R_TEST(a, QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"));
+//            W_TEST(QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x"), a);
+//        }
+//        {   char32_t a[] = {U'\x2764', U'\x01F37A', U'x', U'\0'};
+//            R_TEST(a, QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
+//            W_TEST(QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"), a);
+//        }
+//        {   char32_t a[] = {U'\x2764', U'x', U'\x01F37A', U'\0'};
+//            R_TEST(a, QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
+//            W_TEST(QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"), a);
+//        }
+//        {   char32_t a[] = {U'1', U'2', U'3', U'\0', U'4', U'\0'};
+//            R_TEST(a, QS("123\\0004"));
+//            W_TEST(QS("123\\04"), a);
+//        }
+//        {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
+//            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
+//            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
+//        }
+//        {   char32_t a[] = {U'1', U'2', U'\0'};
+//            R_TEST(a, "12", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
+//            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+//        }
+//    // wchar_t[]
+//        R_TEST(L"", QS(""));
+//        {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
+//            R_TEST(a, QS("123\\0004"));
+//            W_TEST(QS("123\\04"), a);
+//        }
+//        {   wchar_t a[] = {L'1', L'2', L'3'};
+//            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
+//        }
+//        {   wchar_t a[] = {L'1', L'2', L'\0'};
+//            R_TEST(a, "12", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
+//            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "", chio::read_error::unexpected, 0);
+//            R_TEST(a, "}", chio::read_error::unexpected, 0);
+//            R_TEST(a, "{", chio::read_error::unexpected, 0);
+//            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+//        }
+//    // const char*
+//        R_TEST((const char*)"test", QS("test"));
+//        R_TEST((const char*)nullptr, "null");
+//        W_TEST(QS("test"), (const char*)"test");
+//        W_TEST("null", (const char*)nullptr);
+//        R_TEST((const char*)nullptr, "nil", chio::read_error::unexpected, 1);
+//        R_TEST((const char*)nullptr, "\"nil", chio::read_error::unexpected, 4);
+//    // const char16_t*
+//        R_TEST((const char16_t*)u"test", QS("test"));
+//        W_TEST(QS("test"), (const char16_t*)u"test");
+//        R_TEST((const char16_t*)nullptr, "\"", chio::read_error::unexpected, 1);
+//    // const char32_t*
+//        R_TEST((const char32_t*)U"test", QS("test"));
+//        W_TEST(QS("test"), (const char32_t*)U"test");
+//        R_TEST((const char32_t*)nullptr, "\"", chio::read_error::unexpected, 1);
+//    // const wchar_t*
+//        R_TEST((const wchar_t*)L"test", QS("test"));
+//        W_TEST(QS("test"), (const wchar_t*)L"test");
+//        R_TEST((const wchar_t*)nullptr, "\"", chio::read_error::unexpected, 1);
+//    // char*
+//        R_TEST((char*)"test", QS("test"));
+//        W_TEST(QS("test"), (char*)"test");
+//        R_TEST((char*)nullptr, "null");
+//        W_TEST("null", (char*)nullptr);
+//    // char16_t*
+//        R_TEST((char16_t*)u"test", QS("test"));
+//        W_TEST(QS("test"), (char16_t*)u"test");
+//    // char32_t*
+//        R_TEST((char32_t*)U"test", QS("test"));
+//        W_TEST(QS("test"), (char32_t*)U"test");
+//    // wchar_t*
+//        R_TEST((wchar_t*)L"test", QS("test"));
+//        W_TEST(QS("test"), (wchar_t*)L"test");
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     // T[]
@@ -358,37 +358,37 @@ CXON_ENUM(Enum1,
     CXON_ENUM_VALUE_ASIS(three)
 )
 
-TEST_BEG(cxon::CXON<>) // enum
-    R_TEST(Enum1::one, "one");
-    W_TEST("one", Enum1::one);
-    R_TEST(Enum1::two, "Two (2)");
-    W_TEST("Two (2)", Enum1::two);
-    R_TEST(Enum1::one, "", chio::read_error::unexpected, 0);
-    R_TEST(Enum1::one, "o", chio::read_error::unexpected, 0);
-    R_TEST(Enum1::one, "{", chio::read_error::unexpected, 1);
-    R_TEST(Enum1::one, "{}", chio::read_error::unexpected, 0);
-    R_TEST(Enum1::one, "{{}}", chio::read_error::unexpected, 0);
-    R_TEST(Enum1::one, "{\"}", chio::read_error::unexpected, 3);
-    R_TEST(Enum1::one, "{\"\"}", chio::read_error::unexpected, 0);
-    R_TEST(Enum1::one, "{\"\\x\"}", chio::read_error::unexpected, 0);
-    W_TEST("", Enum1::four, chio::write_error::argument_invalid);
-TEST_END()
-
-TEST_BEG(cxon::CXON<test::input_iterator_traits>) // enum
-    R_TEST(Enum1::one, "one");
-    W_TEST("one", Enum1::one);
-    R_TEST(Enum1::two, "Two (2)");
-    W_TEST("Two (2)", Enum1::two);
-    R_TEST(Enum1::one, "", chio::read_error::unexpected, 0);
-    R_TEST(Enum1::one, "o", chio::read_error::unexpected, 1);
-    R_TEST(Enum1::one, "{", chio::read_error::unexpected, 1);
-    R_TEST(Enum1::one, "{}", chio::read_error::unexpected, 2);
-    R_TEST(Enum1::one, "{{}}", chio::read_error::unexpected, 4);
-    R_TEST(Enum1::one, "{\"}", chio::read_error::unexpected,3);
-    R_TEST(Enum1::one, "{\"\"}", chio::read_error::unexpected, 4);
-    R_TEST(Enum1::one, "{\"\\x\"}", chio::read_error::unexpected, 6);
-    W_TEST("", Enum1::four, chio::write_error::argument_invalid);
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // enum
+//    R_TEST(Enum1::one, "one");
+//    W_TEST("one", Enum1::one);
+//    R_TEST(Enum1::two, "Two (2)");
+//    W_TEST("Two (2)", Enum1::two);
+//    R_TEST(Enum1::one, "", chio::read_error::unexpected, 0);
+//    R_TEST(Enum1::one, "o", chio::read_error::unexpected, 0);
+//    R_TEST(Enum1::one, "{", chio::read_error::unexpected, 1);
+//    R_TEST(Enum1::one, "{}", chio::read_error::unexpected, 0);
+//    R_TEST(Enum1::one, "{{}}", chio::read_error::unexpected, 0);
+//    R_TEST(Enum1::one, "{\"}", chio::read_error::unexpected, 3);
+//    R_TEST(Enum1::one, "{\"\"}", chio::read_error::unexpected, 0);
+//    R_TEST(Enum1::one, "{\"\\x\"}", chio::read_error::unexpected, 0);
+//    W_TEST("", Enum1::four, chio::write_error::argument_invalid);
+//TEST_END()
+//
+//TEST_BEG(cxon::CXON<test::input_iterator_traits>) // enum
+//    R_TEST(Enum1::one, "one");
+//    W_TEST("one", Enum1::one);
+//    R_TEST(Enum1::two, "Two (2)");
+//    W_TEST("Two (2)", Enum1::two);
+//    R_TEST(Enum1::one, "", chio::read_error::unexpected, 0);
+//    R_TEST(Enum1::one, "o", chio::read_error::unexpected, 1);
+//    R_TEST(Enum1::one, "{", chio::read_error::unexpected, 1);
+//    R_TEST(Enum1::one, "{}", chio::read_error::unexpected, 2);
+//    R_TEST(Enum1::one, "{{}}", chio::read_error::unexpected, 4);
+//    R_TEST(Enum1::one, "{\"}", chio::read_error::unexpected,3);
+//    R_TEST(Enum1::one, "{\"\"}", chio::read_error::unexpected, 4);
+//    R_TEST(Enum1::one, "{\"\\x\"}", chio::read_error::unexpected, 6);
+//    W_TEST("", Enum1::four, chio::write_error::argument_invalid);
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Enum1::one, QS("one"));
@@ -438,20 +438,20 @@ CXON_STRUCT(Struct2,
     CXON_STRUCT_FIELD_NAME("B", b)
 )
 
-TEST_BEG(cxon::CXON<>) // struct macros
-    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: one}");
-    R_TEST(Struct1(0, Enum1::two), "{b: Two (2), A: 0}");
-    R_TEST(Struct1(0, Enum1::three), "{b: three}");
-    W_TEST("{A:0,b:one}", Struct1(0, Enum1::one));
-    R_TEST(Struct2(0, 1), "{a: 0, B: 1}");
-    W_TEST("{a:0,B:1}", Struct2(0, 1));
-    R_TEST(Struct2(), "{\"x\": 1}", chio::read_error::unexpected, 1);
-    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: eno}", chio::read_error::unexpected, 10);
-    R_TEST(Struct1(0, Enum1::one), "{A: 0, x: eno}", chio::read_error::unexpected, 7);
-    R_TEST(Struct2(), "", chio::read_error::unexpected, 0);
-    R_TEST(Struct2(), "}", chio::read_error::unexpected, 0);
-    R_TEST(Struct2(), "{", chio::read_error::unexpected, 1);
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // struct macros
+//    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: one}");
+//    R_TEST(Struct1(0, Enum1::two), "{b: Two (2), A: 0}");
+//    R_TEST(Struct1(0, Enum1::three), "{b: three}");
+//    W_TEST("{A:0,b:one}", Struct1(0, Enum1::one));
+//    R_TEST(Struct2(0, 1), "{a: 0, B: 1}");
+//    W_TEST("{a:0,B:1}", Struct2(0, 1));
+//    R_TEST(Struct2(), "{\"x\": 1}", chio::read_error::unexpected, 1);
+//    R_TEST(Struct1(0, Enum1::one), "{A: 0, b: eno}", chio::read_error::unexpected, 10);
+//    R_TEST(Struct1(0, Enum1::one), "{A: 0, x: eno}", chio::read_error::unexpected, 7);
+//    R_TEST(Struct2(), "", chio::read_error::unexpected, 0);
+//    R_TEST(Struct2(), "}", chio::read_error::unexpected, 0);
+//    R_TEST(Struct2(), "{", chio::read_error::unexpected, 1);
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"b\": \"one\"}");
@@ -478,14 +478,14 @@ CXON_STRUCT(Struct3,
     CXON_STRUCT_FIELD_ASIS(b)
 )
 
-TEST_BEG(cxon::CXON<>)
-    R_TEST(Struct3(1, new Struct3(2, nullptr)), "{a: 1, b: {a: 2}}");
-    R_TEST(Struct3(1, nullptr), "{a: 1, b: null}");
-    W_TEST("{a:1,b:{a:2,b:null}}", Struct3(1, new Struct3(2, nullptr)));
-    R_TEST(Struct3(), "{a: 1, x: nil}", chio::read_error::unexpected, 7);
-    R_TEST(Struct3(), "{a: 1, b: nil}", chio::read_error::unexpected, 10);
-    R_TEST(Struct3(), "{a: 1, b: {a: x}}", chio::read_error::integral_invalid, 14);
-TEST_END()
+//TEST_BEG(cxon::CXON<>)
+//    R_TEST(Struct3(1, new Struct3(2, nullptr)), "{a: 1, b: {a: 2}}");
+//    R_TEST(Struct3(1, nullptr), "{a: 1, b: null}");
+//    W_TEST("{a:1,b:{a:2,b:null}}", Struct3(1, new Struct3(2, nullptr)));
+//    R_TEST(Struct3(), "{a: 1, x: nil}", chio::read_error::unexpected, 7);
+//    R_TEST(Struct3(), "{a: 1, b: nil}", chio::read_error::unexpected, 10);
+//    R_TEST(Struct3(), "{a: 1, b: {a: x}}", chio::read_error::integral_invalid, 14);
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct3(1, new Struct3(2, nullptr)), "{\"a\": 1, \"b\": {\"a\": 2}}");
@@ -501,10 +501,10 @@ struct Struct4 {
     Struct4(int a = 0) : a(a) {}
     bool operator ==(const Struct4& t) const { return a == t.a; }
 
-    template <typename X, typename II, typename C>
+    /*template <typename X, typename II, typename C>
         static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
             return cxon::read_value<X>(t.a, b, e, ctx);
-        }
+        }*/
     template <typename X, typename II, typename C>
         static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
             return cxon::read_value<X>(t.a, b, e, ctx);
@@ -518,10 +518,10 @@ private:
     int a;
 };
 
-TEST_BEG(cxon::CXON<>) // static method
-    R_TEST(Struct4(1), "1");
-    W_TEST("3", Struct4(3));
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // static method
+//    R_TEST(Struct4(1), "1");
+//    W_TEST("3", Struct4(3));
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct4(1), "1");
@@ -537,10 +537,10 @@ struct Struct5 {
         bool read_value(II& b, II e, C& ctx) {
             return cxon::read_value<X>(a, b, e, ctx);
         }
-    template <typename X, typename OI, typename C>
+    /*template <typename X, typename OI, typename C>
         auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::CXON, bool> {
             return cxon::write_value<X>(o, a, ctx);
-        }
+        }*/
     template <typename X, typename OI, typename C>
         auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
             return cxon::write_value<X>(o, a, ctx);
@@ -550,10 +550,10 @@ private:
     int a;
 };
 
-TEST_BEG(cxon::CXON<>) // method
-    R_TEST(Struct5(1), "1");
-    W_TEST("3", Struct5(3));
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // method
+//    R_TEST(Struct5(1), "1");
+//    W_TEST("3", Struct5(3));
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct5(1), "1");
@@ -568,10 +568,10 @@ struct Struct6 {
 };
 
 namespace cxon {
-    template <typename X, typename II, typename C>
+    /*template <typename X, typename II, typename C>
         inline  enable_for_t<X, CXON, bool> read_value(Struct6& t, II& b, II e, C& ctx) {
             return read_value<X>(t.a, b, e, ctx);
-        }
+        }*/
     template <typename X, typename II, typename C>
         inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, C& ctx) {
             return read_value<X>(t.a, b, e, ctx);
@@ -582,10 +582,10 @@ namespace cxon {
         }
 }
 
-TEST_BEG(cxon::CXON<>) // function
-    R_TEST(Struct6(1), "1");
-    W_TEST("3", Struct6(3));
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // function
+//    R_TEST(Struct6(1), "1");
+//    W_TEST("3", Struct6(3));
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct6(1), "1");
@@ -607,13 +607,13 @@ private:
     int b;
 };
 
-TEST_BEG(cxon::CXON<>) // macros inside
-    R_TEST(Struct7(1, 2), "{a: 1, b: 2}");
-    R_TEST(Struct7(3, 0), "{a: 3}");
-    R_TEST(Struct7(0, 6), "{b: 6}");
-    W_TEST("{a:9,b:10}", Struct7(9, 10));
-    R_TEST(Struct7(), "{x: 0}", chio::read_error::unexpected, 1);
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // macros inside
+//    R_TEST(Struct7(1, 2), "{a: 1, b: 2}");
+//    R_TEST(Struct7(3, 0), "{a: 3}");
+//    R_TEST(Struct7(0, 6), "{b: 6}");
+//    W_TEST("{a:9,b:10}", Struct7(9, 10));
+//    R_TEST(Struct7(), "{x: 0}", chio::read_error::unexpected, 1);
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>) // macros inside
     R_TEST(Struct7(1, 2), "{\"a\": 1, \"b\": 2}");
@@ -652,11 +652,11 @@ private:
     int b;
 };
 
-TEST_BEG(cxon::CXON<>)
-    R_TEST(Struct8(1, 2), "{a: 1, \"b\": 2}");
-    R_TEST(Struct8(1, 2), "{a: 1, x: 2}", chio::read_error::unexpected, 7);
-    W_TEST("{a:3,b:4}", Struct8(3, 4));
-TEST_END()
+//TEST_BEG(cxon::CXON<>)
+//    R_TEST(Struct8(1, 2), "{a: 1, \"b\": 2}");
+//    R_TEST(Struct8(1, 2), "{a: 1, x: 2}", chio::read_error::unexpected, 7);
+//    W_TEST("{a:3,b:4}", Struct8(3, 4));
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct8(1, 2), "{\"a\": 1, \"b\": 2}");
@@ -682,17 +682,17 @@ struct Struct9 {
 int Struct9::a = 0;
 int const Struct9::b = 3;
 
-TEST_BEG(cxon::CXON<>) // static field
-    R_TEST(Struct9(), "{}");
-    W_TEST("{a:0,b:3}", Struct9());
-    R_TEST(Struct9(), "{a: 1}");
-    W_TEST("{a:1,b:3}", Struct9());
-    R_TEST(Struct9(), "{}");
-    W_TEST("{a:1,b:3}", Struct9());
-    R_TEST(Struct9(), "{a: 3}");
-    W_TEST("{a:3,b:3}", Struct9());
-    R_TEST(Struct9(), "{a: 1, x: 3}", chio::read_error::unexpected, 7);
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // static field
+//    R_TEST(Struct9(), "{}");
+//    W_TEST("{a:0,b:3}", Struct9());
+//    R_TEST(Struct9(), "{a: 1}");
+//    W_TEST("{a:1,b:3}", Struct9());
+//    R_TEST(Struct9(), "{}");
+//    W_TEST("{a:1,b:3}", Struct9());
+//    R_TEST(Struct9(), "{a: 3}");
+//    W_TEST("{a:3,b:3}", Struct9());
+//    R_TEST(Struct9(), "{a: 1, x: 3}", chio::read_error::unexpected, 7);
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>) // static field
     R_TEST(Struct9(), "{\"a\":0}");
@@ -728,20 +728,20 @@ CXON_STRUCT_WRITE(Struct10,
     CXON_STRUCT_FIELD_NAME("* \"':*", b)
 )
 
-TEST_BEG(cxon::CXON<>) // skip field
-    R_TEST(Struct10(1), "{skip1: true, a: 1}");
-    R_TEST(Struct10(1), "{skip2: 1, a: 1}");
-    R_TEST(Struct10(1), "{skip3: \"2\", a: 1}");
-    R_TEST(Struct10(1), "{skip3: \"\\x\", a: 1}");
-    R_TEST(Struct10(1), "{skip4: {3, 4}, a: 1}");
-    R_TEST(Struct10(1), "{skip4: {{}}, a: 1}");
-    R_TEST(Struct10(1), "{skip6: {\"}\": 5}, a: 1}");
-    R_TEST(Struct10(), "{x: 1}", chio::read_error::unexpected, 1);
-    R_TEST(Struct10(), "{x\\ x: 1}", chio::read_error::unexpected, 1);
-    R_TEST(Struct10(), "{skip6: {", chio::read_error::unexpected, 9);
-    R_TEST(Struct10(), "{skip6: \"", chio::read_error::unexpected, 9);
-    W_TEST("{a:1,*\\ \"'\\:*:2}", Struct10(1, 2));
-TEST_END()
+//TEST_BEG(cxon::CXON<>) // skip field
+//    R_TEST(Struct10(1), "{skip1: true, a: 1}");
+//    R_TEST(Struct10(1), "{skip2: 1, a: 1}");
+//    R_TEST(Struct10(1), "{skip3: \"2\", a: 1}");
+//    R_TEST(Struct10(1), "{skip3: \"\\x\", a: 1}");
+//    R_TEST(Struct10(1), "{skip4: {3, 4}, a: 1}");
+//    R_TEST(Struct10(1), "{skip4: {{}}, a: 1}");
+//    R_TEST(Struct10(1), "{skip6: {\"}\": 5}, a: 1}");
+//    R_TEST(Struct10(), "{x: 1}", chio::read_error::unexpected, 1);
+//    R_TEST(Struct10(), "{x\\ x: 1}", chio::read_error::unexpected, 1);
+//    R_TEST(Struct10(), "{skip6: {", chio::read_error::unexpected, 9);
+//    R_TEST(Struct10(), "{skip6: \"", chio::read_error::unexpected, 9);
+//    W_TEST("{a:1,*\\ \"'\\:*:2}", Struct10(1, 2));
+//TEST_END()
 
 TEST_BEG(cxon::JSON<>) // skip field
     R_TEST(Struct10(1), "{\"skip1\": true, \"a\": 1}");

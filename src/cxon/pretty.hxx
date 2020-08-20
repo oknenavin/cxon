@@ -17,20 +17,20 @@ namespace cxon { // interface
     template <typename X, typename Out>
         using indent_iterator = bits::indent_iterator<X, Out>;
 
-    template <typename X = JSON<>, typename OutIt>
+    template <typename X = CXON_DEFAULT_FORMAT, typename OutIt>
         constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t')        -> enable_if_t<is_output_iterator<OutIt>::value, indent_iterator<X, OutIt>>;
-    template <typename X = JSON<>, typename Insertable>
+    template <typename X = CXON_DEFAULT_FORMAT, typename Insertable>
         constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<Insertable>::value, indent_iterator<X, Insertable&>>;
-    template <typename X = JSON<>, typename FwIt>
+    template <typename X = CXON_DEFAULT_FORMAT, typename FwIt>
         constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indent_iterator<X, range_output_iterator<FwIt>>;
 
-    template <typename X = JSON<>, typename OutIt, typename InIt>
+    template <typename X = CXON_DEFAULT_FORMAT, typename OutIt, typename InIt>
         inline auto pretty(OutIt o, InIt b, InIt e, unsigned tab = 1, char pad = '\t')      -> enable_if_t<is_output_iterator<OutIt>::value, void>;
-    template <typename X = JSON<>, typename OutIt, typename Iterable>
+    template <typename X = CXON_DEFAULT_FORMAT, typename OutIt, typename Iterable>
         inline auto pretty(OutIt o, const Iterable& i, unsigned tab = 1, char pad = '\t')   -> enable_if_t<is_output_iterator<OutIt>::value, void>;
-    template <typename X = JSON<>, typename Result = std::string, typename InIt>
+    template <typename X = CXON_DEFAULT_FORMAT, typename Result = std::string, typename InIt>
         inline auto pretty(InIt b, InIt e, unsigned tab = 1, char pad = '\t')               -> enable_if_t<is_back_insertable<Result>::value, Result>;
-    template <typename X = JSON<>, typename Result = std::string, typename Iterable>
+    template <typename X = CXON_DEFAULT_FORMAT, typename Result = std::string, typename Iterable>
         inline auto pretty(const Iterable& i, unsigned tab = 1, char pad = '\t')            -> enable_if_t<is_back_insertable<Result>::value, Result>;
 
 }

@@ -52,52 +52,6 @@ namespace cxon { namespace chio { namespace chars { // character conversion: rea
                 template <typename II>
                     static char32_t utf32(II& i, II e) {
                         switch (peek(i, e)) {
-                            case '\'': return ++i, '\'';
-                            case '\"': return ++i, '\"';
-                            case '\?': return ++i, '\?';
-                            case '\\': return ++i, '\\';
-                            case 'a' : return ++i, '\a';
-                            case 'b' : return ++i, '\b';
-                            case 'f' : return ++i, '\f';
-                            case 'n' : return ++i, '\n';
-                            case 'r' : return ++i, '\r';
-                            case 't' : return ++i, '\t';
-                            case 'v' : return ++i, '\v';
-                            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
-                                char h[3]; // arbitrary length
-                                    unsigned const w = consume(h, h + sizeof(h), i, e, is<X>::digit8);
-                                        if (!w) return 0xFFFFFFFF;
-                                return oct_to_utf32(h, h + w);
-                            }
-                            case 'x' : {
-                                char h[2]; // arbitrary length
-                                    unsigned const w = consume(h, h + sizeof(h), ++i, e, is<X>::digit16);
-                                        if (!w) return 0xFFFFFFFF;
-                                return hex_to_utf32(h, h + w);
-                            }
-                            case 'u' : {
-                                char h[4];
-                                    CXON_ASS_U(h[0]); CXON_ASS_U(h[1]); CXON_ASS_U(h[2]); CXON_ASS_U(h[3]);
-                                return ++i, hex_to_utf32(h, h + sizeof(h));
-                            }
-                            case 'U' : {
-                                char h[8];
-                                    CXON_ASS_U(h[0]); CXON_ASS_U(h[1]); CXON_ASS_U(h[2]); CXON_ASS_U(h[3]);
-                                    CXON_ASS_U(h[4]); CXON_ASS_U(h[5]); CXON_ASS_U(h[6]); CXON_ASS_U(h[7]);
-                                return ++i, hex_to_utf32(h, h + sizeof(h));
-                            }
-                            default: return 0xFFFFFFFF;
-                        }
-                    }
-            };
-#   undef CXON_ASS_U
-
-#   define CXON_ASS_U(t) if (!is<JSON<X>>::digit16(next(i, e))) return 0xFFFFFFFF; t = peek(i, e)
-        template <typename X>
-            struct esc_to<JSON<X>> {
-                template <typename II>
-                    static char32_t utf32(II& i, II e) {
-                        switch (peek(i, e)) {
                             case '\"': return ++i, '\"';
                             case '\\': return ++i, '\\';
                             case '/' : return ++i, '/';
@@ -199,33 +153,6 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
         struct encode<X, char> {
             template <typename O, typename Cx>
                 static bool value(O& o, char c, Cx& cx) {
-                    static constexpr char const* encode_[] = {
-                        /*  0*/  "\\0"  , "\\1"  , "\\2"  , "\\3"  , "\\4"  , "\\5"  , "\\6"  , "\\7",
-                        /*  8*/  "\\b"  , "\\t"  , "\\n"  , "\\v"  , "\\f"  , "\\r"  , "\\16" , "\\17",
-                        /* 16*/  "\\20" , "\\21" , "\\22" , "\\23" , "\\24" , "\\25" , "\\26" , "\\27",
-                        /* 24*/  "\\30" , "\\31" , "\\32" , "\\33" , "\\34" , "\\35" , "\\36" , "\\37",
-                        /* 32*/  " "    , "!"    , "\\\"" , "#"    , "$"    , "%"    , "&"    , "'"
-                    };
-                    if ('"' != X::string::end && X::string::end == c)   return poke<X>(o, '\\', cx) && poke<X>(o, c, cx);
-                    else if (X::string::end != '"' && '"' == c)         return poke<X>(o, c, cx);
-                    else if (0 <= c && c <= 39)                         return poke<X>(o, encode_[(unsigned char)c], cx);
-                    else if (c == '\\')                                 return poke<X>(o, "\\\\", cx);
-                    else                                                return poke<X>(o, c, cx);
-                }
-            template <typename O, typename II, typename Cx>
-                static bool value(O& o, II i, II, Cx& cx) {
-                    return value(o, *i, cx);
-                }
-            template <typename O, typename II, typename Cx>
-                static bool range(O& o, II i, II e, Cx& cx) {
-                    for ( ; i != e && value(o, *i, cx); ++i) ;
-                    return i == e;
-                }
-        };
-    template <typename X>
-        struct encode<JSON<X>, char> {
-            template <typename O, typename Cx>
-                static bool value(O& o, char c, Cx& cx) {
                     static constexpr char const*const encode_[] = {
                         /*  0*/  "\\u0000", "\\u0001", "\\u0002", "\\u0003", "\\u0004", "\\u0005", "\\u0006", "\\u0007",
                         /*  8*/  "\\b"    , "\\t"    , "\\n"    , "\\u000b", "\\f"    , "\\r"    , "\\u000e", "\\u000f",
@@ -233,9 +160,9 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
                         /* 24*/  "\\u0018", "\\u0019", "\\u001a", "\\u001b", "\\u001c", "\\u001d", "\\u001e", "\\u001f",
                         /* 32*/  " "      , "!"      , "\\\""   , "#"      , "$"      , "%"      , "&"      , "'"
                     };
-                    if (0 <= c && c <= 39)  return poke<JSON<X>>(o, encode_[(unsigned char)c], cx);
-                    else if (c == '\\')     return poke<JSON<X>>(o, "\\\\", cx);
-                    else                    return poke<JSON<X>>(o, c, cx);
+                    if (0 <= c && c <= 39)  return poke<X>(o, encode_[(unsigned char)c], cx);
+                    else if (c == '\\')     return poke<X>(o, "\\\\", cx);
+                    else                    return poke<X>(o, c, cx);
                 }
             template <typename O, typename II, typename Cx, typename S = X>
                 static auto value(O& o, II i, II, Cx& cx)       -> enable_if_t<!S::strict_js, bool> {
@@ -249,8 +176,8 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
                         if (*i == '\x80') {
                             ++i; CXON_ASSERT(i != e, "unexpected");
                             switch (*i) {
-                                case '\xA8':    return poke<JSON<X>>(o, "\\u2028", cx);
-                                case '\xA9':    return poke<JSON<X>>(o, "\\u2029", cx);
+                                case '\xA8':    return poke<X>(o, "\\u2028", cx);
+                                case '\xA9':    return poke<X>(o, "\\u2029", cx);
                                 default:        return value(o, '\xE2', cx) && value(o, '\x80', cx) && value(o, *i, cx); } }
                         else                    return value(o, '\xE2', cx) && value(o, *i, cx); }
                     else                        return value(o, *i, cx);
@@ -288,43 +215,23 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
 
     template <typename X>
         struct encode<X, char32_t> {
-            template <typename O, typename Cx>
-                static bool value(O& o, char32_t c, Cx& cx) {
+            template <typename O, typename Cx, typename S = X>
+                static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t<!S::strict_js, bool> {
                     if (c > 0x7F) {
                             char b[4]; int const n = utf32_to_utf8(b, c);
                             return poke<X>(o, b, n, cx);
                     }
                     else    return encode<X, char>::value(o, char(c), cx);
                 }
-            template <typename O, typename II, typename Cx>
-                static bool value(O& o, II i, II, Cx& cx) {
-                    return value(o, *i, cx);
-                }
-            template <typename O, typename II, typename Cx>
-                static bool range(O& o, II i, II e, Cx& cx) {
-                    for ( ; i != e && value(o, *i, cx); ++i) ;
-                    return i == e;
-                }
-        };
-    template <typename X>
-        struct encode<JSON<X>, char32_t> {
-            template <typename O, typename Cx, typename S = X>
-                static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t<!S::strict_js, bool> {
-                    if (c > 0x7F) {
-                            char b[4]; int const n = utf32_to_utf8(b, c);
-                            return poke<JSON<X>>(o, b, n, cx);
-                    }
-                    else    return encode<JSON<X>, char>::value(o, char(c), cx);
-                }
             template <typename O, typename Cx, typename S = X>
                 static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t< S::strict_js, bool> {
                     if (c > 0x7F) {
-                            if (c == 0x2028) return poke<JSON<X>>(o, "\\u2028", cx);
-                            if (c == 0x2029) return poke<JSON<X>>(o, "\\u2029", cx);
+                            if (c == 0x2028) return poke<X>(o, "\\u2028", cx);
+                            if (c == 0x2029) return poke<X>(o, "\\u2029", cx);
                             char b[4]; int const n = utf32_to_utf8(b, c);
-                            return poke<JSON<X>>(o, b, n, cx);
+                            return poke<X>(o, b, n, cx);
                     }
-                    else    return encode<JSON<X>, char>::value(o, char(c), cx);
+                    else    return encode<X, char>::value(o, char(c), cx);
                 }
             template <typename O, typename II, typename Cx>
                 static bool value(O& o, II i, II, Cx& cx) {

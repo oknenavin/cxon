@@ -206,6 +206,7 @@ namespace test {
             bool operator !=(const force_input_iterator& i) const { return i_ != i.i_; }
             force_input_iterator& operator ++() { return ++i_, *this; }
             reference operator *() { return *i_; }
+            const reference operator *() const { return *i_; }
         };
     template <typename I>
         inline force_input_iterator<I> make_force_input_iterator(I i) {
