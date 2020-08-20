@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::CXON<>) // interface/read
+TEST_BEG(cxon::JSON<>) // interface/read
     // iterator
     {   int r; char const i[] = "1";
         TEST_CHECK(cxon::from_bytes(r, std::begin(i), std::end(i)) && r == 1);
@@ -47,7 +47,7 @@ TEST_BEG(cxon::CXON<>) // interface/read
     }
 TEST_END()
 
-TEST_BEG(cxon::CXON<>) // interface/write
+TEST_BEG(cxon::JSON<>) // interface/write
     // output iterator
     {   std::string r; std::string const e = QS("1");
         TEST_CHECK(cxon::to_bytes<XXON>(std::back_inserter(r), "1") && r == e);
@@ -135,7 +135,7 @@ struct Struct11 {
     )
 };
 
-TEST_BEG(cxon::CXON<>) // interface/parameters
+TEST_BEG(cxon::JSON<>) // interface/parameters
     {   std::string r; std::string const e = "3.142";
         TEST_CHECK(cxon::to_bytes<XXON>(r, 3.1415926, cxon::json::fp_precision::set<4>()) && r == e);
     }
@@ -146,8 +146,9 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
         TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("123"), cxon::json::num_len_max::set<4>()) && r == 123);
     }
     {   unsigned r = 0; std::string const i = "123";
-        auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::num_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '1');
+        auto ib = test::make_force_input_iterator(i.begin()), ie = test::make_force_input_iterator(i.end());
+        auto const e = cxon::from_bytes<XXON>(r, ib, ie, cxon::json::num_len_max::set<2>());
+        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '3');
     }
     {   double r = 0; std::list<char> const i = {'1', '2', '3'};
         TEST_CHECK(cxon::from_bytes<XXON>(r, i, cxon::json::num_len_max::set<4>()) && r == 123);
@@ -157,22 +158,22 @@ TEST_BEG(cxon::CXON<>) // interface/parameters
         TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '1');
     }
     {   Enum11 r = Enum11::one;
-        TEST_CHECK(cxon::from_bytes<XXON>(r, std::string("three"), cxon::json::ids_len_max::set<6>()) && r == Enum11::three);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, QS("three"), cxon::json::ids_len_max::set<8>()) && r == Enum11::three);
     }
-    {   Enum11 r = Enum11::one; std::string const i = "three";
+    {   Enum11 r = Enum11::one; std::string const i = QS("three");
         auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::ids_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == 't');
+        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '"');
     }
-    {   Struct11 r(42); std::string const i = "{ field: 42 }";
-        TEST_CHECK(cxon::from_bytes<XXON>(r, "{ field: 42 }", cxon::json::ids_len_max::set<6>()) && r == Struct11(42));
+    {   Struct11 r(42);
+        TEST_CHECK(cxon::from_bytes<XXON>(r, "{ \"field\": 42 }", cxon::json::ids_len_max::set<8>()) && r == Struct11(42));
     }
-    {   Struct11 r(42); std::string const i = "{ field: 42 }";
-        auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::ids_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == 'f');
+    {   Struct11 r(42);
+        auto const e = cxon::from_bytes<XXON>(r, "{ \"field\": 42 }", cxon::json::ids_len_max::set<2>());
+        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '"');
     }
 TEST_END()
 
-TEST_BEG(cxon::CXON<>) // errors
+TEST_BEG(cxon::JSON<>) // errors
     using namespace cxon;
     {   std::error_condition ec;
             ec = chio::read_error::ok;
@@ -212,20 +213,20 @@ TEST_BEG(cxon::CXON<>) // errors
     }
 TEST_END()
 
-TEST_BEG(cxon::CXON<>) // pretty
+TEST_BEG(cxon::JSON<>) // pretty
     {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
         char const s0[] =
             "{\n"
-            "  even: {\n"
+            "  \"even\": [\n"
             "    2,\n"
             "    4,\n"
             "    6\n"
-            "  },\n"
-            "  odd: {\n"
+            "  ],\n"
+            "  \"odd\": [\n"
             "    1,\n"
             "    3,\n"
             "    5\n"
-            "  }\n"
+            "  ]\n"
             "}"
         ;
         std::string s1;
@@ -242,8 +243,8 @@ TEST_BEG(cxon::CXON<>) // pretty
     {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl ah", "blah"} };
         char const s0[] =
             "{\n"
-            "  ala: \"ba\\\"la\",\n"
-            "  bl\\ ah: \"blah\"\n"
+            "  \"ala\": \"ba\\\"la\",\n"
+            "  \"bl ah\": \"blah\"\n"
             "}"
         ;
         std::string s1;

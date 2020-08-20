@@ -41,32 +41,17 @@ namespace cxon { namespace chio { namespace bits { // key read/write helpers
                 }
             template <typename T, typename II, typename Cx, typename E = S<X>>
                 static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value || !E::map::unquoted_keys, bool>
-                {
-                    return read_value<E>(t, i, e, cx);
-                }
-        };
-    template <typename X>
-        struct key_read<JSON<X>> {
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return read_value<JSON<UQKEY<X>>>(t, i, e, cx);
-                }
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
-                static auto value(T& t, II& i, II e, Cx& cx)
                     -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
                 {
                     return read_value<E>(t, i, e, cx);
                 }
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
+            template <typename T, typename II, typename Cx, typename E = S<X>>
                 static auto value(T& t, II& i, II e, Cx& cx)
                     -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                 {
                     return read_value<E>(t, i, e, cx);
                 }
-            template <typename T, typename II, typename Cx, typename E = JSON<X>>
+            template <typename T, typename II, typename Cx, typename E = S<X>>
                 static auto value(T& t, II& i, II e, Cx& cx)
                     -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
                 {
@@ -91,32 +76,17 @@ namespace cxon { namespace chio { namespace bits { // key read/write helpers
                 }
             template <typename T, typename O, typename Cx, typename E = S<X>>
                 static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t<!is_quoted<T>::value || !E::map::unquoted_keys, bool>
-                {
-                    return write_value<E>(o, t, cx);
-                }
-        };
-    template <typename X>
-        struct key_write<JSON<X>> {
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
-                static auto value(O& o, const T& t, Cx& cx)
-                    -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                {
-                    return write_value<JSON<UQKEY<X>>>(o, t, cx);
-                }
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
-                static auto value(O& o, const T& t, Cx& cx)
                     -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
                 {
                     return write_value<E>(o, t, cx);
                 }
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
+            template <typename T, typename O, typename Cx, typename E = S<X>>
                 static auto value(O& o, const T& t, Cx& cx)
                     -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
                 {
                     return write_value<E>(o, t, cx);
                 }
-            template <typename T, typename O, typename Cx, typename E = JSON<X>>
+            template <typename T, typename O, typename Cx, typename E = S<X>>
                 static auto value(O& o, const T& t, Cx& cx)
                     -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
                 {

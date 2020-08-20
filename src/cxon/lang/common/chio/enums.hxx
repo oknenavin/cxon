@@ -22,39 +22,12 @@ namespace cxon { namespace chio { namespace enums { // enum reader/writer constr
             return { name, value };
         }
 
-    namespace bits {
-
-        template <typename X>
-            struct read {
-                template <size_t N, typename II, typename Cx>
-                    static bool value(char (&t)[N], II& i, II e, Cx& cx) {
-                        return unquoted::read_value<X>(t, i, e, cx);
-                    }
-            };
-        template <typename X>
-            struct read<JSON<X>> {
-                template <size_t N, typename II, typename Cx>
-                    static bool value(char (&t)[N], II& i, II e, Cx& cx) {
-                        return cxon::read_value<JSON<X>>(t, i, e, cx);
-                    }
-            };
-
-        template <typename X>
-            struct opqt {
-                static constexpr std::nullptr_t const beg = nullptr;
-                static constexpr std::nullptr_t const end = nullptr;
-            };
-        template <typename X>
-            struct opqt<JSON<X>> : JSON<X>::string {};
-
-    }
-
     template <typename X, typename E, typename V, typename II, typename Cx>
         inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
             consume<X>(i, e);
             II const o = i;
                 char id[ids_len_max::constant<napa_type<Cx>>(64)];
-                    if (!bits::read<X>::value(id, i, e, cx)) return false;
+                    if (!cxon::read_value<X>(id, i, e, cx)) return false;
                 for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
                     return t = vb->value, true;
             return rewind(i, o), cx|read_error::unexpected;
@@ -63,7 +36,7 @@ namespace cxon { namespace chio { namespace enums { // enum reader/writer constr
     template <typename X, typename E, typename V, typename O, typename Cx>
         inline bool write_value(O& o, E t, V vb, V ve, Cx& cx) {
             for ( ; vb != ve; ++vb) if (t == vb->value)
-                return poke<X>(o, bits::opqt<X>::beg, cx) && poke<X>(o, vb->name, cx) && poke<X>(o, bits::opqt<X>::end, cx);
+                return poke<X>(o, X::string::beg, cx) && poke<X>(o, vb->name, cx) && poke<X>(o, X::string::end, cx);
             return cx|write_error::argument_invalid;
         }
 
