@@ -18,10 +18,10 @@ endif ()
 include_directories (../src)
 
 add_executable (
-    cxon cxon.cxx cxon.fundamental.cxx cxon.compound.cxx cxon.std.cxx
+    cxon.json cxon.json.cxx cxon.json.fundamental.cxx cxon.json.compound.cxx cxon.json.std.cxx
 )
 set_target_properties (
-    cxon PROPERTIES
+    cxon.json PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
@@ -41,8 +41,8 @@ set_target_properties (
 enable_testing()
 
 add_test (
-    NAME cxon/json/node/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon
+    NAME cxon/json/self
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json
 )
 add_test (
     NAME cxon/json/node/self
