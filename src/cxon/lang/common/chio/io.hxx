@@ -8,7 +8,7 @@
 
 #include "cxon/utility.hxx"
 #include "chcls.hxx"
-#include "errors.hxx"
+#include "error.hxx"
 #include "bits/io.hxx"
 
 namespace cxon { namespace chio {

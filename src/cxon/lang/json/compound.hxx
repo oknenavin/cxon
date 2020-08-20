@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_COMPOUND_HXX_
 #define CXON_JSON_COMPOUND_HXX_
 
-#include "cxon/lang/common/chio/strings.hxx"
+#include "cxon/lang/common/chio/string.hxx"
 #include "cxon/lang/common/chio/container.hxx"
 
 namespace cxon { // pointer

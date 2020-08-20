@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_ENUM_HXX_
 #   define CXON_JSON_ENUM_HXX_
 
-#   include "cxon/lang/common/chio/enums.hxx"
+#   include "cxon/lang/common/chio/enum.hxx"
 
 namespace cxon { namespace json {
     namespace enums = chio::enums;

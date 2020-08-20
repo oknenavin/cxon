@@ -8,7 +8,7 @@
 
 #include "chio.hxx"
 #include "key.hxx"
-#include "chars.hxx"
+#include "char.hxx"
 #include <algorithm>
 
 namespace cxon { namespace chio { namespace strs { // string quoting: read

@@ -6,8 +6,8 @@
 #ifndef CXON_JSON_FUNDAMENTAL_HXX_
 #define CXON_JSON_FUNDAMENTAL_HXX_
 
-#include "cxon/lang/common/chio/numbers.hxx"
-#include "cxon/lang/common/chio/chars.hxx"
+#include "cxon/lang/common/chio/char.hxx"
+#include "cxon/lang/common/chio/numeric.hxx"
 
 namespace cxon { // nullptr_t
 
