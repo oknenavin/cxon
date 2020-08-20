@@ -17,12 +17,12 @@ TEST_BEG(cxon::JSON<>)
         }
         {   int a[] = {1, 2, 0};
             R_TEST(a, "[1,2]");
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "]", chio::read_error::unexpected, 0);
-            R_TEST(a, "[", chio::read_error::integral_invalid, 1);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "]", json::read_error::unexpected, 0);
+            R_TEST(a, "[", json::read_error::integral_invalid, 1);
         }
         {   int a[] = {1, 2, 3};
-            R_TEST(a, "[1,2,3,4]", chio::read_error::overflow, 0);
+            R_TEST(a, "[1,2,3,4]", json::read_error::overflow, 0);
         }
     // char[]
         R_TEST("", QS(""));
@@ -37,19 +37,19 @@ TEST_BEG(cxon::JSON<>)
             W_TEST(QS("123\\u00004"), a);
         }
         {   char a[] = {'1', '2', '3'};
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
-            R_TEST(a, QS("12\\u2728"), chio::read_error::overflow, 0);
+            R_TEST(a, QS("1234"), json::read_error::overflow, 0);
+            R_TEST(a, QS("12\\u2728"), json::read_error::overflow, 0);
         }
         {   char a[] = {'1', '2', '\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+            R_TEST(a, "12", json::read_error::unexpected, 0);
+            R_TEST(a, "\"12", json::read_error::unexpected, 3);
+            R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "{1,2,0}", json::read_error::unexpected, 0);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "}", json::read_error::unexpected, 0);
+            R_TEST(a, "{", json::read_error::unexpected, 0);
+            R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
     // char16_t[]
         R_TEST(u"", QS(""));
@@ -75,19 +75,19 @@ TEST_BEG(cxon::JSON<>)
             W_TEST(QS("123\\u00004"), a);
         }
         {   char16_t a[] = {u'1', u'2', u'3'};
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), chio::read_error::overflow, 0);
+            R_TEST(a, QS("1234"), json::read_error::overflow, 0);
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), json::read_error::overflow, 0);
         }
         {   char16_t a[] = {u'1', u'2', u'\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+            R_TEST(a, "12", json::read_error::unexpected, 0);
+            R_TEST(a, "\"12", json::read_error::unexpected, 3);
+            R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "{1,2,0}", json::read_error::unexpected, 0);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "}", json::read_error::unexpected, 0);
+            R_TEST(a, "{", json::read_error::unexpected, 0);
+            R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
     // char32_t[]
         R_TEST(U"", QS(""));
@@ -112,18 +112,18 @@ TEST_BEG(cxon::JSON<>)
         }
         {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
             R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
+            R_TEST(a, QS("1234"), json::read_error::overflow, 0);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+            R_TEST(a, "12", json::read_error::unexpected, 0);
+            R_TEST(a, "\"12", json::read_error::unexpected, 3);
+            R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "{1,2,0}", json::read_error::unexpected, 0);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "}", json::read_error::unexpected, 0);
+            R_TEST(a, "{", json::read_error::unexpected, 0);
+            R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
@@ -132,38 +132,38 @@ TEST_BEG(cxon::JSON<>)
             W_TEST(QS("123\\u00004"), a);
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), chio::read_error::overflow, 0);
+            R_TEST(a, QS("1234"), json::read_error::overflow, 0);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
-            R_TEST(a, "12", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"12", chio::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), chio::read_error::escape_invalid, 1);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", chio::read_error::unexpected, 0);
-            R_TEST(a, "", chio::read_error::unexpected, 0);
-            R_TEST(a, "}", chio::read_error::unexpected, 0);
-            R_TEST(a, "{", chio::read_error::unexpected, 0);
-            R_TEST(a, "\"", chio::read_error::unexpected, 1);
+            R_TEST(a, "12", json::read_error::unexpected, 0);
+            R_TEST(a, "\"12", json::read_error::unexpected, 3);
+            R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "{1,2,0}", json::read_error::unexpected, 0);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "}", json::read_error::unexpected, 0);
+            R_TEST(a, "{", json::read_error::unexpected, 0);
+            R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
     // const char*
         R_TEST((const char*)"test", QS("test"));
         R_TEST((const char*)nullptr, "null");
         W_TEST(QS("test"), (const char*)"test");
         W_TEST("null", (const char*)nullptr);
-        R_TEST((const char*)nullptr, "nil", chio::read_error::unexpected, 1);
-        R_TEST((const char*)nullptr, "\"nil", chio::read_error::unexpected, 4);
+        R_TEST((const char*)nullptr, "nil", json::read_error::unexpected, 1);
+        R_TEST((const char*)nullptr, "\"nil", json::read_error::unexpected, 4);
     // const char16_t*
         R_TEST((const char16_t*)u"test", QS("test"));
         W_TEST(QS("test"), (const char16_t*)u"test");
-        R_TEST((const char16_t*)nullptr, "\"", chio::read_error::unexpected, 1);
+        R_TEST((const char16_t*)nullptr, "\"", json::read_error::unexpected, 1);
     // const char32_t*
         R_TEST((const char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (const char32_t*)U"test");
-        R_TEST((const char32_t*)nullptr, "\"", chio::read_error::unexpected, 1);
+        R_TEST((const char32_t*)nullptr, "\"", json::read_error::unexpected, 1);
     // const wchar_t*
         R_TEST((const wchar_t*)L"test", QS("test"));
         W_TEST(QS("test"), (const wchar_t*)L"test");
-        R_TEST((const wchar_t*)nullptr, "\"", chio::read_error::unexpected, 1);
+        R_TEST((const wchar_t*)nullptr, "\"", json::read_error::unexpected, 1);
     // char*
         R_TEST((char*)"test", QS("test"));
         R_TEST((char*)nullptr, "null");
@@ -194,9 +194,9 @@ TEST_BEG(cxon::JSON<>)
     W_TEST(QS("one"), Enum1::one);
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
-    R_TEST(Enum1::one, QS("noe"), chio::read_error::unexpected, 0);
-    R_TEST(Enum1::one, "one", chio::read_error::unexpected, 0);
-    W_TEST("", Enum1::four, chio::write_error::argument_invalid);
+    R_TEST(Enum1::one, QS("noe"), json::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "one", json::read_error::unexpected, 0);
+    W_TEST("", Enum1::four, json::write_error::argument_invalid);
 TEST_END()
 
 TEST_BEG(cxon::JSON<test::input_iterator_traits>)
@@ -204,9 +204,9 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>)
     W_TEST(QS("one"), Enum1::one);
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
-    R_TEST(Enum1::one, QS("noe"), chio::read_error::unexpected, 5);
-    R_TEST(Enum1::one, "one", chio::read_error::unexpected, 0);
-    W_TEST("", Enum1::four, chio::write_error::argument_invalid);
+    R_TEST(Enum1::one, QS("noe"), json::read_error::unexpected, 5);
+    R_TEST(Enum1::one, "one", json::read_error::unexpected, 0);
+    W_TEST("", Enum1::four, json::write_error::argument_invalid);
 TEST_END()
 
 
@@ -245,15 +245,15 @@ TEST_BEG(cxon::JSON<>)
     R_TEST(Struct1(0, Enum1::three), "{\"b\": \"three\"}");
     W_TEST("{\"A\":0,\"b\":\"one\"}", Struct1(0, Enum1::one));
     R_TEST(Struct2(0, 1), "{\"a\": 0, \"B\": 1}");
-    R_TEST(Struct2(), "{\"x\": 1}", chio::read_error::unexpected, 1);
+    R_TEST(Struct2(), "{\"x\": 1}", json::read_error::unexpected, 1);
     W_TEST("{\"a\":0,\"B\":1}", Struct2(0, 1));
-    R_TEST(Struct1(), "{\"x\": 1}", chio::read_error::unexpected, 1);
-    R_TEST(Struct1(), "{\"b\": \"one\", \"A\": x}", chio::read_error::integral_invalid, 18);
-    R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"b\": \"eno\"}", chio::read_error::unexpected, 14);
-    R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"x\": \"eno\"}", chio::read_error::unexpected, 9);
-    R_TEST(Struct2(), "", chio::read_error::unexpected, 0);
-    R_TEST(Struct2(), "}", chio::read_error::unexpected, 0);
-    R_TEST(Struct2(), "{", chio::read_error::unexpected, 1);
+    R_TEST(Struct1(), "{\"x\": 1}", json::read_error::unexpected, 1);
+    R_TEST(Struct1(), "{\"b\": \"one\", \"A\": x}", json::read_error::integral_invalid, 18);
+    R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"b\": \"eno\"}", json::read_error::unexpected, 14);
+    R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"x\": \"eno\"}", json::read_error::unexpected, 9);
+    R_TEST(Struct2(), "", json::read_error::unexpected, 0);
+    R_TEST(Struct2(), "}", json::read_error::unexpected, 0);
+    R_TEST(Struct2(), "{", json::read_error::unexpected, 1);
 TEST_END()
 
 
@@ -273,9 +273,9 @@ TEST_BEG(cxon::JSON<>)
     R_TEST(Struct3(1, new Struct3(2, nullptr)), "{\"a\": 1, \"b\": {\"a\": 2}}");
     R_TEST(Struct3(1, nullptr), "{\"a\": 1, \"b\": null}");
     W_TEST("{\"a\":1,\"b\":{\"a\":2,\"b\":null}}", Struct3(1, new Struct3(2, nullptr)));
-    R_TEST(Struct3(), "{\"a\": 1, \"x\": nil}", chio::read_error::unexpected, 9);
-    R_TEST(Struct3(), "{\"a\": 1, \"b\": nil}", chio::read_error::unexpected, 14);
-    R_TEST(Struct3(), "{\"a\": 1, \"b\": {\"a\": x}}", chio::read_error::integral_invalid, 20);
+    R_TEST(Struct3(), "{\"a\": 1, \"x\": nil}", json::read_error::unexpected, 9);
+    R_TEST(Struct3(), "{\"a\": 1, \"b\": nil}", json::read_error::unexpected, 14);
+    R_TEST(Struct3(), "{\"a\": 1, \"b\": {\"a\": x}}", json::read_error::integral_invalid, 20);
 TEST_END()
 
 
@@ -371,7 +371,7 @@ TEST_BEG(cxon::JSON<>) // macros inside
     R_TEST(Struct7(3, 0), "{\"a\": 3}");
     R_TEST(Struct7(0, 6), "{\"b\": 6}");
     W_TEST("{\"a\":9,\"b\":10}", Struct7(9, 10));
-    R_TEST(Struct7(), "{\"x\": 0}", chio::read_error::unexpected, 1);
+    R_TEST(Struct7(), "{\"x\": 0}", json::read_error::unexpected, 1);
 TEST_END()
 
 
@@ -381,7 +381,7 @@ struct Struct8 {
 
     template <typename X, typename II, typename C>
         static bool read_value(Struct8& t, II& i, II e, C& ctx) {
-            using namespace cxon::chio::structs;
+            using namespace cxon::json::structs;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
                 make_field("b", &Struct8::b)
@@ -390,7 +390,7 @@ struct Struct8 {
         }
     template <typename X, typename OI, typename C>
         static bool write_value(OI& o, const Struct8& t, C& ctx) {
-            using namespace cxon::chio::structs;
+            using namespace cxon::json::structs;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
                 make_field("b", &Struct8::b)
@@ -405,7 +405,7 @@ private:
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct8(1, 2), "{\"a\": 1, \"b\": 2}");
-    R_TEST(Struct8(1, 2), "{\"a\": 1, \"x\": 2}", chio::read_error::unexpected, 9);
+    R_TEST(Struct8(1, 2), "{\"a\": 1, \"x\": 2}", json::read_error::unexpected, 9);
     W_TEST("{\"a\":3,\"b\":4}", Struct8(3, 4));
 TEST_END()
 
@@ -436,7 +436,7 @@ TEST_BEG(cxon::JSON<>) // static field
     W_TEST("{\"a\":1,\"b\":3}", Struct9());
     R_TEST(Struct9(), "{\"a\": 3}");
     W_TEST("{\"a\":3,\"b\":3}", Struct9());
-    R_TEST(Struct9(), "{\"a\": 1, \"x\": 3}", chio::read_error::unexpected, 9);
+    R_TEST(Struct9(), "{\"a\": 1, \"x\": 3}", json::read_error::unexpected, 9);
 TEST_END()
 
 
@@ -474,9 +474,9 @@ TEST_BEG(cxon::JSON<>) // skip field
     R_TEST(Struct10(1), "{\"skip6\": {\"]\": 8}, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": [\"]\", 9], \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": [\"}\", 10], \"a\": 1}");
-    R_TEST(Struct10(), "{\"x\": 1}", chio::read_error::unexpected, 1);
-    R_TEST(Struct10(), "{\"skip1\": {", chio::read_error::unexpected, 11);
-    R_TEST(Struct10(), "{\"skip1\": [", chio::read_error::unexpected, 11);
-    R_TEST(Struct10(), "{\"skip1\": \"", chio::read_error::unexpected, 11);
+    R_TEST(Struct10(), "{\"x\": 1}", json::read_error::unexpected, 1);
+    R_TEST(Struct10(), "{\"skip1\": {", json::read_error::unexpected, 11);
+    R_TEST(Struct10(), "{\"skip1\": [", json::read_error::unexpected, 11);
+    R_TEST(Struct10(), "{\"skip1\": \"", json::read_error::unexpected, 11);
     W_TEST("{\"a\":1,\"* \\\"':*\":2}", Struct10(1, 2));
 TEST_END()

@@ -46,31 +46,27 @@ namespace cxon { // format traits
     template <typename X>
         using lstacc = typename X::list;
 
-}   // cxon format traits
+}
 
 namespace cxon { // format selectors
-
     template <typename T = struct json_format_traits>
         struct JSON;
-
 }
 
-#   ifndef CXON_DEFAULT_FORMAT
-#       define CXON_DEFAULT_FORMAT JSON<>
-#   endif
-#   include "cxon/cxon.hxx"
+#ifndef CXON_DEFAULT_FORMAT
+#   define CXON_DEFAULT_FORMAT JSON<>
+#endif
+#include "cxon/cxon.hxx"
 
 namespace cxon { // format selectors
-
     template <typename T>
         struct JSON : format_selector<T> {};
-
 }
 
-#   include "fundamental.hxx"
-#   include "compound.hxx"
-#   include "cxon/lang/common/chio/enums.hxx"
-#   include "cxon/lang/common/chio/structs.hxx"
+#include "fundamental.hxx"
+#include "enum.hxx"
+#include "compound.hxx"
+#include "struct.hxx"
 
 namespace cxon { namespace json {
     using read_error = chio::read_error;
@@ -80,12 +76,10 @@ namespace cxon { namespace json {
 }}
 
 namespace cxon { namespace json { // context parameters
-
     using allocator = chio::allocator;          // read: T*
     using num_len_max = chio::num_len_max;      // read: constexpr: numbers
     using ids_len_max = chio::ids_len_max;      // read: constexpr: object key
     using fp_precision = chio::fp_precision;    // write: constexpr: floating-points
-
-}}  // cxon::json context parameters
+}}
 
 #endif // CXON_JSON_JSON_HXX_
