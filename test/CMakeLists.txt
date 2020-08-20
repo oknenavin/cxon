@@ -28,10 +28,10 @@ set_target_properties (
 )
 
 add_executable (
-    cxjson cxjson.cxx
+    cxon.json.node cxon.json.node.cxx
 )
 set_target_properties (
-    cxjson PROPERTIES
+    cxon.json.node PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
@@ -41,22 +41,22 @@ set_target_properties (
 enable_testing()
 
 add_test (
-    NAME cxon/self
+    NAME cxon/json/node/self
     COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon
 )
 add_test (
-    NAME cxjson/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson
+    NAME cxon/json/node/self
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node
 )
 add_test (
-    NAME cxjson/pass
+    NAME cxon/json/node/pass
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson pass @../data/set.1-pass.in @../data/set.2-pass.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node pass @../data/set.1-pass.in @../data/set.2-pass.in
 )
 add_test (
-    NAME cxjson/fail
+    NAME cxon/json/node/fail
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxjson fail @../data/set.1-fail.in @../data/set.2-fail.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node fail @../data/set.1-fail.in @../data/set.2-fail.in
 )
 
 find_program (CMAKE_BASH bash)
@@ -65,8 +65,8 @@ find_program (CMAKE_DIFF diff)
 
 if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
-        NAME cxjson/diff
+        NAME cxon/json/node/diff
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxjson diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon.json.node diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()

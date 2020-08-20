@@ -19,7 +19,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-using node = cxjson::ordered_node;
+using node = cxon::json::ordered_node;
 
 struct test_time {
     double base = 0;
@@ -145,7 +145,7 @@ static bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& ti
     return true;
 }
 
-struct my_traits : cxjson::node_traits {
+struct my_traits : cxon::json::node_traits {
     using                               string_type = std::u16string;
     template <class T> using            array_type = std::list<T>;
     template <class K, class V> using   object_type = std::multimap<K, V>;
@@ -168,12 +168,12 @@ static unsigned self() {
         fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr), ++f_;\
         CXON_ASSERT((c), "check failed");
     {   // custom type binding + equal keys
-        using node = cxjson::basic_node<my_traits>;
+        using node = cxon::json::basic_node<my_traits>;
         node n;
         cxon::from_bytes(n, "{\"k\": 42, \"k\": 43}");
         CHECK(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
     }
-    {   //using node = cxjson::node;
+    {   //using node = cxon::json::node;
 
         char const s[] = "{\"array0\":[{\"1\":1},{\"2\":2}],\"array1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"number\":4}";
         node jns;
@@ -218,7 +218,7 @@ static unsigned self() {
 #           if !defined(__GNUG__) || defined(__clang__)
                 cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
-                cxon::to_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     (cxon::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           endif
             std::string const s0 =
@@ -261,35 +261,35 @@ static unsigned self() {
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
 #           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::to_bytes(cxon::make_indenter(s), n, cxjson::recursion_depth::set<4>());
+                auto const r = cxon::to_bytes(cxon::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
 #           else
-                auto const r = cxon::to_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                    (cxon::make_indenter(s), n, cxjson::recursion_depth::set<4>());
+                auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                                    (cxon::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
 #           endif
-            CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::json::error::recursion_depth_exceeded);
         }
         {   node jn;
             auto const r = cxon::from_bytes(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
-            CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::json::error::recursion_depth_exceeded);
         }
         {   node jn;
 #           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::from_bytes(jn, "[[[[", cxjson::recursion_depth::set<4>());
+                auto const r = cxon::from_bytes(jn, "[[[[", cxon::json::recursion_depth::set<4>());
 #           else
-                auto const r = cxon::from_bytes<cxon::JSON<>, cxjson::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                    (jn, "[[[[", cxjson::recursion_depth::set<4>());
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                                    (jn, "[[[[", cxon::json::recursion_depth::set<4>());
 #           endif
-            CHECK(!r && r.ec == cxjson::error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::json::error::recursion_depth_exceeded);
         }
         {   node jn;
             auto const r = cxon::from_bytes(jn, "~");
-            CHECK(!r && r.ec == cxjson::error::invalid);
+            CHECK(!r && r.ec == cxon::json::error::invalid);
         }
-        {   using namespace cxjson;
+        {   using namespace cxon::json;
             std::error_condition ec;
             ec = error::ok;
                 CXON_ASSERT(ec.category() == error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxjson") == 0, "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/json/node") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
             ec = error::invalid;
                 CXON_ASSERT(ec.message() == "invalid json", "check failed");
@@ -320,7 +320,7 @@ static unsigned self() {
         CHECK(mv1 == mv2);
     }
     {   // ex3
-        using node = cxjson::node;
+        using node = cxon::json::node;
     
         char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
         node const n0 = node::object {
@@ -337,7 +337,7 @@ static unsigned self() {
         CHECK(s1 == s0);
     }
     {   // ex4
-        using node = cxjson::node;
+        using node = cxon::json::node;
 
         // build using initializer lists
         node n1 = node::object {
@@ -390,7 +390,7 @@ static unsigned self() {
         std::string const pretty_json = cxon::pretty(s1);
     }
     {   // ex5
-        using node = cxjson::node;
+        using node = cxon::json::node;
         {   // (1)
             node n; CHECK(n.is<node::null>());
         }
@@ -418,26 +418,26 @@ static unsigned self() {
     }
     {   // ex6
         {   // T is the same
-            cxjson::node n = "string";
-            cxjson::node::string& v = n.imbue<cxjson::node::string>(); CHECK(v == "string");
+            cxon::json::node n = "string";
+            cxon::json::node::string& v = n.imbue<cxon::json::node::string>(); CHECK(v == "string");
         }
         {   // T is not the same
-            cxjson::node n = "string";
-            cxjson::node::number& v = n.imbue<cxjson::node::number>(); CHECK(v == 0.0);
+            cxon::json::node n = "string";
+            cxon::json::node::number& v = n.imbue<cxon::json::node::number>(); CHECK(v == 0.0);
         }
     }
     {   // ex7
-        cxjson::node n = "one";
-            n.get<cxjson::node::string>() = "another";
-        CHECK(n.get<cxjson::node::string>() == "another");
+        cxon::json::node n = "one";
+            n.get<cxon::json::node::string>() = "another";
+        CHECK(n.get<cxon::json::node::string>() == "another");
     }
     {   // ex8
-        cxjson::node n = "one";
-            auto *v = n.get_if<cxjson::node::string>(); CHECK(v != nullptr);
-        CHECK(n.get_if<cxjson::node::array>() == nullptr);
+        cxon::json::node n = "one";
+            auto *v = n.get_if<cxon::json::node::string>(); CHECK(v != nullptr);
+        CHECK(n.get_if<cxon::json::node::array>() == nullptr);
     }
     {   // ex9
-        cxjson::node const n; CHECK(n.kind() == cxjson::node_kind::null);
+        cxon::json::node const n; CHECK(n.kind() == cxon::json::node_kind::null);
     }
     {   // ex10
         {   node a = nullptr, b;
@@ -460,7 +460,7 @@ static unsigned self() {
         }
     }
     {   // ex11
-        using node = cxjson::node;
+        using node = cxon::json::node;
         {   node a = nullptr, b;
             b = a; CHECK(a == b);
         }
@@ -482,8 +482,8 @@ static unsigned self() {
     }
 #   undef CHECK
     f_ ?
-        fprintf(stdout, "cxjson/self: %u of %u failed\n", f_, a_) :
-        fprintf(stdout, "cxjson/self: %u of %u passed\n", a_, a_)
+        fprintf(stdout, "cxon/json/node/self: %u of %u failed\n", f_, a_) :
+        fprintf(stdout, "cxon/json/node/self: %u of %u passed\n", a_, a_)
     ;
     return f_;
 }
@@ -494,7 +494,7 @@ int main(int argc, char *argv[]) {
     }
     cases pass, fail, time, diff;
     if (!cl_parse(argc, argv, pass, fail, time, diff)) {
-        return fprintf(stderr, "usage: cxjson ((pass|fail|diff|time) (file|@file)+)+\n"), fflush(stderr), 1;
+        return fprintf(stderr, "usage: cxon/json/node ((pass|fail|diff|time) (file|@file)+)+\n"), fflush(stderr), 1;
     }
     int err = 0;
     if (!pass.empty()) {
@@ -517,8 +517,8 @@ int main(int argc, char *argv[]) {
                 }
             }
         fc ?
-            fprintf(stdout, "cxjson/pass: %zu of %zu failed\n", fc, pass.size()) :
-            fprintf(stdout, "cxjson/pass: %zu of %zu passed\n", pass.size(), pass.size())
+            fprintf(stdout, "cxon/json/node/pass: %zu of %zu failed\n", fc, pass.size()) :
+            fprintf(stdout, "cxon/json/node/pass: %zu of %zu passed\n", pass.size(), pass.size())
         ;   fflush(stdout);
     }
     if (!fail.empty()) {
@@ -544,8 +544,8 @@ int main(int argc, char *argv[]) {
                 }
             }
         fc ?
-            fprintf(stdout, "cxjson/fail: %zu of %zu failed\n", fc, fail.size()) :
-            fprintf(stdout, "cxjson/fail: %zu of %zu passed\n", fail.size(), fail.size())
+            fprintf(stdout, "cxon/json/node/fail: %zu of %zu failed\n", fc, fail.size()) :
+            fprintf(stdout, "cxon/json/node/fail: %zu of %zu passed\n", fail.size(), fail.size())
         ;   fflush(stdout);
     }
     if (!diff.empty()) {
@@ -605,7 +605,7 @@ int main(int argc, char *argv[]) {
             }
         }
         else {
-            fprintf(stdout, "cxjson/diff: %zu of %zu failed\n", fc, diff.size()), fflush(stdout);
+            fprintf(stdout, "cxon/json/node/diff: %zu of %zu failed\n", fc, diff.size()), fflush(stdout);
         }
     }
     if (!time.empty()) {
