@@ -7,7 +7,7 @@
 #include "cxon/lang/common/chio/structs.hxx"
 #include "cxon/pretty.hxx"
 #include "cxon/lib/std/list.hxx"
-#include "cxon/lang/json/node/cxjson.hxx"
+#include "cxon/lang/json/node/node.hxx"
 #include "cxon/lang/json/node/pretty.hxx"
 
 #include <fstream>
