@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_STRUCT_HXX_
 #define CXON_JSON_STRUCT_HXX_
 
-#include "cxon/lang/common/chio/structs.hxx"
+#include "cxon/lang/common/chio/struct.hxx"
 
 namespace cxon { namespace json {
     namespace structs = chio::structs;
