@@ -50,7 +50,7 @@ namespace cxon { // array
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return chio::container::read<X, lstacc<X>>(i, e, cx, [&] {
+                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
                         return (p != N || (chio::rewind(i, o), cx|chio::read_error::overflow)) &&
                                 read_value<X>(t[p++], i, e, cx)
                         ;
@@ -62,7 +62,7 @@ namespace cxon { // array
         struct write<X, T[N]> {
             template <typename O, typename Cx>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return chio::container::write<X, lstacc<X>>(o, t, cx);
+                    return chio::container::write<X, chio::list<X>>(o, t, cx);
                 }
         };
 

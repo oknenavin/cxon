@@ -68,7 +68,7 @@ namespace test {
     template <typename I>
         struct force_input_iterator;
 
-    struct input_iterator_traits : cxon::format_traits {
+    struct input_iterator_traits : cxon::json::format_traits {
         static constexpr bool force_input_iterator = true;
     };
 

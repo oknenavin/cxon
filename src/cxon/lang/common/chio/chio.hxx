@@ -15,6 +15,46 @@ namespace cxon { namespace chio { // context parameters
     CXON_PARAMETER(ids_len_max, unsigned);              // read: constexpr: object key
     CXON_PARAMETER(fp_precision, int);                  // write: constexpr: floating-points
 
-}}  // cxon::chio context parameters
+}}
+
+namespace cxon { namespace chio { // format traits
+
+    struct format_traits {
+        struct map {
+            static constexpr char                   beg             = '{';
+            static constexpr char                   end             = '}';
+            static constexpr char                   div             = ':';
+            static constexpr char                   sep             = ',';
+            static constexpr bool                   unquoted_keys   = false;
+        };
+        struct list {
+            static constexpr char                   beg             = '[';
+            static constexpr char                   end             = ']';
+            static constexpr char                   sep             = ',';
+        };
+        struct string {
+            static constexpr char                   beg             = '"';
+            static constexpr char                   end             = '"';
+        };
+        struct number {
+            static constexpr bool                   strict          = false;
+        };
+        struct id {
+            static constexpr char const*            nil             = "null";
+            static constexpr char const*            pos             = "true";
+            static constexpr char const*            neg             = "false";
+        };
+        static constexpr bool                       strict_js       = false;
+    };
+    static_assert(format_traits::string::beg == format_traits::string::end && (format_traits::string::beg == '"' || format_traits::string::beg == '\''), "not supported");
+
+    // access
+
+    template <typename X>
+        using map = typename X::map;
+    template <typename X>
+        using list = typename X::list;
+
+}}
 
 #endif // CXON_CHIO_HXX_

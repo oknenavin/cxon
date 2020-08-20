@@ -51,16 +51,12 @@ namespace cxon { namespace chio {
         struct is {
             static bool ctrl   (char c) noexcept { return CTRL & is_x_[(unsigned char)c]; }
             static bool real   (char c) noexcept { return REAL & is_x_[(unsigned char)c]; }
-            static bool space  (char c) noexcept { return CXSP & is_x_[(unsigned char)c]; }
+            static bool space  (char c) noexcept { return JSSP & is_x_[(unsigned char)c]; }
             static bool digit8 (char c) noexcept { return DGOC & is_x_[(unsigned char)c]; }
             static bool digit10(char c) noexcept { return DGDC & is_x_[(unsigned char)c]; }
             static bool digit16(char c) noexcept { return DGHX & is_x_[(unsigned char)c]; }
             static bool alpha  (char c) noexcept { return ALPH & is_x_[(unsigned char)c]; }
             static bool alnum  (char c) noexcept { return ALNM & is_x_[(unsigned char)c]; }
-        };
-    template <typename X>
-        struct is<JSON<X>> : is<X> {
-            static bool space  (char c) noexcept { return JSSP & is_x_[(unsigned char)c]; }
         };
 
 }}  // cxon::chio

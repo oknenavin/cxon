@@ -6,69 +6,34 @@
 #ifndef CXON_JSON_JSON_HXX_
 #define CXON_JSON_JSON_HXX_
 
-namespace cxon { // format traits
-
-    struct format_traits {
-        struct map {
-            static constexpr char                   beg             = '{';
-            static constexpr char                   end             = '}';
-            static constexpr char                   div             = ':';
-            static constexpr char                   sep             = ',';
-            static constexpr bool                   unquoted_keys   = false;
-        };
-        struct list {
-            static constexpr char                   beg             = '[';
-            static constexpr char                   end             = ']';
-            static constexpr char                   sep             = ',';
-        };
-        struct string {
-            static constexpr char                   beg             = '"';
-            static constexpr char                   end             = '"';
-        };
-        struct number {
-            static constexpr bool                   strict          = false;
-        };
-        struct id {
-            static constexpr char const*            nil             = "null";
-            static constexpr char const*            pos             = "true";
-            static constexpr char const*            neg             = "false";
-        };
-        static constexpr bool                       strict_js       = false;
-    };
-    static_assert(format_traits::string::beg == format_traits::string::end && (format_traits::string::beg == '"' || format_traits::string::beg == '\''), "not supported");
-
-    struct json_format_traits : format_traits {};
-
-    // access
-
-    template <typename X>
-        using mapacc = typename X::map;
-    template <typename X>
-        using lstacc = typename X::list;
-
-}
-
-namespace cxon { // format selectors
-    template <typename T = struct json_format_traits>
+namespace cxon { // format selector fwd
+    namespace json {
+        struct format_traits;
+    }
+    template <typename T = json::format_traits>
         struct JSON;
 }
-
 #ifndef CXON_DEFAULT_FORMAT
 #   define CXON_DEFAULT_FORMAT JSON<>
 #endif
-#include "cxon/cxon.hxx"
 
-namespace cxon { // format selectors
-    template <typename T>
-        struct JSON : format_selector<T> {};
-}
+#include "cxon/cxon.hxx"
 
 #include "fundamental.hxx"
 #include "enum.hxx"
 #include "compound.hxx"
 #include "struct.hxx"
 
-namespace cxon { namespace json {
+namespace cxon { // format selector
+    template <typename T>
+        struct JSON : format_selector<T> {};
+}
+
+namespace cxon { namespace json { // format traits
+    struct format_traits : chio::format_traits {};
+}}
+
+namespace cxon { namespace json { // errors
     using read_error = chio::read_error;
     using read_error_category = chio::read_error_category;
     using write_error = chio::write_error;
