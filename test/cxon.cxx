@@ -266,8 +266,8 @@ int main() {
     for (auto t : suite::get())
         t->test();
     suite::err() ?
-        fprintf(stdout, "cxon: %u of %u failed\n", suite::err(), suite::all()) :
-        fprintf(stdout, "cxon: %u of %u passed\n", suite::all(), suite::all())
+        fprintf(stdout, "cxon/json: %u of %u failed\n", suite::err(), suite::all()) :
+        fprintf(stdout, "cxon/json: %u of %u passed\n", suite::all(), suite::all())
     ;
     return suite::err();
 }
