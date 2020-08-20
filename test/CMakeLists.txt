@@ -42,21 +42,21 @@ enable_testing()
 
 add_test (
     NAME cxon/json/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json
 )
 add_test (
     NAME cxon/json/node/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json.node
 )
 add_test (
     NAME cxon/json/node/pass
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node pass @../data/set.1-pass.in @../data/set.2-pass.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json.node pass @../data/set.1-pass.in @../data/set.2-pass.in
 )
 add_test (
     NAME cxon/json/node/fail
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node fail @../data/set.1-fail.in @../data/set.2-fail.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json.node fail @../data/set.1-fail.in @../data/set.2-fail.in
 )
 
 find_program (CMAKE_BASH bash)
