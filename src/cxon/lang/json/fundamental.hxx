@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_FUNDAMENTAL_HXX_
-#define CXON_FUNDAMENTAL_HXX_
+#ifndef CXON_JSON_FUNDAMENTAL_HXX_
+#define CXON_JSON_FUNDAMENTAL_HXX_
 
 #include "cxon/lang/common/chio/numbers.hxx"
 #include "cxon/lang/common/chio/chars.hxx"
@@ -133,4 +133,4 @@ namespace cxon { // numeric
 
 }   // cxon numeric
 
-#endif // CXON_FUNDAMENTAL_HXX_
+#endif // CXON_JSON_FUNDAMENTAL_HXX_

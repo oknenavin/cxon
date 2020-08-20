@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_COMPOUND_HXX_
-#define CXON_COMPOUND_HXX_
+#ifndef CXON_JSON_COMPOUND_HXX_
+#define CXON_JSON_COMPOUND_HXX_
 
 #include "cxon/lang/common/chio/strings.hxx"
 #include "cxon/lang/common/chio/container.hxx"
@@ -144,4 +144,4 @@ namespace cxon { // character pointer & array
 
 }   // cxon character pointer & array
 
-#endif // CXON_COMPOUND_HXX_
+#endif // CXON_JSON_COMPOUND_HXX_

@@ -69,7 +69,7 @@ TEST_BEG(cxon::JSON<>) // interface/write
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), "42");
-            TEST_CHECK(r.ec == chio::write_error::output_failure);
+            TEST_CHECK(r.ec == json::write_error::output_failure);
         }
     {   char o[16]; char const e[] = "1";
         auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 1);
@@ -81,7 +81,7 @@ TEST_BEG(cxon::JSON<>) // interface/write
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), 42);
-            TEST_CHECK(r.ec == chio::write_error::output_failure);
+            TEST_CHECK(r.ec == json::write_error::output_failure);
         }
     {   char o[16]; char const e[] = "true";
         auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
@@ -93,7 +93,7 @@ TEST_BEG(cxon::JSON<>) // interface/write
     }
         {   char o[1];
             auto const r = cxon::to_bytes<XXON>(std::begin(o), std::end(o), true);
-            TEST_CHECK(r.ec == chio::write_error::output_failure);
+            TEST_CHECK(r.ec == json::write_error::output_failure);
         }
     // container/std::string (push_back, append)
     {   std::string r; std::string const e = QS("1");
@@ -148,67 +148,67 @@ TEST_BEG(cxon::JSON<>) // interface/parameters
     {   unsigned r = 0; std::string const i = "123";
         auto ib = test::make_force_input_iterator(i.begin()), ie = test::make_force_input_iterator(i.end());
         auto const e = cxon::from_bytes<XXON>(r, ib, ie, cxon::json::num_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '3');
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '3');
     }
     {   double r = 0; std::list<char> const i = {'1', '2', '3'};
         TEST_CHECK(cxon::from_bytes<XXON>(r, i, cxon::json::num_len_max::set<4>()) && r == 123);
     }
     {   float r = 0; std::list<char> const i = {'1', '2', '3'};
         auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::num_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '1');
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '1');
     }
     {   Enum11 r = Enum11::one;
         TEST_CHECK(cxon::from_bytes<XXON>(r, QS("three"), cxon::json::ids_len_max::set<8>()) && r == Enum11::three);
     }
     {   Enum11 r = Enum11::one; std::string const i = QS("three");
         auto const e = cxon::from_bytes<XXON>(r, i, cxon::json::ids_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '"');
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '"');
     }
     {   Struct11 r(42);
         TEST_CHECK(cxon::from_bytes<XXON>(r, "{ \"field\": 42 }", cxon::json::ids_len_max::set<8>()) && r == Struct11(42));
     }
     {   Struct11 r(42);
         auto const e = cxon::from_bytes<XXON>(r, "{ \"field\": 42 }", cxon::json::ids_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == chio::read_error::overflow && *e.end == '"');
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '"');
     }
 TEST_END()
 
 TEST_BEG(cxon::JSON<>) // errors
     using namespace cxon;
     {   std::error_condition ec;
-            ec = chio::read_error::ok;
-                CXON_ASSERT(ec.category() == chio::read_error_category::value(), "check failed");
+            ec = json::read_error::ok;
+                CXON_ASSERT(ec.category() == json::read_error_category::value(), "check failed");
                 CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/chio/read") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
-            ec = chio::read_error::unexpected;
+            ec = json::read_error::unexpected;
                 CXON_ASSERT(ec.message() == "unexpected input", "check failed");
-            ec = chio::read_error::character_invalid;
+            ec = json::read_error::character_invalid;
                 CXON_ASSERT(ec.message() == "invalid character", "check failed");
-            ec = chio::read_error::integral_invalid;
+            ec = json::read_error::integral_invalid;
                 CXON_ASSERT(ec.message() == "invalid integral or value out of range", "check failed");
-            ec = chio::read_error::floating_point_invalid;
+            ec = json::read_error::floating_point_invalid;
                 CXON_ASSERT(ec.message() == "invalid floating point", "check failed");
-            ec = chio::read_error::boolean_invalid;
+            ec = json::read_error::boolean_invalid;
                 CXON_ASSERT(ec.message() == "invalid boolean", "check failed");
-            ec = chio::read_error::escape_invalid;
+            ec = json::read_error::escape_invalid;
                 CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
-            ec = chio::read_error::surrogate_invalid;
+            ec = json::read_error::surrogate_invalid;
                 CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
-            ec = chio::read_error::overflow;
+            ec = json::read_error::overflow;
                 CXON_ASSERT(ec.message() == "buffer overflow", "check failed");
-            ec = chio::read_error(255);
+            ec = json::read_error(255);
                 CXON_ASSERT(ec.message() == "unknown error", "check failed");
     }
     {   std::error_condition ec;
-            ec = chio::write_error::ok;
-                CXON_ASSERT(ec.category() == chio::write_error_category::value(), "check failed");
+            ec = json::write_error::ok;
+                CXON_ASSERT(ec.category() == json::write_error_category::value(), "check failed");
                 CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/chio/write") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
-            ec = chio::write_error::output_failure;
+            ec = json::write_error::output_failure;
                 CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
-            ec = chio::write_error::argument_invalid;
+            ec = json::write_error::argument_invalid;
                 CXON_ASSERT(ec.message() == "invalid argument", "check failed");
-            ec = chio::write_error(255);
+            ec = json::write_error(255);
                 CXON_ASSERT(ec.message() == "unknown error", "check failed");
     }
 TEST_END()
