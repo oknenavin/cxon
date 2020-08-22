@@ -62,34 +62,35 @@ namespace cxon {
 #               endif
 
                 indent_iterator& operator =(char c) {
+                    using chio::poke;
                     switch (stt()) {
                         case quo:
-                                              chio::poke(o_, c);
+                                              poke(o_, c);
                             if (is::que(c)) { mut(grn);     break; }
                             if (is::esc(c)) { mut(qes);     break; }
                             break;
                         case qes:
-                                              mut(quo), chio::poke(o_, c);
+                                              mut(quo), poke(o_, c);
                             break;
                         case ges:
-                                              mut(grn), chio::poke(o_, c);
+                                              mut(grn), poke(o_, c);
                             break;
                         case con:
-                            if (is::spc(c))                                                                 break;
+                            if (is::spc(c))                                                     break;
                                               mut(grn);
-                            if (is::end(c)) { chio::poke(o_, c);                                            break; }
-                                        if  (!chio::poke(o_, '\n') || !chio::poke(o_, lvl_ += tab_, pad_))  break;
+                            if (is::end(c)) { poke(o_, c);                                      break; }
+                                        if  (!poke(o_, '\n') || !poke(o_, lvl_ += tab_, pad_))  break;
 #                           if __cplusplus >= 201703L
                                 [[fallthrough]];
 #                           endif
                         default:
-                            if (is::beg(c)) { mut(con), chio::poke(o_, c);                                                                              break; }
-                            if (is::end(c)) {           chio::poke(o_, '\n') && chio::poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && chio::poke(o_, c);   break; }
-                            if (is::sep(c)) {           chio::poke(o_, c) && chio::poke(o_, '\n') && chio::poke(o_, lvl_, pad_);                        break; }
-                            if (is::map(c)) {           chio::poke(o_, c) && chio::poke(o_, ' ');                                                       break; }
-                            if (is::qub(c)) { mut(quo), chio::poke(o_, c);                                                                              break; }
-                            if (is::esc(c)) { mut(ges), chio::poke(o_, c);                                                                              break; }
-                            if (is::nsp(c)) {           chio::poke(o_, c);                                                                              break; }
+                            if (is::beg(c)) { mut(con), poke(o_, c);                                                                break; }
+                            if (is::end(c)) {           poke(o_, '\n') && poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && poke(o_, c); break; }
+                            if (is::sep(c)) {           poke(o_, c) && poke(o_, '\n') && poke(o_, lvl_, pad_);                      break; }
+                            if (is::map(c)) {           poke(o_, c) && poke(o_, ' ');                                               break; }
+                            if (is::qub(c)) { mut(quo), poke(o_, c);                                                                break; }
+                            if (is::esc(c)) { mut(ges), poke(o_, c);                                                                break; }
+                            if (is::nsp(c)) {           poke(o_, c);                                                                break; }
                     }
                     return *this;
                 }
