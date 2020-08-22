@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_TEST_CXON_HXX
-#define CXON_TEST_CXON_HXX
+#ifndef CXON_TEST_HXX_
+#define CXON_TEST_HXX_
 
 #include "cxon/json.hxx"
 
@@ -262,4 +262,4 @@ namespace cxon { namespace test {
 
 }}
 
-#endif // CXON_TEST_CXON_HXX
+#endif // CXON_TEST_HXX_

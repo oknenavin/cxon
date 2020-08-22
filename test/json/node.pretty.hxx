@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_TEST_JSON_PRETTY_HXX_
-#define CXON_TEST_JSON_PRETTY_HXX_
+#ifndef CXON_TEST_NODE_PRETTY_HXX_
+#define CXON_TEST_NODE_PRETTY_HXX_
 
 namespace cxon {
 
@@ -82,4 +82,4 @@ namespace cxon {
 
 }
 
-#endif // CXON_TEST_JSON_PRETTY_HXX_
+#endif // CXON_TEST_NODE_PRETTY_HXX_
