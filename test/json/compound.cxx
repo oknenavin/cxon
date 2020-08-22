@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "cxon.json.hxx"
+#include "../cxon.hxx"
 
 #include <string>
 
