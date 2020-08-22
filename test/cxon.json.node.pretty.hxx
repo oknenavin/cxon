@@ -16,11 +16,11 @@ namespace cxon {
     template <typename X, typename Tr, typename O, typename Cx> // pretty write
         static bool write_value(test::indent_iterator<X, O>& o, const basic_node<Tr>& t, Cx& cx) {
             return o.indent_value([&](typename test::indent_iterator<X, O>::out_type out, unsigned& lvl, unsigned tab, char pad) {
-                using json = basic_node<Tr>;
+                using node = basic_node<Tr>;
                 switch (t.kind()) {
-                    case node_kind::object: {
+                case json::node_kind::object: {
                         CXON_JSON_NODE_RG();
-                        auto& j = get<typename json::object>(t);
+                        auto& j = json::get<typename node::object>(t);
                         if (j.empty()) return chio::poke(out, "{}");
                         auto i = std::begin(j);
                         lvl += tab;
@@ -42,9 +42,9 @@ namespace cxon {
                         lvl -= tab;
                         return chio::poke(out, '\n') && chio::poke(out, lvl, pad) && chio::poke(out, '}');
                     }
-                    case node_kind::array: {
+                    case json::node_kind::array: {
                         CXON_JSON_NODE_RG();
-                        auto& j = get<typename json::array>(t);
+                        auto& j = json::get<typename node::array>(t);
                         if (j.empty()) return chio::poke(out, "[]");
                         auto i = std::begin(j);
                         lvl += tab;
@@ -64,14 +64,14 @@ namespace cxon {
                         lvl -= tab;
                         return chio::poke(out, '\n') && chio::poke(out, lvl, pad) && chio::poke(out, ']');
                     }
-                    case node_kind::string:
-                        return write_value<X>(out, get<typename json::string>(t), cx);
-                    case node_kind::number:
-                        return write_value<X>(out, get<typename json::number>(t), cx);
-                    case node_kind::boolean:
-                        return write_value<X>(out, get<typename json::boolean>(t), cx);
-                    case node_kind::null:
-                        return write_value<X>(out, get<typename json::null>(t), cx);
+                    case json::node_kind::string:
+                        return write_value<X>(out, json::get<typename node::string>(t), cx);
+                    case json::node_kind::number:
+                        return write_value<X>(out, json::get<typename node::number>(t), cx);
+                    case json::node_kind::boolean:
+                        return write_value<X>(out, json::get<typename node::boolean>(t), cx);
+                    case json::node_kind::null:
+                        return write_value<X>(out, json::get<typename node::null>(t), cx);
                 }
                 return true; // LCOV_EXCL_LINE
             });

@@ -28,7 +28,7 @@ namespace cxon { namespace json { // node
     template <typename T, typename N> inline        T*      get_if(N& n);
     template <typename T, typename N> inline const  T*      get_if(const N& n);
 
-}}  // cxon::json node
+}}
 
 namespace cxon { namespace json { // errors
 
@@ -38,7 +38,7 @@ namespace cxon { namespace json { // errors
         recursion_depth_exceeded    // recursion depth exceeded
     };
 
-}}  // cxon::json errors
+}}
 
 namespace cxon { namespace json { // node traits
 
@@ -53,7 +53,7 @@ namespace cxon { namespace json { // node traits
         template <typename K, typename V> using     object_type     = std::map<K, V>;
     };
 
-}}  // cxon::json node traits
+}}
 
 namespace cxon { namespace json { // context parameters
 
@@ -78,7 +78,7 @@ namespace cxon {
     template <typename X = JSON<>, typename Tr, typename FwIt, typename ...CxPs>
         inline auto     to_bytes(FwIt b, FwIt e, const basic_node<Tr>& t, CxPs... p)  -> to_bytes_result<FwIt>;
 
-}   // cxon
+}
 
 // implementation /////////////////////////////////////////////////////////////
 
@@ -284,7 +284,7 @@ namespace cxon { namespace json { // node
     template <typename T, typename N>
         inline const T* get_if(const N& n) { return n.template get_if<T>(); }
 
-}}  // cxon::json node
+}}
 
 namespace cxon { namespace json { // errors
 
@@ -310,11 +310,11 @@ namespace cxon { namespace json { // errors
         return { static_cast<int>(e), error_category::value() };
     }
 
-}}  // cxon::json errors
+}}
 
 namespace std { // cxon/json errors
     template <> struct is_error_condition_enum<cxon::json::error> : true_type {};
-}   // std cxon/json errors
+}
 
 namespace cxon { namespace json { namespace bits {
 
@@ -407,55 +407,6 @@ namespace cxon {
 
 #   undef CXON_JSON_NODE_RG
 
-}   // cxon
-
-#if 1 // ordered object
-
-    namespace cxon { namespace json { namespace ordered {
-
-        template <typename K, typename V, typename ...R>
-            struct object : std::vector<std::pair<K, V>, R...> {
-                object() : std::vector<std::pair<K, V>, R...>() {}
-                object(std::initializer_list<std::pair<K, V>> l) : std::vector<std::pair<K, V>, R...>(l) {}
-            };
-
-    }}} // cxon::json::ordered
-
-    namespace cxon {
-
-        using namespace json;
-
-        template <typename X, typename K, typename V, typename ...R, typename II, typename Cx>
-            inline bool read_value(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
-                return chio::container::read<X, chio::map<X>>(i, e, cx, [&] {
-#                   if __cplusplus < 201703L
-                        auto& o = (t.emplace_back(), t.back());
-#                   else
-                        auto& o = t.emplace_back();
-#                   endif
-                    return chio::read_key<X>(o.first, i, e, cx) && read_value<X>(o.second, i, e, cx);
-                });
-            }
-
-        template <typename X, typename K, typename V, typename ...R, typename O, typename Cx>
-            inline bool write_value(O& o, const ordered::object<K, V, R...>& t, Cx& cx) {
-                using value_type = typename ordered::object<K, V, R...>::value_type;
-                return chio::container::write<X, chio::map<X>>(o, t, cx, [&](const value_type& e) {
-                    return chio::write_key<X>(o, e.first, cx) && write_value<X>(o, e.second, cx);
-                });
-            }
-
-    }   // cxon
-
-    namespace cxon { namespace json {
-
-        struct ordered_node_traits : node_traits {
-            template <typename K, typename V> using object_type = ordered::object<K, V>;
-        };
-        using ordered_node = basic_node<ordered_node_traits>;
-
-    }}  // cxon::json
-
-#endif // ordered object
+}
 
 #endif // CXON_JSON_NODE_HXX_
