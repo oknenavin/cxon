@@ -199,7 +199,7 @@ TEST_BEG(cxon::JSON<>)
     W_TEST("", Enum1::four, json::write_error::argument_invalid);
 TEST_END()
 
-TEST_BEG(cxon::JSON<test::input_iterator_traits>)
+TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>)
     R_TEST(Enum1::one, QS("one"));
     W_TEST(QS("one"), Enum1::one);
     R_TEST(Enum1::two, QS("Two (2)"));

@@ -4,11 +4,12 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon/json.hxx"
-#include "cxon/pretty.hxx"
 #include "cxon/lang/json/node/node.hxx"
-#include "cxon/lang/json/node/pretty.hxx"
 
 #include "cxon/lib/std/list.hxx"
+
+#include "cxon.pretty.hxx"
+#include "cxon.json.node.pretty.hxx"
 
 #include <fstream>
 #include <memory>
@@ -87,12 +88,12 @@ static void cxjson_test_time(test_case& test) {
         });
         {   std::string s;
             test.time.pretty_string = measure(cxjson_repeat, [&] {
-                s = cxon::pretty(json);
+                s = cxon::test::pretty(json);
             });
         }
         {   std::string s;
             test.time.pretty = measure(cxjson_repeat, [&] {
-                cxon::to_bytes(cxon::make_indenter(s), j);
+                cxon::to_bytes(cxon::test::make_indenter(s), j);
             });
         }
     }
@@ -204,11 +205,11 @@ static unsigned self() {
             CHECK(r == s);
         }
         {   std::string s1;
-                cxon::to_bytes(cxon::make_indenter(s1), jns);
+                cxon::to_bytes(cxon::test::make_indenter(s1), jns);
             std::string s2;
-                cxon::to_bytes(cxon::make_indenter(s2), jno);
+                cxon::to_bytes(cxon::test::make_indenter(s2), jno);
             std::string const s0 =
-                cxon::pretty(s1);
+                cxon::test::pretty(s1);
             CHECK(s1 == s0);
             CHECK(s2 == s0);
         }
@@ -216,55 +217,55 @@ static unsigned self() {
                 cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
 #           if !defined(__GNUG__) || defined(__clang__)
-                cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
+                cxon::to_bytes(cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
                 cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                    (cxon::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
+                    (cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           endif
             std::string const s0 =
-                cxon::pretty(s1, 4, ' ');
+                cxon::test::pretty(s1, 4, ' ');
             CHECK(s1 == s0);
         }
         {   node n;
                 cxon::from_bytes(n, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
             std::string s1;
-                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), n);
+                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), n);
             std::string const s0 =
-                cxon::pretty(s1, 2, ' ');
+                cxon::test::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::vector<node> v;
                 cxon::from_bytes(v, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
             std::string s1;
-                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), v);
+                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), v);
             std::string const s0 =
-                cxon::pretty(s1, 2, ' ');
+                cxon::test::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::vector<node> v;
                 cxon::from_bytes(v, "[{\"even\": [2, 4, 6]}, {\"odd\": [1, 3, 5]}]");
             std::string s1;
-                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), v);
+                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), v);
             std::string const s0 =
-                cxon::pretty(s1, 2, ' ');
+                cxon::test::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::map<std::string, node> m;
                 cxon::from_bytes(m, "{\"even\": [2, 4, 6], \"odd\": [1, 3, 5]}");
             std::string s1;
-                cxon::to_bytes(cxon::make_indenter(s1, 2, ' '), m);
+                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), m);
             std::string const s0 =
-                cxon::pretty(s1, 2, ' ');
+                cxon::test::pretty(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   node n;
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
 #           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::to_bytes(cxon::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
+                auto const r = cxon::to_bytes(cxon::test::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
 #           else
                 auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                    (cxon::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
+                                    (cxon::test::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
 #           endif
             CHECK(!r && r.ec == cxon::json::error::recursion_depth_exceeded);
         }
@@ -309,7 +310,7 @@ static unsigned self() {
             cxon::from_bytes(mv2, json);
         CHECK(mv1 == mv2);
 
-        std::string const pretty_json = cxon::pretty(json);
+        std::string const pretty_json = cxon::test::pretty(json);
     }
     {   // ex2
         my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
@@ -387,7 +388,7 @@ static unsigned self() {
             cxon::to_bytes(s2, n2);
         CHECK(s1 == s2);
 
-        std::string const pretty_json = cxon::pretty(s1);
+        std::string const pretty_json = cxon::test::pretty(s1);
     }
     {   // ex5
         using node = cxon::json::node;
@@ -570,7 +571,7 @@ int main(int argc, char *argv[]) {
                         ++err, c.error = name(c.source) + ".0.json" + ": cannot be opened";
                         continue;
                     }
-                cxon::pretty(std::ostreambuf_iterator<char>(os), json);
+                cxon::test::pretty(std::ostreambuf_iterator<char>(os), json);
             }
             node result;
             {   // from
@@ -586,7 +587,7 @@ int main(int argc, char *argv[]) {
                         ++err, c.error = name(c.source) + ".1.json" + "cannot be opened";
                         continue;
                     }
-                auto const w = cxon::to_bytes(cxon::make_indenter(std::ostreambuf_iterator<char>(os)), result);
+                auto const w = cxon::to_bytes(cxon::test::make_indenter(std::ostreambuf_iterator<char>(os)), result);
                     if (!w) {
                         ++err, c.error += w.ec.category().name(),
                         c.error += ": " + w.ec.message();

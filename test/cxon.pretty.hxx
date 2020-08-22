@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_PRETTY_HXX_
-#define CXON_PRETTY_HXX_
+#ifndef CXON_TEST_PRETTY_HXX_
+#define CXON_TEST_PRETTY_HXX_
 
 // interface //////////////////////////////////////////////////////////////////
 
-namespace cxon { // interface
+namespace cxon { namespace test { // interface
 
     namespace bits {
         template <typename X, typename Out>
@@ -33,11 +33,11 @@ namespace cxon { // interface
     template <typename X = CXON_DEFAULT_FORMAT, typename Result = std::string, typename Iterable>
         inline auto pretty(const Iterable& i, unsigned tab = 1, char pad = '\t')            -> enable_if_t<is_back_insertable<Result>::value, Result>;
 
-}
+}}
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon {
+namespace cxon { namespace test {
 
     namespace bits {
 
@@ -199,6 +199,6 @@ namespace cxon {
             return pretty<X, R>(std::begin(i), std::end(i), tab, pad);
         }
 
-}
+}}
 
-#endif // CXON_PRETTY_HXX_
+#endif // CXON_TEST_PRETTY_HXX_

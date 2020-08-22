@@ -3,19 +3,19 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_PRETTY_HXX_
-#define CXON_JSON_PRETTY_HXX_
+#ifndef CXON_TEST_JSON_PRETTY_HXX_
+#define CXON_TEST_JSON_PRETTY_HXX_
 
-namespace cxon { namespace json {
+namespace cxon {
 
 #   define CXON_JSON_NODE_RG()\
-        bits::scinc<Cx> RG__(cx);\
+        cxon::json::bits::scinc<Cx> RG__(cx);\
         if (!RG__.check()) return cx|error::recursion_depth_exceeded, false
 #   define CXON_JSON_NODE_CHECK(e) if (!(e)) return false
 
     template <typename X, typename Tr, typename O, typename Cx> // pretty write
-        static bool write_value(indent_iterator<X, O>& o, const basic_node<Tr>& t, Cx& cx) {
-            return o.indent_value([&](typename indent_iterator<X, O>::out_type out, unsigned& lvl, unsigned tab, char pad) {
+        static bool write_value(test::indent_iterator<X, O>& o, const basic_node<Tr>& t, Cx& cx) {
+            return o.indent_value([&](typename test::indent_iterator<X, O>::out_type out, unsigned& lvl, unsigned tab, char pad) {
                 using json = basic_node<Tr>;
                 switch (t.kind()) {
                     case node_kind::object: {
@@ -80,6 +80,6 @@ namespace cxon { namespace json {
 #   undef CXON_JSON_NODE_CHECK
 #   undef CXON_JSON_NODE_RG
 
-}}  // cxon::json
+}
 
-#endif // CXON_JSON_PRETTY_HXX_
+#endif // CXON_TEST_JSON_PRETTY_HXX_

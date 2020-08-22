@@ -7,7 +7,6 @@
 #define CXON_TEST_CXON_HXX
 
 #include "cxon/json.hxx"
-#include "cxon/pretty.hxx"
 
 #include <string>
 #include <vector>
@@ -16,30 +15,34 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct suite {
-    static std::vector<suite*>& get() {
-        static std::vector<suite*> tests;
-        return tests;
-    }
-    static unsigned& all() {
-        static unsigned a = 0;
-        return a;
-    }
-    static unsigned& err() {
-        static unsigned e = 0;
-        return e;
-    }
+namespace cxon { namespace test {
 
-    suite() { get().push_back(this); }
+    struct suite {
+        static std::vector<suite*>& get() {
+            static std::vector<suite*> tests;
+            return tests;
+        }
+        static unsigned& all() {
+            static unsigned a = 0;
+            return a;
+        }
+        static unsigned& err() {
+            static unsigned e = 0;
+            return e;
+        }
 
-    virtual void test() const = 0;
-};
+        suite() { get().push_back(this); }
+
+        virtual void test() const = 0;
+    };
+
+}}
 
 #define TEST_CAT_(x, y) x##y
 #define TEST_CAT(x, y)  TEST_CAT_(x, y)
 
 #define TEST_BEG_(...)\
-    static struct : suite {\
+    static struct : cxon::test::suite {\
         using XXON = __VA_ARGS__;\
         void test() const override {\
         using namespace cxon;
@@ -56,19 +59,17 @@ struct suite {
         CXON_ASSERT(false, "check failed");\
     } while (0)
 
-#define R_TEST(ref, ...) TEST_CHECK(test::verify_read<XXON>(ref, __VA_ARGS__))
-#define W_TEST(ref, ...) TEST_CHECK(test::verify_write<XXON>(ref, __VA_ARGS__))
+#define R_TEST(ref, ...) TEST_CHECK(cxon::test::verify_read<XXON>(ref, __VA_ARGS__))
+#define W_TEST(ref, ...) TEST_CHECK(cxon::test::verify_write<XXON>(ref, __VA_ARGS__))
 
 #define QS(s) "\"" s "\""
 
-namespace test {
-
-    using namespace cxon;
+namespace cxon { namespace test {
 
     template <typename I>
         struct force_input_iterator;
 
-    struct input_iterator_traits : cxon::json::format_traits {
+    struct input_iterator_traits : json::format_traits {
         static constexpr bool force_input_iterator = true;
     };
 
@@ -85,11 +86,11 @@ namespace test {
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj, json::write_error err);
 
-}   // test
+}}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace test {
+namespace cxon { namespace test {
 
     template <typename X, typename T>
         inline std::string to_string(const T& t) {
@@ -249,16 +250,16 @@ namespace test {
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj) {
             std::string res;
-                auto const r = cxon::to_bytes<X>(res, sbj);
+                auto const r = to_bytes<X>(res, sbj);
             return r && ref == res;
         }
     template <typename X, typename T>
         static bool verify_write(const std::string&, const T& sbj, json::write_error err) {
             std::string res;
-                auto const r = cxon::to_bytes<X>(res, sbj);
+                auto const r = to_bytes<X>(res, sbj);
             return r.ec.value() == (int)err;
         }
 
-}   // test
+}}
 
 #endif // CXON_TEST_CXON_HXX
