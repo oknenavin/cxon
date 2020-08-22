@@ -4,8 +4,8 @@ out = .out
 src = ../src/cxon
 dat = ../data
 
-cxon-json-check-src			= cxon.json.cxx cxon.json.fundamental.cxx cxon.json.compound.cxx cxon.json.std.cxx
-cxon-json-node-check-src		= cxon.json.node.cxx
+cxon-json-check-src			= json/json.cxx json/fundamental.cxx json/compound.cxx json/std.cxx
+cxon-json-node-check-src		= json/node.cxx
 
 check: check-cxon-json check-cxon-json-node
 

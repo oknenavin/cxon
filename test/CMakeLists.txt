@@ -18,7 +18,7 @@ endif ()
 include_directories (../src)
 
 add_executable (
-    cxon.json cxon.json.cxx cxon.json.fundamental.cxx cxon.json.compound.cxx cxon.json.std.cxx
+    cxon.json json/json.cxx json/fundamental.cxx json/compound.cxx json/std.cxx
 )
 set_target_properties (
     cxon.json PROPERTIES
@@ -28,7 +28,7 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.json.node cxon.json.node.cxx
+    cxon.json.node json/node.cxx
 )
 set_target_properties (
     cxon.json.node PROPERTIES
