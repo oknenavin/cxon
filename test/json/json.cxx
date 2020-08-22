@@ -123,17 +123,17 @@ TEST_END()
 enum Enum11 { one, two, three, four };
 
 CXON_ENUM(Enum11,
-    CXON_ENUM_VALUE_ASIS(one),
-    CXON_ENUM_VALUE_NAME("Two (2)", two),
-    CXON_ENUM_VALUE_ASIS(three)
+    CXON_JSON_ENUM_VALUE_ASIS(one),
+    CXON_JSON_ENUM_VALUE_NAME("Two (2)", two),
+    CXON_JSON_ENUM_VALUE_ASIS(three)
 )
 
 struct Struct11 {
     int field;
     Struct11(int f = 0) : field(f) {}
     bool operator ==(const Struct11& t) const { return field == t.field; }
-    CXON_STRUCT_READ_MEMBER(Struct11,
-        CXON_STRUCT_FIELD_ASIS(field)
+    CXON_JSON_STRUCT_READ_MEMBER(Struct11,
+        CXON_JSON_STRUCT_FIELD_ASIS(field)
     )
 };
 

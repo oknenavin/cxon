@@ -25,6 +25,6 @@ namespace cxon { namespace chio { namespace unquoted { // unquoted value
             return bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) || (cx|read_error::unexpected);
         }
 
-}}} // cxon::chio::unquoted value
+}}}
 
 #endif // CXON_CHIO_UNQUOTED_VALUE_HXX_

@@ -11,30 +11,29 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::stack<T, R...>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::stack<T, R...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::stack<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
+                    return chio::container::read<J, chio::list<J>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace();
-                            return read_value<X>(t.top(), i, e, cx);
+                            return read_value<J>(t.top(), i, e, cx);
 #                       else
-                            return read_value<X>(t.emplace(), i, e, cx);
+                            return read_value<J>(t.emplace(), i, e, cx);
 #                       endif
                     });
                 }
         };
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::stack<T, R...>> {
-            using A = std::stack<T, R...>;
-            template <typename O, typename Cx>
-                static bool value(O& o, const A& t, Cx& cx) {
-                    auto const& c =  bits::adaptor<A>::container(t);
-                    return chio::container::write<X, chio::list<X>>(o, c.rbegin(), c.rend(), cx);
+        struct write<JSON<X>, std::stack<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::stack<T, R...>& t, Cx& cx) {
+                    auto const& c = chio::container::bits::adaptor<std::stack<T, R...>>::container(t);
+                    return chio::container::write<J, chio::list<J>>(o, c.rbegin(), c.rend(), cx);
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_STACK_HXX_

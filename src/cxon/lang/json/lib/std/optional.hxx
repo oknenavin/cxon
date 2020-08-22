@@ -9,28 +9,28 @@
 namespace cxon {
 
     template <typename X, typename T>
-        struct read<X, std::optional<T>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::optional<T>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
-                    if (chio::peek(i, e) == *X::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
+                    if (chio::peek(i, e) == *J::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
                         II const o = i;
-                        return chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|chio::read_error::unexpected);
+                        return chio::consume<J>(J::id::nil, i, e) || (chio::rewind(i, o), cx|chio::read_error::unexpected);
                     }
-                    return read_value<X>(t.emplace(), i, e, cx);
+                    return read_value<J>(t.emplace(), i, e, cx);
                 }
         };
 
     template <typename X, typename T>
-        struct write<X, std::optional<T>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::optional<T>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::optional<T>& t, Cx& cx) {
                     return t.has_value() ?
-                        write_value<X>(o, t.value(), cx) :
-                        chio::poke<X>(o, X::id::nil, cx)
+                        write_value<J>(o, t.value(), cx) :
+                        chio::poke<J>(o, J::id::nil, cx)
                     ;
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_OPTIONAL_HXX_

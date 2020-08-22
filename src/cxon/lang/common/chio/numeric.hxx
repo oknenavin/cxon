@@ -268,7 +268,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
             return number_reader<X, T>::read(t, i, e, cx);
         }
 
-}}} // cxon::chio::nums number conversion: read
+}}}
 
 namespace cxon { namespace chio { namespace nums { // number conversion: write
 
@@ -300,6 +300,6 @@ namespace cxon { namespace chio { namespace nums { // number conversion: write
             ;
         }
 
-}}}  // cxon::chio::nums number conversion: write
+}}}
 
 #endif // CXON_CHIO_NUMBERS_HXX_

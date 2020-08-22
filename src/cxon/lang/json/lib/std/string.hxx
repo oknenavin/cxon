@@ -18,38 +18,38 @@ namespace cxon {
         };
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::basic_string<T, R...>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::basic_string<T, R...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    return json::bits::basic_string_read<X>(t, i, e, cx);
+                    return json::bits::basic_string_read<J>(t, i, e, cx);
                 }
         };
-    template <typename X, template <typename> class S, typename T, typename ...R>
-        struct read<S<chio::strs::UQKEY<X>>, std::basic_string<T, R...>> {
-            template <typename II, typename Cx>
+    template <typename X, typename T, typename ...R>
+        struct read<JSON<chio::strs::UQKEY<X>>, std::basic_string<T, R...>> {
+            template <typename II, typename Cx, typename J = JSON<chio::strs::UQKEY<X>>>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    chio::consume<S<X>>(i, e);
-                    return (chio::peek(i, e) == S<X>::string::beg && json::bits::basic_string_read<S<X>>(t, i, e, cx)) ||
-                            json::bits::basic_string_read<S<chio::strs::UQKEY<X>>>(t, i, e, cx)
+                    chio::consume<J>(i, e);
+                    return (chio::peek(i, e) == J::string::beg && json::bits::basic_string_read<JSON<X>>(t, i, e, cx)) ||
+                            json::bits::basic_string_read<J>(t, i, e, cx)
                     ;
                 }
         };
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::basic_string<T, R...>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::basic_string<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return json::bits::pointer_write<X>(o, t.data(), t.size(), cx);
+                    return json::bits::pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
-    template <typename X, template <typename> class S, typename T, typename ...R>
-        struct write<S<chio::strs::UQKEY<X>>, std::basic_string<T, R...>> {
-            template <typename O, typename Cx>
+    template <typename X, typename T, typename ...R>
+        struct write<JSON<chio::strs::UQKEY<X>>, std::basic_string<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<chio::strs::UQKEY<X>>>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return json::bits::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
+                    return json::bits::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_STRING_HXX_

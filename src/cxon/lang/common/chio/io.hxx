@@ -81,6 +81,6 @@ namespace cxon { namespace chio {
     template <typename X, typename O, typename Cx>
         constexpr bool poke(O&, std::nullptr_t, Cx&)            { return true; }
 
-}}  //cxon::chio
+}}
 
 #endif // CXON_CHIO_IO_HXX_

@@ -28,17 +28,17 @@ namespace cxon { namespace chio { namespace strs { // string quoting: read
 
     template <typename X>
         struct consume_str {
-            template <typename II, typename Cx> static bool      beg(II& i, II e, Cx& cx) { return consume<X>(X::string::beg, i, e, cx); }
-            template <typename II, typename Cx> static bool      end(II& i, II e, Cx& cx) { return consume<X>(X::string::end, i, e, cx); }
-            template <typename II, typename Cx> static char32_t  chr(II& i, II e, Cx& cx) {
+            template <typename II, typename Cx> static bool     beg(II& i, II e, Cx& cx) { return consume<X>(X::string::beg, i, e, cx); }
+            template <typename II, typename Cx> static bool     end(II& i, II e, Cx& cx) { return consume<X>(X::string::end, i, e, cx); }
+            template <typename II, typename Cx> static char32_t chr(II& i, II e, Cx& cx) {
                 return  chars::str_to_utf32<X>(i, e, cx);
             }
         };
     template <typename X, template <typename> class S>
         struct consume_str<S<UQKEY<X>>> {
-            template <typename II, typename Cx> static constexpr bool    beg(II&, II, Cx&)          { return true; }
-            template <typename II, typename Cx> static constexpr bool    end(II&, II, Cx&)          { return true; }
-            template <typename II, typename Cx> static char32_t          chr(II& i, II e, Cx& cx)   {
+            template <typename II, typename Cx> static constexpr bool   beg(II&, II, Cx&)          { return true; }
+            template <typename II, typename Cx> static constexpr bool   end(II&, II, Cx&)          { return true; }
+            template <typename II, typename Cx> static char32_t         chr(II& i, II e, Cx& cx)   {
                 if (peek(i, e) == '\\') {
                     char const c = next(i, e);
                     return !is_str<S<UQKEY<X>>>::esc(c) ?
@@ -50,7 +50,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: read
             }
         };
 
-}}} // cxon::chio::strs string quoting: read
+}}}
 
 namespace cxon { namespace chio { namespace strs { // string quoting: write
 
@@ -65,7 +65,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: write
             static constexpr std::nullptr_t         end = nullptr;
         };
 
-}}} // cxon::chio::strs string quoting: write
+}}}
 
 namespace cxon { namespace chio { namespace strs { // char arrays: read
 
@@ -164,7 +164,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: read
             err: return al::deallocate(at, b, be - b), cx|read_error::unexpected;
         }
 
-}}} // cxon::chio::strs char arrays: read
+}}}
 
 namespace cxon { namespace chio { namespace strs { // char arrays: write
 
@@ -232,6 +232,6 @@ namespace cxon { namespace chio { namespace strs { // char arrays: write
                 }
         };
 
-}}}  // cxon::chio::strs char arrays: write
+}}}
 
 #endif // CXON_CHIO_STRINGS_HXX_

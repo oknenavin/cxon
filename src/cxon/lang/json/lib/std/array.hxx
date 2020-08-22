@@ -18,34 +18,34 @@ namespace cxon {
         };
 
     template <typename X, typename T, size_t N>
-        struct read<X, std::array<T, N>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::array<T, N>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
+                    return chio::container::read<J, chio::list<J>>(i, e, cx, [&] {
                         return (p != N || (chio::rewind(i, o), cx|chio::read_error::overflow)) &&
-                                read_value<X>(t[p++], i, e, cx)
+                                read_value<J>(t[p++], i, e, cx)
                         ;
                     });
                 }
         };
     template <typename X, typename T>
-        struct read<X, std::array<T, 0>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::array<T, 0>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::array<T, 0>&, II& i, II e, Cx& cx) {
-                    return chio::consume<X>(X::list::beg, i, e, cx) && chio::consume<X>(X::list::end, i, e, cx);
+                    return chio::consume<J>(J::list::beg, i, e, cx) && chio::consume<J>(J::list::end, i, e, cx);
                 }
         };
 
     template <typename X, typename T, size_t S>
-        struct write<X, std::array<T, S>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::array<T, S>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::array<T, S>& t, Cx& cx) {
-                    return chio::container::write<X, chio::list<X>>(o, t, cx);
+                    return chio::container::write<J, chio::list<J>>(o, t, cx);
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_ARRAY_HXX_

@@ -40,36 +40,6 @@ namespace cxon { namespace chio { namespace enums { // enum reader/writer constr
             return cx|write_error::argument_invalid;
         }
 
-}}} // cxon::chio::enums enum reader/writer construction helpers
-
-#if 1 // cxon enumeration
-
-#   define CXON_ENUM_VALUE(T, N, V)     cxon::chio::enums::make_value(N, T::V)
-#   define CXON_ENUM_VALUE_NAME(N, V)   CXON_ENUM_VALUE(T, N, V)
-#   define CXON_ENUM_VALUE_ASIS(V)      CXON_ENUM_VALUE(T, #V, V)
-
-#   define CXON_ENUM_READ(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename II, typename Cx>\
-                inline bool read_value(Type& t, II& i, II e, Cx& cx) {\
-                    using T = Type;\
-                    static constexpr chio::enums::value<Type> v[] = { __VA_ARGS__ };\
-                    return chio::enums::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
-                }\
-        }
-#   define CXON_ENUM_WRITE(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename O, typename Cx>\
-                inline bool write_value(O& o, const Type& t, Cx& cx) {\
-                    using T = Type;\
-                    static constexpr chio::enums::value<Type> v[] = { __VA_ARGS__ };\
-                    return chio::enums::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
-                }\
-        }
-#   define CXON_ENUM(Type, ...)\
-        CXON_ENUM_READ(Type, __VA_ARGS__)\
-        CXON_ENUM_WRITE(Type, __VA_ARGS__)
-
-#endif // enumeration
+}}}
 
 #endif // CXON_CHIO_ENUMS_HXX_

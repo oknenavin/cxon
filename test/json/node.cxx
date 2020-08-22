@@ -160,8 +160,8 @@ struct my_type {
     bool operator ==(const my_type& v) const { return even == v.even && odd == v.odd; }
 };
 CXON_STRUCT(my_type,
-    CXON_STRUCT_FIELD_ASIS(even),
-    CXON_STRUCT_FIELD_ASIS(odd)
+    CXON_JSON_STRUCT_FIELD_ASIS(even),
+    CXON_JSON_STRUCT_FIELD_ASIS(odd)
 )
 
 static unsigned self() {

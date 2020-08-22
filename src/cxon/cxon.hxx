@@ -155,7 +155,7 @@ namespace cxon { // implementation bridge
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { // interface implementation
+namespace cxon { // interface
 
     // read
 

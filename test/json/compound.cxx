@@ -184,9 +184,9 @@ TEST_END()
 enum Enum1 { one, two, three, four };
 
 CXON_ENUM(Enum1,
-    CXON_ENUM_VALUE_ASIS(one),
-    CXON_ENUM_VALUE_NAME("Two (2)", two),
-    CXON_ENUM_VALUE_ASIS(three)
+    CXON_JSON_ENUM_VALUE_ASIS(one),
+    CXON_JSON_ENUM_VALUE_NAME("Two (2)", two),
+    CXON_JSON_ENUM_VALUE_ASIS(three)
 )
 
 TEST_BEG(cxon::JSON<>)
@@ -225,18 +225,18 @@ struct Struct2 {
     bool operator ==(const Struct2& t) const { return a == t.a && b == t.b; }
 };
 
-CXON_STRUCT_READ(Struct1,
-    CXON_STRUCT_FIELD_NAME("A", a),
-    CXON_STRUCT_FIELD_ASIS(b)
+CXON_JSON_STRUCT_READ(Struct1,
+    CXON_JSON_STRUCT_FIELD_NAME("A", a),
+    CXON_JSON_STRUCT_FIELD_ASIS(b)
 )
-CXON_STRUCT_WRITE(Struct1,
-    CXON_STRUCT_FIELD_NAME("A", a),
-    CXON_STRUCT_FIELD_ASIS(b)
+CXON_JSON_STRUCT_WRITE(Struct1,
+    CXON_JSON_STRUCT_FIELD_NAME("A", a),
+    CXON_JSON_STRUCT_FIELD_ASIS(b)
 )
 
 CXON_STRUCT(Struct2,
-    CXON_STRUCT_FIELD_ASIS(a),
-    CXON_STRUCT_FIELD_NAME("B", b)
+    CXON_JSON_STRUCT_FIELD_ASIS(a),
+    CXON_JSON_STRUCT_FIELD_NAME("B", b)
 )
 
 TEST_BEG(cxon::JSON<>)
@@ -265,8 +265,8 @@ struct Struct3 {
 };
 
 CXON_STRUCT(Struct3,
-    CXON_STRUCT_FIELD_ASIS(a),
-    CXON_STRUCT_FIELD_ASIS(b)
+    CXON_JSON_STRUCT_FIELD_ASIS(a),
+    CXON_JSON_STRUCT_FIELD_ASIS(b)
 )
 
 TEST_BEG(cxon::JSON<>)
@@ -356,9 +356,9 @@ struct Struct7 {
     Struct7(int a = 0, int b = 0) : a(a), b(b) {}
     bool operator ==(const Struct7& t) const { return a == t.a && b == t.b; }
 
-    CXON_STRUCT_MEMBER(Struct7,
-        CXON_STRUCT_FIELD_ASIS(a),
-        CXON_STRUCT_FIELD_ASIS(b)
+    CXON_JSON_STRUCT_MEMBER(Struct7,
+        CXON_JSON_STRUCT_FIELD_ASIS(a),
+        CXON_JSON_STRUCT_FIELD_ASIS(b)
     )
 
 private:
@@ -416,12 +416,12 @@ struct Struct9 {
 
     bool operator ==(const Struct9&) const { return true; }
 
-    CXON_STRUCT_READ_MEMBER(Struct9,
-        CXON_STRUCT_FIELD_ASIS(a)
+    CXON_JSON_STRUCT_READ_MEMBER(Struct9,
+        CXON_JSON_STRUCT_FIELD_ASIS(a)
     )
-    CXON_STRUCT_WRITE_MEMBER(Struct9,
-        CXON_STRUCT_FIELD_ASIS(a),
-        CXON_STRUCT_FIELD_ASIS(b)
+    CXON_JSON_STRUCT_WRITE_MEMBER(Struct9,
+        CXON_JSON_STRUCT_FIELD_ASIS(a),
+        CXON_JSON_STRUCT_FIELD_ASIS(b)
     )
 };
 int Struct9::a = 0;
@@ -447,18 +447,18 @@ struct Struct10 {
     bool operator ==(const Struct10& t) const { return a == t.a && b == t.b; }
 };
 
-CXON_STRUCT_READ(Struct10,
-    CXON_STRUCT_FIELD_ASIS(a),
-    CXON_STRUCT_FIELD_SKIP("skip1"),
-    CXON_STRUCT_FIELD_SKIP("skip2"),
-    CXON_STRUCT_FIELD_SKIP("skip3"),
-    CXON_STRUCT_FIELD_SKIP("skip4"),
-    CXON_STRUCT_FIELD_SKIP("skip5"),
-    CXON_STRUCT_FIELD_SKIP("skip6")
+CXON_JSON_STRUCT_READ(Struct10,
+    CXON_JSON_STRUCT_FIELD_ASIS(a),
+    CXON_JSON_STRUCT_FIELD_SKIP("skip1"),
+    CXON_JSON_STRUCT_FIELD_SKIP("skip2"),
+    CXON_JSON_STRUCT_FIELD_SKIP("skip3"),
+    CXON_JSON_STRUCT_FIELD_SKIP("skip4"),
+    CXON_JSON_STRUCT_FIELD_SKIP("skip5"),
+    CXON_JSON_STRUCT_FIELD_SKIP("skip6")
 )
-CXON_STRUCT_WRITE(Struct10,
-    CXON_STRUCT_FIELD_ASIS(a),
-    CXON_STRUCT_FIELD_NAME("* \"':*", b)
+CXON_JSON_STRUCT_WRITE(Struct10,
+    CXON_JSON_STRUCT_FIELD_ASIS(a),
+    CXON_JSON_STRUCT_FIELD_NAME("* \"':*", b)
 )
 
 TEST_BEG(cxon::JSON<>) // skip field

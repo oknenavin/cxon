@@ -11,17 +11,17 @@
 namespace cxon {
 
     template <typename X, typename ...R>
-        struct read<X, std::unordered_map<R...>>    : bits::map_reader<X, std::unordered_map<R...>> {};
+        struct read<JSON<X>, std::unordered_map<R...>>  : json::bits::map_reader<JSON<X>, std::unordered_map<R...>> {};
 
     template <typename X, typename ...R>
-        struct write<X, std::unordered_map<R...>>   : bits::map_writer<X, std::unordered_map<R...>> {};
+        struct write<JSON<X>, std::unordered_map<R...>> : json::bits::map_writer<JSON<X>, std::unordered_map<R...>> {};
 
     template <typename X, typename ...R>
-        struct read<X, std::unordered_multimap<R...>>   : bits::map_reader<X, std::unordered_multimap<R...>> {};
+        struct read<JSON<X>, std::unordered_multimap<R...>>     : json::bits::map_reader<JSON<X>, std::unordered_multimap<R...>> {};
 
     template <typename X, typename ...R>
-        struct write<X, std::unordered_multimap<R...>>  : bits::map_writer<X, std::unordered_multimap<R...>> {};
+        struct write<JSON<X>, std::unordered_multimap<R...>>    : json::bits::map_writer<JSON<X>, std::unordered_multimap<R...>> {};
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_UNORDERED_MAP_HXX_
