@@ -64,37 +64,37 @@ template <typename R, typename I>
         ;
     }
 
-constexpr unsigned cxjson_repeat = 3;
+constexpr unsigned cxon_json_repeat = 3;
 
-static void cxjson_test_time(test_case& test) {
+static void cxon_json_test_time(test_case& test) {
     std::ifstream is(test.source, std::ifstream::binary);
         if (!is) return test.error = "cannot be opened", void();
     std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
     {   // base
         std::vector<std::unique_ptr<char[]>> vs;
-        test.time.base = measure(cxjson_repeat, [&] { // something like strdup
+        test.time.base = measure(cxon_json_repeat, [&] { // something like strdup
             vs.emplace_back(std::unique_ptr<char[]>(new char[strlen(json.c_str()) + 1]));
             std::memcpy(vs.back().get(), json.c_str(), json.size());
         });
     }
     {   // cxon
         std::vector<node> vj;
-        test.time.read = measure(cxjson_repeat, [&] {
+        test.time.read = measure(cxon_json_repeat, [&] {
             vj.emplace_back();
             auto const r = cxon::from_bytes(vj.back(), json);
             if (!r) test.error = format_error(r, json.begin());
         });
         node j = vj.back(); vj.clear();
-        test.time.write = measure(cxjson_repeat, [&] {
+        test.time.write = measure(cxon_json_repeat, [&] {
             std::string s; cxon::to_bytes(s, j);
         });
         {   std::string s;
-            test.time.pretty_string = measure(cxjson_repeat, [&] {
+            test.time.pretty_string = measure(cxon_json_repeat, [&] {
                 s = cxon::test::pretty(json);
             });
         }
         {   std::string s;
-            test.time.pretty = measure(cxjson_repeat, [&] {
+            test.time.pretty = measure(cxon_json_repeat, [&] {
                 cxon::to_bytes(cxon::test::make_indenter(s), j);
             });
         }
@@ -130,7 +130,7 @@ static bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& ti
     };
     for (int i = 1; i < argc; ++i) {
         restart:
-#       define CXJSON_PROC(k)\
+#       define CXON_JSON_PROC(k)\
             if (std::strcmp(#k, argv[i]) == 0) {\
                 if (++i == argc || key(argv[i])) return false;\
                 do {\
@@ -139,11 +139,11 @@ static bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& ti
                 }   while (++i < argc);\
                 continue;\
             }
-        CXJSON_PROC(pass)
-        CXJSON_PROC(fail)
-        CXJSON_PROC(diff)
-        CXJSON_PROC(time)
-#       undef CXJSON_PROC
+            CXON_JSON_PROC(pass)
+            CXON_JSON_PROC(fail)
+            CXON_JSON_PROC(diff)
+            CXON_JSON_PROC(time)
+#       undef CXON_JSON_PROC
     }
     return true;
 }
@@ -613,7 +613,7 @@ int main(int argc, char *argv[]) {
     }
     if (!time.empty()) {
         for (auto& c : time) {
-            cxjson_test_time(c);
+            cxon_json_test_time(c);
         }
         test_time total;
         for (auto& c : time) {

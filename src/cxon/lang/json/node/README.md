@@ -1,4 +1,4 @@
-## `CXON/CXJSON` library
+## `CXON/JSON/NODE` library
 
 [![Library][img-lib]](https://github.com/oknenavin/cxon)
 [![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
@@ -7,14 +7,14 @@
 --------------------------------------------------------------------------------
 #### Contents
 - [Introduction](#introduction)
-- [`cxjson::basic_node`](#basic_node)
+- [`cxon::json::basic_node`](#basic_node)
 - [`CXON` integration](#cxon-integration)
 
 
 --------------------------------------------------------------------------------
 #### Introduction
 
-`CXJSON` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
+`CXON/JSON/NODE` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
 
 type         | default binding
@@ -31,11 +31,11 @@ type         | default binding
 Build, write and read:
 
 ``` c++
-#include "cxon/cxjson/cxjson.hxx"
+#include "cxon/lang/json/node.hxx"
 #include <cassert>
 
 int main() {
-    using node = cxjson::node;
+    using node = cxon::json::node;
         
     char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
     node const n0 = node::object {
@@ -58,11 +58,11 @@ int main() {
 Build using node's methods:
 
 ``` c++
-#include "cxon/cxjson/cxjson.hxx"
+#include "cxon/lang/json/node.hxx"
 #include <cassert>
 
 int main() {
-    using node = cxjson::node;
+    using node = cxon::json::node;
 
     // build using initializer lists
     node n1 = node::object {
@@ -138,10 +138,11 @@ The resulting `JSON` is (*note, that the default number type is `double`*):
 --------------------------------------------------------------------------------
 #### `basic_node`
 
-*Defined in header [`cxon/cxjson/cxjson.hxx`](cxjson.hxx)*
+*Defined in header [`cxon/lang/json/node/node.hxx`](node.hxx)*  
+*Include [`cxon/lang/json/node.hxx`](../node.hxx)*
 
 ``` c++
-namespace cxjson {
+namespace cxon::json {
     template <typename Traits>
         struct basic_node;
 }
@@ -151,7 +152,7 @@ namespace cxjson {
 
 Type            | Definition
 ----------------|---------------------------------------
-`cxjson::node`  | `using node = basic_node<node_traits>`
+`cxon::json::node`  | `using node = basic_node<node_traits>`
 
 ###### Template parameters
 
@@ -204,13 +205,13 @@ Same as the member counterparts with single `basic_node&` argument.
 ###### Example
 
 ```c++
-struct traits : cxjson::node_traits {
+struct traits : cxon::json::node_traits {
     using                               string_type = std::u16string;
     template <class T> using            array_type = std::list<T>;
     template <class K, class V> using   object_type = std::multimap<K, V>;
 };
 ...
-using node = cxjson::basic_node<traits>;
+using node = cxon::json::basic_node<traits>;
 node n;
 cxon::from_bytes(n, "{\"k\": 42, \"k\": 43}");
 assert(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
@@ -251,7 +252,7 @@ Construct new node from a variety of data sources.
 ###### Example
 
 ``` c++
-using namespace cxjson;
+using namespace cxon::json;
 {   // (1)
     node n; assert(n.is<node::null>());
 }
@@ -335,7 +336,7 @@ node_kind kind() const noexcept;
 ###### Example
 
 ``` c++
-using namespace ;
+using namespace cxon::json;
 node const n; assert(n.kind() == node_kind::null);
 ```
 
@@ -372,7 +373,7 @@ new value
 ###### Example
 
 ``` c++
-using namespace cxjson;
+using namespace cxon::json;
 {   // T is the same
     node n = "string";
     node::string& v = n.imbue<node::string>(); assert(v == "string");
@@ -400,7 +401,7 @@ template <typename T>
 ###### Example
 
 ``` c++
-using namespace cxjson;
+using namespace cxon::json;
 node n = "one";
     n.get<node::string>() = "another";
 assert(n.get<node::string>() == "another");
@@ -423,7 +424,7 @@ template <typename T>
 ###### Example
 
 ``` c++
-using namespace cxjson;
+using namespace cxon::json;
 node n = "one";
     auto *v = n.get_if<node::string>(); assert(v != nullptr);
 assert(n.get_if<node::array>() == nullptr);
@@ -447,7 +448,7 @@ bool operator != (const basic_node& n) const; (2)
 #### `CXON` integration
 
 `basic_node` can be serialized as any other type.  
-`CXJSON` defines the following in addition:
+`CXON/JSON` defines the following in addition:
 - own error conditions
 
   Error code                      | Message
@@ -462,8 +463,8 @@ bool operator != (const basic_node& n) const; (2)
   `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
   `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
   
-  *Note: the interface is overloaded for `cxjson::basic_node` and the overload
-   passes `recursion_guard` parameter. If `cxjson::basic_node` is part of a type
+  *Note: the interface is overloaded for `cxon::json::basic_node` and the overload
+   passes `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
    (e.g. `std::vector<basic_node>`) and guarding against recursion is needed, then
    `recursion_guard` parameter must be passed explicitly.*
 
@@ -476,11 +477,11 @@ bool operator != (const basic_node& n) const; (2)
 ###### Example
 
 ``` c++
-#include "cxon/cxjson/cxjson.hxx"
+#include "cxon/lang/json/node.hxx"
 #include <cassert>
 
 int main() {
-    using namespace cxjson;
+    using namespace cxon::json;
     {   node n;
             auto const r = cxon::from_bytes(n, "#[1]");
         assert(!r &&
@@ -500,7 +501,7 @@ int main() {
 
 
 --------------------------------------------------------------------------------
-Distributed under the MIT license. See [`LICENSE`](../../../LICENSE) for more information.  
+Distributed under the MIT license. See [`LICENSE`](../../../../../LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 
 

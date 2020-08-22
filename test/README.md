@@ -1,4 +1,4 @@
-## `CXON` & `CXJSON` tests
+## `CXON/JSON` & `CXON/JSON/NODE` tests
 
 
 --------------------------------------------------------------------------------
@@ -44,11 +44,11 @@ TEST_END()
 
 
 --------------------------------------------------------------------------------
-#### `CXJSON`
+#### `CXON/JSON/NODE`
 
 Is a utility that accepts command and a list of inputs (or a `@file`, see below):
 
-    cxjson ((pass|fail|diff) (file|@file)+)*
+    cxon.json.node ((pass|fail|diff) (file|@file)+)*
 
 - `pass`  - the input is a list of files that must be read successfully
 - `fail`  - the input is a list of files that must fail to read
@@ -75,9 +75,9 @@ Suite                            | Type | Origin
 [set.5-diff](data/set.5-diff.in) | diff | [lemire/simdjson](https://github.com/lemire/simdjson)
 
 Note that some of the inputs are commented out, because of different reasons - for example:
-- [data/set.1/fail1.json](data/set.1/fail1.json) - ignored because `CXON/CXJSON` allows arbitrary
+- [data/set.1/fail1.json](data/set.1/fail1.json) - ignored because `cxon::json::node` allows arbitrary
   top-level value
-- [data/set.1/fail18.json](data/set.1/fail18.json) - ignored because `CXON/CXJSON` default recursive
+- [data/set.1/fail18.json](data/set.1/fail18.json) - ignored because `cxon::json::node` default recursive
   depth is 64
 - [data/set.5/gsoc-2018.json](data/set.5/gsoc-2018.json) - ignored because the input contains redundant
   escapes, and the output is normalized
