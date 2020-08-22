@@ -12,7 +12,7 @@ namespace cxon { namespace json {
     namespace enums = chio::enums;
 }}
 
-#define CXON_JSON_ENUM_VALUE(T, N, V)   cxon::chio::enums::make_value(N, T::V)
+#define CXON_JSON_ENUM_VALUE(T, N, V)   cxon::json::enums::make_value(N, T::V)
 #define CXON_JSON_ENUM_VALUE_NAME(N, V) CXON_JSON_ENUM_VALUE(T, N, V)
 #define CXON_JSON_ENUM_VALUE_ASIS(V)    CXON_JSON_ENUM_VALUE(T, #V, V)
 
