@@ -8,10 +8,10 @@
 
 #include "cxon/lib/std/list.hxx"
 
-#include "../cxon.pretty.hxx"
+#include "../pretty.hxx"
 #include "node.pretty.hxx"
 
-#include "../test/json/ordered.object.hxx"
+#include "node.ordered.hxx"
 
 #include <fstream>
 #include <memory>
