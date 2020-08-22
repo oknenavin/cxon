@@ -81,7 +81,7 @@ from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (f
 
 Most of the so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
 implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc..
-[`CXJSON`](src/cxon/cxjson/README.md), which is part of `CXON`, is an implementation of such a
+[`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON`, is an implementation of such a
 polymorphic type (and also an example of how `CXON` can be used).
 
 

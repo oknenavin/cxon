@@ -14,10 +14,10 @@
     - [Format traits](../src/cxon/README.md#format-traits)
     - [Context](../src/cxon/README.md#context)
   - [Example (`JSON-RPC`)](../src/cxon/README.md#example-json-rpc)
-- [`CXJSON`](../src/cxon/cxjson/README.md)
-  - [Introduction](../src/cxon/cxjson/README.md#introduction)
-  - [`cxjson::basic_node`](../src/cxon/cxjson/README.md#basic_node)
-  - [`CXON` Integration](../src/cxon/cxjson/README.md#cxon-integration)
+- [`CXON/JSON/NODE`](../src/cxon/lang/json/node/README.md)
+  - [Introduction](../src/cxon/lang/json/node/README.md#introduction)
+  - [`cxon:json::basic_node`](../src/cxon/lang/json/node/README.md#basic_node)
+  - [`CXON` Integration](../src/cxon/lang/json/node/README.md#cxon-integration)
 
 
 --------------------------------------------------------------------------------
