@@ -4,12 +4,14 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node/node.hxx"
+#include "cxon/lang/json/node.hxx"
 
 #include "cxon/lib/std/list.hxx"
 
 #include "cxon.pretty.hxx"
 #include "cxon.json.node.pretty.hxx"
+
+#include "../test/json/ordered.object.hxx"
 
 #include <fstream>
 #include <memory>
