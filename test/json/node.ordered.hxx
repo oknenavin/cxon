@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_ORDERED_OBJECT_HXX_
-#define CXON_JSON_ORDERED_OBJECT_HXX_
+#ifndef CXON_TEST_NODE_ORDERED_HXX_
+#define CXON_TEST_NODE_ORDERED_HXX_
 
 namespace cxon { namespace json { namespace ordered {
 
@@ -49,4 +49,4 @@ namespace cxon { namespace json {
 
 }}
 
-#endif // CXON_JSON_ORDERED_OBJECT_HXX_
+#endif // CXON_TEST_NODE_ORDERED_HXX_
