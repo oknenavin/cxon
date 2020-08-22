@@ -59,6 +59,6 @@ namespace cxon { namespace chio {
             static bool alnum  (char c) noexcept { return ALNM & is_x_[(unsigned char)c]; }
         };
 
-}}  // cxon::chio
+}}
 
 #endif // CXON_CHIO_CHCLS_HXX_

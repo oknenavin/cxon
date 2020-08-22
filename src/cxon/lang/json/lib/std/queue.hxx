@@ -11,60 +11,49 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::queue<T, R...>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::queue<T, R...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::queue<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
+                    return chio::container::read<J, chio::list<J>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace();
-                            return read_value<X>(t.back(), i, e, cx);
+                            return read_value<J>(t.back(), i, e, cx);
 #                       else
-                            return read_value<X>(t.emplace(), i, e, cx);
+                            return read_value<J>(t.emplace(), i, e, cx);
 #                       endif
                     });
                 }
         };
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::priority_queue<T, R...>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::priority_queue<T, R...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::priority_queue<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
+                    return chio::container::read<J, chio::list<J>>(i, e, cx, [&] {
                         T o{};
-                        return read_value<X>(o, i, e, cx) && (t.emplace(std::move(o)), true);
+                        return read_value<J>(o, i, e, cx) && (t.emplace(std::move(o)), true);
                     });
                 }
         };
 
-    namespace bits {
-
-        template <typename A>
-            struct adaptor : A {
-                static const typename A::container_type& container(const A& a) noexcept { return ((adaptor&)a).c; }
-            };
-
-    }
-
     template <typename X, typename T, typename ...R>
-        struct write<X, std::queue<T, R...>> {
-            using A = std::queue<T, R...>;
-            template <typename O, typename Cx>
-                static bool value(O& o, const A& t, Cx& cx) {
-                    auto const& c = bits::adaptor<A>::container(t);
-                    return chio::container::write<X, chio::list<X>>(o, c.begin(), c.end(), cx);
+        struct write<JSON<X>, std::queue<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::queue<T, R...>& t, Cx& cx) {
+                    auto const& c = chio::container::bits::adaptor<std::queue<T, R...>>::container(t);
+                    return chio::container::write<J, chio::list<J>>(o, c.begin(), c.end(), cx);
                 }
         };
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::priority_queue<T, R...>> {
-            using A = std::priority_queue<T, R...>;
-            template <typename O, typename Cx>
-                static bool value(O& o, const A& t, Cx& cx) {
-                    auto const& c = bits::adaptor<A>::container(t);
-                    return chio::container::write<X, chio::list<X>>(o, c.begin(), c.end(), cx);
+        struct write<JSON<X>, std::priority_queue<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::priority_queue<T, R...>& t, Cx& cx) {
+                    auto const& c = chio::container::bits::adaptor<std::priority_queue<T, R...>>::container(t);
+                    return chio::container::write<J, chio::list<J>>(o, c.begin(), c.end(), cx);
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_QUEUE_HXX_

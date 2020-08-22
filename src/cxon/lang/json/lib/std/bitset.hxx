@@ -10,7 +10,7 @@ namespace cxon { namespace chio { namespace bits {
     template <size_t N> struct is_quoted<std::bitset<N>> : std::true_type {};
 }}}
 
-namespace cxon { namespace bits {
+namespace cxon { namespace json { namespace bits {
 
     template <typename X, size_t N, typename II, typename Cx>
         inline bool read_bits(std::bitset<N>& t, II& i, II e, Cx& cx) {
@@ -30,32 +30,32 @@ namespace cxon { namespace bits {
             return true;
         }
 
-}}  // cxon::bits
+}}}
 
 namespace cxon {
 
     template <typename X, size_t N>
-        struct read<X, std::bitset<N>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::bitset<N>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
-                    return  chio::strs::consume_str<X>::beg(i, e, cx) &&
-                                bits::read_bits<X>(t, i, e, cx) &&
-                            chio::strs::consume_str<X>::end(i, e, cx)
+                    return  chio::strs::consume_str<J>::beg(i, e, cx) &&
+                                json::bits::read_bits<J>(t, i, e, cx) &&
+                            chio::strs::consume_str<J>::end(i, e, cx)
                     ;
                 }
         };
 
     template <typename X, size_t N>
-        struct write<X, std::bitset<N>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::bitset<N>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
-                    return  chio::poke<X>(o, chio::strs::str<X>::beg, cx) &&
-                                bits::write_bits<X>(o, t, cx) &&
-                            chio::poke<X>(o, chio::strs::str<X>::end, cx)
+                    return  chio::poke<J>(o, chio::strs::str<J>::beg, cx) &&
+                                json::bits::write_bits<J>(o, t, cx) &&
+                            chio::poke<J>(o, chio::strs::str<J>::end, cx)
                     ;
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_BITSET_HXX_

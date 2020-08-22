@@ -8,7 +8,7 @@
 
 #include "cxon/lang/common/chio/container.hxx"
 
-namespace cxon { namespace bits {
+namespace cxon { namespace json { namespace bits {
 
     template <typename X, typename M>
         struct map_reader {
@@ -35,6 +35,6 @@ namespace cxon { namespace bits {
                 }
         };
 
-}}   // cxon::bits
+}}}
 
 #endif // CXON_JSON_LIB_STD_BITS_MAP_HXX_

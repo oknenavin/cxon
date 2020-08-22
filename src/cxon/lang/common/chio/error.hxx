@@ -78,11 +78,11 @@ namespace cxon { namespace chio { // errors
         return { static_cast<int>(e), write_error_category::value() };
     }
 
-}}  // cxon::chio errors
+}}
 
 namespace std { // cxon errors
     template <> struct is_error_condition_enum<cxon::chio::read_error> : true_type {};
     template <> struct is_error_condition_enum<cxon::chio::write_error> : true_type {};
-}   // std cxon errors
+}
 
 #endif // CXON_CHIO_ERRORS_HXX_

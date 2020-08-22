@@ -20,8 +20,6 @@ namespace cxon { namespace chio { namespace bits {
 
 namespace cxon {
 
-    using namespace chio::bits; // TODO: UQKEY
-
     template <typename T, typename ...R>
         struct continuous<std::basic_string_view<T, R...>> {
             static auto range(const std::basic_string_view<T, R...>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
@@ -30,7 +28,7 @@ namespace cxon {
         };
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::basic_string_view<T, R...>> {
+        struct read<JSON<X>, std::basic_string_view<T, R...>> {
             template <typename II, typename Cx>
                 static bool value(std::basic_string_view<T, R...>&, II&, II, Cx&) {
                     static_assert(unexpected<std::basic_string_view<T, R...>>(), "std::string_view cannot be modified");
@@ -39,20 +37,20 @@ namespace cxon {
         };
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::basic_string_view<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return chio::strs::pointer_write<X>(o, t.data(), t.size(), cx);
+                    return chio::strs::pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
-    template <typename X, template <typename> class S, typename T, typename ...R>
-        struct write<S<UQKEY<X>>, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx>
+    template <typename X, typename T, typename ...R>
+        struct write<JSON<chio::strs::UQKEY<X>>, std::basic_string_view<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<chio::strs::UQKEY<X>>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return chio::strs::uqkey_pointer_write<S<X>>(o, t.data(), t.size(), cx);
+                    return chio::strs::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_STRING_VIEW_HXX_

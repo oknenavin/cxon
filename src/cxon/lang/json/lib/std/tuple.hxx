@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_TUPLE_HXX_
 #define CXON_JSON_LIB_STD_TUPLE_HXX_
 
-namespace cxon { namespace bits { // read/write
+namespace cxon { namespace json { namespace bits { // read/write
 
     template <typename X, typename T, unsigned N, unsigned L>
         struct tuple_read {
@@ -42,34 +42,34 @@ namespace cxon { namespace bits { // read/write
                 }
         };
 
-}}  // cxon::bits read/write
+}}}
 
 namespace cxon {
 
     template <typename X, typename H, typename ...T>
-        struct read<X, std::tuple<H, T...>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::tuple<H, T...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::tuple<H, T...>& t, II& i, II e, Cx& cx) {
                     using U = std::tuple<H, T...>;
-                    return  chio::consume<X>(X::list::beg, i, e, cx) &&
-                                bits::tuple_read<X, U, 0, std::tuple_size<U>::value>::value(t, i, e, cx) &&
-                            chio::consume<X>(X::list::end, i, e, cx)
+                    return  chio::consume<J>(J::list::beg, i, e, cx) &&
+                                json::bits::tuple_read<J, U, 0, std::tuple_size<U>::value>::value(t, i, e, cx) &&
+                            chio::consume<J>(J::list::end, i, e, cx)
                     ;
                 }
         };
 
     template <typename X, typename ...T>
-        struct write<X, std::tuple<T...>> {
+        struct write<JSON<X>, std::tuple<T...>> {
             using U = std::tuple<T...>;
-            template <typename O, typename Cx>
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const U& t, Cx& cx) {
-                    return  chio::poke<X>(o, X::list::beg, cx) &&
-                                bits::tuple_write<X, U, 0, std::tuple_size<U>::value - 1>::value(o, t, cx) &&
-                            chio::poke<X>(o, X::list::end, cx)
+                    return  chio::poke<J>(o, J::list::beg, cx) &&
+                                json::bits::tuple_write<J, U, 0, std::tuple_size<U>::value - 1>::value(o, t, cx) &&
+                            chio::poke<J>(o, J::list::end, cx)
                     ;
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_TUPLE_HXX_

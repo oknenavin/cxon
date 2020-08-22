@@ -78,6 +78,6 @@ namespace cxon { namespace chio { namespace bits { // output write with error ha
             return poke_(option<2>(), o, p...) || (cx|write_error::output_failure);
         }
 
-}}} //cxon::chio::bits output write with error handling
+}}}
 
 #endif // CXON_CHIO_BITS_IO_HXX_

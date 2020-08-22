@@ -20,7 +20,7 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
         constexpr field<D> make_field(const char* name, D d = {}) { return { name, d }; }
 
     template <typename ...>
-        struct fields {};
+        struct fields;
     template <typename ...T> 
         constexpr fields<T...> make_fields(T... t) { return { t... }; }
 
@@ -77,6 +77,8 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
 
     // fields
 
+    template <>
+        struct fields<> {};
     template <typename H, typename ...T>
         struct fields<H, T...> {
             H const field;
@@ -162,67 +164,6 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
             ;
         }
 
-}}} // cxon::chio::structs structured types reader/writer construction helpers
-
-namespace cxon { // structs::skip_type read
-
-    template <typename X>
-        struct read<X, chio::structs::skip_type> {
-            template <typename InIt, typename Cx>
-                static bool value(chio::structs::skip_type&, InIt& i, InIt e, Cx& cx) {
-                    return chio::unquoted::read_value<X>(i, e, cx);
-                }
-        };
-
-}   // cxon structs::skip_type read
-
-#if 1 // cxon class
-
-#   define CXON_STRUCT_FIELD(T, N, F)   cxon::chio::structs::make_field(N, &T::F)
-#   define CXON_STRUCT_FIELD_NAME(N, F) CXON_STRUCT_FIELD(T, N, F)
-#   define CXON_STRUCT_FIELD_ASIS(F)    CXON_STRUCT_FIELD(T, #F, F)
-#   define CXON_STRUCT_FIELD_SKIP(N)    cxon::chio::structs::make_field(N)
-
-#   define CXON_STRUCT_READ(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename II, typename Cx>\
-                inline bool read_value(Type& t, II& i, II e, Cx& cx) {\
-                    using T = Type;\
-                    static constexpr auto f = chio::structs::make_fields(__VA_ARGS__);\
-                    return chio::structs::read_fields<X>(t, f, i, e, cx);\
-                }\
-        }
-#   define CXON_STRUCT_WRITE(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename O, typename Cx>\
-                static bool write_value(O& o, const Type& t, Cx& cx) {\
-                    using T = Type;\
-                    static constexpr auto f = chio::structs::make_fields(__VA_ARGS__);\
-                    return chio::structs::write_fields<X>(o, t, f, cx);\
-                }\
-        }
-#   define CXON_STRUCT(Type, ...)\
-        CXON_STRUCT_READ(Type, __VA_ARGS__)\
-        CXON_STRUCT_WRITE(Type, __VA_ARGS__)
-
-#   define CXON_STRUCT_READ_MEMBER(Type, ...)\
-        template <typename X, typename II, typename Cx>\
-            static bool read_value(Type& t, II& i, II e, Cx& cx) {\
-                using T = Type;\
-                static constexpr auto f = cxon::chio::structs::make_fields(__VA_ARGS__);\
-                return cxon::chio::structs::read_fields<X>(t, f, i, e, cx);\
-            }
-#   define CXON_STRUCT_WRITE_MEMBER(Type, ...)\
-        template <typename X, typename O, typename Cx>\
-            static bool write_value(O& o, const Type& t, Cx& cx) {\
-                using T = Type;\
-                static constexpr auto f = cxon::chio::structs::make_fields(__VA_ARGS__);\
-                return cxon::chio::structs::write_fields<X>(o, t, f, cx);\
-            }
-#   define CXON_STRUCT_MEMBER(Type, ...)\
-        CXON_STRUCT_READ_MEMBER(Type, __VA_ARGS__)\
-        CXON_STRUCT_WRITE_MEMBER(Type, __VA_ARGS__)
-
-#endif // cxon class
+}}}
 
 #endif // CXON_CHIO_STRUCTS_HXX_

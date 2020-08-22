@@ -11,28 +11,28 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::deque<T, R...>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::deque<T, R...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::deque<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
+                    return chio::container::read<J, chio::list<J>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace_back();
-                            return read_value<X>(t.back(), i, e, cx);
+                            return read_value<J>(t.back(), i, e, cx);
 #                       else
-                            return read_value<X>(t.emplace_back(), i, e, cx);
+                            return read_value<J>(t.emplace_back(), i, e, cx);
 #                       endif
                     });
                 }
         };
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::deque<T, R...>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::deque<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::deque<T, R...>& t, Cx& cx) {
-                    return chio::container::write<X, chio::list<X>>(o, t, cx);
+                    return chio::container::write<J, chio::list<J>>(o, t, cx);
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_DEQUE_HXX_

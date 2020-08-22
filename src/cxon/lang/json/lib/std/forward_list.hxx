@@ -11,15 +11,15 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::forward_list<T, R...>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::forward_list<T, R...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::forward_list<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<X, chio::list<X>>(i, e, cx, [&] {
+                    return chio::container::read<J, chio::list<J>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace_front();
-                            return read_value<X>(t.front(), i, e, cx);
+                            return read_value<J>(t.front(), i, e, cx);
 #                       else
-                            return read_value<X>(t.emplace_front(), i, e, cx);
+                            return read_value<J>(t.emplace_front(), i, e, cx);
 #                       endif
                     }) &&
                     (t.reverse(), true);
@@ -27,13 +27,13 @@ namespace cxon {
         };
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::forward_list<T, R...>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::forward_list<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::forward_list<T, R...>& t, Cx& cx) {
-                    return chio::container::write<X, chio::list<X>>(o, t, cx);
+                    return chio::container::write<J, chio::list<J>>(o, t, cx);
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_FORWARD_LIST_HXX_

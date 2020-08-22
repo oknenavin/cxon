@@ -9,6 +9,15 @@
 #include "chio.hxx"
 
 namespace cxon { namespace chio { namespace chars { // character conversion: read
+
+    template <typename T>
+        using is_char16_t = std::integral_constant<
+            bool, std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t))
+        >;
+    template <typename T>
+        using is_char32_t = std::integral_constant<
+            bool, std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t))
+        >;
     
     template <typename II, typename IsX>
         inline unsigned consume(char* f, const char* l, II& i, II e, IsX is_x) {
@@ -142,7 +151,7 @@ namespace cxon { namespace chio { namespace chars { // character conversion: rea
             return 0;
         }
 
-}}} // cxon::chio::chars character conversion: read
+}}}
 
 namespace cxon { namespace chio { namespace chars { // character conversion: write
 
@@ -280,6 +289,6 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
             ;
         }
 
-}}}  // cxon::chio::chars character conversion: write
+}}}
 
 #endif // CXON_CHIO_CHARS_HXX_

@@ -69,6 +69,6 @@ namespace cxon { namespace chio { namespace unquoted { namespace bits { // unquo
             constexpr bool add(T) const { return true; }
         };
 
-}}}}// cxon::unquoted::bits unquoted value
+}}}}
 
 #endif // CXON_CHIO_BITS_UNQUOTED_VALUE_HXX_

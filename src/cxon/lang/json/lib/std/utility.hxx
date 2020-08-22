@@ -9,27 +9,27 @@
 namespace cxon {
 
     template <typename X, typename F, typename S>
-        struct read<X, std::pair<F, S>> {
-            template <typename II, typename Cx>
+        struct read<JSON<X>, std::pair<F, S>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::pair<F, S>& t, II& i, II e, Cx& cx) {
-                    return  chio::consume<X>(X::list::beg, i, e, cx) &&
-                                read_value<X>(t.first, i, e, cx) && chio::consume<X>(X::list::sep, i, e, cx) && read_value<X>(t.second, i, e, cx) &&
-                            chio::consume<X>(X::list::end, i, e, cx)
+                    return  chio::consume<J>(J::list::beg, i, e, cx) &&
+                                read_value<J>(t.first, i, e, cx) && chio::consume<J>(J::list::sep, i, e, cx) && read_value<J>(t.second, i, e, cx) &&
+                            chio::consume<J>(J::list::end, i, e, cx)
                     ;
                 }
         };
 
     template <typename X, typename F, typename S>
-        struct write<X, std::pair<F, S>> {
-            template <typename O, typename Cx>
+        struct write<JSON<X>, std::pair<F, S>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::pair<F, S>& t, Cx& cx) {
-                    return  chio::poke<X>(o, X::list::beg, cx) &&
-                                write_value<X>(o, t.first, cx) && chio::poke<X>(o, X::list::sep, cx) && write_value<X>(o, t.second, cx) &&
-                            chio::poke<X>(o, X::list::end, cx)
+                    return  chio::poke<J>(o, J::list::beg, cx) &&
+                                write_value<J>(o, t.first, cx) && chio::poke<J>(o, J::list::sep, cx) && write_value<J>(o, t.second, cx) &&
+                            chio::poke<J>(o, J::list::end, cx)
                     ;
                 }
         };
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_UTILITY_HXX_

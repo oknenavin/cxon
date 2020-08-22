@@ -187,7 +187,7 @@ namespace cxon { namespace charconv { namespace bits {
         CXON_TO_CHARS(long double)
 #   undef CXON_TO_CHARS
 
-}}}   // cxon::charconv::bits
+}}}
 
 namespace cxon { namespace charconv { // <charconv>
 
@@ -308,6 +308,6 @@ namespace cxon { namespace charconv { // <charconv>
         using bits::to_chars;
 #   endif
 
-}}  //cxon::charconv <charconv>
+}}
 
 #endif // CXON_CHARCONV_HXX_

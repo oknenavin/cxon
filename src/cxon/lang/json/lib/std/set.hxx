@@ -11,17 +11,17 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::set<T, R...>>   : bits::set_reader<X, std::set<T, R...>> {};
+        struct read<JSON<X>, std::set<T, R...>>     : json::bits::set_reader<JSON<X>, std::set<T, R...>> {};
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::set<T, R...>>  : bits::set_writer<X, std::set<T, R...>> {};
+        struct write<JSON<X>, std::set<T, R...>>    : json::bits::set_writer<JSON<X>, std::set<T, R...>> {};
 
     template <typename X, typename T, typename ...R>
-        struct read<X, std::multiset<T, R...>>  : bits::set_reader<X, std::multiset<T, R...>> {};
+        struct read<JSON<X>, std::multiset<T, R...>>    : json::bits::set_reader<JSON<X>, std::multiset<T, R...>> {};
 
     template <typename X, typename T, typename ...R>
-        struct write<X, std::multiset<T, R...>> : bits::set_writer<X, std::multiset<T, R...>> {};
+        struct write<JSON<X>, std::multiset<T, R...>>   : json::bits::set_writer<JSON<X>, std::multiset<T, R...>> {};
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_SET_HXX_

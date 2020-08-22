@@ -11,17 +11,17 @@
 namespace cxon {
 
     template <typename X, typename ...R>
-        struct read<X, std::map<R...>>  : bits::map_reader<X, std::map<R...>> {};
+        struct read<JSON<X>, std::map<R...>>    : json::bits::map_reader<JSON<X>, std::map<R...>> {};
 
     template <typename X, typename ...R>
-        struct write<X, std::map<R...>> : bits::map_writer<X, std::map<R...>> {};
+        struct write<JSON<X>, std::map<R...>>   : json::bits::map_writer<JSON<X>, std::map<R...>> {};
 
     template <typename X, typename ...R>
-        struct read<X, std::multimap<R...>>     : bits::map_reader<X, std::multimap<R...>> {};
+        struct read<JSON<X>, std::multimap<R...>>   : json::bits::map_reader<JSON<X>, std::multimap<R...>> {};
 
     template <typename X, typename ...R>
-        struct write<X, std::multimap<R...>>    : bits::map_writer<X, std::multimap<R...>> {};
+        struct write<JSON<X>, std::multimap<R...>>  : json::bits::map_writer<JSON<X>, std::multimap<R...>> {};
 
-}   // cxon
+}
 
 #endif // CXON_JSON_LIB_STD_MAP_HXX_

@@ -21,6 +21,6 @@ namespace cxon { namespace chio { // key read/write helpers
             return bits::key_write<X>::value(o, t, cx) && poke<X>(o, X::map::div, cx);
         }
 
-}}  //cxon::chio key read/write helpers
+}}
 
 #endif // CXON_CHIO_KEY_HXX_

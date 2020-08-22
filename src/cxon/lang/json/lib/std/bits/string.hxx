@@ -21,7 +21,7 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t)), bool>
+            -> enable_if_t<chio::chars::is_char16_t<T>::value, bool>
         {
             II const o = i;
                 char32_t c32 = chio::strs::consume_str<X>::chr(i, e, cx);
@@ -38,7 +38,7 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t)), bool>
+            -> enable_if_t<chio::chars::is_char32_t<T>::value, bool>
         {
             II const o = i;
                 char32_t const c32 = chio::strs::consume_str<X>::chr(i, e, cx);

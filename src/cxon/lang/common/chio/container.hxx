@@ -25,6 +25,11 @@ namespace cxon { namespace chio { namespace container { // container read/write 
                 }
             }
 
+        template <typename A>
+            struct adaptor : A {
+                static const typename A::container_type& container(const A& a) noexcept { return ((adaptor&)a).c; }
+            };
+
     }
 
     // read
@@ -58,6 +63,6 @@ namespace cxon { namespace chio { namespace container { // container read/write 
             return write<X, Cr>(o, std::begin(t), std::end(t), cx);
         }
 
-}}} //cxon::chio::container container read/write helpers
+}}}
 
 #endif // CXON_CHIO_CONTAINER_HXX_
