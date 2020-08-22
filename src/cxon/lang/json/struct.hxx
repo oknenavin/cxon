@@ -15,16 +15,16 @@ namespace cxon { namespace json {
 namespace cxon { // structs::skip_type read
 
     template <typename X, typename II, typename Cx>
-        inline auto read_value(chio::structs::skip_type&, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto read_value(json::structs::skip_type&, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
             return chio::unquoted::read_value<X>(i, e, cx);
         }
 
 }
 
-#define CXON_JSON_STRUCT_FIELD(T, N, F)     cxon::chio::structs::make_field(N, &T::F)
+#define CXON_JSON_STRUCT_FIELD(T, N, F)     cxon::json::structs::make_field(N, &T::F)
 #define CXON_JSON_STRUCT_FIELD_NAME(N, F)   CXON_JSON_STRUCT_FIELD(T, N, F)
 #define CXON_JSON_STRUCT_FIELD_ASIS(F)      CXON_JSON_STRUCT_FIELD(T, #F, F)
-#define CXON_JSON_STRUCT_FIELD_SKIP(N)      cxon::chio::structs::make_field(N)
+#define CXON_JSON_STRUCT_FIELD_SKIP(N)      cxon::json::structs::make_field(N)
 
 #define CXON_JSON_STRUCT_READ(Type, ...)\
     namespace cxon {\
