@@ -9,13 +9,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace test {
+namespace cxon { namespace test {
 
     template <typename T>   inline std::string to_string(T t)           { return std::to_string(t); }
     // TODO: using cxon -> nok, use std lib
-    template <>             inline std::string to_string(float t)       { return test::to_string<cxon::JSON<>>(t); }
-    template <>             inline std::string to_string(double t)      { return test::to_string<cxon::JSON<>>(t); }
-    template <>             inline std::string to_string(long double t) { return test::to_string<cxon::JSON<>>(t); }
+    template <>             inline std::string to_string(float t)       { return test::to_string<JSON<>>(t); }
+    template <>             inline std::string to_string(double t)      { return test::to_string<JSON<>>(t); }
+    template <>             inline std::string to_string(long double t) { return test::to_string<JSON<>>(t); }
 
     template <typename T>   constexpr T tmin() { return std::numeric_limits<T>::lowest(); }
     template <typename T>   inline std::string smin() { return to_string(tmin<T>()); }
@@ -24,7 +24,7 @@ namespace test {
     template <typename T>   inline std::string smax() { return to_string(tmax<T>()); }
     template <typename T>   inline std::string omax() { return smax<T>() + '0'; }
 
-}
+}}
 
 TEST_BEG(cxon::JSON<>)
     using namespace test;
@@ -202,7 +202,7 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-namespace test {
+namespace cxon { namespace test {
 
     template <typename F> constexpr F inf() { return std::numeric_limits<F>::infinity(); }
     template <typename F> constexpr F nan() { return std::numeric_limits<F>::quiet_NaN(); }
@@ -215,7 +215,7 @@ namespace test {
 
     template <typename F> static F zero() { return 0.0; }
 
-}
+}}
 
 TEST_BEG(cxon::JSON<>) // special numbers
     using namespace test;
@@ -281,7 +281,7 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), inf<long double>() + -inf<long double>());
 TEST_END()
 
-TEST_BEG(cxon::JSON<test::input_iterator_traits>) // special numbers
+TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>) // special numbers
     using namespace test;
     R_TEST(0.0, "0");
     R_TEST(0.0, "0.0");
@@ -301,7 +301,7 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>) // special numbers
 TEST_END()
 
 
-TEST_BEG(cxon::JSON<test::input_iterator_traits>) // json number validation
+TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>) // json number validation
     // floating point
         R_TEST((double)0, "0");
         R_TEST((double)0, "-0");
@@ -321,7 +321,7 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>) // json number validation
         R_TEST((double)0, "-", json::read_error::floating_point_invalid, 1);
         R_TEST((double)0, "+", json::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "e", json::read_error::floating_point_invalid, 0);
-        R_TEST((double)0, std::string(64 + 1, '1'), json::read_error::overflow, 64); // cxon::num_len_max
+        R_TEST((double)0, std::string(64 + 1, '1'), json::read_error::overflow, 64); // cxon::json::num_len_max
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
@@ -338,18 +338,18 @@ TEST_BEG(cxon::JSON<test::input_iterator_traits>) // json number validation
         R_TEST((signed)0, "08", json::read_error::ok, 1);
         R_TEST((signed)0, "0x", json::read_error::ok, 1);
         R_TEST((signed)0, "0xg", json::read_error::ok, 1);
-        R_TEST((signed)0, std::string(32 + 1, '1'), json::read_error::overflow, 32); // cxon::num_len_max
+        R_TEST((signed)0, std::string(32 + 1, '1'), json::read_error::overflow, 32); // cxon::json::num_len_max
 TEST_END()
 
-namespace test {
+namespace cxon { namespace test {
     struct strict_number_traits : cxon::json::format_traits {
         struct number {
             static constexpr bool strict = true;
         };
     };
-}
+}}
 
-TEST_BEG(cxon::JSON<test::strict_number_traits>) // json number validation
+TEST_BEG(cxon::JSON<cxon::test::strict_number_traits>) // json number validation
     // floating point
         W_TEST("0", (double)0);
         R_TEST((double)0, "0");
@@ -462,13 +462,13 @@ TEST_BEG(cxon::JSON<>) // json
         W_TEST(QS("\\\""), "\42");
 TEST_END()
 
-namespace test {
+namespace cxon { namespace test {
     struct strict_js_traits : cxon::json::format_traits {
         static constexpr bool strict_js = true;
     };
-}
+}}
 
-TEST_BEG(cxon::JSON<test::strict_js_traits>)
+TEST_BEG(cxon::JSON<cxon::test::strict_js_traits>)
     W_TEST(QS("x"), u8"x");
     W_TEST(QS("\\u2028"), u8"\u2028");
     W_TEST(QS("\\u2029"), u8"\u2029");
