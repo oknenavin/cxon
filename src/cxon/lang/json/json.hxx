@@ -29,7 +29,7 @@ namespace cxon { // format selector
         struct JSON : format_selector<T> {};
 }
 
-namespace cxon { namespace chio { namespace chr {
+namespace cxon { namespace chio { namespace chr { // character classes
 
     template <typename X>
         struct is<JSON<X>> : is<X> {

@@ -63,7 +63,9 @@ namespace cxon { // interface
 
 }
 
-namespace cxon { // implementation bridge contexts
+// implementation bridge //////////////////////////////////////////////////////
+
+namespace cxon { // context
 
     template <typename ...Ps> // ... named parameters
         struct context {
@@ -94,7 +96,7 @@ namespace cxon { // implementation bridge contexts
 
 }
 
-namespace cxon { // implementation bridge
+namespace cxon { // bridge
 
     template <typename E, typename T, typename R = E>
         using enable_if_same_t = enable_if_t< std::is_same<E, T>::value, R>;
