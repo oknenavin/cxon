@@ -51,41 +51,41 @@ namespace cxon { // character
         inline auto read_value(char& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
             if (!chio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
-                    char32_t const c32 = chio::chars::str_to_utf32<X>(i, e, cx);
+                    char32_t const c32 = chio::chr::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF)  return chio::rewind(i, o), false;
                         if (c32 > 0XFF)         return chio::rewind(i, o), cx|chio::read_error::character_invalid;
             return chio::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t<is_same_format<X, JSON>::value && chio::chars::is_char16_t<T>::value, bool>
+            -> enable_if_t<is_same_format<X, JSON>::value && chio::chr::is_char16_t<T>::value, bool>
         {
             if (!chio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
-                    char32_t const c32 = chio::chars::str_to_utf32<X>(i, e, cx);
+                    char32_t const c32 = chio::chr::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF)  return chio::rewind(i, o), false;
                         if (c32 > 0XFFFF)       return chio::rewind(i, o), cx|chio::read_error::character_invalid;
             return chio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t<is_same_format<X, JSON>::value && chio::chars::is_char32_t<T>::value, bool>
+            -> enable_if_t<is_same_format<X, JSON>::value && chio::chr::is_char32_t<T>::value, bool>
         {
             if (!chio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
-                    char32_t const c32 = chio::chars::str_to_utf32<X>(i, e, cx);
+                    char32_t const c32 = chio::chr::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
             return chio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
 
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char t, Cx& cx) -> enable_for_t<X, JSON, bool>        { return chio::chars::character_write<X>(o, t, cx); }
+        inline auto write_value(O& o, char t, Cx& cx) -> enable_for_t<X, JSON, bool>        { return chio::chr::write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char16_t t, Cx& cx) -> enable_for_t<X, JSON, bool>    { return chio::chars::character_write<X>(o, t, cx); }
+        inline auto write_value(O& o, char16_t t, Cx& cx) -> enable_for_t<X, JSON, bool>    { return chio::chr::write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char32_t t, Cx& cx) -> enable_for_t<X, JSON, bool>    { return chio::chars::character_write<X>(o, t, cx); }
+        inline auto write_value(O& o, char32_t t, Cx& cx) -> enable_for_t<X, JSON, bool>    { return chio::chr::write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, wchar_t t, Cx& cx) -> enable_for_t<X, JSON, bool>     { return chio::chars::character_write<X>(o, t, cx); }
+        inline auto write_value(O& o, wchar_t t, Cx& cx) -> enable_for_t<X, JSON, bool>     { return chio::chr::write<X>(o, t, cx); }
 
 }
 

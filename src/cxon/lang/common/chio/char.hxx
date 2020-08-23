@@ -3,12 +3,63 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_CHARS_HXX_
-#define CXON_CHIO_CHARS_HXX_
+#ifndef CXON_CHIO_CHAR_HXX_
+#define CXON_CHIO_CHAR_HXX_
 
 #include "chio.hxx"
 
-namespace cxon { namespace chio { namespace chars { // character conversion: read
+namespace cxon { namespace chio { namespace chr { // character conversion: read
+
+    template <typename T>
+        using is_char16_t = std::integral_constant<
+            bool, std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t))
+        >;
+    template <typename T>
+        using is_char32_t = std::integral_constant<
+            bool, std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t))
+        >;
+    
+    template <typename II, typename IsX>
+        inline unsigned consume(char* f, const char* l, II& i, II e, IsX is_x);
+
+    inline char32_t oct_to_utf32(const char* b, const char* e) noexcept;
+    inline char32_t hex_to_utf32(const char* b, const char* e) noexcept;
+
+    template <typename X>
+        struct esc_to; //{ utf32 }
+
+    template <typename X, typename II, typename Cx>
+        inline char32_t esc_to_utf32(II& i, II e, Cx& cx);
+    template <typename X, typename II, typename Cx>
+        static char32_t str_to_utf32(II& i, II e, Cx& cx);
+
+    template <typename = void> // instantiate only if used
+        static int utf32_to_utf8(char (&t)[4], char32_t c32) noexcept;
+
+}}}
+
+namespace cxon { namespace chio { namespace chr { // character conversion: write
+
+    template <typename X, typename T>
+        struct encode;
+
+    template <typename X>
+        struct encode<X, char>;
+    template <typename X>
+        struct encode<X, char16_t>;
+    template <typename X>
+        struct encode<X, char32_t>;
+    template <typename X>
+        struct encode<X, wchar_t>;
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool write(O& o, T t, Cx& cx);
+
+}}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio { namespace chr {
 
     template <typename T>
         using is_char16_t = std::integral_constant<
@@ -121,7 +172,7 @@ namespace cxon { namespace chio { namespace chars { // character conversion: rea
             }
 #   undef CXON_EXPECT
 
-    template <typename = void> // instantiate only if used
+    template <typename> // instantiate only if used
         static int utf32_to_utf8(char (&t)[4], char32_t c32) noexcept {
             if (c32 < 0x80)  // 0XXX XXXX
                 return t[0] = char(c32), 1;
@@ -151,7 +202,7 @@ namespace cxon { namespace chio { namespace chars { // character conversion: rea
 
 }}}
 
-namespace cxon { namespace chio { namespace chars { // character conversion: write
+namespace cxon { namespace chio { namespace chr {
 
     template <typename X, typename T>
         struct encode;
@@ -287,7 +338,7 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
         };
 
     template <typename X, typename T, typename O, typename Cx>
-        inline bool character_write(O& o, T t, Cx& cx) {
+        inline bool write(O& o, T t, Cx& cx) {
             return  poke<X>(o, X::string::beg, cx) &&
                         encode<X, T>::value(o, t, cx) &&
                     poke<X>(o, X::string::end, cx)
@@ -296,4 +347,4 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
 
 }}}
 
-#endif // CXON_CHIO_CHARS_HXX_
+#endif // CXON_CHIO_CHAR_HXX_
