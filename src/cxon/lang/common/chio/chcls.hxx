@@ -11,7 +11,7 @@ namespace cxon { namespace chio {
     enum : unsigned char {
         CTRL    = 1 << 0,       // control
         REAL    = 1 << 1,       // character
-        CXSP    = 1 << 2,       // cxon space
+        CXSP    = 1 << 2,       // space
         JSSP    = 1 << 3,       // json space
         DGOC    = 1 << 4,       // octal
         DGDC    = 1 << 5,       // decimal

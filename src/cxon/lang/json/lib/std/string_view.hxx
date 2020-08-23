@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 #define CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 
-namespace cxon { namespace chio { namespace bits {
+namespace cxon { namespace chio {
 
 #   define CXON_QUOTED(T)\
         template <typename ...R> struct is_quoted<std::basic_string_view<T, R...>> : std::true_type  {};
@@ -16,7 +16,7 @@ namespace cxon { namespace chio { namespace bits {
         CXON_QUOTED(wchar_t)
 #   undef CXON_QUOTED
 
-}}} // cxon::chio::bits
+}}
 
 namespace cxon {
 
@@ -44,8 +44,8 @@ namespace cxon {
                 }
         };
     template <typename X, typename T, typename ...R>
-        struct write<JSON<chio::strs::UQKEY<X>>, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx, typename J = JSON<chio::strs::UQKEY<X>>>
+        struct write<JSON<chio::UQKEY<X>>, std::basic_string_view<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<chio::UQKEY<X>>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
                     return chio::strs::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
                 }

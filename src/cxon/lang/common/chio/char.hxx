@@ -94,7 +94,6 @@ namespace cxon { namespace chio { namespace chars { // character conversion: rea
         }
 
 #   define CXON_EXPECT(c) if (!(c)) return cx|read_error::character_invalid, 0xFFFFFFFF
-
         template <typename X, typename II, typename Cx>
             static char32_t str_to_utf32(II& i, II e, Cx& cx) {
                 char32_t const c0 = peek(i, e);
@@ -120,7 +119,6 @@ namespace cxon { namespace chio { namespace chars { // character conversion: rea
                 }
                 return esc_to_utf32<X>(++i, e, cx);
             }
-
 #   undef CXON_EXPECT
 
     template <typename = void> // instantiate only if used
@@ -163,15 +161,22 @@ namespace cxon { namespace chio { namespace chars { // character conversion: wri
             template <typename O, typename Cx>
                 static bool value(O& o, char c, Cx& cx) {
                     static constexpr char const*const encode_[] = {
-                        /*  0*/  "\\u0000", "\\u0001", "\\u0002", "\\u0003", "\\u0004", "\\u0005", "\\u0006", "\\u0007",
-                        /*  8*/  "\\b"    , "\\t"    , "\\n"    , "\\u000b", "\\f"    , "\\r"    , "\\u000e", "\\u000f",
-                        /* 16*/  "\\u0010", "\\u0011", "\\u0012", "\\u0013", "\\u0014", "\\u0015", "\\u0016", "\\u0017",
-                        /* 24*/  "\\u0018", "\\u0019", "\\u001a", "\\u001b", "\\u001c", "\\u001d", "\\u001e", "\\u001f",
-                        /* 32*/  " "      , "!"      , "\\\""   , "#"      , "$"      , "%"      , "&"      , "'"
+                        /*  0*/ "\\u0000", "\\u0001", "\\u0002", "\\u0003", "\\u0004", "\\u0005", "\\u0006", "\\u0007",
+                        /*  8*/ "\\b"    , "\\t"    , "\\n"    , "\\u000b", "\\f"    , "\\r"    , "\\u000e", "\\u000f",
+                        /* 16*/ "\\u0010", "\\u0011", "\\u0012", "\\u0013", "\\u0014", "\\u0015", "\\u0016", "\\u0017",
+                        /* 24*/ "\\u0018", "\\u0019", "\\u001a", "\\u001b", "\\u001c", "\\u001d", "\\u001e", "\\u001f",
+                        /* 32*/ " "      , "!"      , "\\\""   , "#"      , "$"      , "%"      , "&"      , "'"
                     };
-                    if (0 <= c && c <= 39)  return poke<X>(o, encode_[(unsigned char)c], cx);
-                    else if (c == '\\')     return poke<X>(o, "\\\\", cx);
-                    else                    return poke<X>(o, c, cx);
+                    switch (c) {
+                        case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
+                        case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
+                        case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
+                        case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
+                        case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
+                                    return poke<X>(o, encode_[(unsigned char)c], cx);
+                        case '\\':  return poke<X>(o, "\\\\", cx);
+                        default:    return poke<X>(o, c, cx);
+                    }
                 }
             template <typename O, typename II, typename Cx, typename S = X>
                 static auto value(O& o, II i, II, Cx& cx)       -> enable_if_t<!S::strict_js, bool> {
