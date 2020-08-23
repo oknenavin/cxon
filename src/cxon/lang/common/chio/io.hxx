@@ -86,7 +86,7 @@ namespace cxon { namespace chio {
 
     template <typename X, typename II>
         inline void consume(II& i, II e) {
-            while (is<X>::space(peek(i, e))) next(i, e);
+            while (chr::is<X>::space(peek(i, e))) next(i, e);
         }
 
     template <typename X, typename II>

@@ -49,7 +49,7 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline bool basic_string_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
             if (!chio::strs::consume_str<X>::beg(i, e, cx)) return false;
-                for (char c = chio::peek(i, e); chio::is<X>::real(c); c = chio::peek(i, e)) {
+                for (char c = chio::peek(i, e); chio::chr::is<X>::real(c); c = chio::peek(i, e)) {
                     if (chio::strs::is_str<X>::end(c))              return chio::strs::consume_str<X>::end(i, e, cx);
                     if (!basic_string_char_read<X>(t, i, e, cx))    return false;
                 }

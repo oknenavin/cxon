@@ -29,6 +29,15 @@ namespace cxon { // format selector
         struct JSON : format_selector<T> {};
 }
 
+namespace cxon { namespace chio { namespace chr {
+
+    template <typename X>
+        struct is<JSON<X>> : is<X> {
+            static bool space(char c) noexcept { return JSSP & is_x_[(unsigned char)c]; }
+        };
+
+}}}
+
 namespace cxon { namespace json { // format traits
     struct format_traits : chio::format_traits {
         static constexpr bool strict_js = false; // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
