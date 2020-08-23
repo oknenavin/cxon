@@ -20,6 +20,15 @@ namespace cxon { namespace chio { // key read/write helpers
 
 namespace cxon { namespace chio { // key quoting
 
+    template <typename T> struct is_quoted;
+    template <typename S> struct UQKEY;
+
+}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio {
+
     template <typename T> struct is_quoted : std::false_type {};
 #   define CXON_QUOTED(T)\
         template <size_t N>         struct is_quoted<T[N]>                              : std::true_type  {};\

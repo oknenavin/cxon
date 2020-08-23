@@ -66,6 +66,8 @@ namespace cxon { namespace chio {
 
 }}
 
+// implementation /////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio {
 
     template<typename II>

@@ -14,6 +14,36 @@
 namespace cxon { namespace chio { namespace nums { // number conversion: read
 
     template <typename T>
+        inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool>;
+    template <typename T>
+        constexpr auto is_sign(char) -> enable_if_t<std::is_unsigned<T>::value, bool>;
+
+    template <typename X, typename T>
+        struct number_consumer; // consume
+
+    template <typename X, typename T>
+        struct number_reader; // read
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool number_read(T& t, II& i, II e, Cx& cx);
+
+}}}
+
+namespace cxon { namespace chio { namespace nums { // number conversion: write
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool>;
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool>;
+
+}}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio { namespace nums {
+
+    template <typename T>
         inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool> {
             return c == '-';
         }

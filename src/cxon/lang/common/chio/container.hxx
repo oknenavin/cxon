@@ -10,6 +10,24 @@
 
 namespace cxon { namespace chio { namespace container { // container read/write helpers
 
+    template <typename X, typename Cr, typename II, typename Cx, typename EA>
+        inline bool read(II& i, II e, Cx& cx, EA element_add);
+
+    template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
+        inline bool write(O& o, II b, II e, Cx& cx, L element_write);
+    template <typename X, typename Cr, typename O, typename T, typename Cx, typename L>
+        inline bool write(O& o, const T& t, Cx& cx, L element_write);
+    template <typename X, typename Cr, typename O, typename II, typename Cx>
+        inline bool write(O& o, II b, II e, Cx& cx);
+    template <typename X, typename Cr, typename O, typename T, typename Cx>
+        inline bool write(O& o, const T& t, Cx& cx);
+
+}}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio { namespace container {
+
     namespace bits {
 
         template <typename X, typename Cr, typename II, typename EA>

@@ -20,6 +20,8 @@ namespace cxon { namespace chio { namespace value { // value parsing
 
 }}}
 
+// implementation /////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace value {
 
     namespace bits {

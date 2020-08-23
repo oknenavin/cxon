@@ -3,14 +3,30 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_ENUMS_HXX_
-#define CXON_CHIO_ENUMS_HXX_
+#ifndef CXON_CHIO_ENUM_HXX_
+#define CXON_CHIO_ENUM_HXX_
 
 #include "chio.hxx"
-#include "value.hxx"
 #include <cstring> // strcmp
 
 namespace cxon { namespace chio { namespace enums { // enum reader/writer construction helpers
+
+    template <typename E>
+        struct value;
+    template <typename E>
+        constexpr value<E> make_value(const char* name, E value);
+
+    template <typename X, typename E, typename V, typename II, typename Cx>
+        inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx);
+
+    template <typename X, typename E, typename V, typename O, typename Cx>
+        inline bool write_value(O& o, E t, V vb, V ve, Cx& cx);
+
+}}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio { namespace enums {
 
     template <typename E>
         struct value {
@@ -42,4 +58,4 @@ namespace cxon { namespace chio { namespace enums { // enum reader/writer constr
 
 }}}
 
-#endif // CXON_CHIO_ENUMS_HXX_
+#endif // CXON_CHIO_ENUM_HXX_
