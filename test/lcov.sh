@@ -11,4 +11,5 @@ make clean && make -j4 CXXFLAGS=--coverage check
 rm -rf .cov
 .lcov/lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
 .lcov/lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
+.lcov/lcov-1.14/bin/genhtml --demangle-cpp cxon.info -o .cov
 .lcov/lcov-1.14/bin/lcov -l cxon.info
