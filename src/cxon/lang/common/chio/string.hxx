@@ -29,7 +29,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: read
             template <typename II, typename Cx> static bool     beg(II& i, II e, Cx& cx) { return consume<X>(X::string::beg, i, e, cx); }
             template <typename II, typename Cx> static bool     end(II& i, II e, Cx& cx) { return consume<X>(X::string::end, i, e, cx); }
             template <typename II, typename Cx> static char32_t chr(II& i, II e, Cx& cx) {
-                return  chars::str_to_utf32<X>(i, e, cx);
+                return  chr::str_to_utf32<X>(i, e, cx);
             }
         };
     template <typename X, template <typename> class S>
@@ -40,11 +40,11 @@ namespace cxon { namespace chio { namespace strs { // string quoting: read
                 if (peek(i, e) == '\\') {
                     char const c = next(i, e);
                     return !is_str<S<UQKEY<X>>>::esc(c) ?
-                        chars::esc_to_utf32<S<X>>(i, e, cx) :
+                        chr::esc_to_utf32<S<X>>(i, e, cx) :
                         (++i, char32_t(c))
                     ;
                 }
-                return chars::str_to_utf32<S<X>>(i, e, cx);
+                return chr::str_to_utf32<S<X>>(i, e, cx);
             }
         };
 
@@ -72,7 +72,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: read
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
-                char b[4]; int const n = chars::utf32_to_utf8(b, c32);
+                char b[4]; int const n = chr::utf32_to_utf8(b, c32);
                     if (n == 0 || t + n > te) return cx|read_error::overflow;
                 std::copy_n(b, n, t);
             return t += n, true;
@@ -177,13 +177,13 @@ namespace cxon { namespace chio { namespace strs { // char arrays: write
         inline bool array_write(O& o, const T* t, const T* te, Cx& cx) {
             if (!poke<X>(o, X::string::beg, cx)) return false;
                 if (*(te - 1) == T(0)) --te;
-            return chars::encode<X, T>::range(o, t, te, cx) && poke<X>(o, X::string::end, cx);
+            return chr::encode<X, T>::range(o, t, te, cx) && poke<X>(o, X::string::end, cx);
         }
 
     template <typename X, typename O, typename T, typename Cx>
         inline bool pointer_write(O& o, const T* t, size_t s, Cx& cx) {
             return  poke<X>(o, X::string::beg, cx) &&
-                        chars::encode<X, T>::range(o, t, t + s, cx) &&
+                        chr::encode<X, T>::range(o, t, t + s, cx) &&
                     poke<X>(o, X::string::end, cx)
             ;
         }
@@ -202,7 +202,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: write
                     case '"':           if (!poke<X>(o, '"', cx))                                   return false;   break;
                     case '\'':          if (!poke<X>(o, '\'', cx))                                  return false;   break;
                     case X::map::div:   if (!poke<X>(o, '\\', cx) || !poke<X>(o, X::map::div, cx))  return false;   break;
-                    default:            if (!chars::encode<X, T>::value(o, t, e, cx))               return false;
+                    default:            if (!chr::encode<X, T>::value(o, t, e, cx))               return false;
                 }
             }
             return true;
