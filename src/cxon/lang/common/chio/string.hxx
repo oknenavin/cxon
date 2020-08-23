@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_STRINGS_HXX_
-#define CXON_CHIO_STRINGS_HXX_
+#ifndef CXON_CHIO_STRING_HXX_
+#define CXON_CHIO_STRING_HXX_
 
 #include "chio.hxx"
 #include "key.hxx"
@@ -12,6 +12,67 @@
 #include <algorithm>
 
 namespace cxon { namespace chio { namespace strs { // string quoting: read
+
+    template <typename X>
+        struct is_str; // end, esc
+    template <typename X, template <typename> class S>
+        struct is_str<S<UQKEY<X>>>;
+
+    template <typename X>
+        struct consume_str; // beg, end, chr
+    template <typename X, template <typename> class S>
+        struct consume_str<S<UQKEY<X>>>;
+
+}}}
+
+namespace cxon { namespace chio { namespace strs { // string quoting: write
+
+    template <typename X>
+        struct str; // beg, end
+    template <typename X, template <typename> class S>
+        struct str<S<UQKEY<X>>>;
+
+}}}
+
+namespace cxon { namespace chio { namespace strs { // char arrays: read
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool array_read(T* t, const T* te, II& i, II ie, Cx& cx);
+
+    template <typename X>
+        struct array; // read
+    template <typename X, template <typename> class S>
+        struct array<S<UQKEY<X>>>;
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool pointer_read(T*& t, II& i, II e, Cx& cx);
+
+}}}
+
+namespace cxon { namespace chio { namespace strs { // char arrays: write
+
+    template <typename X, typename O, typename T, typename Cx>
+        inline bool array_write(O& o, const T* t, const T* te, Cx& cx);
+
+    template <typename X, typename O, typename T, typename Cx>
+        inline bool pointer_write(O& o, const T* t, size_t s, Cx& cx);
+    template <typename X, typename O, typename T, typename Cx>
+        inline bool pointer_write(O& o, const T* t, Cx& cx);
+    template <typename X, typename O, typename T, typename Cx>
+        inline bool uqkey_pointer_write(O& o, const T* t, size_t s, Cx& cx);
+    template <typename X, typename O, typename T, typename Cx>
+        inline bool uqkey_pointer_write(O& o, const T* t, Cx& cx);
+
+    template <typename X>
+        struct pointer; // write
+    template <typename X, template <typename> class S>
+        struct pointer<S<UQKEY<X>>>;
+
+}}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio { namespace strs {
 
     template <typename X>
         struct is_str {
@@ -50,7 +111,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: read
 
 }}}
 
-namespace cxon { namespace chio { namespace strs { // string quoting: write
+namespace cxon { namespace chio { namespace strs {
 
     template <typename X>
         struct str {
@@ -65,7 +126,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: write
 
 }}}
 
-namespace cxon { namespace chio { namespace strs { // char arrays: read
+namespace cxon { namespace chio { namespace strs {
 
     template <typename X, typename II, typename Cx> // TODO: common with std::basic_string?
         inline bool array_char_read(char*& t, const char* te, II& i, II ie, Cx& cx) {
@@ -164,7 +225,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: read
 
 }}}
 
-namespace cxon { namespace chio { namespace strs { // char arrays: write
+namespace cxon { namespace chio { namespace strs {
 
     template <typename T>
         inline size_t ptrlen(const T* t) noexcept {
@@ -232,4 +293,4 @@ namespace cxon { namespace chio { namespace strs { // char arrays: write
 
 }}}
 
-#endif // CXON_CHIO_STRINGS_HXX_
+#endif // CXON_CHIO_STRING_HXX_

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_STRUCTS_HXX_
-#define CXON_CHIO_STRUCTS_HXX_
+#ifndef CXON_CHIO_STRUCT_HXX_
+#define CXON_CHIO_STRUCT_HXX_
 
 #include "chio.hxx"
 #include "value.hxx"
@@ -12,15 +12,55 @@
 
 namespace cxon { namespace chio { namespace structs { // structured types reader/writer construction helpers
 
-    struct skip_type {};
+    struct skip_type;
 
     template <typename D>
         struct field;
     template <typename D = skip_type>
-        constexpr field<D> make_field(const char* name, D d = {}) { return { name, d }; }
+        constexpr field<D> make_field(const char* name, D d = {});
 
     template <typename ...>
         struct fields;
+    template <typename ...T> 
+        constexpr fields<T...> make_fields(T... t);
+
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S& s, F f, II& i, II e, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>;
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S&, F f, II& i, II e, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>;
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        inline auto write_field(O& o, const S& s, F f, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>;
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        inline auto write_field(O& o, const S&, F f, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>;
+
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S&, F, II& i, II e, Cx& cx)
+            -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>;
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        constexpr auto write_field(O&, const S&, F, Cx&)
+            -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>;
+
+    template <typename X, typename S, typename ...F, typename II, typename Cx>
+        inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx);
+
+    template <typename X, typename S, typename ...F, typename O, typename Cx>
+        inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx);
+
+}}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio { namespace structs {
+
+    struct skip_type {};
+
+    template <typename D>
+        constexpr field<D> make_field(const char* name, D d) { return { name, d }; }
+
     template <typename ...T> 
         constexpr fields<T...> make_fields(T... t) { return { t... }; }
 
@@ -32,48 +72,49 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
             char const*const name;
             D mptr;
         };
-        template <typename X, typename S, typename F, typename II, typename Cx>
-            inline auto read_field(S& s, F f, II& i, II e, Cx& cx)
-                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return read_value<X>(s.*f.mptr, i, e, cx);
-            }
-        template <typename X, typename S, typename F, typename II, typename Cx>
-            inline auto read_field(S&, F f, II& i, II e, Cx& cx)
-                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return read_value<X>(*f.mptr, i, e, cx);
-            }
-        template <typename X, typename O, typename S, typename F, typename Cx>
-            inline auto write_field(O& o, const S& s, F f, Cx& cx)
-                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.mptr, cx);
-            }
-        template <typename X, typename O, typename S, typename F, typename Cx>
-            inline auto write_field(O& o, const S&, F f, Cx& cx)
-                -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return write_key<X>(o, f.name, cx) && write_value<X>(o, *f.mptr, cx);
-            }
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S& s, F f, II& i, II e, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+        {
+            return read_value<X>(s.*f.mptr, i, e, cx);
+        }
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S&, F f, II& i, II e, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+        {
+            return read_value<X>(*f.mptr, i, e, cx);
+        }
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        inline auto write_field(O& o, const S& s, F f, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+        {
+            return write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.mptr, cx);
+        }
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        inline auto write_field(O& o, const S&, F f, Cx& cx)
+            -> enable_if_t<!std::is_same<typename F::type, skip_type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+        {
+            return write_key<X>(o, f.name, cx) && write_value<X>(o, *f.mptr, cx);
+        }
+
     template <>
         struct field<skip_type> {
             using type = skip_type;
             char const*const name;
             skip_type const _;
         };
-        template <typename X, typename S, typename F, typename II, typename Cx>
-            inline auto read_field(S&, F, II& i, II e, Cx& cx)
-                -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
-            {
-                return value::read<X>(i, e, cx);
-            }
-        template <typename X, typename O, typename S, typename F, typename Cx>
-            constexpr auto write_field(O&, const S&, F, Cx&)
-                -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
-            {
-                return true;
-            }
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline auto read_field(S&, F, II& i, II e, Cx& cx)
+            -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
+        {
+            return value::read<X>(i, e, cx);
+        }
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        constexpr auto write_field(O&, const S&, F, Cx&)
+            -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
+        {
+            return true;
+        }
 
     // fields
 
@@ -166,4 +207,4 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
 
 }}}
 
-#endif // CXON_CHIO_STRUCTS_HXX_
+#endif // CXON_CHIO_STRUCT_HXX_

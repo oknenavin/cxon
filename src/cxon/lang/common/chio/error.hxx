@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_ERRORS_HXX_
-#define CXON_CHIO_ERRORS_HXX_
+#ifndef CXON_CHIO_ERROR_HXX_
+#define CXON_CHIO_ERROR_HXX_
 
 #include <system_error>
 
@@ -27,6 +27,25 @@ namespace cxon { namespace chio { // errors
         output_failure,         // output cannot be written
         argument_invalid        // argument invalid
     };
+
+    struct read_error_category;;
+
+    inline std::error_condition make_error_condition(read_error e) noexcept;
+
+    struct write_error_category;
+
+    inline std::error_condition make_error_condition(write_error e) noexcept;
+
+}}
+
+namespace std { // cxon errors
+    template <> struct is_error_condition_enum<cxon::chio::read_error> : true_type {};
+    template <> struct is_error_condition_enum<cxon::chio::write_error> : true_type {};
+}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio {
 
     struct read_error_category : std::error_category {
         const char* name() const noexcept override {
@@ -80,9 +99,4 @@ namespace cxon { namespace chio { // errors
 
 }}
 
-namespace std { // cxon errors
-    template <> struct is_error_condition_enum<cxon::chio::read_error> : true_type {};
-    template <> struct is_error_condition_enum<cxon::chio::write_error> : true_type {};
-}
-
-#endif // CXON_CHIO_ERRORS_HXX_
+#endif // CXON_CHIO_ERROR_HXX_
