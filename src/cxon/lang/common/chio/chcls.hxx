@@ -6,7 +6,16 @@
 #ifndef CXON_CHIO_CHCLS_HXX_
 #define CXON_CHIO_CHCLS_HXX_
 
-namespace cxon { namespace chio {
+namespace cxon { namespace chio { namespace chr { // character classes
+
+    template <typename X>
+        struct is; // ctrl, real, space, digit8, digit10, digit16, alpha, alnum
+
+}}}
+
+// implementation /////////////////////////////////////////////////////////////
+
+namespace cxon { namespace chio { namespace chr { // character classes
 
     enum : unsigned char {
         CTRL    = 1 << 0,       // control
@@ -51,7 +60,7 @@ namespace cxon { namespace chio {
         struct is {
             static bool ctrl   (char c) noexcept { return CTRL & is_x_[(unsigned char)c]; }
             static bool real   (char c) noexcept { return REAL & is_x_[(unsigned char)c]; }
-            static bool space  (char c) noexcept { return JSSP & is_x_[(unsigned char)c]; }
+            static bool space  (char c) noexcept { return CXSP & is_x_[(unsigned char)c]; }
             static bool digit8 (char c) noexcept { return DGOC & is_x_[(unsigned char)c]; }
             static bool digit10(char c) noexcept { return DGDC & is_x_[(unsigned char)c]; }
             static bool digit16(char c) noexcept { return DGHX & is_x_[(unsigned char)c]; }
@@ -59,6 +68,6 @@ namespace cxon { namespace chio {
             static bool alnum  (char c) noexcept { return ALNM & is_x_[(unsigned char)c]; }
         };
 
-}}
+}}}
 
 #endif // CXON_CHIO_CHCLS_HXX_

@@ -20,7 +20,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: read
         };
     template <typename X, template <typename> class S>
         struct is_str<S<UQKEY<X>>> {
-            static bool end(char c) noexcept { return is<S<X>>::space(c) || c == S<X>::map::div; }
+            static bool end(char c) noexcept { return chr::is<S<X>>::space(c) || c == S<X>::map::div; }
             static bool esc(char c) noexcept { return end(c); }
         };
 
@@ -109,7 +109,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: read
             II const o = i;
                 if (!consume_str<X>::beg(i, ie, cx)) return false;
                     while (t < te) {
-                        if (!is<X>::real(peek(i, ie)))              return consume_str<X>::end(i, ie, cx);
+                        if (!chr::is<X>::real(peek(i, ie)))         return consume_str<X>::end(i, ie, cx);
                         if (is_str<X>::end(peek(i, ie)))            return *t = '\0', consume_str<X>::end(i, ie, cx);
                         if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == read_error::overflow && (rewind(i, o), false);
                     }
@@ -155,7 +155,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: read
                     al::deallocate(at, b, be - b);
                     be = n + 2 * (be - b), b = n;
                 }
-                if (!is<X>::real(peek(i, e)))               goto err;
+                if (!chr::is<X>::real(peek(i, e)))          goto err;
                 if (is_str<X>::end(peek(i, e)))             return *p = '\0', t = b, consume_str<X>::end(i, e, cx);
                 if (!array_char_read<X>(p, be, i, e, cx))   goto err;
             }

@@ -36,8 +36,8 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         if (is_sign<T>(c))                  CXON_NEXT()
                         if (c == '0') {                     CXON_NEXT()
                                                             goto trap_end; }
-                           if (!is<X>::digit10(c))          return 0;
-                        while ( is<X>::digit10(c))          CXON_NEXT()
+                           if (!chr::is<X>::digit10(c))     return 0;
+                        while ( chr::is<X>::digit10(c))     CXON_NEXT()
                     trap_end:
                         return f != l ? (*f = '\0', 1) : 0;
                 }
@@ -50,12 +50,12 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                     if (is_sign<T>(c)) goto trap_neg;
                     // trap_pos
                         if (c == '0') return ++i, 1;
-                        while (is<X>::digit10(c)) c = next(i, e);
+                        while (chr::is<X>::digit10(c)) c = next(i, e);
                         goto trap_end;
                     trap_neg:
                         c = next(i, e);
-                            if (c == '0' || !is<X>::digit10(c)) return 0;
-                        while (is<X>::digit10(c)) c = next(i, e);
+                            if (c == '0' || !chr::is<X>::digit10(c)) return 0;
+                        while (chr::is<X>::digit10(c)) c = next(i, e);
                     trap_end:
                         return 1;
                 }
@@ -70,8 +70,8 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         if (is_sign<T>(c))                  CXON_NEXT()
                         if (c == '0')                       goto trap_zero;
                     //trap_whole:
-                           if (!is<X>::digit10(c))          return 0;
-                        while ( is<X>::digit10(c))          CXON_NEXT()
+                           if (!chr::is<X>::digit10(c))     return 0;
+                        while ( chr::is<X>::digit10(c))     CXON_NEXT()
                         if (c == '.')                       goto trap_fraction;
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
@@ -82,15 +82,15 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         ;                                   goto trap_end;
                     trap_fraction:
                         ;                                   CXON_NEXT()
-                           if (!is<X>::digit10(c))          return 0;
-                        while ( is<X>::digit10(c))          CXON_NEXT()
+                           if (!chr::is<X>::digit10(c))     return 0;
+                        while ( chr::is<X>::digit10(c))     CXON_NEXT()
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_exponent:
                         ;                                   CXON_NEXT()
                         if (c == '-' || c == '+')           CXON_NEXT()
-                           if (!is<X>::digit10(c))          return 0;
-                        while ( is<X>::digit10(c))          CXON_NEXT()
+                           if (!chr::is<X>::digit10(c))     return 0;
+                        while ( chr::is<X>::digit10(c))     CXON_NEXT()
                         ;                                   goto trap_end;
                     trap_spec_beg:
                         ;                                   CXON_NEXT()
@@ -120,8 +120,8 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         if (is_sign<T>(c))                  c = next(i, e);
                         if (c == '0')                       goto trap_zero;
                     //trap_whole:
-                            if (!is<X>::digit10(c))         return 0;
-                        while (is<X>::digit10(c))           c = next(i, e);
+                            if (!chr::is<X>::digit10(c))    return 0;
+                        while (chr::is<X>::digit10(c))      c = next(i, e);
                         if (c == '.')                       goto trap_fraction;
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
@@ -132,15 +132,15 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
                         ;                                   goto trap_end;
                     trap_fraction:
                         ;                                   c = next(i, e);
-                           if (!is<X>::digit10(c))          return 0;
-                        while ( is<X>::digit10(c))          c = next(i, e);
+                           if (!chr::is<X>::digit10(c))     return 0;
+                        while ( chr::is<X>::digit10(c))     c = next(i, e);
                         if (c == 'e' || c == 'E')           goto trap_exponent;
                         ;                                   goto trap_end;
                     trap_exponent:
                         ;                                   c = next(i, e);
                         if (c == '-' || c == '+')           c = next(i, e);
-                           if (!is<X>::digit10(c))          return 0;
-                        while ( is<X>::digit10(c))          c = next(i, e);
+                           if (!chr::is<X>::digit10(c))     return 0;
+                        while ( chr::is<X>::digit10(c))     c = next(i, e);
                         ;                                   goto trap_end;
                     trap_spec_beg:
                         ;                                   c = next(i, e);
