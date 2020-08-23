@@ -13,8 +13,6 @@
 
 namespace cxon { namespace chio { namespace strs { // string quoting: read
 
-    using ::cxon::chio::bits::UQKEY;
-
     template <typename X>
         struct is_str {
             static           bool end(char c) noexcept  { return c == X::string::end; }
@@ -225,7 +223,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: write
                 }
         };
     template <typename X, template <typename> class S>
-        struct pointer<S<strs::UQKEY<X>>> {
+        struct pointer<S<UQKEY<X>>> {
             template <typename O, typename T, typename Cx>
                 static bool write(O& o, const T* t, Cx& cx) {
                     return uqkey_pointer_write<S<X>>(o, t, cx);

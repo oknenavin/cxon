@@ -6,9 +6,9 @@
 #ifndef CXON_JSON_LIB_STD_BITSET_HXX_
 #define CXON_JSON_LIB_STD_BITSET_HXX_
 
-namespace cxon { namespace chio { namespace bits {
+namespace cxon { namespace chio {
     template <size_t N> struct is_quoted<std::bitset<N>> : std::true_type {};
-}}}
+}}
 
 namespace cxon { namespace json { namespace bits {
 

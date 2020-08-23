@@ -30,7 +30,9 @@ namespace cxon { // format selector
 }
 
 namespace cxon { namespace json { // format traits
-    struct format_traits : chio::format_traits {};
+    struct format_traits : chio::format_traits {
+        static constexpr bool strict_js = false; // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
+    };
 }}
 
 namespace cxon { namespace json { // errors

@@ -66,7 +66,7 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
             inline auto read_field(S&, F, II& i, II e, Cx& cx)
                 -> enable_if_t<std::is_same<typename F::type, skip_type>::value, bool>
             {
-                return unquoted::read_value<X>(i, e, cx);
+                return value::read<X>(i, e, cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
             constexpr auto write_field(O&, const S&, F, Cx&)

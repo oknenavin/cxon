@@ -44,9 +44,7 @@ namespace cxon { namespace chio { // format traits
             static constexpr char const*            pos             = "true";
             static constexpr char const*            neg             = "false";
         };
-        static constexpr bool                       strict_js       = false;
     };
-    static_assert(format_traits::string::beg == format_traits::string::end && (format_traits::string::beg == '"' || format_traits::string::beg == '\''), "not supported");
 
     // access
 
