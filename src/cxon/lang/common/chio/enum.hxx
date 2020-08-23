@@ -7,7 +7,7 @@
 #define CXON_CHIO_ENUMS_HXX_
 
 #include "chio.hxx"
-#include "unquoted-value.hxx"
+#include "value.hxx"
 #include <cstring> // strcmp
 
 namespace cxon { namespace chio { namespace enums { // enum reader/writer construction helpers
