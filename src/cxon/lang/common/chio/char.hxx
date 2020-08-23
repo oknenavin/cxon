@@ -26,7 +26,7 @@ namespace cxon { namespace chio { namespace chr { // character conversion: read
     inline char32_t hex_to_utf32(const char* b, const char* e) noexcept;
 
     template <typename X>
-        struct esc_to; //{ utf32 }
+        struct esc_to; // utf32
 
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx);
@@ -39,18 +39,6 @@ namespace cxon { namespace chio { namespace chr { // character conversion: read
 }}}
 
 namespace cxon { namespace chio { namespace chr { // character conversion: write
-
-    template <typename X, typename T>
-        struct encode;
-
-    template <typename X>
-        struct encode<X, char>;
-    template <typename X>
-        struct encode<X, char16_t>;
-    template <typename X>
-        struct encode<X, char32_t>;
-    template <typename X>
-        struct encode<X, wchar_t>;
 
     template <typename X, typename T, typename O, typename Cx>
         inline bool write(O& o, T t, Cx& cx);
