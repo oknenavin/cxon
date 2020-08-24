@@ -381,7 +381,7 @@ struct Struct8 {
 
     template <typename X, typename II, typename C>
         static bool read_value(Struct8& t, II& i, II e, C& ctx) {
-            using namespace cxon::json::structs;
+            using namespace cxon::json::cls;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
                 make_field("b", &Struct8::b)
@@ -390,7 +390,7 @@ struct Struct8 {
         }
     template <typename X, typename OI, typename C>
         static bool write_value(OI& o, const Struct8& t, C& ctx) {
-            using namespace cxon::json::structs;
+            using namespace cxon::json::cls;
             static constexpr auto f = make_fields(
                 make_field("a", &Struct8::a),
                 make_field("b", &Struct8::b)
