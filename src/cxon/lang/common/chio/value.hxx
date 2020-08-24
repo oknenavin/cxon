@@ -8,7 +8,7 @@
 
 #include "chio.hxx"
 
-namespace cxon { namespace chio { namespace value { // value parsing
+namespace cxon { namespace chio { namespace val { // value parsing
 
     // TODO: add output iterator variant
 
@@ -22,7 +22,7 @@ namespace cxon { namespace chio { namespace value { // value parsing
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace value {
+namespace cxon { namespace chio { namespace val {
 
     namespace bits {
 
