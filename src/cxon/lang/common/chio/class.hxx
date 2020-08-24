@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_STRUCT_HXX_
-#define CXON_CHIO_STRUCT_HXX_
+#ifndef CXON_CHIO_CLASS_HXX_
+#define CXON_CHIO_CLASS_HXX_
 
 #include "chio.hxx"
 #include "value.hxx"
@@ -207,4 +207,4 @@ namespace cxon { namespace chio { namespace structs {
 
 }}}
 
-#endif // CXON_CHIO_STRUCT_HXX_
+#endif // CXON_CHIO_CLASS_HXX_
