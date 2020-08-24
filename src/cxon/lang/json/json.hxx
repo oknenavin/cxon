@@ -22,7 +22,7 @@ namespace cxon { // format selector fwd
 #include "fundamental.hxx"
 #include "enum.hxx"
 #include "compound.hxx"
-#include "struct.hxx"
+#include "class.hxx"
 
 namespace cxon { // format selector
     template <typename T>
