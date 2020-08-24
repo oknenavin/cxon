@@ -74,7 +74,7 @@ namespace cxon { // character pointer & array
         template <typename X, size_t N>\
             struct read<JSON<X>, T[N]> {\
                 template <typename II, typename Cx>\
-                    static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return chio::strs::array<JSON<X>>::read(t, t + N, i, e, cx); }\
+                    static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return chio::str::array<JSON<X>>::read(t, t + N, i, e, cx); }\
             };
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
@@ -98,7 +98,7 @@ namespace cxon { // character pointer & array
         template <typename X>\
             struct read<JSON<X>, T*> {\
                 template <typename II, typename Cx>\
-                    static bool value(T*& t, II& i, II e, Cx& cx)       { return chio::strs::pointer_read<JSON<X>>(t, i, e, cx); }\
+                    static bool value(T*& t, II& i, II e, Cx& cx)       { return chio::str::pointer_read<JSON<X>>(t, i, e, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
@@ -110,7 +110,7 @@ namespace cxon { // character pointer & array
         template <typename X, size_t N>\
             struct write<JSON<X>, T[N]> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, const T (&t)[N], Cx& cx)    { return chio::strs::array_write<JSON<X>>(o, t, t + N, cx); }\
+                    static bool value(O& o, const T (&t)[N], Cx& cx)    { return chio::str::array_write<JSON<X>>(o, t, t + N, cx); }\
             };
         CXON_ARRAY(char)
         CXON_ARRAY(char16_t)
@@ -122,7 +122,7 @@ namespace cxon { // character pointer & array
         template <typename X>\
             struct write<JSON<X>, const T*> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, const T* t, Cx& cx)         { return chio::strs::pointer<JSON<X>>::write(o, t, cx); }\
+                    static bool value(O& o, const T* t, Cx& cx)         { return chio::str::pointer<JSON<X>>::write(o, t, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(char16_t)
