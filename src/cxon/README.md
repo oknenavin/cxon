@@ -451,16 +451,16 @@ macros for binding of enumeration and class types:
 - [`enumeration types`][cpp-enum]
     ``` c++
     // implements the read interface for enum Type
-    #define CXON_JSON_ENUM_READ(Type, ...)
+    #define CXON_JSON_ENM_READ(Type, ...)
     // implements the write interface for enum Type
-    #define CXON_JSON_ENUM_WRITE(Type, ...)
+    #define CXON_JSON_ENM_WRITE(Type, ...)
     // implements the read and write interfaces for enum Type
-    #define CXON_ENUM(Type, ...)
+    #define CXON_JSON_ENM(Type, ...)
 
     // defines enum value `Value`, which will be serialized as Name
-    #define CXON_JSON_ENUM_VALUE_NAME(Name, Value)
+    #define CXON_JSON_ENM_VALUE_NAME(Name, Value)
     // defines enum value `Value`, which will be serialized as ##Value
-    #define CXON_JSON_ENUM_VALUE_ASIS(Value)
+    #define CXON_JSON_ENM_VALUE_ASIS(Value)
     ```
 
     ###### Example
@@ -468,10 +468,10 @@ macros for binding of enumeration and class types:
     ``` c++
     enum rgb { red, green, blue };
 
-    CXON_ENUM(rgb,
-        CXON_JSON_ENUM_VALUE_ASIS(red),
-        CXON_JSON_ENUM_VALUE_NAME("green (1)", green),
-        CXON_JSON_ENUM_VALUE_ASIS(blue)
+    CXON_JSON_ENM(rgb,
+        CXON_JSON_ENM_VALUE_ASIS(red),
+        CXON_JSON_ENM_VALUE_NAME("green (1)", green),
+        CXON_JSON_ENM_VALUE_ASIS(blue)
     )
 
     ...

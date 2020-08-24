@@ -183,10 +183,10 @@ TEST_END()
 
 enum Enum1 { one, two, three, four };
 
-CXON_ENUM(Enum1,
-    CXON_JSON_ENUM_VALUE_ASIS(one),
-    CXON_JSON_ENUM_VALUE_NAME("Two (2)", two),
-    CXON_JSON_ENUM_VALUE_ASIS(three)
+CXON_JSON_ENM(Enum1,
+    CXON_JSON_ENM_VALUE_ASIS(one),
+    CXON_JSON_ENM_VALUE_NAME("Two (2)", two),
+    CXON_JSON_ENM_VALUE_ASIS(three)
 )
 
 TEST_BEG(cxon::JSON<>)
