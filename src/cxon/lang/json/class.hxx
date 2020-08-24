@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_STRUCT_HXX_
-#define CXON_JSON_STRUCT_HXX_
+#ifndef CXON_JSON_CLASS_HXX_
+#define CXON_JSON_CLASS_HXX_
 
-#include "cxon/lang/common/chio/struct.hxx"
+#include "cxon/lang/common/chio/class.hxx"
 
 namespace cxon { namespace json {
     namespace structs = chio::structs;
@@ -66,4 +66,4 @@ namespace cxon { // structs::skip_type read
     CXON_JSON_STRUCT_READ_MEMBER(Type, __VA_ARGS__)\
     CXON_JSON_STRUCT_WRITE_MEMBER(Type, __VA_ARGS__)
 
-#endif // CXON_JSON_STRUCT_HXX_
+#endif // CXON_JSON_CLASS_HXX_
