@@ -16,7 +16,7 @@ namespace cxon { // cls::skip_type read
 
     template <typename X, typename II, typename Cx>
         inline auto read_value(json::cls::skip_type&, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
-            return chio::value::read<X>(i, e, cx);
+            return chio::val::read<X>(i, e, cx);
         }
 
 }
