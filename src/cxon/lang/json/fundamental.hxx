@@ -94,7 +94,7 @@ namespace cxon { // numeric
 #   define CXON_READ_DEF(T)\
         template <typename X, typename II, typename Cx>\
             inline auto read_value(T& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {\
-                return chio::nums::number_read<X>(t, i, e, cx);\
+                return chio::num::number_read<X>(t, i, e, cx);\
             }
         CXON_READ_DEF(signed char)
         CXON_READ_DEF(unsigned char)
@@ -114,7 +114,7 @@ namespace cxon { // numeric
 #   define CXON_WRITE_DEF(T)\
         template <typename X, typename O, typename Cx>\
             inline auto write_value(O& o, const T& t, Cx& cx) -> enable_for_t<X, JSON, bool> {\
-                return chio::nums::number_write<X>(o, t, cx);\
+                return chio::num::number_write<X>(o, t, cx);\
             }
         CXON_WRITE_DEF(signed char)
         CXON_WRITE_DEF(unsigned char)
