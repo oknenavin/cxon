@@ -40,14 +40,14 @@ namespace cxon {
         struct write<JSON<X>, std::basic_string_view<T, R...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return chio::strs::pointer_write<J>(o, t.data(), t.size(), cx);
+                    return chio::str::pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
     template <typename X, typename T, typename ...R>
         struct write<JSON<chio::UQKEY<X>>, std::basic_string_view<T, R...>> {
             template <typename O, typename Cx, typename J = JSON<chio::UQKEY<X>>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return chio::strs::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
+                    return chio::str::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
 

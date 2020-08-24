@@ -11,7 +11,7 @@
 #include "char.hxx"
 #include <algorithm>
 
-namespace cxon { namespace chio { namespace strs { // string quoting: read
+namespace cxon { namespace chio { namespace str { // string quoting: read
 
     template <typename X>
         struct is_str; // end, esc
@@ -25,7 +25,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: read
 
 }}}
 
-namespace cxon { namespace chio { namespace strs { // string quoting: write
+namespace cxon { namespace chio { namespace str { // string quoting: write
 
     template <typename X>
         struct str; // beg, end
@@ -34,7 +34,7 @@ namespace cxon { namespace chio { namespace strs { // string quoting: write
 
 }}}
 
-namespace cxon { namespace chio { namespace strs { // char arrays: read
+namespace cxon { namespace chio { namespace str { // char arrays: read
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool array_read(T* t, const T* te, II& i, II ie, Cx& cx);
@@ -49,7 +49,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: read
 
 }}}
 
-namespace cxon { namespace chio { namespace strs { // char arrays: write
+namespace cxon { namespace chio { namespace str { // char arrays: write
 
     template <typename X, typename O, typename T, typename Cx>
         inline bool array_write(O& o, const T* t, const T* te, Cx& cx);
@@ -72,7 +72,7 @@ namespace cxon { namespace chio { namespace strs { // char arrays: write
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace strs {
+namespace cxon { namespace chio { namespace str {
 
     template <typename X>
         struct is_str {
@@ -111,7 +111,7 @@ namespace cxon { namespace chio { namespace strs {
 
 }}}
 
-namespace cxon { namespace chio { namespace strs {
+namespace cxon { namespace chio { namespace str {
 
     template <typename X>
         struct str {
@@ -126,7 +126,7 @@ namespace cxon { namespace chio { namespace strs {
 
 }}}
 
-namespace cxon { namespace chio { namespace strs {
+namespace cxon { namespace chio { namespace str {
 
     template <typename X, typename II, typename Cx> // TODO: common with std::basic_string?
         inline bool array_char_read(char*& t, const char* te, II& i, II ie, Cx& cx) {
@@ -225,7 +225,7 @@ namespace cxon { namespace chio { namespace strs {
 
 }}}
 
-namespace cxon { namespace chio { namespace strs {
+namespace cxon { namespace chio { namespace str {
 
     template <typename T>
         inline size_t ptrlen(const T* t) noexcept {
