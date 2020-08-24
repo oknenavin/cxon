@@ -487,22 +487,22 @@ macros for binding of enumeration and class types:
 - [`class types`][cpp-class]
     ``` c++
     // implements the read interface for type `Type`
-    #define CXON_JSON_STRUCT_READ(Type, ...)
+    #define CXON_JSON_CLS_READ(Type, ...)
     // implements the write interface for type `Type`
-    #define CXON_JSON_STRUCT_WRITE(Type, ...)
+    #define CXON_JSON_CLS_WRITE(Type, ...)
     // implements the read and write interfaces for type `Type`
-    #define CXON_STRUCT(Type, ...)
+    #define CXON_JSON_CLS(Type, ...)
     // and the same set for intrusive implementation
-    #define CXON_JSON_STRUCT_READ_MEMBER(Type, ...)
-    #define CXON_JSON_STRUCT_WRITE_MEMBER(Type, ...)
-    #define CXON_JSON_STRUCT_MEMBER(Type, ...)
+    #define CXON_JSON_CLS_READ_MEMBER(Type, ...)
+    #define CXON_JSON_CLS_WRITE_MEMBER(Type, ...)
+    #define CXON_JSON_CLS_MEMBER(Type, ...)
     
     // defines field `Field`, which will be serialized as Name
-    #define CXON_JSON_STRUCT_FIELD_NAME(Name, Field)
+    #define CXON_JSON_CLS_FIELD_NAME(Name, Field)
     // defines field `Field`, which will be serialized as ##Field
-    #define CXON_JSON_STRUCT_FIELD_ASIS(Field)
+    #define CXON_JSON_CLS_FIELD_ASIS(Field)
     // defines the key Name, which will be skipped during serialization (only meaningful for reading)
-    #define CXON_JSON_STRUCT_FIELD_SKIP(Name)
+    #define CXON_JSON_CLS_FIELD_SKIP(Name)
     ```
 
     ###### Example
@@ -514,14 +514,14 @@ macros for binding of enumeration and class types:
         int skip;
         bool operator ==(const my_struct& s) const { return first == s.first && second == s.second; }
     };
-    CXON_JSON_STRUCT_READ(my_struct,
-        CXON_JSON_STRUCT_FIELD_ASIS(first),
-        CXON_JSON_STRUCT_FIELD_NAME("second field", second),
-        CXON_JSON_STRUCT_FIELD_SKIP("skip")
+    CXON_JSON_CLS_READ(my_struct,
+        CXON_JSON_CLS_FIELD_ASIS(first),
+        CXON_JSON_CLS_FIELD_NAME("second field", second),
+        CXON_JSON_CLS_FIELD_SKIP("skip")
     )
-    CXON_JSON_STRUCT_WRITE(my_struct,
-        CXON_JSON_STRUCT_FIELD_ASIS(first),
-        CXON_JSON_STRUCT_FIELD_NAME("second field", second)
+    CXON_JSON_CLS_WRITE(my_struct,
+        CXON_JSON_CLS_FIELD_ASIS(first),
+        CXON_JSON_CLS_FIELD_NAME("second field", second)
     )
 
     ...
@@ -820,11 +820,11 @@ namespace jsonrpc {
             constexpr request(size_t id, const char* method, P... params) noexcept
             :   id(id), method(method), params(params...) { }
 
-            CXON_JSON_STRUCT_WRITE_MEMBER(request,
-                CXON_JSON_STRUCT_FIELD_ASIS(jsonrpc),
-                CXON_JSON_STRUCT_FIELD_ASIS(id),
-                CXON_JSON_STRUCT_FIELD_ASIS(method),
-                CXON_JSON_STRUCT_FIELD_ASIS(params)
+            CXON_JSON_CLS_WRITE_MEMBER(request,
+                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
+                CXON_JSON_CLS_FIELD_ASIS(id),
+                CXON_JSON_CLS_FIELD_ASIS(method),
+                CXON_JSON_CLS_FIELD_ASIS(params)
             )
         };
     template <typename ...P>
@@ -843,10 +843,10 @@ namespace jsonrpc {
             std::string message;
             D           data;
 
-            CXON_JSON_STRUCT_READ_MEMBER(error,
-                CXON_JSON_STRUCT_FIELD_ASIS(code),
-                CXON_JSON_STRUCT_FIELD_ASIS(message),
-                CXON_JSON_STRUCT_FIELD_ASIS(data)
+            CXON_JSON_CLS_READ_MEMBER(error,
+                CXON_JSON_CLS_FIELD_ASIS(code),
+                CXON_JSON_CLS_FIELD_ASIS(message),
+                CXON_JSON_CLS_FIELD_ASIS(data)
             )
         };
 
@@ -860,11 +860,11 @@ namespace jsonrpc {
             constexpr response() noexcept
             :   jsonrpc{0}, id(), result(), error() { }
 
-            CXON_JSON_STRUCT_READ_MEMBER(response,
-                CXON_JSON_STRUCT_FIELD_ASIS(jsonrpc),
-                CXON_JSON_STRUCT_FIELD_ASIS(id),
-                CXON_JSON_STRUCT_FIELD_ASIS(result),
-                CXON_JSON_STRUCT_FIELD_ASIS(error)
+            CXON_JSON_CLS_READ_MEMBER(response,
+                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
+                CXON_JSON_CLS_FIELD_ASIS(id),
+                CXON_JSON_CLS_FIELD_ASIS(result),
+                CXON_JSON_CLS_FIELD_ASIS(error)
             )
         };
 

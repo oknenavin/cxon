@@ -128,9 +128,9 @@ struct my_type {
 };
 
 // in this simple case, some trivial macros can be used to implement the type for CXON
-CXON_STRUCT(my_type,
-    CXON_JSON_STRUCT_FIELD_ASIS(even),
-    CXON_JSON_STRUCT_FIELD_ASIS(odd)
+CXON_JSON_CLS(my_type,
+    CXON_JSON_CLS_FIELD_ASIS(even),
+    CXON_JSON_CLS_FIELD_ASIS(odd)
 )
 
 int main() {

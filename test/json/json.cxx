@@ -132,8 +132,8 @@ struct Struct11 {
     int field;
     Struct11(int f = 0) : field(f) {}
     bool operator ==(const Struct11& t) const { return field == t.field; }
-    CXON_JSON_STRUCT_READ_MEMBER(Struct11,
-        CXON_JSON_STRUCT_FIELD_ASIS(field)
+    CXON_JSON_CLS_READ_MEMBER(Struct11,
+        CXON_JSON_CLS_FIELD_ASIS(field)
     )
 };
 
