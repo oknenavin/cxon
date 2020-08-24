@@ -10,7 +10,7 @@
 #include "value.hxx"
 #include <cstring> // strcmp
 
-namespace cxon { namespace chio { namespace structs { // structured types reader/writer construction helpers
+namespace cxon { namespace chio { namespace cls { // structured types reader/writer construction helpers
 
     struct skip_type;
 
@@ -54,7 +54,7 @@ namespace cxon { namespace chio { namespace structs { // structured types reader
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace structs {
+namespace cxon { namespace chio { namespace cls {
 
     struct skip_type {};
 
