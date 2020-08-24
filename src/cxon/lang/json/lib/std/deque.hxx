@@ -14,7 +14,7 @@ namespace cxon {
         struct read<JSON<X>, std::deque<T, R...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::deque<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::container::read<J, chio::list<J>>(i, e, cx, [&] {
+                    return chio::con::read<J, chio::list<J>>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace_back();
                             return read_value<J>(t.back(), i, e, cx);
@@ -29,7 +29,7 @@ namespace cxon {
         struct write<JSON<X>, std::deque<T, R...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::deque<T, R...>& t, Cx& cx) {
-                    return chio::container::write<J, chio::list<J>>(o, t, cx);
+                    return chio::con::write<J, chio::list<J>>(o, t, cx);
                 }
         };
 
