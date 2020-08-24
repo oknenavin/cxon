@@ -3,15 +3,15 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_NUMBERS_HXX_
-#define CXON_CHIO_NUMBERS_HXX_
+#ifndef CXON_CHIO_NUMERIC_HXX_
+#define CXON_CHIO_NUMERIC_HXX_
 
 #include "chio.hxx"
 #include "chcls.hxx"
 #include "cxon/lang/common/charconv.hxx"
 #include <cmath> // isfinite, ...
 
-namespace cxon { namespace chio { namespace nums { // number conversion: read
+namespace cxon { namespace chio { namespace num { // number conversion: read
 
     template <typename T>
         inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool>;
@@ -29,7 +29,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: read
 
 }}}
 
-namespace cxon { namespace chio { namespace nums { // number conversion: write
+namespace cxon { namespace chio { namespace num { // number conversion: write
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool>;
@@ -41,7 +41,7 @@ namespace cxon { namespace chio { namespace nums { // number conversion: write
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace nums {
+namespace cxon { namespace chio { namespace num {
 
     template <typename T>
         inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool> {
@@ -300,7 +300,7 @@ namespace cxon { namespace chio { namespace nums {
 
 }}}
 
-namespace cxon { namespace chio { namespace nums { // number conversion: write
+namespace cxon { namespace chio { namespace num { // number conversion: write
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
@@ -332,4 +332,4 @@ namespace cxon { namespace chio { namespace nums { // number conversion: write
 
 }}}
 
-#endif // CXON_CHIO_NUMBERS_HXX_
+#endif // CXON_CHIO_NUMERIC_HXX_
