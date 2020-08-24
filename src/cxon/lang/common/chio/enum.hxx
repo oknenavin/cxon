@@ -9,7 +9,7 @@
 #include "chio.hxx"
 #include <cstring> // strcmp
 
-namespace cxon { namespace chio { namespace enums { // enum reader/writer construction helpers
+namespace cxon { namespace chio { namespace enm { // enum reader/writer construction helpers
 
     template <typename E>
         struct value;
@@ -26,7 +26,7 @@ namespace cxon { namespace chio { namespace enums { // enum reader/writer constr
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace enums {
+namespace cxon { namespace chio { namespace enm {
 
     template <typename E>
         struct value {

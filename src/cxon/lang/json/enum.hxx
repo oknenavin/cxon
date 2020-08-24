@@ -3,39 +3,39 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_ENUM_HXX_
-#define CXON_JSON_ENUM_HXX_
+#ifndef CXON_JSON_ENM_HXX_
+#define CXON_JSON_ENM_HXX_
 
 #include "cxon/lang/common/chio/enum.hxx"
 
 namespace cxon { namespace json {
-    namespace enums = chio::enums;
+    namespace enm = chio::enm;
 }}
 
-#define CXON_JSON_ENUM_VALUE(T, N, V)   cxon::json::enums::make_value(N, T::V)
-#define CXON_JSON_ENUM_VALUE_NAME(N, V) CXON_JSON_ENUM_VALUE(T, N, V)
-#define CXON_JSON_ENUM_VALUE_ASIS(V)    CXON_JSON_ENUM_VALUE(T, #V, V)
+#define CXON_JSON_ENM_VALUE(T, N, V)   cxon::json::enm::make_value(N, T::V)
+#define CXON_JSON_ENM_VALUE_NAME(N, V) CXON_JSON_ENM_VALUE(T, N, V)
+#define CXON_JSON_ENM_VALUE_ASIS(V)    CXON_JSON_ENM_VALUE(T, #V, V)
 
-#define CXON_JSON_ENUM_READ(Type, ...)\
+#define CXON_JSON_ENM_READ(Type, ...)\
     namespace cxon {\
         template <typename X, typename II, typename Cx>\
             inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {\
                 using T = Type;\
-                static constexpr chio::enums::value<Type> v[] = { __VA_ARGS__ };\
-                return chio::enums::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
+                static constexpr chio::enm::value<Type> v[] = { __VA_ARGS__ };\
+                return chio::enm::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
             }\
     }
-#define CXON_JSON_ENUM_WRITE(Type, ...)\
+#define CXON_JSON_ENM_WRITE(Type, ...)\
     namespace cxon {\
         template <typename X, typename O, typename Cx>\
             inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, JSON, bool> {\
                 using T = Type;\
-                static constexpr chio::enums::value<Type> v[] = { __VA_ARGS__ };\
-                return chio::enums::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
+                static constexpr chio::enm::value<Type> v[] = { __VA_ARGS__ };\
+                return chio::enm::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
             }\
     }
-#define CXON_ENUM(Type, ...)\
-    CXON_JSON_ENUM_READ(Type, __VA_ARGS__)\
-    CXON_JSON_ENUM_WRITE(Type, __VA_ARGS__)
+#define CXON_JSON_ENM(Type, ...)\
+    CXON_JSON_ENM_READ(Type, __VA_ARGS__)\
+    CXON_JSON_ENM_WRITE(Type, __VA_ARGS__)
 
-#endif // CXON_JSON_ENUM_HXX_
+#endif // CXON_JSON_ENM_HXX_

@@ -122,10 +122,10 @@ TEST_END()
 
 enum Enum11 { one, two, three, four };
 
-CXON_ENUM(Enum11,
-    CXON_JSON_ENUM_VALUE_ASIS(one),
-    CXON_JSON_ENUM_VALUE_NAME("Two (2)", two),
-    CXON_JSON_ENUM_VALUE_ASIS(three)
+CXON_JSON_ENM(Enum11,
+    CXON_JSON_ENM_VALUE_ASIS(one),
+    CXON_JSON_ENM_VALUE_NAME("Two (2)", two),
+    CXON_JSON_ENM_VALUE_ASIS(three)
 )
 
 struct Struct11 {
