@@ -1,11 +1,18 @@
 SHELL = /bin/sh
 
 out = .out
-src = ../src/cxon
+inc = ../src
+src = src
 dat = ../data
 
-check-json-src      = json/json.cxx json/fundamental.cxx json/compound.cxx json/std.cxx
-check-json-node-src = json/node.cxx
+check-json-src = \
+    $(src)/json/json.cxx \
+    $(src)/json/fundamental.cxx \
+    $(src)/json/compound.cxx \
+    $(src)/json/std.cxx
+
+check-json-node-src = \
+    $(src)/json/node.cxx
 
 check: check-json check-json-node
 
@@ -27,11 +34,11 @@ check-json-node: $(out)/check-json-node
 
 $(out)/check-json: $(check-json-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
+	$(CXX) -I $(inc) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
 
 $(out)/check-json-node: $(check-json-node-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
+	$(CXX) -I $(inc) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
 
 clean:
 	@rm -fr $(out)
