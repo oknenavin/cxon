@@ -4,15 +4,15 @@ out = .out
 src = ../src/cxon
 dat = ../data
 
-cxon-json-check-src			= json/json.cxx json/fundamental.cxx json/compound.cxx json/std.cxx
-cxon-json-node-check-src		= json/node.cxx
+check-json-src      = json/json.cxx json/fundamental.cxx json/compound.cxx json/std.cxx
+check-json-node-src = json/node.cxx
 
-check: check-cxon-json check-cxon-json-node
+check: check-json check-json-node
 
-check-cxon-json: $(out)/cxon-json-check
+check-json: $(out)/check-json
 	@(cd $(out) && ../$<)
 
-check-cxon-json-node: $(out)/cxon-json-node-check
+check-json-node: $(out)/check-json-node
 	@(cd $(out) && ../$<)
 	@(cd $(out) && ../$< \
                             pass    @$(dat)/set.1-pass.in \
@@ -25,15 +25,15 @@ check-cxon-json-node: $(out)/cxon-json-node-check
                                     @$(dat)/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
-$(out)/cxon-json-check: $(cxon-json-check-src)
+$(out)/check-json: $(check-json-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxon-json-check-src) -o $@
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
 
-$(out)/cxon-json-node-check: $(cxon-json-node-check-src)
+$(out)/check-json-node: $(check-json-node-src)
 	@mkdir -p $(out)
-	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(cxon-json-node-check-src) -o $@
-    
+	$(CXX) -I ../src -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
+
 clean:
 	@rm -fr $(out)
 
-.PHONY: check check-cxon-json check-cxon-json-node clean
+.PHONY: check check-json check-json-node clean
