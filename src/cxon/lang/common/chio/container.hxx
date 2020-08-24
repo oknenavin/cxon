@@ -8,7 +8,7 @@
 
 #include "chio.hxx"
 
-namespace cxon { namespace chio { namespace container { // container read/write helpers
+namespace cxon { namespace chio { namespace con { // container read/write helpers
 
     template <typename X, typename Cr, typename II, typename Cx, typename EA>
         inline bool read(II& i, II e, Cx& cx, EA element_add);
@@ -26,7 +26,7 @@ namespace cxon { namespace chio { namespace container { // container read/write 
 
 // implementation /////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace container {
+namespace cxon { namespace chio { namespace con {
 
     namespace bits {
 
