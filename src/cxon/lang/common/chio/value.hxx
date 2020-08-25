@@ -61,13 +61,13 @@ namespace cxon { namespace chio { namespace val {
                     static bool read(BA o, II& i, II e) {
                         for ( ; i != e; ++i) {
                             char const c = *i;
-                                 if (c == X::map::beg)      { if (!skip<chio::map<X>::beg, chio::map<X>::end>(o, i, e))     return false; }
-                            else if (c == X::list::beg)     { if (!skip<chio::list<X>::beg, chio::list<X>::end>(o, i, e))   return false; }
-                            else if (c == X::string::beg)   { if (!skip(o, i, e))                                           return false; }
-                            else if (c == X::map::sep)                                                                      break;
-                            else if (c == X::map::end)                                                                      break;
-                            else if (c == X::list::end)                                                                     break;
-                            else                            { if (!o.add(*i))                                               return false; }
+                                 if (c == X::map::beg)      { if (!skip<X::map::beg, X::map::end>(o, i, e))     return false; }
+                            else if (c == X::list::beg)     { if (!skip<X::list::beg, X::list::end>(o, i, e))   return false; }
+                            else if (c == X::string::beg)   { if (!skip(o, i, e))                               return false; }
+                            else if (c == X::map::sep)                                                          break;
+                            else if (c == X::map::end)                                                          break;
+                            else if (c == X::list::end)                                                         break;
+                            else                            { if (!o.add(*i))                                   return false; }
                         }
                         return o.add('\0');
                     }

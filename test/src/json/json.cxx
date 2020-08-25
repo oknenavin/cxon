@@ -11,6 +11,7 @@
 #include "cxon/lib/std/string_view.hxx"
 #include "cxon/lib/std/list.hxx"
 #include "cxon/lib/std/map.hxx"
+#include "cxon/lib/std/tuple.hxx"
 
 #include "../pretty.hxx"
 
@@ -259,6 +260,150 @@ TEST_BEG(cxon::JSON<>) // pretty
         std::string const s0 =
             test::pretty<XXON>(s1);
         TEST_CHECK(s1 == s0);
+    }
+TEST_END()
+
+
+namespace jsonrpc {
+
+    // request
+
+    template <typename T>
+        struct napa { // named parameter
+            char const*const key;
+            T const value;
+
+            template <typename X, typename O, typename C, typename J = X>
+                auto write_value(O& o, C& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
+                    return cxon::chio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
+                }
+        };
+
+    template <typename V>
+        constexpr napa<V> make_napa(const char* k, V&& v) {
+            return {k, v};
+        }
+
+    template <typename ...P>
+        struct request {
+            static char const*const jsonrpc;
+            size_t const            id;
+            char const*const        method;
+            std::tuple<P...> const  params;
+
+            constexpr request(size_t id, const char* method, P... params) noexcept
+            :   id(id), method(method), params(params...) { }
+
+            CXON_JSON_CLS_WRITE_MEMBER(request,
+                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
+                CXON_JSON_CLS_FIELD_ASIS(id),
+                CXON_JSON_CLS_FIELD_ASIS(method),
+                CXON_JSON_CLS_FIELD_ASIS(params)
+            )
+        };
+    template <typename ...P>
+        char const*const request<P...>::jsonrpc = "2.0";
+
+    template <typename ...P>
+        constexpr request<P...> make_request(size_t id, const char* method, P... params) {
+            return request<P...>(id, method, params...);
+        }
+    template <typename ...P>
+        constexpr request<napa<P>...> make_request(size_t id, const char* method, napa<P>... params) {
+            return request<napa<P>...>(id, method, params...);
+        }
+
+    // response
+
+    template <typename D>
+        struct error {
+            int         code;
+            std::string message;
+            D           data;
+
+            CXON_JSON_CLS_READ_MEMBER(error,
+                CXON_JSON_CLS_FIELD_ASIS(code),
+                CXON_JSON_CLS_FIELD_ASIS(message),
+                CXON_JSON_CLS_FIELD_ASIS(data)
+            )
+        };
+
+    template <typename R, typename D = cxon::chio::cls::skip_type>
+        struct response {
+            char            jsonrpc[8];
+            size_t          id;
+            R               result;
+            struct error<D> error;
+
+            constexpr response() noexcept
+            :   jsonrpc{0}, id(), result(), error() { }
+
+            CXON_JSON_CLS_READ_MEMBER(response,
+                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
+                CXON_JSON_CLS_FIELD_ASIS(id),
+                CXON_JSON_CLS_FIELD_ASIS(result),
+                CXON_JSON_CLS_FIELD_ASIS(error)
+            )
+        };
+
+}
+
+namespace cxon { // json-rpc
+
+    template <typename X, typename ...T>
+        struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
+                    return  chio::poke<J>(o, J::map::beg, cx) &&
+                                chio::con::write_tuple<J>(o, t, cx) &&
+                            chio::poke<J>(o, J::map::end, cx)
+                    ;
+                }
+        };
+
+}
+
+TEST_BEG(cxon::JSON<>) // json-rpc
+    {   // params array
+        auto const call = jsonrpc::make_request(1, "sub", 42, 23);
+        std::string req; // serialize call to req
+            auto const w = to_bytes(req, call);
+        TEST_CHECK(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":[42,23]}");
+    }
+    {   // params object
+        auto const call = jsonrpc::make_request(1, "sub", jsonrpc::make_napa("x", 42), jsonrpc::make_napa("y", 23));
+        std::string req; // serialize call to req
+            auto const w = to_bytes(req, call);
+        TEST_CHECK(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":{\"x\":42,\"y\":23}}");
+    }
+    {   // round-trip req -> res ok
+        char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
+        jsonrpc::response<int> ret; // serialize res to ret
+            auto const r = from_bytes(ret, res);
+        TEST_CHECK(r && ret.id == 1 && ret.result == 19);
+    }
+    {   // round-trip req -> res ko
+        char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
+                            "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
+        {   // serialize res to ret, error's data will be skipped
+            jsonrpc::response<int> ret;
+                auto const r = from_bytes(ret, res);
+            TEST_CHECK( r &&
+                        ret.id == 1 &&
+                        ret.error.code == 42 &&
+                        ret.error.message == "divide by zero"
+            );
+        }
+        {   // serialize res to ret, error's data is bound to std::string
+            jsonrpc::response<int, std::string> ret;
+                auto const r = from_bytes(ret, res);
+            TEST_CHECK( r &&
+                        ret.id == 1 &&
+                        ret.error.code == 42 &&
+                        ret.error.message == "divide by zero" &&
+                        ret.error.data == "a black hole has been created somewhere"
+            );
+        }
     }
 TEST_END()
 

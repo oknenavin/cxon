@@ -14,7 +14,7 @@ namespace cxon {
         struct read<JSON<X>, std::stack<T, R...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::stack<T, R...>& t, II& i, II e, Cx& cx) {
-                    return chio::con::read<J, chio::list<J>>(i, e, cx, [&] {
+                    return chio::con::read_list<J>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             t.emplace();
                             return read_value<J>(t.top(), i, e, cx);
@@ -30,7 +30,7 @@ namespace cxon {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::stack<T, R...>& t, Cx& cx) {
                     auto const& c = chio::con::bits::adaptor<std::stack<T, R...>>::container(t);
-                    return chio::con::write<J, chio::list<J>>(o, c.rbegin(), c.rend(), cx);
+                    return chio::con::write_list<J>(o, c.rbegin(), c.rend(), cx);
                 }
         };
 

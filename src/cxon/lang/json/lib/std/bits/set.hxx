@@ -14,7 +14,7 @@ namespace cxon { namespace json { namespace bits {
         struct set_reader {
             template <typename II, typename Cx>
                 static bool value(S& t, II& i, II e, Cx& cx) {
-                    return chio::con::read<X, chio::list<X>>(i, e, cx, [&] {
+                    return chio::con::read_list<X>(i, e, cx, [&] {
                         typename S::value_type o{};
                         return  read_value<X>(o, i, e, cx) &&
                                 (t.emplace(std::move(o)), true)
@@ -27,7 +27,7 @@ namespace cxon { namespace json { namespace bits {
         struct set_writer {
             template <typename O, typename Cx>
                 static bool value(O& o, const S& t, Cx& cx) {
-                    return chio::con::write<X, chio::list<X>>(o, t, cx);
+                    return chio::con::write_list<X>(o, t, cx);
                 }
         };
 

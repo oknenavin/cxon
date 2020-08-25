@@ -21,37 +21,30 @@ namespace cxon { namespace chio { // format traits
 
     struct format_traits {
         struct map {
-            static constexpr char                   beg             = '{';
-            static constexpr char                   end             = '}';
-            static constexpr char                   div             = ':';
-            static constexpr char                   sep             = ',';
-            static constexpr bool                   unquoted_keys   = false;
+            static constexpr char           beg             = '{';
+            static constexpr char           end             = '}';
+            static constexpr char           div             = ':';
+            static constexpr char           sep             = ',';
+            static constexpr bool           unquoted_keys   = false;
         };
         struct list {
-            static constexpr char                   beg             = '[';
-            static constexpr char                   end             = ']';
-            static constexpr char                   sep             = ',';
+            static constexpr char           beg             = '[';
+            static constexpr char           end             = ']';
+            static constexpr char           sep             = ',';
         };
         struct string {
-            static constexpr char                   beg             = '"';
-            static constexpr char                   end             = '"';
+            static constexpr char           beg             = '"';
+            static constexpr char           end             = '"';
         };
         struct number {
-            static constexpr bool                   strict          = false;
+            static constexpr bool           strict          = false;
         };
         struct id {
-            static constexpr char const*            nil             = "null";
-            static constexpr char const*            pos             = "true";
-            static constexpr char const*            neg             = "false";
+            static constexpr char const*    nil             = "null";
+            static constexpr char const*    pos             = "true";
+            static constexpr char const*    neg             = "false";
         };
     };
-
-    // access
-
-    template <typename X>
-        using map = typename X::map;
-    template <typename X>
-        using list = typename X::list;
 
 }}
 
