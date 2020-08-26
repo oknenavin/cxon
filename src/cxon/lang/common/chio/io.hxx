@@ -119,11 +119,11 @@ namespace cxon { namespace chio {
     namespace bits {
 
         template <typename O>
-            inline auto push(O& o, char c) -> enable_if_t<is_output_iterator<O>::value> {
+            inline auto push_(O& o, char c) -> enable_if_t<is_output_iterator<O>::value> {
                 *o = c, ++o;
             }
         template <typename O>
-            inline auto push(O& o, char c) -> enable_if_t<is_back_insertable<O>::value> {
+            inline auto push_(O& o, char c) -> enable_if_t<is_back_insertable<O>::value> {
                 o.push_back(c);
             }
 
@@ -133,10 +133,10 @@ namespace cxon { namespace chio {
             }
         template <typename O>
             inline void push_(option<0>, O& o, const char* s) {
-                while (*s) push(o, *s), ++s;
+                while (*s) push_(o, *s), ++s;
             }
         template <typename O>
-            inline void push(O& o, const char* s) {
+            inline void push_(O& o, const char* s) {
                 push_(option<1>(), o, s);
             }
 
@@ -146,10 +146,10 @@ namespace cxon { namespace chio {
             }
         template <typename O>
             inline void push_(option<0>, O& o, const char* s, size_t n) {
-                while (n) push(o, *s), ++s, --n;
+                while (n) push_(o, *s), ++s, --n;
             }
         template <typename O>
-            inline void push(O& o, const char* s, size_t n) {
+            inline void push_(O& o, const char* s, size_t n) {
                 push_(option<1>(), o, s, n);
             }
 
@@ -159,56 +159,56 @@ namespace cxon { namespace chio {
             }
         template <typename O>
             inline void push_(option<0>, O& o, unsigned n, char c) {
-                while (n) push(o, c), --n;
+                while (n) push_(o, c), --n;
             }
         template <typename O>
-            inline void push(O& o, unsigned n, char c) {
+            inline void push_(O& o, unsigned n, char c) {
                 push_(option<1>(), o, n, c);
             }
 
         template <typename O, typename ...P>
             inline auto poke_(option<2>, O& o, P... p) -> decltype((bool)o) {
-                return push(o, p...), o;
+                return push_(o, p...), o;
             }
         template <typename O, typename ...P>
             inline auto poke_(option<1>, O& o, P... p) -> decltype(o.good()) {
-                return push(o, p...), o.good();
+                return push_(o, p...), o.good();
             }
         template <typename O, typename ...P>
             inline bool poke_(option<0>, O& o, P... p) {
-                return push(o, p...), true;
+                return push_(o, p...), true;
             }
         template <typename O, typename ...P>
-            inline bool poke(O& o, P... p) {
+            inline bool poke_(O& o, P... p) {
                 return poke_(option<2>(), o, p...);
             }
 
         template <typename X, typename O, typename Cx, typename ...P>
-            inline bool poke(O& o, Cx& cx, P... p) {
+            inline bool poke_(O& o, Cx& cx, P... p) {
                 return poke_(option<2>(), o, p...) || (cx|write_error::output_failure);
             }
 
     }
 
     template <typename O>
-        inline bool poke(O& o, char c)                  { return bits::poke(o, c); }
+        inline bool poke(O& o, char c)                  { return bits::poke_(o, c); }
     template <typename O>
-        inline bool poke(O& o, const char* s)           { return bits::poke(o, s); }
+        inline bool poke(O& o, const char* s)           { return bits::poke_(o, s); }
     template <typename O>
-        inline bool poke(O& o, const char* s, size_t n) { return bits::poke(o, s, n); }
+        inline bool poke(O& o, const char* s, size_t n) { return bits::poke_(o, s, n); }
     template <typename O>
-        inline bool poke(O& o, unsigned n, char c)      { return bits::poke(o, n, c); }
+        inline bool poke(O& o, unsigned n, char c)      { return bits::poke_(o, n, c); }
     template <typename O>
         inline bool poke(O&, std::nullptr_t) noexcept   { return true; }
 
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, char c, Cx& cx)                  { return bits::poke<X>(o, cx, c); }
+        inline bool poke(O& o, char c, Cx& cx)                  { return bits::poke_<X>(o, cx, c); }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, Cx& cx)           { return bits::poke<X>(o, cx, s); }
+        inline bool poke(O& o, const char* s, Cx& cx)           { return bits::poke_<X>(o, cx, s); }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return bits::poke<X>(o, cx, s, n); }
+        inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return bits::poke_<X>(o, cx, s, n); }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return bits::poke<X>(o, cx, n, c); }
+        inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return bits::poke_<X>(o, cx, n, c); }
     template <typename X, typename O, typename Cx>
         constexpr bool poke(O&, std::nullptr_t, Cx&)            { return true; }
 

@@ -10,13 +10,11 @@
 
 namespace cxon { namespace chio { namespace val { // value parsing
 
-    // TODO: add output iterator variant
+    template <typename O = void>    struct skip_t; // expecting valid poke<O, char>(...)
+    template <typename T>           struct is_skip_t;
 
-    template <typename X, typename T, size_t N, typename II, typename Cx>
-        inline bool read(T (&t)[N], II& i, II e, Cx& cx);
-
-    template <typename X, typename II, typename Cx>
-        inline bool read(II& i, II e, Cx& cx);
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool skip(T& t, II& i, II e, Cx& cx);
 
 }}}
 
@@ -28,79 +26,72 @@ namespace cxon { namespace chio { namespace val {
 
         template <typename X>
             struct value {
-                template <typename BA, typename II>
-                    static bool skip(BA& o, II& i, II e) {
-                        if (!o.add(*i)) return false;
-                        for (++i; i != e; ++i) {
-                            switch (*i)  {
-                                case '\\':              if (!o.add(*i)) return false;
-                                                        if (++i == e)   return false;
-                                                        break;
-                                case X::string::end:    return o.add(*i);
-                            }
-                        }
-                        return false;
-                    }
-                template <char CB, char CE, typename BA, typename II>
-                    static bool skip(BA& o, II& i, II e) {
-                        if (!o.add(*i)) return false;
-                        unsigned r = 0;
-                        for (++i; i != e; ++i) {
-                            switch (*i) {
-                                case CB:                if (!o.add(*i))     return false;
-                                                        ++r; break;
-                                case CE:                if (!o.add(*i))     return false;
-                                                        if (r == 0)         return true;
-                                                        --r; break;
-                                case X::string::beg:    if (!skip(o, i, e)) return false;
-                            }
-                        }
-                        return false;
-                    }
-                template <typename BA, typename II>
-                    static bool read(BA o, II& i, II e) {
+                template <typename O, typename II>
+                    static bool skip(O& o, II& i, II e) {
                         for ( ; i != e; ++i) {
                             char const c = *i;
-                                 if (c == X::map::beg)      { if (!skip<X::map::beg, X::map::end>(o, i, e))     return false; }
-                            else if (c == X::list::beg)     { if (!skip<X::list::beg, X::list::end>(o, i, e))   return false; }
-                            else if (c == X::string::beg)   { if (!skip(o, i, e))                               return false; }
+                                 if (c == X::map::beg)      { if (!skip_<X::map::beg, X::map::end>(o, i, e))    return false; }
+                            else if (c == X::list::beg)     { if (!skip_<X::list::beg, X::list::end>(o, i, e))  return false; }
+                            else if (c == X::string::beg)   { if (!skip_(o, i, e))                              return false; }
                             else if (c == X::map::sep)                                                          break;
                             else if (c == X::map::end)                                                          break;
                             else if (c == X::list::end)                                                         break;
-                            else                            { if (!o.add(*i))                                   return false; }
+                            else                            { if (!poke(o, *i))                                 return false; }
                         }
-                        return o.add('\0');
+                        return poke(o, *i);
                     }
-            };
-
-        template <typename T, typename Cx>
-            struct array_adder {
-                T *f, *l;
-                Cx& cx;
-                template <size_t N>
-                    array_adder(T (&t)[N], Cx& cx) : f(t), l(t + N), cx(cx) {}
-                bool add(T e) { return f != l ? (*f = e, ++f, true) : cx|read_error::overflow; }
-            };
-
-        template <typename T>
-            struct black_adder {
-                constexpr bool add(T) const { return true; }
+            private:
+                template <typename O, typename II>
+                    static bool skip_(O& o, II& i, II e) {
+                        if (!poke(o, *i)) return false;
+                        for (++i; i != e; ++i) {
+                            switch (*i)  {
+                                case '\\':              if (!poke(o, *i))   return false;
+                                                        if (++i == e)       return false;
+                                                        break;
+                                case X::string::end:    return poke(o, *i);
+                            }
+                        }
+                        return false;
+                    }
+                template <char CB, char CE, typename O, typename II>
+                    static bool skip_(O& o, II& i, II e) {
+                        if (!poke(o, *i)) return false;
+                        unsigned r = 0;
+                        for (++i; i != e; ++i) {
+                            switch (*i) {
+                                case CB:                if (!poke(o, *i))       return false;
+                                                        ++r; break;
+                                case CE:                if (!poke(o, *i))       return false;
+                                                        if (r == 0)             return true;
+                                                        --r; break;
+                                case X::string::beg:    if (!skip_(o, i, e))    return false;
+                            }
+                        }
+                        return false;
+                    }
             };
 
     }
 
-    template <typename X, typename T, size_t N, typename II, typename Cx>
-        inline bool read(T (&t)[N], II& i, II e, Cx& cx) {
-            II const o = i;
-                if (!bits::value<X>::read(bits::array_adder<T, Cx>(t, cx), i, e)) {
-                    return cx.ec == read_error::overflow ? (rewind(i, o), false) : cx|read_error::unexpected;
-                }
-            return true;
-        }
+    template <typename O>
+        struct skip_t {
+            O value;
+            void push_back(char c) const { poke(value, c); }
+        };
+    template <>
+        struct skip_t<void> {
+            void push_back(char) const {}
+        };
 
-    template <typename X, typename II, typename Cx>
-        inline bool read(II& i, II e, Cx& cx) {
-            return bits::value<X>::read(bits::black_adder<decltype(*i)>(), i, e) || (cx|read_error::unexpected);
+    template <typename T>
+        struct is_skip_t : std::false_type {};
+    template <typename T>
+        struct is_skip_t<skip_t<T>> : std::true_type {};
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool skip(T& t, II& i, II e, Cx& cx) {
+            return bits::value<X>::skip(t, i, e) || (cx|read_error::unexpected);
         }
 
 }}}

@@ -21,8 +21,8 @@ namespace cxon { namespace json {
         template <typename X, typename II, typename Cx>\
             inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {\
                 using T = Type;\
-                static constexpr chio::enm::value<Type> v[] = { __VA_ARGS__ };\
-                return chio::enm::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
+                static constexpr json::enm::value<Type> v[] = { __VA_ARGS__ };\
+                return json::enm::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
             }\
     }
 #define CXON_JSON_ENM_WRITE(Type, ...)\
@@ -30,8 +30,8 @@ namespace cxon { namespace json {
         template <typename X, typename O, typename Cx>\
             inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, JSON, bool> {\
                 using T = Type;\
-                static constexpr chio::enm::value<Type> v[] = { __VA_ARGS__ };\
-                return chio::enm::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
+                static constexpr json::enm::value<Type> v[] = { __VA_ARGS__ };\
+                return json::enm::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
             }\
     }
 #define CXON_JSON_ENM(Type, ...)\
