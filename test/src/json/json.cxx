@@ -328,7 +328,7 @@ namespace jsonrpc {
             )
         };
 
-    template <typename R, typename D = cxon::chio::cls::skip_type>
+    template <typename R, typename D = cxon::chio::val::skip_t<>>
         struct response {
             char            jsonrpc[8];
             size_t          id;
