@@ -8,6 +8,8 @@
 
 #include "chio.hxx"
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace con { // container read/write helpers
 
     template <typename X, typename II, typename Cx, typename EA>
@@ -36,7 +38,7 @@ namespace cxon { namespace chio { namespace con { // container read/write helper
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace con {
 

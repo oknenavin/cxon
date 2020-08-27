@@ -11,6 +11,8 @@
 #include "char.hxx"
 #include <algorithm>
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace str { // string quoting: read
 
     template <typename X>
@@ -70,7 +72,7 @@ namespace cxon { namespace chio { namespace str { // char arrays: write
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace str {
 

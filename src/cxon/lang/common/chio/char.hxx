@@ -8,6 +8,8 @@
 
 #include "chio.hxx"
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace chr { // character conversion: read
 
     template <typename T>
@@ -45,7 +47,7 @@ namespace cxon { namespace chio { namespace chr { // character conversion: write
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace chr {
 
