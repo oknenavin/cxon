@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <system_error>
 
-// interface //////////////////////////////////////////////////////////////////
+// interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { // interface
 
@@ -41,9 +41,9 @@ namespace cxon { // interface
         };
 
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename InIt, typename ...CxPs>
-        inline auto     from_bytes(T& t, InIt b, InIt e, CxPs... p)       -> from_bytes_result<InIt>;
+        inline auto     from_bytes(T& t, InIt b, InIt e, CxPs... p)     -> from_bytes_result<InIt>;
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename Iterable, typename ...CxPs>
-        inline auto     from_bytes(T& t, const Iterable& i, CxPs... p)    -> from_bytes_result<decltype(std::begin(i))>;
+        inline auto     from_bytes(T& t, const Iterable& i, CxPs... p)  -> from_bytes_result<decltype(std::begin(i))>;
 
     // write
 
@@ -55,11 +55,11 @@ namespace cxon { // interface
         };
 
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename OutIt, typename ...CxPs>
-        inline auto     to_bytes(OutIt o, const T& t, CxPs... p)          -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
+        inline auto     to_bytes(OutIt o, const T& t, CxPs... p)        -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename Insertable, typename ...CxPs>
-        inline auto     to_bytes(Insertable& i, const T& t, CxPs... p)    -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
+        inline auto     to_bytes(Insertable& i, const T& t, CxPs... p)  -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename FwIt, typename ...CxPs>
-        inline auto     to_bytes(FwIt b, FwIt e, const T& t, CxPs... p)   -> to_bytes_result<FwIt>;
+        inline auto     to_bytes(FwIt b, FwIt e, const T& t, CxPs... p) -> to_bytes_result<FwIt>;
 
 }
 
@@ -155,7 +155,7 @@ namespace cxon { // bridge
 
 }
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { // interface
 

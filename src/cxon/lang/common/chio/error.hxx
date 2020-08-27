@@ -8,6 +8,8 @@
 
 #include <system_error>
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { // errors
 
     enum class read_error : int {
@@ -43,7 +45,7 @@ namespace std { // cxon errors
     template <> struct is_error_condition_enum<cxon::chio::write_error> : true_type {};
 }
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio {
 

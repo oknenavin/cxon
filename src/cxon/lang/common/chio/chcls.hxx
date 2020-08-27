@@ -6,6 +6,8 @@
 #ifndef CXON_CHIO_CHCLS_HXX_
 #define CXON_CHIO_CHCLS_HXX_
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace chr { // character classes
 
     template <typename X>
@@ -13,7 +15,7 @@ namespace cxon { namespace chio { namespace chr { // character classes
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace chr { // character classes
 

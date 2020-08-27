@@ -11,6 +11,8 @@
 #include "cxon/lang/common/charconv.hxx"
 #include <cmath> // isfinite, ...
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace num { // number conversion: read
 
     template <typename T>
@@ -39,7 +41,7 @@ namespace cxon { namespace chio { namespace num { // number conversion: write
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace num {
 

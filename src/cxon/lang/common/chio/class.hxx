@@ -10,6 +10,8 @@
 #include "value.hxx"
 #include <cstring> // strcmp
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace cls { // structured types reader/writer construction helpers
 
     template <typename D>
@@ -50,7 +52,7 @@ namespace cxon { namespace chio { namespace cls { // structured types reader/wri
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace cls {
 

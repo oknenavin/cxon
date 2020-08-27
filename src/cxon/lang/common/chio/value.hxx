@@ -8,6 +8,8 @@
 
 #include "chio.hxx"
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace val { // value parsing
 
     template <typename O = void>    struct skip_t; // expecting valid poke<O, char>(...)
@@ -18,7 +20,7 @@ namespace cxon { namespace chio { namespace val { // value parsing
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace val {
 

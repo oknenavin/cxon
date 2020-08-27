@@ -8,6 +8,8 @@
 
 #include "chio.hxx"
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { // key read/write helpers
 
     template <typename X, typename T, typename II, typename Cx>
@@ -25,7 +27,7 @@ namespace cxon { namespace chio { // key quoting
 
 }}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio {
 

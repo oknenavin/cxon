@@ -9,6 +9,8 @@
 #include "chio.hxx"
 #include <cstring> // strcmp
 
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon { namespace chio { namespace enm { // enum reader/writer construction helpers
 
     template <typename E>
@@ -24,7 +26,7 @@ namespace cxon { namespace chio { namespace enm { // enum reader/writer construc
 
 }}}
 
-// implementation /////////////////////////////////////////////////////////////
+// implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace chio { namespace enm {
 
