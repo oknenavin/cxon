@@ -348,7 +348,7 @@ namespace jsonrpc {
 
 }
 
-namespace cxon { // json-rpc
+namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON object instead of an array
 
     template <typename X, typename ...T>
         struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
@@ -376,13 +376,13 @@ TEST_BEG(cxon::JSON<>) // json-rpc
             auto const w = to_bytes(req, call);
         TEST_CHECK(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":{\"x\":42,\"y\":23}}");
     }
-    {   // round-trip req -> res ok
+    {   // round-trip: req -> res ok
         char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
         jsonrpc::response<int> ret; // serialize res to ret
             auto const r = from_bytes(ret, res);
         TEST_CHECK(r && ret.id == 1 && ret.result == 19);
     }
-    {   // round-trip req -> res ko
+    {   // round-trip: req -> res ko
         char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
                             "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
         {   // serialize res to ret, error's data will be skipped

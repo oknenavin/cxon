@@ -5,22 +5,24 @@
 
 
 --------------------------------------------------------------------------------
+
 #### Contents
-- [`CXON`](../src/cxon/README.md)
-  - [Introduction](../src/cxon/README.md#introduction)
-  - [Interface](../src/cxon/README.md#interface)
-  - [Implementation bridge](../src/cxon/README.md#implementation-bridge)
-  - [Parametrization](../src/cxon/README.md#parametrization)
-    - [Format traits](../src/cxon/README.md#format-traits)
-    - [Context](../src/cxon/README.md#context)
-  - [Example (`JSON-RPC`)](../src/cxon/README.md#example-json-rpc)
-- [`CXON/JSON/NODE`](../src/cxon/lang/json/node/README.md)
-  - [Introduction](../src/cxon/lang/json/node/README.md#introduction)
-  - [`cxon:json::basic_node`](../src/cxon/lang/json/node/README.md#basic_node)
-  - [`CXON` Integration](../src/cxon/lang/json/node/README.md#cxon-integration)
+  - [`CXON`](../src/cxon/README.md)
+    - [Introduction](../src/cxon/README.md#introduction)
+    - [Interface](../src/cxon/README.md#interface)
+    - [Implementation bridge](../src/cxon/README.md#implementation-bridge)
+    - [Parametrization](../src/cxon/README.md#parametrization)
+      - [Format traits](../src/cxon/README.md#format-traits)
+      - [Context](../src/cxon/README.md#context)
+    - [Example (`JSON-RPC`)](../src/cxon/README.md#example-json-rpc)
+  - [`CXON/JSON`](../src/cxon/lang/json/README.md)
+    - [Introduction](../src/cxon/lang/json/node/README.md#introduction)
+    - [`cxon:json::basic_node`](../src/cxon/lang/json/node/README.md#basic_node)
+    - [`CXON` Integration](../src/cxon/lang/json/node/README.md#cxon-integration)
 
 
 --------------------------------------------------------------------------------
+
 Distributed under the MIT license. See [`LICENSE`](../LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 

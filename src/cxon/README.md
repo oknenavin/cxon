@@ -5,83 +5,95 @@
 
 
 --------------------------------------------------------------------------------
+
 #### Contents
-- [Introduction](#introduction)
-- [Interface](#interface)
-- [Implementation bridge](#implementation-bridge)
-- [Parametrization](#parametrization)
-  - [Format traits](#format-traits)
-  - [Context](#context)
-- [Example (`JSON-RPC`)](#example-json-rpc)
+  - [Introduction](#introduction)
+    - [Formats](#formats)
+      - [`JSON`](http://json.org)
+  - [Interface](#interface)
+  - [Implementation bridge](#implementation-bridge)
+  - [Parametrization](#parametrization)
+    - [Format traits](#format-traits)
+    - [Context](#context)
+  - [Example (`JSON-RPC`)](#example-json-rpc)
 
 
 --------------------------------------------------------------------------------
+
 #### Introduction
 
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv]
 interface with these differences:
 
-- traits template parameter (to allow arbitrary serialization formats, see
-  [`Format traits`](README.md#format-traits))
-- trailing arbitrary and position-independent parameters (to allow passing of arbitrary
-  parameters to given type serializer, see [`Context`](README.md#context))
-- input and output iterators for I/O (allowing streams, containers and arrays,
-  see [`Interface`](README.md#interface))
+  - traits template parameter (to allow arbitrary serialization formats, see
+    [`Format traits`](#format-traits))
+  - trailing named parameters of an arbitrary type (to allow passing of parameters  
+    to given type serializer, see [`Context`](#context))
+  - input and output iterators for I/O (allowing streams, containers and arrays,
+    see [`Interface`](README.md#interface))
 
-The default serialization format is `UTF-8` encoded `JSON`. The mapping between `C++` and `JSON`
+
+--------------------------------------------------------------------------------
+
+##### Formats
+
+###### [`JSON`](http://json.org)
+
+The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].  
+The mapping between `C++` and `JSON`
 types is as follow:
 
-- [fundamental types][cpp-fund-types]
+  - [fundamental types][cpp-fund-types]
 
-  type                                                            | `JSON` type    | header
-  ----------------------------------------------------------------|----------------|---------------------------------------------------------------------------------------
-  `nullptr_t`                                                     | `null`         | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  `bool`                                                          | `true`/`false` | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  `char`, `wchar_t`, `char16_t` and `char32_t`                    | `string`       | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  `signed`/`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  `float`, `double`, `long double`                                | `number`       | [`cxon/core/fundamental.hxx`](core/fundamental.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+    type                                                            | `JSON` type    | `#include cxon/<format>.hxx`<br>header
+    ----------------------------------------------------------------|----------------|---------------------------------------------------------------------------------------
+    `nullptr_t`                                                     | `null`         | `cxon/lang/<format>/fundamental.hxx`
+    `bool`                                                          | `true`/`false` | `cxon/lang/<format>/fundamental.hxx`
+    `char`, `wchar_t`, `char16_t` and `char32_t`                    | `string`       | `cxon/lang/<format>/fundamental.hxx`
+    `signed`/`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | `cxon/lang/<format>/fundamental.hxx`
+    `float`, `double`, `long double`                                | `number`       | `cxon/lang/<format>/fundamental.hxx`
  
-- compound types
+  - compound types
 
-  type                            | `JSON` type            | header
-  --------------------------------|------------------------|---------------------------------------------------------------------------------
-  [`reference types`][cpp-ref]    | `value type` or `null` | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  [`pointer types`][cpp-ptr]      | `value type` or `null` | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  [`array types`][cpp-arr]        | `array`                | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  [`enumeration types`][cpp-enum] | `string`               | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
-  [`class types`][cpp-class]      | `object`               | [`cxon/core/compound.hxx`](core/compound.hxx) include[`cxon/cxon.hxx`](cxon.hxx)
+    type                            | `JSON` type            | `#include cxon/<format>.hxx`<br> header
+    --------------------------------|------------------------|---------------------------------------------------------------------------------
+    [`reference types`][cpp-ref]    | `value type` or `null` | `cxon/lang/<format>/compound.hxx`
+    [`pointer types`][cpp-ptr]      | `value type` or `null` | `cxon/lang/<format>/compound.hxx`
+    [`array types`][cpp-arr]        | `array`                | `cxon/lang/<format>/compound.hxx`
+    [`enumeration types`][cpp-enum] | `string`               | `cxon/lang/<format>/compound.hxx`
+    [`class types`][cpp-class]      | `object`               | `cxon/lang/<format>/compound.hxx`
 
-- standard library types
+  - standard library types
 
-  type                                            | `JSON` type      | header
-  ------------------------------------------------|------------------|------------------------------------------------------
-  [`std::pair`][std-pair]                         | `array`          | [`cxon/std/utility.hxx`](std/utility.hxx)
-  [`std::tuple`][std-tuple]                       | `array`          | [`cxon/std/tuple.hxx`](std/tuple.hxx)
-  [`std::optional`][std-optional]                 | `value_type`     | [`cxon/std/optional.hxx`](std/optional.hxx)
-  [`std::variant`][std-variant]                   | index value type | [`cxon/std/variant.hxx`](std/variant.hxx)
-  [`std::basic_string`][std-bstr]                 | `string`         | [`cxon/std/string.hxx`](std/string.hxx)
-  [`std::basic_string_view`][std-strv]            | `string`         | [`cxon/std/string_view.hxx`](std/string_view.hxx)
-  [`std::array`][std-array]                       | `array`          | [`cxon/std/array.hxx`](std/array.hxx)
-  [`std::deque`][std-deque]                       | `array`          | [`cxon/std/deque.hxx`](std/deque.hxx)
-  [`std::forward_list`][std-forward_list]         | `array`          | [`cxon/std/forward_list.hxx`](std/forward_list.hxx)
-  [`std::list`][std-list]                         | `array`          | [`cxon/std/list.hxx`](std/list.hxx)
-  [`std::map`][std-map]`(1)`                      | `object`         | [`cxon/std/map.hxx`](std/map.hxx)
-  [`std::multimap`][std-multimap]`(1)`            | `object`         | [`cxon/std/map.hxx`](std/map.hxx)
-  [`std::multiset`][std-multiset]                 | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
-  [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
-  [`std::queue`][std-queue]                       | `array`          | [`cxon/std/queue.hxx`](std/queue.hxx)
-  [`std::set`][std-set]                           | `array`          | [`cxon/std/set.hxx`](std/set.hxx)
-  [`std::stack`][std-stack]                       | `array`          | [`cxon/std/stack.hxx`](std/stack.hxx)
-  [`std::unordered_map`][std-umap]`(1)`           | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
-  [`std::unordered_set`][std-uset]                | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
-  [`std::unordered_multimap`][std-umultimap]`(1)` | `object`         | [`cxon/std/unordered_map.hxx`](std/unordered_map.hxx)
-  [`std::unordered_multiset`][std-umultiset]      | `array`          | [`cxon/std/unordered_set.hxx`](std/unordered_set.hxx)
-  [`std::vector`][std-vector]                     | `array`          | [`cxon/std/vector.hxx`](std/vector.hxx)
-  [`std::bitset`][std-bitset]                     | `string`         | [`cxon/std/bitset.hxx`](std/bitset.hxx)
-  [`std::complex`][std-complex]                   | `array`          | [`cxon/std/complex.hxx`](std/complex.hxx)
-  [`std::valarray`][std-valarr]                   | `array`          | [`cxon/std/valarray.hxx`](std/valarray.hxx)
-  [`std::chrono::duration`][std-duration]         | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
-  [`std::chrono::time_point`][std-time-pt]        | `number`         | [`cxon/std/chrono.hxx`](std/chrono.hxx)
+    type                                            | `JSON` type      | `cxon/lang/<format>/lib/std/<header>.hxx`<br> include
+    ------------------------------------------------|------------------|------------------------------------------------------
+    [`std::pair`][std-pair]                         | `array`          | [`cxon/lib/std/utility.hxx`](lib/std/utility.hxx)
+    [`std::tuple`][std-tuple]                       | `array`          | [`cxon/lib/std/tuple.hxx`](lib/std/tuple.hxx)
+    [`std::optional`][std-optional]                 | `value_type`     | [`cxon/lib/std/optional.hxx`](lib/std/optional.hxx)
+    [`std::variant`][std-variant]                   | index value type | [`cxon/lib/std/variant.hxx`](lib/std/variant.hxx)
+    [`std::basic_string`][std-bstr]                 | `string`         | [`cxon/lib/std/string.hxx`](lib/std/string.hxx)
+    [`std::basic_string_view`][std-strv]            | `string`         | [`cxon/lib/std/string_view.hxx`](lib/std/string_view.hxx)
+    [`std::array`][std-array]                       | `array`          | [`cxon/lib/std/array.hxx`](lib/std/array.hxx)
+    [`std::deque`][std-deque]                       | `array`          | [`cxon/lib/std/deque.hxx`](lib/std/deque.hxx)
+    [`std::forward_list`][std-forward_list]         | `array`          | [`cxon/lib/std/forward_list.hxx`](lib/std/forward_list.hxx)
+    [`std::list`][std-list]                         | `array`          | [`cxon/lib/std/list.hxx`](lib/std/list.hxx)
+    [`std::map`][std-map]`(1)`                      | `object`         | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
+    [`std::multimap`][std-multimap]`(1)`            | `object`         | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
+    [`std::multiset`][std-multiset]                 | `array`          | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
+    [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
+    [`std::queue`][std-queue]                       | `array`          | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
+    [`std::set`][std-set]                           | `array`          | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
+    [`std::stack`][std-stack]                       | `array`          | [`cxon/lib/std/stack.hxx`](lib/std/stack.hxx)
+    [`std::unordered_map`][std-umap]`(1)`           | `object`         | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
+    [`std::unordered_set`][std-uset]                | `array`          | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
+    [`std::unordered_multimap`][std-umultimap]`(1)` | `object`         | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
+    [`std::unordered_multiset`][std-umultiset]      | `array`          | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
+    [`std::vector`][std-vector]                     | `array`          | [`cxon/lib/std/vector.hxx`](lib/std/vector.hxx)
+    [`std::bitset`][std-bitset]                     | `string`         | [`cxon/lib/std/bitset.hxx`](lib/std/bitset.hxx)
+    [`std::complex`][std-complex]                   | `array`          | [`cxon/lib/std/complex.hxx`](lib/std/complex.hxx)
+    [`std::valarray`][std-valarr]                   | `array`          | [`cxon/lib/std/valarray.hxx`](lib/std/valarray.hxx)
+    [`std::chrono::duration`][std-duration]         | `number`         | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
+    [`std::chrono::time_point`][std-time-pt]        | `number`         | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
 
 *`(1)` [`ECMA-404(6)`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
 specify this about object keys:*
@@ -96,9 +108,10 @@ may be found at the [end](#example-json-rpc) of the document.
 
 
 --------------------------------------------------------------------------------
+
 #### Interface
 
-*Defined in header [cxon.hxx](cxon.hxx)*
+*Defined in header [cxon.hxx](cxon.hxx), include `cxon/<format>.hxx`*
 
 ##### Read interface  
 
@@ -173,8 +186,8 @@ Does not throw by itself, however specializations may throw or not:
 ###### Example
 
 ``` c++
-#include "cxon/cxon.hxx"
-#include "cxon/std/vector.hxx"
+#include "cxon/json.hxx"
+#include "cxon/lib/std/vector.hxx"
 #include <cassert>
 
 int main() {
@@ -266,8 +279,8 @@ Does not throw by itself, however writing to the output may throw (e.g. adding t
 ###### Example
 
 ``` c++
-#include "cxon/cxon.hxx"
-#include "cxon/std/vector.hxx"
+#include "cxon/json.hxx"
+#include "cxon/lib/std/vector.hxx"
 #include <cassert>
 
 int main() {
@@ -371,6 +384,7 @@ where `s1` will contain:
 
 
 --------------------------------------------------------------------------------
+
 #### Implementation Bridge
 
 The interface communicates the implementation via the so-called *implementation bridge*.  
@@ -537,6 +551,7 @@ macros for binding of enumeration and class types:
 
 
 --------------------------------------------------------------------------------
+
 #### Parametrization
 
 `CXON` provides two ways for parametrization, serving different purposes:
@@ -549,6 +564,7 @@ macros for binding of enumeration and class types:
 
 
 --------------------------------------------------------------------------------
+
 ##### Format Traits
 
 The purpose of `Traits` template parameter is to keep parameters for given serialization format.
@@ -663,6 +679,7 @@ namespace cxon {
 
 
 --------------------------------------------------------------------------------
+
 ##### Context
 
 The context is created by the interface with the optional `CxPs` parameters and
@@ -795,20 +812,37 @@ int main() {
 
 
 --------------------------------------------------------------------------------
+
 ###### Example (`JSON-RPC`)
 
 A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and an
 example of its usage with `CXON`.
 
 ``` c++
-#include "cxon/cxon.hxx"
-#include "cxon/std/string.hxx"
-#include "cxon/std/tuple.hxx"
+#include "cxon/json.hxx"
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/tuple.hxx"
 #include <cassert>
 
 namespace jsonrpc {
 
     // request
+
+    template <typename T>
+        struct napa { // named parameter
+            char const*const key;
+            T const value;
+
+            template <typename X, typename O, typename C, typename J = X>
+                auto write_value(O& o, C& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
+                    return cxon::chio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
+                }
+        };
+
+    template <typename V>
+        constexpr napa<V> make_napa(const char* k, V&& v) {
+            return {k, v};
+        }
 
     template <typename ...P>
         struct request {
@@ -834,6 +868,10 @@ namespace jsonrpc {
         constexpr request<P...> make_request(size_t id, const char* method, P... params) {
             return request<P...>(id, method, params...);
         }
+    template <typename ...P>
+        constexpr request<napa<P>...> make_request(size_t id, const char* method, napa<P>... params) {
+            return request<napa<P>...>(id, method, params...);
+        }
 
     // response
 
@@ -850,12 +888,12 @@ namespace jsonrpc {
             )
         };
 
-    template <typename R, typename D = cxon::chio::val::skip_t>
+    template <typename R, typename D = cxon::chio::val::skip_t<>>
         struct response {
-            char        jsonrpc[8];
-            size_t      id;
-            R           result;
-            error<D>    error;
+            char            jsonrpc[8];
+            size_t          id;
+            R               result;
+            struct error<D> error;
 
             constexpr response() noexcept
             :   jsonrpc{0}, id(), result(), error() { }
@@ -870,38 +908,55 @@ namespace jsonrpc {
 
 }
 
+namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON object instead of an array
+
+    template <typename X, typename ...T>
+        struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
+                    return  chio::poke<J>(o, J::map::beg, cx) &&
+                                chio::con::write_tuple<J>(o, t, cx) &&
+                            chio::poke<J>(o, J::map::end, cx)
+                    ;
+                }
+        };
+
+}
+
 int main() {
-    {   // success
+    {   // params array
         auto const call = jsonrpc::make_request(1, "sub", 42, 23);
         std::string req; // serialize call to req
-            auto const w = cxon::to_bytes(req, call);
+            auto const w = to_bytes(req, call);
         assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":[42,23]}");
-        // round-trip req -> res
+    }
+    {   // params object
+        auto const call = jsonrpc::make_request(1, "sub", jsonrpc::make_napa("x", 42), jsonrpc::make_napa("y", 23));
+        std::string req; // serialize call to req
+            auto const w = to_bytes(req, call);
+        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":{\"x\":42,\"y\":23}}");
+    }
+    {   // round-trip: req -> res ok
         char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
         jsonrpc::response<int> ret; // serialize res to ret
-            auto const r = cxon::from_bytes(ret, res);
+            auto const r = from_bytes(ret, res);
         assert(r && ret.id == 1 && ret.result == 19);
     }
-    {   // error
-        auto const call = jsonrpc::make_request(1, "div", 42, 0);
-        std::string req; // serialize call to req
-            auto const w = cxon::to_bytes(req, call);
-        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"div\",\"params\":[42,0]}");
-        // round-trip req -> res
+    {   // round-trip: req -> res ko
         char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
                             "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
         {   // serialize res to ret, error's data will be skipped
             jsonrpc::response<int> ret;
-                auto const r = cxon::from_bytes(ret, res);
-            assert( r &&
-                    ret.id == 1 &&
-                    ret.error.code == 42 &&
-                    ret.error.message == "divide by zero"
+                auto const r = from_bytes(ret, res);
+            TEST_CHECK( r &&
+                        ret.id == 1 &&
+                        ret.error.code == 42 &&
+                        ret.error.message == "divide by zero"
             );
         }
         {   // serialize res to ret, error's data is bound to std::string
             jsonrpc::response<int, std::string> ret;
-                auto const r = cxon::from_bytes(ret, res);
+                auto const r = from_bytes(ret, res);
             assert( r &&
                     ret.id == 1 &&
                     ret.error.code == 42 &&
@@ -915,6 +970,7 @@ int main() {
 
 
 --------------------------------------------------------------------------------
+
 Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 

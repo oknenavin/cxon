@@ -5,6 +5,7 @@
 
 
 --------------------------------------------------------------------------------
+
 #### Contents
 - [Introduction](#introduction)
 - [`cxon::json::basic_node`](#basic_node)
@@ -12,6 +13,7 @@
 
 
 --------------------------------------------------------------------------------
+
 #### Introduction
 
 `CXON/JSON/NODE` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
@@ -136,6 +138,7 @@ The resulting `JSON` is (*note, that the default number type is `double`*):
 
 
 --------------------------------------------------------------------------------
+
 #### `basic_node`
 
 *Defined in header [`cxon/lang/json/node/node.hxx`](node.hxx)*  
@@ -200,6 +203,7 @@ Same as the member counterparts with single `basic_node&` argument.
 
 
 --------------------------------------------------------------------------------
+
 ##### Traits
 
 ###### Example
@@ -218,6 +222,7 @@ assert(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
 ```
 
 --------------------------------------------------------------------------------
+
 ##### Constructors
 
 ``` c++
@@ -281,6 +286,7 @@ using namespace cxon::json;
 
 
 --------------------------------------------------------------------------------
+
 ##### Assignment operators
 
 ``` c++
@@ -314,6 +320,7 @@ Replaces the content of the node:
 
 
 --------------------------------------------------------------------------------
+
 ##### reset
 
 ``` c++
@@ -324,6 +331,7 @@ Resets the content of the node, the value type is `null`.
 
 
 --------------------------------------------------------------------------------
+
 ##### kind
 
 ``` c++
@@ -342,6 +350,7 @@ node const n; assert(n.kind() == node_kind::null);
 
 
 --------------------------------------------------------------------------------
+
 ##### is
 
 ``` c++
@@ -356,6 +365,7 @@ Checks if the value type is `T`.
 
 
 --------------------------------------------------------------------------------
+
 ##### imbue
 
 ``` c++
@@ -386,6 +396,7 @@ using namespace cxon::json;
 
 
 --------------------------------------------------------------------------------
+
 ##### get
 
 ``` c++
@@ -409,6 +420,7 @@ assert(n.get<node::string>() == "another");
 
 
 --------------------------------------------------------------------------------
+
 ##### get_if
 
 ``` c++
@@ -432,6 +444,7 @@ assert(n.get_if<node::array>() == nullptr);
 
 
 --------------------------------------------------------------------------------
+
 ##### Comparison operators
 
 ``` c++
@@ -445,6 +458,7 @@ bool operator != (const basic_node& n) const; (2)
 
 
 --------------------------------------------------------------------------------
+
 #### `CXON` integration
 
 `basic_node` can be serialized as any other type.  
@@ -501,6 +515,7 @@ int main() {
 
 
 --------------------------------------------------------------------------------
+
 Distributed under the MIT license. See [`LICENSE`](../../../../../LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 

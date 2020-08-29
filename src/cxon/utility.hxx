@@ -45,21 +45,15 @@ namespace cxon {
     template <typename I>
         using iterator_category_t = typename std::iterator_traits<I>::iterator_category;
 
-    template <typename, typename = void>
-        struct is_output_iterator;
-
-    template <typename, typename = void>
-        struct is_forward_iterator;
-
-    template <typename, typename = void>
-        struct is_back_insertable;
+    template <typename, typename = void> struct is_output_iterator;
+    template <typename, typename = void> struct is_forward_iterator;
+    template <typename, typename = void> struct is_back_insertable;
 
     template <typename I>
         struct continuous;
 
     template <typename FwIt>
         struct range_output_iterator;
-
     template <typename FwIt>
         constexpr range_output_iterator<FwIt> make_output_iterator(FwIt b, FwIt e);
 

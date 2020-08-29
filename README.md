@@ -12,88 +12,123 @@
 [![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
 <!--[![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)-->
 
+
 --------------------------------------------------------------------------------
 
-
-`CXON` is a C++ serialization interface and implementation for `UTF-8` encoded `JSON`.  
+`CXON` is a C++ serialization interface.  
+`CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded).  
+`CXON` is easy to extend for different formats and some more are planned.  
 `CXON` is `C++11` compliant, self contained, header-only library.  
 
-`CXON/JSON` strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
+
+--------------------------------------------------------------------------------
+
+#### Contents
+  - [Introduction](#introduction)
+  - [Formats](#formats)
+  - [Compilation](#compilation)
+  - [Installation](#installation)
+  - [Documentation](#documentation)
+  - [Contributing](#contributing)
+
+
+--------------------------------------------------------------------------------
 
 #### Introduction
 
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv]
 interface with these differences:
 
-- traits template parameter (to allow arbitrary serialization formats, see
-  [`Format traits`](src/cxon/README.md#format-traits))
-- trailing arbitrary and position-independent parameters (to allow passing of arbitrary
-  parameters to given type serializer, see [`Context`](src/cxon/README.md#context))
-- input and output iterators for I/O (allowing streams, containers and arrays,
-  see [`Interface`](src/cxon/README.md#interface))
+  - traits template parameter (to allow arbitrary serialization formats, see
+    [`Format traits`](src/cxon/README.md#format-traits))
+  - trailing named parameters of an arbitrary type (to allow passing of parameters  
+    to given type serializer, see [`Context`](src/cxon/README.md#context))
+  - input and output iterators for I/O (allowing streams, containers and arrays,
+    see [`Interface`](src/cxon/README.md#interface))
 
 ```c++
 namespace cxon {
-    template <typename Traits, ..., typename ...Parameters>
-        auto from_bytes(..., Parameters... ps);
-    template <typename Traits, ..., typename ...Parameters>
-        auto to_bytes(..., Parameters... ps);
+    template <typename It>
+        struct from_bytes_result {
+            std::error_condition ec; // read error
+            It end; // one-past-the-end iterator of the matched range
+        };
+
+    // from input iterator
+    template <typename Traits, typename T, typename InIt, typename ...NamedParameters>
+        auto from_bytes(T& t, InIt b, InIt e, NamedParameters... ps)    -> from_bytes_result<InIt>;
+    // from iterable (e.g. std::string)
+    template <typename Traits, typename T, typename Iterable, typename ...NamedParameters>
+        auto from_bytes(T& t, const Iterable& i, NamedParameters... ps) -> from_bytes_result<decltype(std::begin(i))>;
+
+
+    template <typename It>
+        struct to_bytes_result {
+            std::error_condition ec; // write error
+            It end; // one-past-the-end output iterator
+        };
+
+    // to output iterator
+    template <typename Traits, typename T, typename OutIt, typename ...NamedParameters>
+        auto to_bytes(OutIt o, const T& t, NamedParameters... p)        -> to_bytes_result<OutIt>;
+    // to back insertable (e.g. std::string)
+    template <typename Traits, typename T, typename Insertable, typename ...NamedParameters>
+        auto to_bytes(Insertable& i, const T& t, NamedParameters... p)  -> to_bytes_result<decltype(std::begin(i))>;
+    // to range
+    template <typename Traits, typename T, typename FwIt, typename ...NamedParameters>
+        auto to_bytes(FwIt b, FwIt e, const T& t, NamedParameters... p) -> to_bytes_result<FwIt>;
 }
 ```
 
 ###### Example
 
 ``` c++
-from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from iterator (default format `JSON`)
-from_bytes<CBOR>(std::vector<int>, str, ...); // read from container or array (format `CBOR`)
+#include "cxon/json.hxx"
+auto fr = cxon::from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from iterator (default format `JSON`)
+
+#include "cxon/cbor.hxx"
+auto tr = cxon::to_bytes<CBOR<>>(str, std::vector<int>, in, ...); // write to std::string (format `CBOR`)
 ```
 
-`CXON` implements good part of `C++`'s fundamental and standard library types including:
+`CXON` supports good part of `C++`'s fundamental and standard library types out of the box, including:
 
-- [fundamental types][cpp-fund-types]
-    - `nullptr_t`
-    - `bool`
-    - character types - `char`, `wchar_t`, `char16_t` and `char32_t`
-    - integral types - `signed` and `unsigned` `char`, `short int`, `int`, `long int`,
-	  `long long int`
-    - floating-point types - `float`, `double`, `long double`
-- compound types
-  - [`pointer types`][cpp-ptr]
-  - [`array types`][cpp-arr]
-  - [`enumeration types`][cpp-enum]
-  - [`class types`][cpp-class]
-- standard library types
-    - [`containers library`][std-container]
-    - [`std::pair`][std-pair]
-    - [`std::tuple`][std-tuple]
-    - [`std::optional`][std-opt]
-    - [`std::variant`][std-var]
-    - [`std::basic_string`][std-bstr]
-    - [`std::basic_string_view`][std-strv]
-    - [`std::bitset`][std-bitset]
-    - [`std::complex`][std-complex]
-    - [`std::valarray`][std-valarr]
-    - [`std::chrono::duration`][std-duration]
-    - [`std::chrono::time_point`][std-time-pt]
+  - [fundamental types][cpp-fund-types]
+      - `nullptr_t`
+      - `bool`
+      - character types - `char`, `wchar_t`, `char8_t`, `char16_t` and `char32_t`
+      - integral types - `signed` and `unsigned` `char`, `short int`, `int`, `long int`, `long long int`
+      - floating-point types - `float`, `double`, `long double`
+  - compound types
+      - [`pointer types`][cpp-ptr]
+      - [`array types`][cpp-arr]
+      - [`enumeration types`][cpp-enum]
+      - [`class types`][cpp-class]
+  - standard library types
+      - [`containers library`][std-container]
+      - [`std::pair`][std-pair]
+      - [`std::tuple`][std-tuple]
+      - [`std::optional`][std-opt]
+      - [`std::variant`][std-var]
+      - [`std::basic_string`][std-bstr]
+      - [`std::basic_string_view`][std-strv]
+      - [`std::bitset`][std-bitset]
+      - [`std::complex`][std-complex]
+      - [`std::valarray`][std-valarr]
+      - [`std::chrono::duration`][std-duration]
+      - [`std::chrono::time_point`][std-time-pt]
 
 `CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
-
-Most of the so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
-implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc..
-[`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON`, is an implementation of such a
-polymorphic type (and also an example of how `CXON` can be used).
-
 
 ###### Example
 
 Bind to a library type:
 
 ``` c++
-#include "cxon/cxon.hxx"
-#include "cxon/std/string.hxx" // include std/<stdlib>.hxx
-#include "cxon/std/vector.hxx" // instead of the standard header
-#include "cxon/std/map.hxx"
+#include "cxon/json.hxx"
+#include "cxon/lib/std/string.hxx" // include cxon/lib/std/<stdlib>.hxx
+#include "cxon/lib/std/vector.hxx" // instead of the standard headers
+#include "cxon/lib/std/map.hxx"    // for any of the supported formats
 #include <cassert>
 
 // an arbitrary complex combination of fundamental and library types
@@ -103,20 +138,20 @@ int main() {
     my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
             mv2;
     std::string json;
-        // write it to output-iterator, container, buffer, etc. - in this case, std::string
+        // write it to an output-iterator, container, buffer, etc. - in this case, std::string
         cxon::to_bytes(json, mv1);
-        // read it from input-iterator, container, buffer, etc. - in this case, std::string
+        // read it from an input-iterator, container, buffer, etc. - in this case, std::string
         cxon::from_bytes(mv2, json);
     assert(mv1 == mv2);
 }
 ```
 
-Bind to a custom type:
+Binding to a custom type:
 
 ``` c++
-#include "cxon/cxon.hxx"
-#include "cxon/std/vector.hxx"
-#include "cxon/std/list.hxx"
+#include "cxon/json.hxx"
+#include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/list.hxx"
 #include <cassert>
 
 struct my_type {
@@ -146,22 +181,39 @@ int main() {
 In both cases `my_type` is bound to the same `JSON`:
 
 ``` json
-{
-    "even": [2, 4, 6],
-    "odd": [1, 3, 5]
-}
+{ "even": [2, 4, 6], "odd": [1, 3, 5] }
 ```
 
 *Somewhat more meaningful example can be found here [`JSON-RPC`](src/cxon/README.md#example-json-rpc).*
+
+
+--------------------------------------------------------------------------------
+
+#### Formats
+
+##### [`JSON`](http://json.org)
+
+The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
+
+Most of the so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
+implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc..
+[`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON/JSON`, is an implementation
+of such a polymorphic type (and also an example of how `CXON` can be used).
+
+
+--------------------------------------------------------------------------------
 
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`,
 `clang++-3.5` and `msvc++ 14.1` (see [builds](https://travis-ci.org/oknenavin/cxon)).
 
+
+--------------------------------------------------------------------------------
+
 #### Installation
 
-`CXON` is a header-only library, copy the headers you need or use
+`CXON` is a header-only library, copy the headers you need, or use
 the provided makefile to install it on `POSIX` systems:
 
 ``` bash
@@ -177,9 +229,15 @@ $ make check
 $ make CXX=clang++ check
 ```
 
+
+--------------------------------------------------------------------------------
+
 #### Documentation
 
 See the [MANUAL](doc/README.md).
+
+
+--------------------------------------------------------------------------------
 
 #### Contributing
 
@@ -189,6 +247,7 @@ via [mail](mailto:oknenavin@outlook.com).
 
 
 -------------------------------------------------------------------------------
+
 Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information.  
 [GitHub][GitHub]  
 
@@ -229,3 +288,4 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [std-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
 [std-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
+ 
