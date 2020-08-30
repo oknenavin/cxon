@@ -97,7 +97,7 @@ int main() {
             o["null"] = nullptr;                assert(o["null"].is<node::null>());
         auto& o1 = o["object"].get<node::object>(); // get value reference, the type is known
             o1["object"] = 0;
-        auto& a = o["array"].get<node::array>();    // get value reference, the type is known
+        auto& a = o["array"].get<node::array>(); // get value reference, the type is known
             a.push_back(node::object {});       assert(a.back().is<node::object>());
             a.push_back(node::array {1, 2, 3}); assert(a.back().is<node::array>());
             a.push_back("4");                   assert(a.back().is<node::string>());
@@ -180,24 +180,24 @@ Member type |Definition
 
 ###### Member functions
 
-- [`(constructor)`](#constructors) - construct a basic_node
-- `(destructor)` - destroys the node, deallocating any internal storage if used
-- [`operator =`](#assignment-operators) - assigns values to the node
-- [`reset`](#reset) - resets the node
-- [`kind`](#kind) - returns node's value type
-- [`is`](#is) - returns `true` if node's value is of given type
-- [`imbue`](#imbue) - resets node's value type; returns value reference
-- [`get`](#get) - returns value reference
-- [`get_if`](#get_if) - returns value pointer if node's value type matches
-- [`operator ==`](#comparison-operators) - compare for equality
-- [`operator !=`](#comparison-operators) - compare for inequality
+  - [`(constructor)`](#constructors) - construct a basic_node
+  - `(destructor)` - destroys the node, deallocating any internal storage if used
+  - [`operator =`](#assignment-operators) - assigns values to the node
+  - [`reset`](#reset) - resets the node
+  - [`kind`](#kind) - returns node's value type
+  - [`is`](#is) - returns `true` if node's value is of given type
+  - [`imbue`](#imbue) - resets node's value type; returns value reference
+  - [`get`](#get) - returns value reference
+  - [`get_if`](#get_if) - returns value pointer if node's value type matches
+  - [`operator ==`](#comparison-operators) - compare for equality
+  - [`operator !=`](#comparison-operators) - compare for inequality
 
 ###### Non-member functions
 
-- `is` - returns `true` if node's value is of given type
-- `imbue` - resets node's value type; returns value reference
-- `get` - returns value reference
-- `get_if` - returns value pointer if node's value type matches
+  - `is` - returns `true` if node's value is of given type
+  - `imbue` - resets node's value type; returns value reference
+  - `get` - returns value reference
+  - `get_if` - returns value pointer if node's value type matches
 
 Same as the member counterparts with single `basic_node&` argument.
 
@@ -249,10 +249,10 @@ basic_node(const char* v);
 ```
 
 Construct new node from a variety of data sources.
-- `(1)` Default constructor. Constructs node with `null` value type.
-- `(2)` Move and copy constructors
-- `(3)` Move and copy constructors for each value type
-- `(4)` Constructors for `string` and `number` value types
+  - `(1)` Default constructor. Constructs node with `null` value type.
+  - `(2)` Move and copy constructors
+  - `(3)` Move and copy constructors for each value type
+  - `(4)` Constructors for `string` and `number` value types
 
 ###### Example
 
@@ -311,11 +311,12 @@ basic_node& operator =(const char* v);
 ```
 
 Replaces the content of the node: 
-- `(1)` Move or copy of `o`
-- `(2)` Move or copy of `v`
-- `(3)` Copy of `v`
+  - `(1)` Move or copy of `o`
+  - `(2)` Move or copy of `v`
+  - `(3)` Copy of `v`
 
 ###### Return value
+
 `*this`
 
 
@@ -339,6 +340,7 @@ node_kind kind() const noexcept;
 ```
 
 ###### Return value
+
 `node_kind` of the value
 
 ###### Example
@@ -361,6 +363,7 @@ template <typename T>
 Checks if the value type is `T`.
 
 ###### Return value
+
 `true` if the type is `T`, `false` otherwise
 
 
@@ -407,6 +410,7 @@ template <typename T>
 ```
 
 ###### Return value
+
 `T&`, the behavior is undefined if `T` is not same as the value type
 
 ###### Example
@@ -431,6 +435,7 @@ template <typename T>
 ```
 
 ###### Return value
+
 `T*` if `T` is same as the value type, `nullptr` otherwise
 
 ###### Example
@@ -453,8 +458,9 @@ bool operator != (const basic_node& n) const; (2)
 ```
 
 ###### Return value
-- `(1)` `true` if equal, `false` otherwise
-- `(2)` `false` if equal, `true` otherwise
+
+  - `(1)` `true` if equal, `false` otherwise
+  - `(2)` `false` if equal, `true` otherwise
 
 
 --------------------------------------------------------------------------------
@@ -463,30 +469,30 @@ bool operator != (const basic_node& n) const; (2)
 
 `basic_node` can be serialized as any other type.  
 `CXON/JSON` defines the following in addition:
-- own error conditions
+  - own error conditions
 
-  Error code                      | Message
-  --------------------------------|-------------------------------
-  error::invalid                  | invalid `JSON`
-  error::recursion_depth_exceeded | recursion depth limit exceeded
+      Error code                      | Message
+      --------------------------------|-------------------------------
+      error::invalid                  | invalid `JSON`
+      error::recursion_depth_exceeded | recursion depth limit exceeded
 
-- own context parameters
+  - own context parameters
 
-  Parameter         | Context    | Type       | Default | Description
-  ------------------|------------|------------|---------|-------------------------
-  `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
-  `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
+      Parameter         | Context    | Type       | Default | Description
+      ------------------|------------|------------|---------|-------------------------
+      `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
+      `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
   
-  *Note: the interface is overloaded for `cxon::json::basic_node` and the overload
-   passes `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
-   (e.g. `std::vector<basic_node>`) and guarding against recursion is needed, then
-   `recursion_guard` parameter must be passed explicitly.*
+      *Note: the interface is overloaded for `cxon::json::basic_node` and the overload
+       passes `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
+       (e.g. `std::vector<basic_node>`) and guarding against recursion is needed, then
+       `recursion_guard` parameter must be passed explicitly.*
 
-  *Note: currently calling of the overloads with parameter(s), e.g.
-  `from_bytes(..., recursion_depth::set<unsigned, 4U>())`,
-  fail to compile with g++ due to a bug in the compiler ([Bug 90642](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90642)).
-  As a workaround, they may be called by passing the traits parameters explicitly - e.g.
-  `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
+      *Note: currently calling of the overloads with parameter(s), e.g.
+      `from_bytes(..., recursion_depth::set<unsigned, 4U>())`,
+      fail to compile with g++ due to a bug in the compiler ([Bug 90642](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90642)).
+      As a workaround, they may be called by passing the traits parameters explicitly - e.g.
+      `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
 
 ###### Example
 

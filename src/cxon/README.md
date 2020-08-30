@@ -8,8 +8,8 @@
 
 #### Contents
   - [Introduction](#introduction)
-    - [Formats](#formats)
-      - [`JSON`](http://json.org)
+    - Formats
+      - [`JSON`](lang/json/README.md)
   - [Interface](#interface)
   - [Implementation bridge](#implementation-bridge)
   - [Parametrization](#parametrization)
@@ -35,80 +35,6 @@ interface with these differences:
 
 --------------------------------------------------------------------------------
 
-##### Formats
-
-###### [`JSON`](http://json.org)
-
-The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].  
-The mapping between `C++` and `JSON`
-types is as follow:
-
-  - [fundamental types][cpp-fund-types]
-
-    type                                                            | `JSON` type    | `#include cxon/<format>.hxx`<br>header
-    ----------------------------------------------------------------|----------------|---------------------------------------------------------------------------------------
-    `nullptr_t`                                                     | `null`         | `cxon/lang/<format>/fundamental.hxx`
-    `bool`                                                          | `true`/`false` | `cxon/lang/<format>/fundamental.hxx`
-    `char`, `wchar_t`, `char16_t` and `char32_t`                    | `string`       | `cxon/lang/<format>/fundamental.hxx`
-    `signed`/`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | `cxon/lang/<format>/fundamental.hxx`
-    `float`, `double`, `long double`                                | `number`       | `cxon/lang/<format>/fundamental.hxx`
- 
-  - compound types
-
-    type                            | `JSON` type            | `#include cxon/<format>.hxx`<br> header
-    --------------------------------|------------------------|---------------------------------------------------------------------------------
-    [`reference types`][cpp-ref]    | `value type` or `null` | `cxon/lang/<format>/compound.hxx`
-    [`pointer types`][cpp-ptr]      | `value type` or `null` | `cxon/lang/<format>/compound.hxx`
-    [`array types`][cpp-arr]        | `array`                | `cxon/lang/<format>/compound.hxx`
-    [`enumeration types`][cpp-enum] | `string`               | `cxon/lang/<format>/compound.hxx`
-    [`class types`][cpp-class]      | `object`               | `cxon/lang/<format>/compound.hxx`
-
-  - standard library types
-
-    type                                            | `JSON` type      | `cxon/lang/<format>/lib/std/<header>.hxx`<br> include
-    ------------------------------------------------|------------------|------------------------------------------------------
-    [`std::pair`][std-pair]                         | `array`          | [`cxon/lib/std/utility.hxx`](lib/std/utility.hxx)
-    [`std::tuple`][std-tuple]                       | `array`          | [`cxon/lib/std/tuple.hxx`](lib/std/tuple.hxx)
-    [`std::optional`][std-optional]                 | `value_type`     | [`cxon/lib/std/optional.hxx`](lib/std/optional.hxx)
-    [`std::variant`][std-variant]                   | index value type | [`cxon/lib/std/variant.hxx`](lib/std/variant.hxx)
-    [`std::basic_string`][std-bstr]                 | `string`         | [`cxon/lib/std/string.hxx`](lib/std/string.hxx)
-    [`std::basic_string_view`][std-strv]            | `string`         | [`cxon/lib/std/string_view.hxx`](lib/std/string_view.hxx)
-    [`std::array`][std-array]                       | `array`          | [`cxon/lib/std/array.hxx`](lib/std/array.hxx)
-    [`std::deque`][std-deque]                       | `array`          | [`cxon/lib/std/deque.hxx`](lib/std/deque.hxx)
-    [`std::forward_list`][std-forward_list]         | `array`          | [`cxon/lib/std/forward_list.hxx`](lib/std/forward_list.hxx)
-    [`std::list`][std-list]                         | `array`          | [`cxon/lib/std/list.hxx`](lib/std/list.hxx)
-    [`std::map`][std-map]`(1)`                      | `object`         | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
-    [`std::multimap`][std-multimap]`(1)`            | `object`         | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
-    [`std::multiset`][std-multiset]                 | `array`          | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
-    [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
-    [`std::queue`][std-queue]                       | `array`          | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
-    [`std::set`][std-set]                           | `array`          | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
-    [`std::stack`][std-stack]                       | `array`          | [`cxon/lib/std/stack.hxx`](lib/std/stack.hxx)
-    [`std::unordered_map`][std-umap]`(1)`           | `object`         | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
-    [`std::unordered_set`][std-uset]                | `array`          | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
-    [`std::unordered_multimap`][std-umultimap]`(1)` | `object`         | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
-    [`std::unordered_multiset`][std-umultiset]      | `array`          | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
-    [`std::vector`][std-vector]                     | `array`          | [`cxon/lib/std/vector.hxx`](lib/std/vector.hxx)
-    [`std::bitset`][std-bitset]                     | `string`         | [`cxon/lib/std/bitset.hxx`](lib/std/bitset.hxx)
-    [`std::complex`][std-complex]                   | `array`          | [`cxon/lib/std/complex.hxx`](lib/std/complex.hxx)
-    [`std::valarray`][std-valarr]                   | `array`          | [`cxon/lib/std/valarray.hxx`](lib/std/valarray.hxx)
-    [`std::chrono::duration`][std-duration]         | `number`         | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
-    [`std::chrono::time_point`][std-time-pt]        | `number`         | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
-
-*`(1)` [`ECMA-404(6)`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
-specify this about object keys:*
-  > *The JSON syntax does not impose any restrictions on the strings used as names,
-  > __does not require that name strings be unique__*...
-
-*and by picking map or multi-map as a `C++` mapping type, value of an existing key
-may be replaced or kept.*
-
-Complete example with simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation
-may be found at the [end](#example-json-rpc) of the document.
-
-
---------------------------------------------------------------------------------
-
 #### Interface
 
 *Defined in header [cxon.hxx](cxon.hxx), include `cxon/<format>.hxx`*
@@ -118,10 +44,10 @@ may be found at the [end](#example-json-rpc) of the document.
 ``` c++
 namespace cxon {
 
-    template <typename Traits, typename T, typename InIt, typename ...CxPs>
-        from_bytes_result<It> from_bytes(T& t, InIt b, InIt e, CxPs... p);            (1)
-    template <typename Traits, typename T, typename Iterable, typename ...CxPs>
-        from_bytes_result<It)> from_bytes(T& t, const Iterable& i, CxPs... p);        (2)
+    template <typename Traits, typename T, typename InIt, typename ...NaPa>
+        from_bytes_result<It> from_bytes(T& t, InIt b, InIt e, NaPa... p);            (1)
+    template <typename Traits, typename T, typename Iterable, typename ...NaPa>
+        from_bytes_result<It)> from_bytes(T& t, const Iterable& i, NaPa... p);        (2)
 
     template <typename It>
         struct from_bytes_result {
@@ -134,54 +60,39 @@ namespace cxon {
 ```
 
 ###### Template parameters
-- [`Traits`](#format-traits) - traits class specifying given serialization format
-- `T` - the type of the value to serialize
-- `InIt` - the type of the iterator, must meet [InputIterator][cpp-init] requirements
-- `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
-- `It` - an iterator
-  - `(1)` `InIt`
-  - `(2)` `decltype(std::begin(i))`
-- `CxPs` - context parameter types (see [Context](#context))
+
+  - [`Traits`](#format-traits) - traits class specifying given serialization format
+  - `T` - the type of the value to serialize
+  - `InIt` - the type of the iterator, must meet [InputIterator][cpp-init] requirements
+  - `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
+  - `It` - an iterator
+    - `(1)` `InIt`
+    - `(2)` `decltype(std::begin(i))`
+  - `NaPa` - named parameter types (see [Context](#context))
 
 ###### Parameters
-- `t` - the out-parameter where the parsed value is stored in case of success
-- `b`, `e` -  valid (`char`) range to parse
-- `i` - an iterable type representing a valid (`char`) range to parse
-- `p...` - context parameters (see [Context](#context))
 
-###### Context parameters
-
-Parameter      | Context | Type                     | Default                             | Description
----------------|---------|--------------------------|-------------------------------------|-------------------------
-`allocator`    | read    | [`Allocator`][std-alloc] | `std::allocator<T>`                 | `T*` allocator
-`num_len_max`  | read    | `size_t`                 | 32 (integral) / 64 (floating-point) | number read buffer size
-`ids_len_max`  | read    | `size_t`                 | 64                                  | token read buffer size
+  - `t` - the out-parameter where the parsed value is stored in case of success
+  - `b`, `e` -  valid (`char`) range to parse
+  - `i` - an iterable type representing a valid (`char`) range to parse
+  - `p...` - named parameters (see [Context](#context))
 
 ###### Return value
+
 On success, returns a value of type `from_bytes_result`, such that `end` is one-past-the-end iterator of
 the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
 On failure, returns a value of type `from_bytes_result`, such that `end` is an iterator pointing to
 the non-matching input, and `ec` contains the [error condition][std-err-cnd]. The value is in valid, but
 unspecified state.
 
-Error code                         | Message
------------------------------------|---------------------------------
-read_error::ok                     | no error
-read_error::unexpected             | unexpected input
-read_error::character_invalid      | character invalid
-read_error::integral_invalid       | integral invalid or out of range
-read_error::floating_point_invalid | floating-point invalid
-read_error::boolean_invalid        | boolean invalid
-read_error::escape_invalid         | invalid escape sequence
-read_error::surrogate_invalid      | invalid surrogate
-
 ###### Exceptions
+
 Does not throw by itself, however specializations may throw or not:
-- for fundamental types - does not throw
-- for pointers - allocators and constructors may throw
-- for standard library types - constructing and adding of elements may throw with
-  the same guarantees as given by the standard library
-- for user types - may throw or not depending of the implementation
+  - for fundamental types - does not throw
+  - for pointers - allocators and constructors may throw
+  - for standard library types - constructing and adding of elements may throw with
+    the same guarantees as given by the standard library
+  - for user types - may throw or not depending of the implementation
 
 ###### Example
 
@@ -216,12 +127,12 @@ int main() {
 ``` c++
 namespace cxon {
 
-    template <typename Traits, typename T, typename OutIt, typename ...CxPs>
-        to_bytes_result<It> to_bytes(OutIt o, const T& t, CxPs... p);                 (1)
-    template <typename Traits, typename T, typename Insertable, typename ...CxPs>
-        to_bytes_result<It> to_bytes(Insertable& i, const T& t, CxPs... p);           (2)
-    template <typename Traits, typename T, typename FwIt, typename ...CxPs>
-        to_bytes_result<It> to_bytes(FwIt b, FwIt e, const T& t, CxPs... p);          (3)
+    template <typename Traits, typename T, typename OutIt, typename ...NaPa>
+        to_bytes_result<It> to_bytes(OutIt o, const T& t, NaPa... p);                 (1)
+    template <typename Traits, typename T, typename Insertable, typename ...NaPa>
+        to_bytes_result<It> to_bytes(Insertable& i, const T& t, NaPa... p);           (2)
+    template <typename Traits, typename T, typename FwIt, typename ...NaPa>
+        to_bytes_result<It> to_bytes(FwIt b, FwIt e, const T& t, NaPa... p);          (3)
 
     template <typename It>
         struct to_bytes_result {
@@ -234,46 +145,38 @@ namespace cxon {
 ```
 
 ###### Template parameters
-- [`Traits`](#format-traits) - traits class specifying given serialization format
-- `T` - the type of the value to serialize
-- `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
-- `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
-- `FwIt` - the type of the iterator, must meet [ForwardIterator][cpp-fwit] requirements
-- `It` - an iterator
-  - `(1)` `OutIt`
-  - `(2)` `decltype(std::begin(i))`
-  - `(3)` `FwIt`
-- `CxPs` - context parameter types (see [Context](#context))
+
+  - [`Traits`](#format-traits) - traits class specifying given serialization format
+  - `T` - the type of the value to serialize
+  - `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
+  - `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
+  - `FwIt` - the type of the iterator, must meet [ForwardIterator][cpp-fwit] requirements
+  - `It` - an iterator
+    - `(1)` `OutIt`
+    - `(2)` `decltype(std::begin(i))`
+    - `(3)` `FwIt`
+  - `NaPa` - named parameter types (see [Context](#context))
 
 ###### Parameters
-- `o` - an output iterator to write to
-- `i` - a back insertable value to write to
-- `b`, `e` - a (`char`) range to write to
-- `t` - serialization value
-- `p...` - context parameter (see [Context](#context))
 
-###### Context parameters
-
-Parameter      | Context | Type  | Default                                | Description
----------------|---------|-------|----------------------------------------|-------------------------
-`fp_precision` | write   | `int` | `std::numeric_limits<T>::max_digits10` | floating-point precision
+  - `o` - an output iterator to write to
+  - `i` - a back insertable value to write to
+  - `b`, `e` - a (`char`) range to write to
+  - `t` - serialization value
+  - `p...` - named parameters (see [Context](#context))
 
 ###### Return value
+
 On success, returns a value of type `to_bytes_result`, such that `ec` is value-initialized, and `end` is:
-- `(1)` one-past-the-end output iterator
-- `(2)` `std::begin(i)`
-- `(3)` one-past-the-end iterator of the output written. Note that the output is not terminated.
+  - `(1)` one-past-the-end output iterator
+  - `(2)` `std::begin(i)`
+  - `(3)` one-past-the-end iterator of the output written. Note that the output is not terminated.
 
 On failure, returns a value of type `to_bytes_result`, such that `ec` contains the error condition, and
 `end` has the same value as in case of success.
 
-Error code                         | Message
------------------------------------|---------------------------------
-read_error::ok                     | no error
-read_error::output_failure         | output cannot be written
-read_error::argument_invalid       | invalid argument
-
 ###### Exceptions
+
 Does not throw by itself, however writing to the output may throw (e.g. adding to a container).
 
 ###### Example
@@ -300,95 +203,13 @@ int main() {
 }
 ```
 
-##### Non-members
-
-```c++
-template <typename Traits, typename Out>
-    struct indent_iterator;
-
-template <typename Traits, typename OutIt>
-    constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t');           (1)
-template <typename Traits, typename Insertable>
-    constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t');     (2)
-template <typename Traits, typename FwIt>
-    constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t');    (3)
-```
-
-###### Template parameters
-- [`Traits`](#format-traits) - traits class specifying given serialization format
-- `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
-- `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
-- `FwIt` - the type of the iterator, must meet [ForwardIterator][cpp-fwit] requirements
-
-###### Parameters
-- `o` - an output iterator to write to
-- `i` - a back insertable value to write to
-- `b`, `e` - a (`char`) range to write to
-- `tab` - the number of `pad` characters to use for indentation 
-- `pad` - character to use for indentation
-
-###### Return value
-`indent_iterator` instance.
-
-###### Example
-
-```c++
-#include "cxon/cxon.hxx"
-#include "cxon/pretty.hxx"
-#include "cxon/std/string.hxx"
-#include "cxon/std/vector.hxx"
-#include "cxon/std/map.hxx"
-#include <cassert>
-
-int main() {
-    using namespace cxon;
-    std::map<std::string, std::vector<int>> const m = {
-        {"even", {2, 4, 6}}, {"odd", {1, 3, 5}}
-    };
-    char const s0[] =
-        "{\n"
-        "  \"even\": [\n"
-        "    2,\n"
-        "    4,\n"
-        "    6\n"
-        "  ],\n"
-        "  \"odd\": [\n"
-        "    1,\n"
-        "    3,\n"
-        "    5\n"
-        "  ]\n"
-        "}"
-    ;
-    std::string s1;
-        cxon::to_bytes(cxon::make_indenter(s1, 4, ' '), m);
-    assert(s1 == s0);
-}
-```
-
-where `s1` will contain:
-
-```json
-{
-    "even": [
-        2,
-        4,
-        6
-    ],
-    "odd": [
-        1,
-        3,
-        5
-    ]
-}
-```
-
 
 --------------------------------------------------------------------------------
 
 #### Implementation Bridge
 
 The interface communicates the implementation via the so-called *implementation bridge*.  
-Read/write interfaces instantiate the [*context*](#context), with the `CxPs` parameters (if any)
+Read/write interfaces instantiate the [*context*](#context), with the named parameters (if any)
 and then calls the *implementation bridge* with it:
 
 ``` c++
@@ -411,7 +232,7 @@ in namespace `cxon`.
 
 The _implementation bridge_ however, bridges three additional methods of extension:
 
-- specialization of read/write structures for the type (non-intrusive, allows partial specialization)
+  - specialization of read/write structures for the type (non-intrusive, allows partial specialization)
     ``` c++
     namespace cxon {
 
@@ -432,7 +253,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
     }
     ```
-- static members provided by the type
+  - static members provided by the type
     ``` c++
     struct T {
         template <typename X, typename InIt, typename Cx>
@@ -445,7 +266,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
             }
     };
     ```
-- members provided by the type
+  - members provided by the type
     ``` c++
     struct T {
         template <typename X, typename InIt, typename Cx>
@@ -457,96 +278,6 @@ The _implementation bridge_ however, bridges three additional methods of extensi
                 ...
             }
     };
-    ```
-
-For convenience, core library also provides a set of simple, non-intrusive and intrusive
-macros for binding of enumeration and class types:
-
-- [`enumeration types`][cpp-enum]
-    ``` c++
-    // implements the read interface for enum Type
-    #define CXON_JSON_ENM_READ(Type, ...)
-    // implements the write interface for enum Type
-    #define CXON_JSON_ENM_WRITE(Type, ...)
-    // implements the read and write interfaces for enum Type
-    #define CXON_JSON_ENM(Type, ...)
-
-    // defines enum value `Value`, which will be serialized as Name
-    #define CXON_JSON_ENM_VALUE_NAME(Name, Value)
-    // defines enum value `Value`, which will be serialized as ##Value
-    #define CXON_JSON_ENM_VALUE_ASIS(Value)
-    ```
-
-    ###### Example
-
-    ``` c++
-    enum rgb { red, green, blue };
-
-    CXON_JSON_ENM(rgb,
-        CXON_JSON_ENM_VALUE_ASIS(red),
-        CXON_JSON_ENM_VALUE_NAME("green (1)", green),
-        CXON_JSON_ENM_VALUE_ASIS(blue)
-    )
-
-    ...
-
-    std::vector<rgb> v0 = { rgb::red, rgb::green, rgb::blue };
-    std::string s0;
-        cxon::to_bytes(s0, v0);
-    assert(s0 == "[\"red\",\"green (1)\",\"blue\"]");
-    std::vector<rgb> v1;
-        cxon::from_bytes(v1, s0);
-    assert(v1 == v0);
-    ```
-- [`class types`][cpp-class]
-    ``` c++
-    // implements the read interface for type `Type`
-    #define CXON_JSON_CLS_READ(Type, ...)
-    // implements the write interface for type `Type`
-    #define CXON_JSON_CLS_WRITE(Type, ...)
-    // implements the read and write interfaces for type `Type`
-    #define CXON_JSON_CLS(Type, ...)
-    // and the same set for intrusive implementation
-    #define CXON_JSON_CLS_READ_MEMBER(Type, ...)
-    #define CXON_JSON_CLS_WRITE_MEMBER(Type, ...)
-    #define CXON_JSON_CLS_MEMBER(Type, ...)
-    
-    // defines field `Field`, which will be serialized as Name
-    #define CXON_JSON_CLS_FIELD_NAME(Name, Field)
-    // defines field `Field`, which will be serialized as ##Field
-    #define CXON_JSON_CLS_FIELD_ASIS(Field)
-    // defines the key Name, which will be skipped during serialization (only meaningful for reading)
-    #define CXON_JSON_CLS_FIELD_SKIP(Name)
-    ```
-
-    ###### Example
-
-    ``` c++
-    struct my_struct {
-        int first;
-        int second;
-        int skip;
-        bool operator ==(const my_struct& s) const { return first == s.first && second == s.second; }
-    };
-    CXON_JSON_CLS_READ(my_struct,
-        CXON_JSON_CLS_FIELD_ASIS(first),
-        CXON_JSON_CLS_FIELD_NAME("second field", second),
-        CXON_JSON_CLS_FIELD_SKIP("skip")
-    )
-    CXON_JSON_CLS_WRITE(my_struct,
-        CXON_JSON_CLS_FIELD_ASIS(first),
-        CXON_JSON_CLS_FIELD_NAME("second field", second)
-    )
-
-    ...
-
-    my_struct v0 = { 1, 2, 3 };
-    std::string s0;
-        cxon::to_bytes(s0, v0);
-    assert(s0 == "{\"first\":1,\"second field\":2}");
-    my_struct v1;
-        cxon::from_bytes(v1, "{\"first\":1,\"second field\":2,\"skip\":42}");
-    assert(v1 == v0);
     ```
 
 
@@ -682,7 +413,7 @@ namespace cxon {
 
 ##### Context
 
-The context is created by the interface with the optional `CxPs` parameters and
+The context is created by the interface with the optional `NaPa` parameters and
 passed to the implementation bridge.
 
 ``` c++
@@ -833,14 +564,16 @@ namespace jsonrpc {
             char const*const key;
             T const value;
 
-            template <typename X, typename O, typename C, typename J = X>
-                auto write_value(O& o, C& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
-                    return cxon::chio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
+            template <typename X, typename O, typename Cx, typename J = X>
+                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
+                    return  cxon::chio::write_key<J>(o, key, cx) &&
+                            cxon::write_value<J>(o, value, cx)
+                    ;
                 }
         };
 
-    template <typename V>
-        constexpr napa<V> make_napa(const char* k, V&& v) {
+    template <typename T>
+        constexpr napa<T> make_napa(const char* k, T&& v) {
             return {k, v};
         }
 

@@ -17,7 +17,7 @@
 
 `CXON` is a C++ serialization interface.  
 `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded).  
-`CXON` is easy to extend for different formats and some more are planned.  
+`CXON` is easy to extend for different formats
 `CXON` is `C++11` compliant, self contained, header-only library.  
 
 
@@ -55,11 +55,11 @@ namespace cxon {
         };
 
     // from input iterator
-    template <typename Traits, typename T, typename InIt, typename ...NamedParameters>
-        auto from_bytes(T& t, InIt b, InIt e, NamedParameters... ps)    -> from_bytes_result<InIt>;
+    template <typename Traits, typename T, typename InIt, typename ...Parameters>
+        auto from_bytes(T& t, InIt b, InIt e, Parameters... ps)     -> from_bytes_result<InIt>;
     // from iterable (e.g. std::string)
-    template <typename Traits, typename T, typename Iterable, typename ...NamedParameters>
-        auto from_bytes(T& t, const Iterable& i, NamedParameters... ps) -> from_bytes_result<decltype(std::begin(i))>;
+    template <typename Traits, typename T, typename Iterable, typename ...Parameters>
+        auto from_bytes(T& t, const Iterable& i, Parameters... ps)  -> from_bytes_result<decltype(std::begin(i))>;
 
 
     template <typename It>
@@ -69,14 +69,14 @@ namespace cxon {
         };
 
     // to output iterator
-    template <typename Traits, typename T, typename OutIt, typename ...NamedParameters>
-        auto to_bytes(OutIt o, const T& t, NamedParameters... p)        -> to_bytes_result<OutIt>;
+    template <typename Traits, typename T, typename OutIt, typename ...Parameters>
+        auto to_bytes(OutIt o, const T& t, Parameters... ps)        -> to_bytes_result<OutIt>;
     // to back insertable (e.g. std::string)
-    template <typename Traits, typename T, typename Insertable, typename ...NamedParameters>
-        auto to_bytes(Insertable& i, const T& t, NamedParameters... p)  -> to_bytes_result<decltype(std::begin(i))>;
+    template <typename Traits, typename T, typename Insertable, typename ...Parameters>
+        auto to_bytes(Insertable& i, const T& t, Parameters... ps)  -> to_bytes_result<decltype(std::begin(i))>;
     // to range
-    template <typename Traits, typename T, typename FwIt, typename ...NamedParameters>
-        auto to_bytes(FwIt b, FwIt e, const T& t, NamedParameters... p) -> to_bytes_result<FwIt>;
+    template <typename Traits, typename T, typename FwIt, typename ...Parameters>
+        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps) -> to_bytes_result<FwIt>;
 }
 ```
 
@@ -138,9 +138,9 @@ int main() {
     my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
             mv2;
     std::string json;
-        // write it to an output-iterator, container, buffer, etc. - in this case, std::string
+        // write it to output-iterator, container, buffer, etc. - in this case, std::string
         cxon::to_bytes(json, mv1);
-        // read it from an input-iterator, container, buffer, etc. - in this case, std::string
+        // read it from input-iterator, container, buffer, etc. - in this case, std::string
         cxon::from_bytes(mv2, json);
     assert(mv1 == mv2);
 }
@@ -178,7 +178,7 @@ int main() {
 }
 ```
 
-In both cases `my_type` is bound to the same `JSON`:
+In both examples, `my_type` is bound to the same `JSON`:
 
 ``` json
 { "even": [2, 4, 6], "odd": [1, 3, 5] }
