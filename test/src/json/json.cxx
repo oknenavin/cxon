@@ -273,14 +273,14 @@ namespace jsonrpc {
             char const*const key;
             T const value;
 
-            template <typename X, typename O, typename C, typename J = X>
-                auto write_value(O& o, C& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
+            template <typename X, typename O, typename Cx, typename J = X>
+                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
                     return cxon::chio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
                 }
         };
 
-    template <typename V>
-        constexpr napa<V> make_napa(const char* k, V&& v) {
+    template <typename T>
+        constexpr napa<T> make_napa(const char* k, T&& v) {
             return {k, v};
         }
 
