@@ -11,6 +11,7 @@
 #define CXON_VERSION_PATCH 0
 
 #include "utility.hxx"
+#include "lang-fwd.hxx"
 
 #include <utility>
 #include <type_traits>
@@ -80,7 +81,7 @@ namespace cxon { // context
             }
 
             template <typename E>
-                auto operator |(E e) noexcept -> enable_if_t<std::is_enum<E>::value, context&> {
+                auto operator |(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, context&> {
                     return ec = e, *this;
                 }
             operator bool() const noexcept { return !ec; }
