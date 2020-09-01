@@ -418,27 +418,30 @@ passed to the implementation bridge.
 
 ``` c++
 namespace cxon {
-    template <typename ...Ps>
+    template <typename X, typename ...NaPa>
         struct context;
 }
 ```
 
 ###### Template parameters
 
-  - `Ps` - context parameter types
+  - `X` - format traits type
+  - `Napa` - namedt parameter types
 
 ###### Member types
 
 Member type |Definition
-------------|------------------------------------------
-`napa_type` | `napa::pack_type<Ps...>`
+--------------|------------------------------------------
+`traits_type` | `X`
+`napa_type`   | `napa::pack_type<NaPa...>`
 
 ###### Member objects
 
-Member name |Type
-------------|------------------------------------------
-`ec`        | [`std::error_condition`][std-err-cnd]
-`ps`        | `napa_type`
+Member name |Type                                   | Description
+------------|---------------------------------------|-----------------
+`ec`        | [`std::error_condition`][std-err-cnd] | error condition
+`tx`        | `traits_type`                         | format traits
+`px`        | `napa_type`                           | named parameters
 
 ###### Member functions
 
@@ -453,7 +456,7 @@ Member name |Type
     ```
 
 
-`ps`'s type is a tagged tuple with parameter types as tags. Concrete type is
+`px`'s type is a tagged tuple with parameter types as tags. Concrete type is
 an implementation detail and the code shall access it by the `parameter` interface.
 
 ``` c++
@@ -519,7 +522,7 @@ namespace cxon {
             -> enable_if_t< my_state::in<napa_type<Cx>>::value, bool>
         {
             char buffer[my_constant::constant<napa_type<Cx>>(32)]; // 32 if not set
-            auto& state = my_state::reference(cx.ps);
+            auto& state = my_state::reference(cx.px);
             ...
         }
     template <typename X, typename II, typename Cx>
@@ -527,7 +530,7 @@ namespace cxon {
             // specialize if my_state isn't set
             -> enable_if_t<!my_state::in<napa_type<Cx>>::value, bool>
         {
-            auto par = my_state::value(cx.ps, 0); // 0 if not set
+            auto par = my_state::value(cx.px, 0); // 0 if not set
             ...
         }
 }
