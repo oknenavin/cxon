@@ -206,7 +206,7 @@ namespace cxon { namespace chio { namespace str {
             consume<X>(i, e);
             if (peek(i, e) == *X::id::nil && consume<X>(X::id::nil, i, e)) return true;
                 if (!consume_str<X>::beg(i, e, cx)) return false;
-            auto ax = allocator::value(cx.ps, std::allocator<T>());
+            auto ax = allocator::value(cx.px, std::allocator<T>());
             typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
                 using al = std::allocator_traits<decltype(at)>;
             T *b = al::allocate(at, 4), *p = b; T* be = b + 4;
