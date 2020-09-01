@@ -14,6 +14,7 @@
   - [Implementation bridge](#implementation-bridge)
   - [Parametrization](#parametrization)
     - [Format traits](#format-traits)
+    - [Named parameters](#named-parameters)
     - [Context](#context)
   - [Example (`JSON-RPC`)](#example-json-rpc)
 
@@ -285,13 +286,13 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
 #### Parametrization
 
-`CXON` provides two ways for parametrization, serving different purposes:
-- [format-traits](#format-traits) - for parameterizing given serialization format,
-  usually meaning that some properties of the format change. As an example,
-  `unquoted_keys` parameter enables unquoted object keys.
-- [context](#context) - for parameterizing the serialization of given type
-  without changing the format. As an example, `allocator` parameter allows
-  using of a custom [allocator][std-alloc] when reading pointer types.
+`CXON` provides two ways to parametrize given implementation:
+  - [Format traits](#format-traits)
+    - passing of static parameters (e.g. to configure the format)
+    - passing of state parameters (e.g. to keep serialization state)
+  - [Named parameters](#named-parameters)
+    - passing of constant or mutable parameter(s) to arbitrary type serializers  
+      (e.g. floating-point precision, allocator, etc.)
 
 
 --------------------------------------------------------------------------------
@@ -411,53 +412,11 @@ namespace cxon {
 
 --------------------------------------------------------------------------------
 
-##### Context
+##### Named parameters
 
-The context is created by the interface with the optional `NaPa` parameters and
-passed to the implementation bridge.
-
-``` c++
-namespace cxon {
-    template <typename X, typename ...NaPa>
-        struct context;
-}
-```
-
-###### Template parameters
-
-  - `X` - format traits type
-  - `Napa` - namedt parameter types
-
-###### Member types
-
-Member type |Definition
---------------|------------------------------------------
-`traits_type` | `X`
-`napa_type`   | `napa::pack_type<NaPa...>`
-
-###### Member objects
-
-Member name |Type                                   | Description
-------------|---------------------------------------|-----------------
-`ec`        | [`std::error_condition`][std-err-cnd] | error condition
-`tx`        | `traits_type`                         | format traits
-`px`        | `napa_type`                           | named parameters
-
-###### Member functions
-
-- `operator |` - assign an error condition enum
-    ``` c++
-    template <typename E>
-        auto operator |(E e) noexcept;
-    ```
-- `operator bool` - check if the context is good (i.e., no error condition)
-    ``` c++
-    operator bool() const noexcept;
-    ```
-
-
-`px`'s type is a tagged tuple with parameter types as tags. Concrete type is
-an implementation detail and the code shall access it by the `parameter` interface.
+An instance of napa::parameter with the concrete type as a tag and a value of
+an arbitrary type. Provides various methods to access the actual value from
+the [Context](#context).
 
 ``` c++
 namespace cxon::napa {
@@ -498,8 +457,7 @@ namespace cxon::napa {
 - `(7)` - returns the value of parameter `Tag`, compilation error if not set
 - `(8)` - returns the value of parameter `Tag` if set, `dflt` otherwise
 
-For convenience, parameter type could be inherited from `napa::tag` - `CXON` provides
-simple macro for this.
+For convenience, a simple macro is provided to implement a parameter:
 
 ``` c++
 #define CXON_PARAMETER(P, T) struct P : cxon::napa::parameter<P, T> {}
@@ -516,6 +474,7 @@ CXON_PARAMETER(my_state, int);
 struct my_type { ... };
 
 namespace cxon {
+
     template <typename X, typename II, typename Cx>
         inline auto read_value(my_type& t, II& i, II e, Cx& cx)
             // specialize if my_state is set
@@ -525,6 +484,7 @@ namespace cxon {
             auto& state = my_state::reference(cx.px);
             ...
         }
+
     template <typename X, typename II, typename Cx>
         inline auto read_value(my_type& t, II& i, II e, Cx& cx)
             // specialize if my_state isn't set
@@ -533,6 +493,7 @@ namespace cxon {
             auto par = my_state::value(cx.px, 0); // 0 if not set
             ...
         }
+
 }
 
 int main() {
@@ -544,6 +505,54 @@ int main() {
 }
 ```
 
+
+--------------------------------------------------------------------------------
+
+##### Context
+
+The context is created by the interface with the format traits & optional named parameters and
+passed to the implementation bridge.
+
+``` c++
+namespace cxon {
+    template <typename X, typename ...NaPa>
+        struct context;
+}
+```
+
+###### Template parameters
+
+  - `X` - format traits type
+  - `Napa` - named parameter types
+
+###### Member types
+
+Member type |Definition
+--------------|------------------------------------------
+`traits_type` | `X`
+`napa_type`   | `napa::pack_type<NaPa...>`
+
+###### Member objects
+
+Member name |Type                                   | Description
+------------|---------------------------------------|-----------------
+`ec`        | [`std::error_condition`][std-err-cnd] | error condition
+`tx`        | `traits_type`                         | format traits
+`px`        | `napa_type`                           | named parameters
+
+###### Member functions
+
+- `operator |` - assign an error condition enum
+    ``` c++
+    template <typename E>
+        auto operator |(E e) noexcept;
+    ```
+- `operator bool` - check if the context is good (i.e., no error condition)
+    ``` c++
+    operator bool() const noexcept;
+    ```
+
+`px`'s type is a tagged tuple with parameter types as tags. See [Named parameters](#named-parameters).
 
 --------------------------------------------------------------------------------
 

@@ -15,10 +15,10 @@
 
 --------------------------------------------------------------------------------
 
-`CXON` is a C++ serialization interface.  
-`CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded).  
-`CXON` is easy to extend for different formats
-`CXON` is `C++11` compliant, self contained, header-only library.  
+`CXON` is a C++ serialization interface  
+`CXON` is a `C++11` compliant, self contained, header-only library  
+`CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format  
+`CXON` is easy to extend for different formats and impose minimal overhead  
 
 
 --------------------------------------------------------------------------------
@@ -83,11 +83,18 @@ namespace cxon {
 ###### Example
 
 ``` c++
-#include "cxon/json.hxx"
-auto fr = cxon::from_bytes(std::vector<int>, std::begin(in), std:end(in), ...); // read from iterator (default format `JSON`)
+#include "cxon/json.hxx" // first include - JSON will be the default format
+#include "cxon/cbor.hxx" // following includes - require format specification
+#include <cassert>
 
-#include "cxon/cbor.hxx"
-auto tr = cxon::to_bytes<CBOR<>>(str, std::vector<int>, in, ...); // write to std::string (format `CBOR`)
+// in = "[1, 5, 7]"; // JSON in UTF-8
+std::vector<int> value;
+auto fbr = cxon::from_bytes(value, std::begin(in), std:end(in), ...); // read from iterator (default format `JSON`)
+assert(fbr); // the result: error and serialization status
+...
+std::vector<unsigned char> cbor;
+auto tbr = cxon::to_bytes<CBOR<>>(cbor, value, ...); // write to std::vector<unsigned char> (format `CBOR`)
+assert(tbr); // the result: error and serialization status
 ```
 
 `CXON` supports good part of `C++`'s fundamental and standard library types out of the box, including:
