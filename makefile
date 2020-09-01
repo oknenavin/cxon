@@ -15,6 +15,7 @@ cxon-lang-common-chio = \
     $(src)/lang/common/chio/container.hxx \
     $(src)/lang/common/chio/enum.hxx \
     $(src)/lang/common/chio/error.hxx \
+    $(src)/lang/common/chio/error-fwd.hxx \
     $(src)/lang/common/chio/io.hxx \
     $(src)/lang/common/chio/key.hxx \
     $(src)/lang/common/chio/numeric.hxx \
@@ -58,6 +59,7 @@ cxon-lang-json = \
     $(src)/lang/json/enum.hxx \
     $(src)/lang/json/fundamental.hxx \
     $(src)/lang/json/json.hxx \
+    $(src)/lang/json/json-fwd.hxx \
     $(src)/lang/json/node.hxx
 
 cxon-json = \
@@ -88,6 +90,7 @@ cxon-lib-std = \
 
 cxon = \
     $(src)/cxon.hxx \
+    $(src)/lang-fwd.hxx \
     $(src)/utility.hxx
 
 check:
