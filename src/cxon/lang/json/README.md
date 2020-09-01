@@ -1,4 +1,4 @@
-## `CXON/JSON/NODE` library
+## `CXON/JSON` library
 
 [![Library][img-lib]](https://github.com/oknenavin/cxon)
 [![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
