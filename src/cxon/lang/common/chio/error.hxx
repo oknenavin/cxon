@@ -8,7 +8,7 @@
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { // errors
+namespace cxon { namespace chio {
 
     enum class read_error : int {
         ok,                     // no error

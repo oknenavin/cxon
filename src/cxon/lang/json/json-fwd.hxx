@@ -29,10 +29,7 @@ namespace cxon { namespace json { // errors
     using chio::write_error;
 
     using chio::read_error_category;
-    using chio::make_error_condition;
-
     using chio::write_error_category;
-    using chio::make_error_condition;
 
 }}
 
