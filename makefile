@@ -1,97 +1,97 @@
 SHELL = /bin/sh
 
-prefix = /usr/local
-includedir = $(prefix)/include
-src = src/cxon
+prefix ?= /usr/local
+insdir = $(DESTDIR)$(prefix)/include
+srcdir = src/cxon
 
 cxon-lang-common = \
-    $(src)/lang/common/charconv.hxx
+    $(srcdir)/lang/common/charconv.hxx
 
 cxon-lang-common-chio = \
-    $(src)/lang/common/chio/char.hxx \
-    $(src)/lang/common/chio/chcls.hxx \
-    $(src)/lang/common/chio/chio.hxx \
-    $(src)/lang/common/chio/class.hxx \
-    $(src)/lang/common/chio/container.hxx \
-    $(src)/lang/common/chio/enum.hxx \
-    $(src)/lang/common/chio/error.hxx \
-    $(src)/lang/common/chio/error-fwd.hxx \
-    $(src)/lang/common/chio/io.hxx \
-    $(src)/lang/common/chio/key.hxx \
-    $(src)/lang/common/chio/numeric.hxx \
-    $(src)/lang/common/chio/string.hxx \
-    $(src)/lang/common/chio/value.hxx
+    $(srcdir)/lang/common/chio/char.hxx \
+    $(srcdir)/lang/common/chio/chcls.hxx \
+    $(srcdir)/lang/common/chio/chio.hxx \
+    $(srcdir)/lang/common/chio/class.hxx \
+    $(srcdir)/lang/common/chio/container.hxx \
+    $(srcdir)/lang/common/chio/enum.hxx \
+    $(srcdir)/lang/common/chio/error.hxx \
+    $(srcdir)/lang/common/chio/error-fwd.hxx \
+    $(srcdir)/lang/common/chio/io.hxx \
+    $(srcdir)/lang/common/chio/key.hxx \
+    $(srcdir)/lang/common/chio/numeric.hxx \
+    $(srcdir)/lang/common/chio/string.hxx \
+    $(srcdir)/lang/common/chio/value.hxx
 
 cxon-lang-json-lib-std-bits = \
-    $(src)/lang/json/lib/std/bits/map.hxx \
-    $(src)/lang/json/lib/std/bits/set.hxx \
-    $(src)/lang/json/lib/std/bits/string.hxx
+    $(srcdir)/lang/json/lib/std/bits/map.hxx \
+    $(srcdir)/lang/json/lib/std/bits/set.hxx \
+    $(srcdir)/lang/json/lib/std/bits/string.hxx
 
 cxon-lang-json-lib-std = \
-    $(src)/lang/json/lib/std/array.hxx \
-    $(src)/lang/json/lib/std/bitset.hxx \
-    $(src)/lang/json/lib/std/chrono.hxx \
-    $(src)/lang/json/lib/std/complex.hxx \
-    $(src)/lang/json/lib/std/deque.hxx \
-    $(src)/lang/json/lib/std/forward_list.hxx \
-    $(src)/lang/json/lib/std/list.hxx \
-    $(src)/lang/json/lib/std/map.hxx \
-    $(src)/lang/json/lib/std/optional.hxx \
-    $(src)/lang/json/lib/std/queue.hxx \
-    $(src)/lang/json/lib/std/set.hxx \
-    $(src)/lang/json/lib/std/stack.hxx \
-    $(src)/lang/json/lib/std/string.hxx \
-    $(src)/lang/json/lib/std/string_view.hxx \
-    $(src)/lang/json/lib/std/tuple.hxx \
-    $(src)/lang/json/lib/std/unordered_map.hxx \
-    $(src)/lang/json/lib/std/unordered_set.hxx \
-    $(src)/lang/json/lib/std/utility.hxx \
-    $(src)/lang/json/lib/std/valarray.hxx \
-    $(src)/lang/json/lib/std/variant.hxx \
-    $(src)/lang/json/lib/std/vector.hxx
+    $(srcdir)/lang/json/lib/std/array.hxx \
+    $(srcdir)/lang/json/lib/std/bitset.hxx \
+    $(srcdir)/lang/json/lib/std/chrono.hxx \
+    $(srcdir)/lang/json/lib/std/complex.hxx \
+    $(srcdir)/lang/json/lib/std/deque.hxx \
+    $(srcdir)/lang/json/lib/std/forward_list.hxx \
+    $(srcdir)/lang/json/lib/std/list.hxx \
+    $(srcdir)/lang/json/lib/std/map.hxx \
+    $(srcdir)/lang/json/lib/std/optional.hxx \
+    $(srcdir)/lang/json/lib/std/queue.hxx \
+    $(srcdir)/lang/json/lib/std/set.hxx \
+    $(srcdir)/lang/json/lib/std/stack.hxx \
+    $(srcdir)/lang/json/lib/std/string.hxx \
+    $(srcdir)/lang/json/lib/std/string_view.hxx \
+    $(srcdir)/lang/json/lib/std/tuple.hxx \
+    $(srcdir)/lang/json/lib/std/unordered_map.hxx \
+    $(srcdir)/lang/json/lib/std/unordered_set.hxx \
+    $(srcdir)/lang/json/lib/std/utility.hxx \
+    $(srcdir)/lang/json/lib/std/valarray.hxx \
+    $(srcdir)/lang/json/lib/std/variant.hxx \
+    $(srcdir)/lang/json/lib/std/vector.hxx
 
 cxon-lang-json-node = \
-    $(src)/lang/json/node/node.hxx
+    $(srcdir)/lang/json/node/node.hxx
 
 cxon-lang-json = \
-    $(src)/lang/json/class.hxx \
-    $(src)/lang/json/compound.hxx \
-    $(src)/lang/json/enum.hxx \
-    $(src)/lang/json/fundamental.hxx \
-    $(src)/lang/json/json.hxx \
-    $(src)/lang/json/json-fwd.hxx \
-    $(src)/lang/json/node.hxx
+    $(srcdir)/lang/json/class.hxx \
+    $(srcdir)/lang/json/compound.hxx \
+    $(srcdir)/lang/json/enum.hxx \
+    $(srcdir)/lang/json/fundamental.hxx \
+    $(srcdir)/lang/json/json.hxx \
+    $(srcdir)/lang/json/json-fwd.hxx \
+    $(srcdir)/lang/json/node.hxx
 
 cxon-json = \
-    $(src)/json.hxx
+    $(srcdir)/json.hxx
 
 cxon-lib-std = \
-    $(src)/lib/std/array.hxx \
-    $(src)/lib/std/bitset.hxx \
-    $(src)/lib/std/chrono.hxx \
-    $(src)/lib/std/complex.hxx \
-    $(src)/lib/std/deque.hxx \
-    $(src)/lib/std/forward_list.hxx \
-    $(src)/lib/std/list.hxx \
-    $(src)/lib/std/map.hxx \
-    $(src)/lib/std/optional.hxx \
-    $(src)/lib/std/queue.hxx \
-    $(src)/lib/std/set.hxx \
-    $(src)/lib/std/stack.hxx \
-    $(src)/lib/std/string.hxx \
-    $(src)/lib/std/string_view.hxx \
-    $(src)/lib/std/tuple.hxx \
-    $(src)/lib/std/unordered_map.hxx \
-    $(src)/lib/std/unordered_set.hxx \
-    $(src)/lib/std/utility.hxx \
-    $(src)/lib/std/valarray.hxx \
-    $(src)/lib/std/variant.hxx \
-    $(src)/lib/std/vector.hxx
+    $(srcdir)/lib/std/array.hxx \
+    $(srcdir)/lib/std/bitset.hxx \
+    $(srcdir)/lib/std/chrono.hxx \
+    $(srcdir)/lib/std/complex.hxx \
+    $(srcdir)/lib/std/deque.hxx \
+    $(srcdir)/lib/std/forward_list.hxx \
+    $(srcdir)/lib/std/list.hxx \
+    $(srcdir)/lib/std/map.hxx \
+    $(srcdir)/lib/std/optional.hxx \
+    $(srcdir)/lib/std/queue.hxx \
+    $(srcdir)/lib/std/set.hxx \
+    $(srcdir)/lib/std/stack.hxx \
+    $(srcdir)/lib/std/string.hxx \
+    $(srcdir)/lib/std/string_view.hxx \
+    $(srcdir)/lib/std/tuple.hxx \
+    $(srcdir)/lib/std/unordered_map.hxx \
+    $(srcdir)/lib/std/unordered_set.hxx \
+    $(srcdir)/lib/std/utility.hxx \
+    $(srcdir)/lib/std/valarray.hxx \
+    $(srcdir)/lib/std/variant.hxx \
+    $(srcdir)/lib/std/vector.hxx
 
 cxon = \
-    $(src)/cxon.hxx \
-    $(src)/lang-fwd.hxx \
-    $(src)/utility.hxx
+    $(srcdir)/cxon.hxx \
+    $(srcdir)/lang-fwd.hxx \
+    $(srcdir)/utility.hxx
 
 check:
 	@$(MAKE) -C test check
@@ -105,25 +105,25 @@ check-json-node:
 install: install-json
 
 install-cxon:
-	@install -d $(DESTDIR)$(includedir)/cxon/lib/std
-	@install -p -m 0644 $(cxon-lib-std)                 $(DESTDIR)$(includedir)/cxon/lib/std
-	@install -p -m 0644 $(cxon)                         $(DESTDIR)$(includedir)/cxon
+	@install -d $(insdir)/cxon/lib/std
+	@install -p -m 0644 $(cxon-lib-std)                 $(insdir)/cxon/lib/std
+	@install -p -m 0644 $(cxon)                         $(insdir)/cxon
 
 install-common: install-cxon
-	@install -d $(DESTDIR)$(includedir)/cxon/lang/common/chio
-	@install -p -m 0644 $(cxon-lang-common-chio)        $(DESTDIR)$(includedir)/cxon/lang/common/chio
-	@install -p -m 0644 $(cxon-lang-common)             $(DESTDIR)$(includedir)/cxon/lang/common
+	@install -d $(insdir)/cxon/lang/common/chio
+	@install -p -m 0644 $(cxon-lang-common-chio)        $(insdir)/cxon/lang/common/chio
+	@install -p -m 0644 $(cxon-lang-common)             $(insdir)/cxon/lang/common
 
 install-json: install-cxon install-common
-	@install -d $(DESTDIR)$(includedir)/cxon/lang/json/lib/std/bits $(DESTDIR)$(includedir)/cxon/lang/json/node
-	@install -p -m 0644 $(cxon-lang-json-lib-std-bits)  $(DESTDIR)$(includedir)/cxon/lang/json/lib/std/bits
-	@install -p -m 0644 $(cxon-lang-json-lib-std)       $(DESTDIR)$(includedir)/cxon/lang/json/lib/std
-	@install -p -m 0644 $(cxon-lang-json-node)          $(DESTDIR)$(includedir)/cxon/lang/json/node
-	@install -p -m 0644 $(cxon-lang-json)               $(DESTDIR)$(includedir)/cxon/lang/json
-	@install -p -m 0644 $(cxon-json)                    $(DESTDIR)$(includedir)/cxon
+	@install -d $(insdir)/cxon/lang/json/lib/std/bits   $(insdir)/cxon/lang/json/node
+	@install -p -m 0644 $(cxon-lang-json-lib-std-bits)  $(insdir)/cxon/lang/json/lib/std/bits
+	@install -p -m 0644 $(cxon-lang-json-lib-std)       $(insdir)/cxon/lang/json/lib/std
+	@install -p -m 0644 $(cxon-lang-json-node)          $(insdir)/cxon/lang/json/node
+	@install -p -m 0644 $(cxon-lang-json)               $(insdir)/cxon/lang/json
+	@install -p -m 0644 $(cxon-json)                    $(insdir)/cxon
 
 uninstall:
-	@rm -fr $(DESTDIR)$(includedir)/cxon
+	@rm -fr $(insdir)/cxon
 
 clean:
 	@$(MAKE) -C test clean
