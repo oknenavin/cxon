@@ -1,46 +1,46 @@
 SHELL = /bin/sh
 
-out = .out
-inc = ../src
-src = src
-dat = ../data
+outdir = .out
+incdir = ../src
+srcdir = src
+datdir = ../data
 
 check-json-src = \
-    $(src)/json/json.cxx \
-    $(src)/json/fundamental.cxx \
-    $(src)/json/compound.cxx \
-    $(src)/json/std.cxx
+    $(srcdir)/json/json.cxx \
+    $(srcdir)/json/fundamental.cxx \
+    $(srcdir)/json/compound.cxx \
+    $(srcdir)/json/std.cxx
 
 check-json-node-src = \
-    $(src)/json/node.cxx
+    $(srcdir)/json/node.cxx
 
 check: check-json check-json-node
 
-check-json: $(out)/check-json
-	@(cd $(out) && ../$<)
+check-json: $(outdir)/check-json
+	@(cd $(outdir) && ../$<)
 
-check-json-node: $(out)/check-json-node
-	@(cd $(out) && ../$<)
-	@(cd $(out) && ../$< \
-                            pass    @$(dat)/set.1-pass.in \
-                                    @$(dat)/set.2-pass.in \
-                            fail    @$(dat)/set.1-fail.in \
-                                    @$(dat)/set.2-fail.in)
-	@(cd $(out) && ../$< \
-                            diff    @$(dat)/set.3-diff.in \
-                                    @$(dat)/set.4-diff.in \
-                                    @$(dat)/set.5-diff.in \
+check-json-node: $(outdir)/check-json-node
+	@(cd $(outdir) && ../$<)
+	@(cd $(outdir) && ../$< \
+                            pass    @$(datdir)/set.1-pass.in \
+                                    @$(datdir)/set.2-pass.in \
+                            fail    @$(datdir)/set.1-fail.in \
+                                    @$(datdir)/set.2-fail.in)
+	@(cd $(outdir) && ../$< \
+                            diff    @$(datdir)/set.3-diff.in \
+                                    @$(datdir)/set.4-diff.in \
+                                    @$(datdir)/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
-$(out)/check-json: $(check-json-src)
-	@mkdir -p $(out)
-	$(CXX) -I $(inc) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
+$(outdir)/check-json: $(check-json-src)
+	@mkdir -p $(outdir)
+	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
 
-$(out)/check-json-node: $(check-json-node-src)
-	@mkdir -p $(out)
-	$(CXX) -I $(inc) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
+$(outdir)/check-json-node: $(check-json-node-src)
+	@mkdir -p $(outdir)
+	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
 
 clean:
-	@rm -fr $(out)
+	@rm -fr $(outdir)
 
 .PHONY: check check-json check-json-node clean
