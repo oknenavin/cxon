@@ -13,6 +13,7 @@
     - [Implementation bridge](../src/cxon/README.md#implementation-bridge)
     - [Parametrization](../src/cxon/README.md#parametrization)
       - [Format traits](../src/cxon/README.md#format-traits)
+      - [Named parameters](../src/cxon/README.md#named-parameters)
       - [Context](../src/cxon/README.md#context)
     - [Example (`JSON-RPC`)](../src/cxon/README.md#example-json-rpc)
   - [`CXON/JSON`](../src/cxon/lang/json/README.md)

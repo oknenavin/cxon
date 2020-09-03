@@ -32,11 +32,14 @@ namespace cxon { namespace json { // node
 
 namespace cxon { namespace json { // errors
 
-    enum error : int {
+    enum class node_error : int {
         ok,                         // no error
         invalid,                    // invalid json value
         recursion_depth_exceeded    // recursion depth exceeded
     };
+
+    struct node_error_category;
+    std::error_condition make_error_condition(node_error e) noexcept;
 
 }}
 
@@ -288,32 +291,32 @@ namespace cxon { namespace json { // node
 
 namespace cxon { namespace json { // errors
 
-    struct error_category : std::error_category {
+    struct node_error_category : std::error_category {
         const char* name() const noexcept override {
             return "cxon/json/node";
         }
         std::string message(int ev) const override {
-            switch (static_cast<error>(ev)) {
-                case error::ok:                         return "no error";
-                case error::invalid:                    return "invalid json";
-                case error::recursion_depth_exceeded:   return "recursion depth limit exceeded";
-                default:                                return "unknown error";
+            switch (static_cast<node_error>(ev)) {
+                case node_error::ok:                        return "no error";
+                case node_error::invalid:                   return "invalid json";
+                case node_error::recursion_depth_exceeded:  return "recursion depth limit exceeded";
+                default:                                    return "unknown error";
             }
         }
-        static const error_category& value() {
-            static error_category const v{};
+        static const node_error_category& value() {
+            static node_error_category const v{};
             return v;
         }
     };
 
-    std::error_condition make_error_condition(error e) noexcept {
-        return { static_cast<int>(e), error_category::value() };
+    std::error_condition make_error_condition(node_error e) noexcept {
+        return { static_cast<int>(e), node_error_category::value() };
     }
 
 }}
 
 namespace std { // cxon/json errors
-    template <> struct is_error_condition_enum<cxon::json::error> : true_type {};
+    template <> struct is_error_condition_enum<cxon::json::node_error> : true_type {};
 }
 
 namespace cxon { namespace json { namespace bits {
@@ -337,7 +340,7 @@ namespace cxon { namespace json { namespace bits {
 namespace cxon {
 
     using json::basic_node;
-    using json::error;
+    using json::node_error;
     using json::recursion_guard;
 
     template <typename X, typename Tr, typename II, typename ...CxPs>
@@ -364,7 +367,7 @@ namespace cxon {
 
 #   define CXON_JSON_NODE_RG()\
         json::bits::scinc<Cx> RG__(cx);\
-        if (!RG__.check()) return cx|error::recursion_depth_exceeded, false
+        if (!RG__.check()) return cx|node_error::recursion_depth_exceeded, false
 
         template <typename X, typename Tr>
             struct read<X, basic_node<Tr>> {
@@ -382,7 +385,7 @@ namespace cxon {
                                 case 'n'                :                           return CXON_READ(null);
 #                           undef CXON_READ
                         }
-                        return cx|error::invalid, false;
+                        return cx|node_error::invalid, false;
                     }
             };
 

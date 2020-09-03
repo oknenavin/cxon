@@ -302,7 +302,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
 The purpose of `Traits` template parameter is to keep constant (including constexpr) and/or mutable 
 parameters for a given serialization format.
-As an example, although `JSON` uses the following format traits structure:
+As an example, `JSON` uses the following format traits structure:
 
 ``` c++
 namespace cxon { namespace json {

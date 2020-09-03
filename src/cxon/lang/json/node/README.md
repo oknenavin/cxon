@@ -474,10 +474,10 @@ bool operator != (const basic_node& n) const; (2)
 `CXON/JSON` defines the following in addition:
   - own error conditions
 
-      Error code                      | Message
-      --------------------------------|-------------------------------
-      error::invalid                  | invalid `JSON`
-      error::recursion_depth_exceeded | recursion depth limit exceeded
+      Error code                           | Message
+      -------------------------------------|-------------------------------
+      node_error::invalid                  | invalid `JSON`
+      node_error::recursion_depth_exceeded | recursion depth limit exceeded
 
   - own context parameters
 
@@ -500,6 +500,7 @@ bool operator != (const basic_node& n) const; (2)
 ###### Example
 
 ``` c++
+#include "cxon/json.hxx"
 #include "cxon/lang/json/node.hxx"
 #include <cassert>
 
@@ -508,15 +509,15 @@ int main() {
     {   node n;
             auto const r = cxon::from_bytes(n, "#[1]");
         assert(!r &&
-                r.ec.category() == error_category::value &&
-                r.ec == error::invalid
+                r.ec.category() == node_error_category::value() &&
+                r.ec == node_error::invalid
         );
     }
     {   node n;
-            auto const r = cxon::from_bytes(n, "[[[[1]]]]", recursion_depth::set<unsigned, 4U>());
+            auto const r = cxon::from_bytes(n, "[[[[1]]]]", recursion_depth::set<4>());
         assert(!r &&
-                r.ec.category() == error_category::value &&
-                r.ec == error::recursion_depth_exceeded
+                r.ec.category() == node_error_category::value() &&
+                r.ec == node_error::recursion_depth_exceeded
         );
     }
 }
