@@ -138,6 +138,7 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<string, int>{}), "{}");
         W_TEST("{}", (map<string, int>{}));
         R_TEST((map<string, int>{{"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<string, int>{{"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
         R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
@@ -155,6 +156,7 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<u16string, int>{{u"", 1}}), "{\"\":1}");
         W_TEST("{:1}", (map<u16string, int>{{u"", 1}}));
         R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<u16string, int>{{u"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
         R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
@@ -172,6 +174,7 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<u32string, int>{{U"", 1}}), "{\"\":1}");
         W_TEST("{:1}", (map<u32string, int>{{U"", 1}}));
         R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<u32string, int>{{U"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
         R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
@@ -189,6 +192,7 @@ TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
         R_TEST((map<wstring, int>{{L"", 1}}), "{\"\":1}");
         W_TEST("{:1}", (map<wstring, int>{{L"", 1}}));
         R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
+        R_TEST((map<wstring, int>{{L"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
         R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
         R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
         R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
