@@ -18,7 +18,7 @@
 `CXON` is a C++ serialization interface  
 `CXON` is a `C++11` compliant, self contained, header-only library  
 `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format  
-`CXON` is easy to extend for different formats and impose minimal overhead  
+`CXON` is easy to extend for different formats and types imposing minimal overhead  
 
 
 --------------------------------------------------------------------------------
@@ -36,14 +36,14 @@
 
 #### Introduction
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv]
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] 
 interface with these differences:
 
-  - traits template parameter (to allow arbitrary serialization formats, see
+  - traits template parameter (to allow arbitrary serialization formats, see 
     [`Format traits`](src/cxon/README.md#format-traits))
-  - trailing named parameters of an arbitrary type (to allow passing of parameters  
-    to given type serializer, see [`Context`](src/cxon/README.md#context))
-  - input and output iterators for I/O (allowing streams, containers and arrays,
+  - trailing named parameters of an arbitrary type (to allow passing of parameters 
+    to given type serializer - see [`Context`](src/cxon/README.md#context))
+  - input and output iterators for I/O (allowing streams, containers and arrays - 
     see [`Interface`](src/cxon/README.md#interface))
 
 ```c++
@@ -84,7 +84,7 @@ namespace cxon {
 
 ``` c++
 #include "cxon/json.hxx" // first include - JSON will be the default format
-#include "cxon/cbor.hxx" // following includes - require format specification
+#include "cxon/cbor.hxx" // following format includes - require format specification
 #include <cassert>
 
 // in = "[1, 5, 7]"; // JSON in UTF-8
@@ -97,7 +97,7 @@ auto tbr = cxon::to_bytes<CBOR<>>(cbor, value, ...); // write to std::vector<uns
 assert(tbr); // the result: error and serialization status
 ```
 
-`CXON` supports good part of `C++`'s fundamental and standard library types out of the box, including:
+`CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box, including:
 
   - [fundamental types][cpp-fund-types]
       - `nullptr_t`
@@ -138,7 +138,7 @@ Bind to a library type:
 #include "cxon/lib/std/map.hxx"    // for any of the supported formats
 #include <cassert>
 
-// an arbitrary complex combination of fundamental and library types
+// an arbitrary combination of types
 using my_type = std::map<std::string, std::vector<int>>;
 
 int main() {
@@ -202,9 +202,9 @@ In both examples, `my_type` is bound to the same `JSON`:
 
 The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
 
-Most of the so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
-implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc..
-[`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON/JSON`, is an implementation
+Most so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
+implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc.. 
+[`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON/JSON`, is an implementation 
 of such a polymorphic type (and also an example of how `CXON` can be used).
 
 
@@ -212,7 +212,7 @@ of such a polymorphic type (and also an example of how `CXON` can be used).
 
 #### Compilation
 
-`CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`,
+`CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`, 
 `clang++-3.5` and `msvc++ 14.1` (see [builds](https://travis-ci.org/oknenavin/cxon)).
 
 
@@ -220,7 +220,7 @@ of such a polymorphic type (and also an example of how `CXON` can be used).
 
 #### Installation
 
-`CXON` is a header-only library, copy the headers you need, or use
+`CXON` is a header-only library - copy the headers you need, or use 
 the provided makefile to install it on `POSIX` systems:
 
 ``` bash

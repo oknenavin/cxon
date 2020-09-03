@@ -25,18 +25,18 @@ types is as follow:
   - [fundamental types][cpp-fund-types]
 
     type                                                            | `JSON` type    | `#include cxon/<format>.hxx`<br>header
-    ----------------------------------------------------------------|----------------|---------------------------------------------------------------------------------------
+    ----------------------------------------------------------------|----------------|---------------------------------------
     `nullptr_t`                                                     | `null`         | `cxon/lang/<format>/fundamental.hxx`
     `bool`                                                          | `true`/`false` | `cxon/lang/<format>/fundamental.hxx`
     `char`, `wchar_t`, `char16_t` and `char32_t`                    | `string`       | `cxon/lang/<format>/fundamental.hxx`
-    `signed`/`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | `cxon/lang/<format>/fundamental.hxx`
+    `signed`&`unsigned` `char`, `short`, `int`, `long`, `long long` | `number`       | `cxon/lang/<format>/fundamental.hxx`
     `float`, `double`, `long double`                                | `number`       | `cxon/lang/<format>/fundamental.hxx`
  
   - compound types
 
     type                            | `JSON` type            | `#include cxon/<format>.hxx`<br> header
-    --------------------------------|------------------------|---------------------------------------------------------------------------------
-    [`reference types`][cpp-ref]    | `value type` or `null` | `cxon/lang/<format>/compound.hxx`
+    --------------------------------|------------------------|----------------------------------------
+    [`reference types`][cpp-ref]    | `value type`           | `cxon/lang/<format>/compound.hxx`
     [`pointer types`][cpp-ptr]      | `value type` or `null` | `cxon/lang/<format>/compound.hxx`
     [`array types`][cpp-arr]        | `array`                | `cxon/lang/<format>/compound.hxx`
     [`enumeration types`][cpp-enum] | `string`               | `cxon/lang/<format>/compound.hxx`
@@ -79,10 +79,10 @@ specify this about object keys:*
   > *The JSON syntax does not impose any restrictions on the strings used as names,
   > __does not require that name strings be unique__*...
 
-*and by picking map or multi-map as a `C++` mapping type, value of an existing key
+*and by picking of `std::map` or `std::multi-map` as a `C++` mapping type, the value of an existing key 
 may be replaced or kept.*
 
-Complete example with a simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation
+Complete example with a simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation 
 may be found here [`JSON-RPC`](../../README.md#example-json-rpc).
 
 
@@ -90,7 +90,7 @@ may be found here [`JSON-RPC`](../../README.md#example-json-rpc).
 
 #### Errors
 
-  - read
+  - _read_
 
     Error code                         | Message
     -----------------------------------|---------------------------------
@@ -103,7 +103,7 @@ may be found here [`JSON-RPC`](../../README.md#example-json-rpc).
     read_error::escape_invalid         | invalid escape sequence
     read_error::surrogate_invalid      | invalid surrogate
 
-  - write
+  - _write_
 
     Error code                         | Message
     -----------------------------------|---------------------------------
@@ -116,7 +116,7 @@ may be found here [`JSON-RPC`](../../README.md#example-json-rpc).
 
 #### Parameters
 
-  - read
+  - _read_
 
     Parameter      | Type                     | Default                             | Description
     ---------------|--------------------------|-------------------------------------|-------------------------
@@ -124,7 +124,7 @@ may be found here [`JSON-RPC`](../../README.md#example-json-rpc).
     `num_len_max`  | `size_t`                 | 32 (integral) / 64 (floating-point) | number read buffer size
     `ids_len_max`  | `size_t`                 | 64                                  | token read buffer size
 
-  - write
+  - _write_
 
     Parameter      | Type  | Default                                | Description
     ---------------|-------|----------------------------------------|-------------------------
@@ -140,16 +140,16 @@ macros for binding of enumeration and class types:
 
   - [`enumeration types`][cpp-enum]
     ``` c++
-    // implements the read interface for enum Type
+    // implements the read interface for an enum Type
     #define CXON_JSON_ENM_READ(Type, ...)
-    // implements the write interface for enum Type
+    // implements the write interface for an enum Type
     #define CXON_JSON_ENM_WRITE(Type, ...)
-    // implements the read and write interfaces for enum Type
+    // implements the read and write interfaces for an enum Type
     #define CXON_JSON_ENM(Type, ...)
 
-    // defines enum value `Value`, which will be serialized as Name
+    // defines an enum value Value, which will be serialized as Name
     #define CXON_JSON_ENM_VALUE_NAME(Name, Value)
-    // defines enum value `Value`, which will be serialized as ##Value
+    // defines an enum value Value, which will be serialized as ##Value
     #define CXON_JSON_ENM_VALUE_ASIS(Value)
     ```
 
