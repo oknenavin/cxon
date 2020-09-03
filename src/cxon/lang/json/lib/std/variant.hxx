@@ -36,7 +36,7 @@ namespace cxon {
     }}
 
     template <typename X, typename II, typename Cx>
-        inline auto read_value(std::monostate&, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto read_value(std::monostate&, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
             II const o = i;
             return chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|chio::read_error::unexpected);
         }
@@ -53,7 +53,7 @@ namespace cxon {
         };
 
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, JSON> {
             return chio::poke<X>(o, X::id::nil, cx);
         }
 

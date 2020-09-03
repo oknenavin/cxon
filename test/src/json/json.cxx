@@ -274,7 +274,7 @@ namespace jsonrpc {
             T const value;
 
             template <typename X, typename O, typename Cx, typename J = X>
-                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
+                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON> {
                     return cxon::chio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
                 }
         };

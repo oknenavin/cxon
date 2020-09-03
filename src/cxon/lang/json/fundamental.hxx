@@ -12,7 +12,7 @@
 namespace cxon { // nullptr_t
 
     template <typename X, typename II, typename Cx>
-        inline auto read_value(std::nullptr_t& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto read_value(std::nullptr_t& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
             II const o = i;
             return (chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|chio::read_error::unexpected)) &&
                     (t = nullptr, true)
@@ -20,7 +20,7 @@ namespace cxon { // nullptr_t
         }
 
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, std::nullptr_t, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto write_value(O& o, std::nullptr_t, Cx& cx) -> enable_for_t<X, JSON> {
             return chio::poke<X>(o, X::id::nil, cx);
         }
 
@@ -29,7 +29,7 @@ namespace cxon { // nullptr_t
 namespace cxon { // bool
 
     template <typename X, typename II, typename Cx>
-        inline auto read_value(bool& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto read_value(bool& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
             static_assert(*X::id::pos != *X::id::neg, "boolean literals ambiguous"); // for input-iterator, id must be consumed
             II const o = i;
                 char const c = (chio::consume<X>(i, e), chio::peek(i, e));
@@ -39,7 +39,7 @@ namespace cxon { // bool
         }
 
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, bool t, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto write_value(O& o, bool t, Cx& cx) -> enable_for_t<X, JSON> {
             return chio::poke<X>(o, t ? X::id::pos : X::id::neg, cx);
         }
 
@@ -48,7 +48,7 @@ namespace cxon { // bool
 namespace cxon { // character
 
     template <typename X, typename II, typename Cx>
-        inline auto read_value(char& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto read_value(char& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
             if (!chio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
                     char32_t const c32 = chio::chr::str_to_utf32<X>(i, e, cx);
@@ -79,13 +79,13 @@ namespace cxon { // character
         }
 
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char t, Cx& cx) -> enable_for_t<X, JSON, bool>        { return chio::chr::write<X>(o, t, cx); }
+        inline auto write_value(O& o, char t, Cx& cx) -> enable_for_t<X, JSON>      { return chio::chr::write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char16_t t, Cx& cx) -> enable_for_t<X, JSON, bool>    { return chio::chr::write<X>(o, t, cx); }
+        inline auto write_value(O& o, char16_t t, Cx& cx) -> enable_for_t<X, JSON>  { return chio::chr::write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char32_t t, Cx& cx) -> enable_for_t<X, JSON, bool>    { return chio::chr::write<X>(o, t, cx); }
+        inline auto write_value(O& o, char32_t t, Cx& cx) -> enable_for_t<X, JSON>  { return chio::chr::write<X>(o, t, cx); }
     template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, wchar_t t, Cx& cx) -> enable_for_t<X, JSON, bool>     { return chio::chr::write<X>(o, t, cx); }
+        inline auto write_value(O& o, wchar_t t, Cx& cx) -> enable_for_t<X, JSON>   { return chio::chr::write<X>(o, t, cx); }
 
 }
 
@@ -93,7 +93,7 @@ namespace cxon { // numeric
 
 #   define CXON_READ_DEF(T)\
         template <typename X, typename II, typename Cx>\
-            inline auto read_value(T& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {\
+            inline auto read_value(T& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {\
                 return chio::num::number_read<X>(t, i, e, cx);\
             }
         CXON_READ_DEF(signed char)
@@ -113,7 +113,7 @@ namespace cxon { // numeric
 
 #   define CXON_WRITE_DEF(T)\
         template <typename X, typename O, typename Cx>\
-            inline auto write_value(O& o, const T& t, Cx& cx) -> enable_for_t<X, JSON, bool> {\
+            inline auto write_value(O& o, const T& t, Cx& cx) -> enable_for_t<X, JSON> {\
                 return chio::num::number_write<X>(o, t, cx);\
             }
         CXON_WRITE_DEF(signed char)

@@ -29,7 +29,7 @@ namespace cxon { // interface
     template <typename X, template <typename> class S>
         using is_same_format = std::is_same<X, S<typename X::traits>>;
 
-    template <typename X, template <typename> class S, typename R = void>
+    template <typename X, template <typename> class S, typename R = bool>
         using enable_for_t = enable_if_t<is_same_format<X, S>::value, R>;
 
     // read
