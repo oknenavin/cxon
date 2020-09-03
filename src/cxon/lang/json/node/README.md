@@ -25,7 +25,8 @@ type         | default binding
 `array`      | [`std::vector`][cpp-vect]
 `string`     | [`std::string`][cpp-bstr]
 `number`     | [`double`][cpp-types]
-`true|false` | [`bool`][cpp-types]
+`true`       | [`bool`][cpp-types]
+`false`      | [`bool`][cpp-types]
 `null`       | [`std::nullptr_t`][cpp-types]
 
 ###### Example 1
@@ -33,6 +34,7 @@ type         | default binding
 Build, write and read:
 
 ``` c++
+#include "cxon/json.hxx"
 #include "cxon/lang/json/node.hxx"
 #include <cassert>
 
@@ -60,6 +62,7 @@ int main() {
 Build using node's methods:
 
 ``` c++
+#include "cxon/json.hxx"
 #include "cxon/lang/json/node.hxx"
 #include <cassert>
 

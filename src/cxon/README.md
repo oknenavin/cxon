@@ -23,14 +23,14 @@
 
 #### Introduction
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv]
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] 
 interface with these differences:
 
-  - traits template parameter (to allow arbitrary serialization formats, see
-    [`Format traits`](#format-traits))
-  - trailing named parameters of an arbitrary type (to allow passing of parameters  
-    to given type serializer, see [`Context`](#context))
-  - input and output iterators for I/O (allowing streams, containers and arrays,
+  - traits template parameter (enabling support for arbitrary serialization formats, 
+    see [`Format traits`](#format-traits))
+  - trailing named parameters of an arbitrary type (to allow passing of parameters 
+    to a given type serializer, see [`Context`](#context))
+  - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](README.md#interface))
 
 
@@ -40,13 +40,13 @@ interface with these differences:
 
 *Defined in header [cxon.hxx](cxon.hxx), include `cxon/<format>.hxx`*
 
-##### Read interface  
+##### Read interface
 
 ``` c++
 namespace cxon {
 
     template <typename Traits, typename T, typename InIt, typename ...NaPa>
-        from_bytes_result<It> from_bytes(T& t, InIt b, InIt e, NaPa... p);            (1)
+        from_bytes_result<It>  from_bytes(T& t, InIt b, InIt e, NaPa... p);           (1)
     template <typename Traits, typename T, typename Iterable, typename ...NaPa>
         from_bytes_result<It)> from_bytes(T& t, const Iterable& i, NaPa... p);        (2)
 
@@ -62,14 +62,14 @@ namespace cxon {
 
 ###### Template parameters
 
-  - [`Traits`](#format-traits) - traits class specifying given serialization format
+  - [`Traits`](#format-traits) - traits class specifying a given serialization format
   - `T` - the type of the value to serialize
   - `InIt` - the type of the iterator, must meet [InputIterator][cpp-init] requirements
   - `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
+  - `NaPa` - named parameter types (see [Context](#context))
   - `It` - an iterator
     - `(1)` `InIt`
     - `(2)` `decltype(std::begin(i))`
-  - `NaPa` - named parameter types (see [Context](#context))
 
 ###### Parameters
 
@@ -91,7 +91,7 @@ unspecified state.
 Does not throw by itself, however specializations may throw or not:
   - for fundamental types - does not throw
   - for pointers - allocators and constructors may throw
-  - for standard library types - constructing and adding of elements may throw with
+  - for standard library types - constructing and adding of elements may throw with 
     the same guarantees as given by the standard library
   - for user types - may throw or not depending of the implementation
 
@@ -100,6 +100,7 @@ Does not throw by itself, however specializations may throw or not:
 ``` c++
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx"
+#include <cstring>
 #include <cassert>
 
 int main() {
@@ -115,7 +116,7 @@ int main() {
     {   std::vector<float> v;
             auto const r = from_bytes(v, "[42, true]");
         assert( !r && // fails with error r.ec and location r.end
-                r.ec == read_error::floating_point_invalid &&
+                r.ec == json::read_error::floating_point_invalid &&
                 strcmp(r.end, "true]") == 0
         );
     }
@@ -123,7 +124,7 @@ int main() {
 ```
 
 
-##### Write interface  
+##### Write interface
 
 ``` c++
 namespace cxon {
@@ -147,16 +148,16 @@ namespace cxon {
 
 ###### Template parameters
 
-  - [`Traits`](#format-traits) - traits class specifying given serialization format
+  - [`Traits`](#format-traits) - traits class specifying a given serialization format
   - `T` - the type of the value to serialize
   - `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
   - `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
   - `FwIt` - the type of the iterator, must meet [ForwardIterator][cpp-fwit] requirements
+  - `NaPa` - named parameter types (see [Context](#context))
   - `It` - an iterator
     - `(1)` `OutIt`
     - `(2)` `decltype(std::begin(i))`
     - `(3)` `FwIt`
-  - `NaPa` - named parameter types (see [Context](#context))
 
 ###### Parameters
 
@@ -170,10 +171,10 @@ namespace cxon {
 
 On success, returns a value of type `to_bytes_result`, such that `ec` is value-initialized, and `end` is:
   - `(1)` one-past-the-end output iterator
-  - `(2)` `std::begin(i)`
+  - `(2)` `std::begin(i)` + number of the bytes written
   - `(3)` one-past-the-end iterator of the output written. Note that the output is not terminated.
 
-On failure, returns a value of type `to_bytes_result`, such that `ec` contains the error condition, and
+On failure, returns a value of type `to_bytes_result`, such that `ec` contains the error condition, and 
 `end` has the same value as in case of success.
 
 ###### Exceptions
@@ -199,7 +200,7 @@ int main() {
     }
     {   char v[4];
             auto const r = to_bytes(std::begin(v), std::end(v), std::vector<int>{ 4, 2 });
-        assert(!r && r.ec == write_error::output_failure);
+        assert(!r && r.ec == json::write_error::output_failure);
     }
 }
 ```
@@ -210,7 +211,7 @@ int main() {
 #### Implementation Bridge
 
 The interface communicates the implementation via the so-called *implementation bridge*.  
-Read/write interfaces instantiate the [*context*](#context), with the named parameters (if any)
+Read/write interfaces instantiate the [*context*](#context), with the named parameters (if any) 
 and then calls the *implementation bridge* with it:
 
 ``` c++
@@ -228,7 +229,7 @@ namespace cxon {
 }
 ```
 
-and it is the first non-intrusive way to extend `CXON` for a type - implementing it
+and it is the first non-intrusive way to extend `CXON` for a type - implementing it 
 in namespace `cxon`.
 
 The _implementation bridge_ however, bridges three additional methods of extension:
@@ -286,109 +287,86 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
 #### Parametrization
 
-`CXON` provides two ways to parametrize given implementation:
+`CXON` provides two ways to parametrize a given implementation:
   - [Format traits](#format-traits)
     - passing of static parameters (e.g. to configure the format)
     - passing of state parameters (e.g. to keep serialization state)
   - [Named parameters](#named-parameters)
-    - passing of constant or mutable parameter(s) to arbitrary type serializers  
-      (e.g. floating-point precision, allocator, etc.)
+    - passing of constant (including constexpr) or mutable parameter(s) to arbitrary type 
+      serializers (e.g. floating-point precision, allocator, etc.)
 
 
 --------------------------------------------------------------------------------
 
 ##### Format Traits
 
-The purpose of `Traits` template parameter is to keep parameters for given serialization format.
-As an example, although `JSON` is the default serialization format, `CXON` defines a fall-back
-format called the same - `CXON`, which is like somewhat relaxed `JSON` (e.g. object keys may not
-be quoted) and its traits are defined like this:
+The purpose of `Traits` template parameter is to keep constant (including constexpr) and/or mutable 
+parameters for a given serialization format.
+As an example, although `JSON` uses the following format traits structure:
 
 ``` c++
-namespace cxon {
+namespace cxon { namespace json {
 
     struct format_traits {
         struct map;     // key/value types such as std::map, struct/class, etc.
         struct list;    // array/list/set like types
         struct string;  // string types
         struct number;  // number types
-        struct id;      // identifiers such as JSON's true/false/null
-        struct buffer;  // buffering, see further
+        struct id;      // identifiers (true/false/null)
     };
 
-}
+}}
 ```
 
-for example, `map` is defined like this:
+and for example, `map` is defined like this:
 
 ``` c++
-namespace cxon {
+namespace cxon { namespace json {
 
-    struct format_traits {
-        ...
-        struct map {
-            static constexpr char beg             = '{';
-            static constexpr char end             = '}';
-            static constexpr char div             = ':';
-            static constexpr char sep             = ',';
-            static constexpr bool unquoted_keys   = true;
-        };
-        ...
+    struct map {
+        static constexpr char beg           = '{';    // object begin
+        static constexpr char end           = '}';    // object end
+        static constexpr char div           = ':';    // key/value separator
+        static constexpr char sep           = ',';    // key/value list separator
+        static constexpr bool unquoted_keys = false;  // allow unquoted keys
     };
 
-}
+}}
 ```
 
-and `JSON` reuses it like this:
-
-``` c++
-namespace cxon {
-
-    struct format_traits;
-
-    struct json_format_traits : format_traits {
-        ...
-        struct map : format_traits::map {
-            static constexpr bool unquoted_keys   = false;
-        };
-        ...
-    };
-
-}
-```
-
-As changing of a `Traits` parameter introduces new type, specialization for given format
-is not directly possible and because of this, `CXON` uses so-called *format-selectors*
+As changing the `Traits` parameter introduces new type, specialization for given format 
+is not directly possible and because of this, `CXON` uses so-called *format-selectors* 
 defined like this:
 
 ``` c++
 namespace cxon {
 
-    template <typename T = struct cxon_format_traits>
-        struct CXON : T { using traits = T; };  
+    template <typename T>
+        struct format_selector : T { using traits = T; };
 
-    template <typename T = struct json_format_traits>
-        struct JSON : T { using traits = T; };
+    ...
+
+    template <typename T>
+        struct JSON : format_selector<T> {};
 
 }
 ```
 
-and the interface shall be called with *format-selector* instead of bare traits:
+and the interface should  be called with a *format-selector* instead of bare traits:
 
 ``` c++
-struct json_unquoted_keys_traits : cxon::json_format_traits {
-    struct map : format_traits::map {
+struct json_unquoted_keys_traits : cxon::json::format_traits {
+    struct map : cxon::json::format_traits::map {
         static constexpr bool unquoted_keys = true;
     };
 };
-using my_traits = cxon::JSON<json_unquoted_keys_traits>;
-
+using my_json = cxon::JSON<json_unquoted_keys_traits>;
 ...
-auto const result = cxon::from_bytes<my_traits>(...);
+auto const result = cxon::from_bytes<my_json>(...);
 ...
 ```
 
-By using of this mechanism, specialization for given type and format is ensured with
+By using of this mechanism, specialization for a given type and format is ensured with 
 code like this:
 
 ``` c++
@@ -396,11 +374,7 @@ namespace cxon {
 
     template <typename X, typename II, typename Cx>
         auto read_value(char& t, II& i, II e, Cx& cx)
-            -> enable_for_t<X, CXON, bool>
-        { ... }
-    template <typename X, typename II, typename Cx>
-        auto read_value(char& t, II& i, II e, Cx& cx)
-            -> enable_for_t<X, JSON, bool>
+            -> enable_for_t<X, JSON>
         { ... }
 
 }
@@ -414,8 +388,8 @@ namespace cxon {
 
 ##### Named parameters
 
-An instance of napa::parameter with the concrete type as a tag and a value of
-an arbitrary type. Provides various methods to access the actual value from
+Are instances of napa::parameter with the concrete type as a tag and a value of 
+an arbitrary type. Provides various methods to access the actual value from 
 the [Context](#context).
 
 ``` c++
@@ -466,7 +440,7 @@ For convenience, a simple macro is provided to implement a parameter:
 ###### Example
 
 ``` c++
-#include "cxon/cxon.hxx"
+#include "cxon/json.hxx"
 
 CXON_PARAMETER(my_constant, unsigned);
 CXON_PARAMETER(my_state, int);
@@ -510,7 +484,7 @@ int main() {
 
 ##### Context
 
-The context is created by the interface with the format traits & optional named parameters and
+The context is created by the interface with the format traits & optional named parameters and 
 passed to the implementation bridge.
 
 ``` c++
@@ -545,20 +519,22 @@ Member name |Type                                   | Description
 - `operator |` - assign an error condition enum
     ``` c++
     template <typename E>
-        auto operator |(E e) noexcept;
+        auto operator |(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, context&>;
     ```
 - `operator bool` - check if the context is good (i.e., no error condition)
     ``` c++
     operator bool() const noexcept;
     ```
 
-`px`'s type is a tagged tuple with parameter types as tags. See [Named parameters](#named-parameters).
+napa_type (`px`'s type) is a tagged tuple with parameter types as tags. 
+See [Named parameters](#named-parameters).
+
 
 --------------------------------------------------------------------------------
 
 ###### Example (`JSON-RPC`)
 
-A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and an
+A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and an 
 example of its usage with `CXON`.
 
 ``` c++
@@ -577,7 +553,7 @@ namespace jsonrpc {
             T const value;
 
             template <typename X, typename O, typename Cx, typename J = X>
-                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON, bool> {
+                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON> {
                     return  cxon::chio::write_key<J>(o, key, cx) &&
                             cxon::write_value<J>(o, value, cx)
                     ;
@@ -669,6 +645,7 @@ namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON obj
 }
 
 int main() {
+    using namespace cxon;
     {   // params array
         auto const call = jsonrpc::make_request(1, "sub", 42, 23);
         std::string req; // serialize call to req
@@ -693,10 +670,10 @@ int main() {
         {   // serialize res to ret, error's data will be skipped
             jsonrpc::response<int> ret;
                 auto const r = from_bytes(ret, res);
-            TEST_CHECK( r &&
-                        ret.id == 1 &&
-                        ret.error.code == 42 &&
-                        ret.error.message == "divide by zero"
+            assert( r &&
+                    ret.id == 1 &&
+                    ret.error.code == 42 &&
+                    ret.error.message == "divide by zero"
             );
         }
         {   // serialize res to ret, error's data is bound to std::string

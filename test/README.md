@@ -1,11 +1,11 @@
-## `CXON/JSON` & `CXON/JSON/NODE` tests
+## `CXON` tests
 
 
 --------------------------------------------------------------------------------
 
 #### `CXON`
 
-All tests are located in `cxon.*.cxx`. A group of tests for given `Traits`
+All tests are located in `cxon/test`. A group of tests for given `Traits` 
 can be defined as this:
 
 ``` c++
@@ -20,8 +20,9 @@ For trivial cases, `R_TEST` and `W_TEST` macros can be used:
 TEST_BEG(cxon::JSON<>)
     // test bool type
     R_TEST(true, "true");                               // R_TEST(expected-value, string)
-    R_TEST(false, "t", read_error::boolean_invalid, 0); //  + expected-error, expected-error-offset
+    R_TEST(false, "t", read_error::boolean_invalid, 0); // ... + expected-error, expected-error-offset
     W_TEST("true", true);                               // W_TEST(string, input-value)
+    W_TEST("true", false);                              // ... + expected-error
 TEST_END()
 ```
 
@@ -48,7 +49,7 @@ TEST_END()
 
 #### `CXON/JSON/NODE`
 
-Is a utility that accepts command and a list of inputs (or a `@file`, see below):
+Is a utility that accepts a command and a list of inputs (or a `@file`, see below):
 
     cxon.json.node ((pass|fail|diff) (file|@file)+)*
 
