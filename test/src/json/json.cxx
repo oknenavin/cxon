@@ -243,10 +243,11 @@ TEST_BEG(cxon::JSON<>) // pretty
             test::pretty<XXON>(s1);
         TEST_CHECK(s1 == s0);
     }
-    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl ah", "blah"} };
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
         char const s0[] =
             "{\n"
             "  \"ala\": \"ba\\\"la\",\n"
+            "  \"bl\\nah\": \"blah\",\n"
             "  \"bl ah\": \"blah\"\n"
             "}"
         ;
@@ -254,7 +255,66 @@ TEST_BEG(cxon::JSON<>) // pretty
             to_bytes<XXON>(test::make_indenter<XXON>(s1, 2, ' '), m);
         TEST_CHECK(s1 == s0);
     }
-    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl ah", "blah"} };
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
+        std::string s1;
+            to_bytes<XXON>(test::make_indenter(s1), m);
+        std::string const s0 =
+            test::pretty<XXON>(s1);
+        TEST_CHECK(s1 == s0);
+    }
+TEST_END()
+
+namespace key {
+    template <typename X, bool Q> struct unquoted : X::traits {
+        struct map : X::traits::map {
+            static constexpr bool unquoted_keys = Q;
+        };
+    };
+    struct less_cstr {
+        bool operator ()(const char* k0, const char* k1) const { return (!k0 && k1) || (k0 && k1 && std::strcmp(k0, k1) < 0); }
+    };
+}
+
+TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>) // pretty
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        char const s0[] =
+            "{\n"
+            "  even: [\n"
+            "    2,\n"
+            "    4,\n"
+            "    6\n"
+            "  ],\n"
+            "  odd: [\n"
+            "    1,\n"
+            "    3,\n"
+            "    5\n"
+            "  ]\n"
+            "}"
+        ;
+        std::string s1;
+            to_bytes<XXON>(test::make_indenter<XXON>(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        std::string s1;
+            to_bytes<XXON>(test::make_indenter(s1), m);
+        std::string const s0 =
+            test::pretty<XXON>(s1);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
+        char const s0[] =
+            "{\n"
+            "  ala: \"ba\\\"la\",\n"
+            "  bl\\nah: \"blah\",\n"
+            "  bl\\ ah: \"blah\"\n"
+            "}"
+        ;
+        std::string s1;
+            to_bytes<XXON>(test::make_indenter<XXON>(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
         std::string s1;
             to_bytes<XXON>(test::make_indenter(s1), m);
         std::string const s0 =
