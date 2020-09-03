@@ -269,11 +269,11 @@ static unsigned self() {
                 auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                                     (cxon::test::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
 #           endif
-            CHECK(!r && r.ec == cxon::json::error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::json::node_error::recursion_depth_exceeded);
         }
         {   node jn;
             auto const r = cxon::from_bytes(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
-            CHECK(!r && r.ec == cxon::json::error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::json::node_error::recursion_depth_exceeded);
         }
         {   node jn;
 #           if !defined(__GNUG__) || defined(__clang__)
@@ -282,23 +282,23 @@ static unsigned self() {
                 auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                                     (jn, "[[[[", cxon::json::recursion_depth::set<4>());
 #           endif
-            CHECK(!r && r.ec == cxon::json::error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::json::node_error::recursion_depth_exceeded);
         }
         {   node jn;
             auto const r = cxon::from_bytes(jn, "~");
-            CHECK(!r && r.ec == cxon::json::error::invalid);
+            CHECK(!r && r.ec == cxon::json::node_error::invalid);
         }
         {   using namespace cxon::json;
             std::error_condition ec;
-            ec = error::ok;
-                CXON_ASSERT(ec.category() == error_category::value(), "check failed");
+            ec = node_error::ok;
+                CXON_ASSERT(ec.category() == node_error_category::value(), "check failed");
                 CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/json/node") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
-            ec = error::invalid;
+            ec = node_error::invalid;
                 CXON_ASSERT(ec.message() == "invalid json", "check failed");
-            ec = error::recursion_depth_exceeded;
+            ec = node_error::recursion_depth_exceeded;
                 CXON_ASSERT(ec.message() == "recursion depth limit exceeded", "check failed");
-            ec = error(255);
+            ec = node_error(255);
                 CXON_ASSERT(ec.message() == "unknown error", "check failed");
         }
     }

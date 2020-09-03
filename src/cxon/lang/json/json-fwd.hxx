@@ -31,6 +31,11 @@ namespace cxon { namespace json { // errors
     using chio::read_error_category;
     using chio::write_error_category;
 
+    // node
+
+    enum class node_error;
+    struct node_error_category;
+
 }}
 
 namespace std { // cxon errors
