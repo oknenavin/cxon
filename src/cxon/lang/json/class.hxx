@@ -15,7 +15,7 @@ namespace cxon { namespace json {
 namespace cxon { // chio::val::skip_t read
 
     template <typename X, typename T, typename II, typename Cx>
-        inline auto read_value(chio::val::skip_t<T>& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {
+        inline auto read_value(chio::val::skip_t<T>& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
             return chio::val::skip<X>(t, i, e, cx);
         }
 
@@ -29,7 +29,7 @@ namespace cxon { // chio::val::skip_t read
 #define CXON_JSON_CLS_READ(Type, ...)\
     namespace cxon {\
         template <typename X, typename II, typename Cx>\
-            inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON, bool> {\
+            inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {\
                 using T = Type;\
                 static constexpr auto f = json::cls::make_fields(__VA_ARGS__);\
                 return json::cls::read_fields<X>(t, f, i, e, cx);\
@@ -38,7 +38,7 @@ namespace cxon { // chio::val::skip_t read
 #define CXON_JSON_CLS_WRITE(Type, ...)\
     namespace cxon {\
         template <typename X, typename O, typename Cx>\
-            inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, JSON, bool> {\
+            inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, JSON> {\
                 using T = Type;\
                 static constexpr auto f = json::cls::make_fields(__VA_ARGS__);\
                 return json::cls::write_fields<X>(o, t, f, cx);\
@@ -50,14 +50,14 @@ namespace cxon { // chio::val::skip_t read
 
 #define CXON_JSON_CLS_READ_MEMBER(Type, ...)\
     template <typename X, typename II, typename Cx>\
-        static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON, bool> {\
+        static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {\
             using T = Type;\
             static constexpr auto f = cxon::json::cls::make_fields(__VA_ARGS__);\
             return cxon::json::cls::read_fields<X>(t, f, i, e, cx);\
         }
 #define CXON_JSON_CLS_WRITE_MEMBER(Type, ...)\
     template <typename X, typename O, typename Cx>\
-        static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON, bool> {\
+        static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {\
             using T = Type;\
             static constexpr auto f = cxon::json::cls::make_fields(__VA_ARGS__);\
             return cxon::json::cls::write_fields<X>(o, t, f, cx);\

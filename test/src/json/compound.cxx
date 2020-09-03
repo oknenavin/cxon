@@ -284,11 +284,11 @@ struct Struct4 {
     bool operator ==(const Struct4& t) const { return a == t.a; }
 
     /*template <typename X, typename II, typename C>
-        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::CXON, bool> {
+        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON> {
             return cxon::read_value<X>(t.a, b, e, ctx);
         }*/
     template <typename X, typename II, typename C>
-        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON, bool> {
+        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON> {
             return cxon::read_value<X>(t.a, b, e, ctx);
         }
     template <typename X, typename OI, typename C>
@@ -315,7 +315,7 @@ struct Struct5 {
             return cxon::read_value<X>(a, b, e, ctx);
         }
     template <typename X, typename OI, typename C>
-        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::JSON, bool> {
+        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::JSON> {
             return cxon::write_value<X>(o, a, ctx);
         }
 
@@ -337,7 +337,7 @@ struct Struct6 {
 
 namespace cxon {
     template <typename X, typename II, typename C>
-        inline enable_for_t<X, JSON, bool> read_value(Struct6& t, II& b, II e, C& ctx) {
+        inline enable_for_t<X, JSON> read_value(Struct6& t, II& b, II e, C& ctx) {
             return read_value<X>(t.a, b, e, ctx);
         }
     template <typename X, typename OI, typename C>
