@@ -44,35 +44,35 @@ types is as follow:
 
   - standard library types
 
-    type                                            | `JSON` type      | `cxon/lang/<format>/lib/std/<header>.hxx`<br> include
-    ------------------------------------------------|------------------|------------------------------------------------------
-    [`std::pair`][std-pair]                         | `array`          | [`cxon/lib/std/utility.hxx`](lib/std/utility.hxx)
-    [`std::tuple`][std-tuple]                       | `array`          | [`cxon/lib/std/tuple.hxx`](lib/std/tuple.hxx)
-    [`std::optional`][std-optional]                 | `value_type`     | [`cxon/lib/std/optional.hxx`](lib/std/optional.hxx)
-    [`std::variant`][std-variant]                   | index value type | [`cxon/lib/std/variant.hxx`](lib/std/variant.hxx)
-    [`std::basic_string`][std-bstr]                 | `string`         | [`cxon/lib/std/string.hxx`](lib/std/string.hxx)
-    [`std::basic_string_view`][std-strv]            | `string`         | [`cxon/lib/std/string_view.hxx`](lib/std/string_view.hxx)
-    [`std::array`][std-array]                       | `array`          | [`cxon/lib/std/array.hxx`](lib/std/array.hxx)
-    [`std::deque`][std-deque]                       | `array`          | [`cxon/lib/std/deque.hxx`](lib/std/deque.hxx)
-    [`std::forward_list`][std-forward_list]         | `array`          | [`cxon/lib/std/forward_list.hxx`](lib/std/forward_list.hxx)
-    [`std::list`][std-list]                         | `array`          | [`cxon/lib/std/list.hxx`](lib/std/list.hxx)
-    [`std::map`][std-map]`(1)`                      | `object`         | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
-    [`std::multimap`][std-multimap]`(1)`            | `object`         | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
-    [`std::multiset`][std-multiset]                 | `array`          | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
-    [`std::priority_queue`][std-priority_queue]     | `array`          | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
-    [`std::queue`][std-queue]                       | `array`          | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
-    [`std::set`][std-set]                           | `array`          | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
-    [`std::stack`][std-stack]                       | `array`          | [`cxon/lib/std/stack.hxx`](lib/std/stack.hxx)
-    [`std::unordered_map`][std-umap]`(1)`           | `object`         | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
-    [`std::unordered_set`][std-uset]                | `array`          | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
-    [`std::unordered_multimap`][std-umultimap]`(1)` | `object`         | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
-    [`std::unordered_multiset`][std-umultiset]      | `array`          | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
-    [`std::vector`][std-vector]                     | `array`          | [`cxon/lib/std/vector.hxx`](lib/std/vector.hxx)
-    [`std::bitset`][std-bitset]                     | `string`         | [`cxon/lib/std/bitset.hxx`](lib/std/bitset.hxx)
-    [`std::complex`][std-complex]                   | `array`          | [`cxon/lib/std/complex.hxx`](lib/std/complex.hxx)
-    [`std::valarray`][std-valarr]                   | `array`          | [`cxon/lib/std/valarray.hxx`](lib/std/valarray.hxx)
-    [`std::chrono::duration`][std-duration]         | `number`         | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
-    [`std::chrono::time_point`][std-time-pt]        | `number`         | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
+    type                                            | `JSON` type          | `cxon/lang/<format>/lib/std/<header>.hxx`<br> include
+    ------------------------------------------------|----------------------|------------------------------------------------------
+    [`std::pair`][std-pair]                         | `array`              | [`cxon/lib/std/utility.hxx`](lib/std/utility.hxx)
+    [`std::tuple`][std-tuple]                       | `array`              | [`cxon/lib/std/tuple.hxx`](lib/std/tuple.hxx)
+    [`std::optional`][std-optional]                 | `value_type`         | [`cxon/lib/std/optional.hxx`](lib/std/optional.hxx)
+    [`std::variant`][std-variant]                   | value type for index | [`cxon/lib/std/variant.hxx`](lib/std/variant.hxx)
+    [`std::basic_string`][std-bstr]                 | `string`             | [`cxon/lib/std/string.hxx`](lib/std/string.hxx)
+    [`std::basic_string_view`][std-strv]            | `string`             | [`cxon/lib/std/string_view.hxx`](lib/std/string_view.hxx)
+    [`std::array`][std-array]                       | `array`              | [`cxon/lib/std/array.hxx`](lib/std/array.hxx)
+    [`std::deque`][std-deque]                       | `array`              | [`cxon/lib/std/deque.hxx`](lib/std/deque.hxx)
+    [`std::forward_list`][std-forward_list]         | `array`              | [`cxon/lib/std/forward_list.hxx`](lib/std/forward_list.hxx)
+    [`std::list`][std-list]                         | `array`              | [`cxon/lib/std/list.hxx`](lib/std/list.hxx)
+    [`std::map`][std-map]`(1)`                      | `object`             | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
+    [`std::multimap`][std-multimap]`(1)`            | `object`             | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
+    [`std::multiset`][std-multiset]                 | `array`              | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
+    [`std::priority_queue`][std-priority_queue]     | `array`              | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
+    [`std::queue`][std-queue]                       | `array`              | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
+    [`std::set`][std-set]                           | `array`              | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
+    [`std::stack`][std-stack]                       | `array`              | [`cxon/lib/std/stack.hxx`](lib/std/stack.hxx)
+    [`std::unordered_map`][std-umap]`(1)`           | `object`             | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
+    [`std::unordered_set`][std-uset]                | `array`              | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
+    [`std::unordered_multimap`][std-umultimap]`(1)` | `object`             | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
+    [`std::unordered_multiset`][std-umultiset]      | `array`              | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
+    [`std::vector`][std-vector]                     | `array`              | [`cxon/lib/std/vector.hxx`](lib/std/vector.hxx)
+    [`std::bitset`][std-bitset]                     | `string`             | [`cxon/lib/std/bitset.hxx`](lib/std/bitset.hxx)
+    [`std::complex`][std-complex]                   | `array`              | [`cxon/lib/std/complex.hxx`](lib/std/complex.hxx)
+    [`std::valarray`][std-valarr]                   | `array`              | [`cxon/lib/std/valarray.hxx`](lib/std/valarray.hxx)
+    [`std::chrono::duration`][std-duration]         | `number`             | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
+    [`std::chrono::time_point`][std-time-pt]        | `number`             | [`cxon/lib/std/chrono.hxx`](lib/std/chrono.hxx)
 
 *`(1)` [`ECMA-404(6)`](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)
 specify this about object keys:*
@@ -82,8 +82,8 @@ specify this about object keys:*
 *and by picking of `std::map` or `std::multi-map` as a `C++` mapping type, the value of an existing key 
 may be replaced or kept.*
 
-Complete example with a simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation 
-may be found here [`JSON-RPC`](../../README.md#example-json-rpc).
+Complete example for a simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation 
+can be found here [`JSON-RPC`](../../README.md#example-json-rpc).
 
 
 --------------------------------------------------------------------------------

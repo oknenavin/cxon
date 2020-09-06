@@ -39,15 +39,16 @@
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] 
 interface with these differences:
 
-  - traits template parameter (to allow arbitrary serialization formats, see 
-    [`Format traits`](src/cxon/README.md#format-traits))
-  - trailing named parameters of an arbitrary type (to allow passing of parameters 
-    to given type serializer - see [`Context`](src/cxon/README.md#context))
-  - input and output iterators for I/O (allowing streams, containers and arrays - 
+  - traits template parameter (support for different serialization formats, 
+    see [`Format traits`](src/cxon/README.md#format-traits))
+  - trailing named parameters of arbitrary type (passing of parameters to specific 
+    type serializers, see [Named parameters](src/cxon/README.md#named-parameters)
+  - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](src/cxon/README.md#interface))
 
 ```c++
 namespace cxon {
+
     template <typename It>
         struct from_bytes_result {
             std::error_condition ec; // read error
@@ -77,6 +78,7 @@ namespace cxon {
     // to range
     template <typename Traits, typename T, typename FwIt, typename ...Parameters>
         auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps) -> to_bytes_result<FwIt>;
+
 }
 ```
 
@@ -85,7 +87,7 @@ namespace cxon {
 ``` c++
 #include "cxon/json.hxx" // first include - JSON will be the default format
 #include "cxon/cbor.hxx" // following format includes - require format specification
-#include <cassert>
+...
 
 // in = "[1, 5, 7]"; // JSON in UTF-8
 std::vector<int> value;
@@ -153,7 +155,7 @@ int main() {
 }
 ```
 
-Binding to a custom type:
+Binding to a user type:
 
 ``` c++
 #include "cxon/json.hxx"
@@ -203,7 +205,7 @@ In both examples, `my_type` is bound to the same `JSON`:
 The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
 
 Most so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
-implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc.. 
+implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc. and 
 [`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON/JSON`, is an implementation 
 of such a polymorphic type (and also an example of how `CXON` can be used).
 
@@ -224,7 +226,7 @@ of such a polymorphic type (and also an example of how `CXON` can be used).
 the provided makefile to install it on `POSIX` systems:
 
 ``` bash
-$ make install
+$ sudo make install
 ```
 
 or run the test suites with:

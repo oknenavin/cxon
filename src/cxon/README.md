@@ -26,12 +26,12 @@
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] 
 interface with these differences:
 
-  - traits template parameter (enabling support for arbitrary serialization formats, 
+  - traits template parameter (support for different serialization formats, 
     see [`Format traits`](#format-traits))
-  - trailing named parameters of an arbitrary type (to allow passing of parameters 
-    to a given type serializer, see [`Context`](#context))
+  - trailing named parameters of arbitrary type (passing of parameters to specific 
+    type serializers, see [Named parameters](#named-parameters)
   - input and output iterators for I/O (allowing streams, containers and arrays, 
-    see [`Interface`](README.md#interface))
+    see [`Interface`](#interface))
 
 
 --------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ namespace cxon {
 
 ###### Template parameters
 
-  - [`Traits`](#format-traits) - traits class specifying a given serialization format
+  - [`Traits`](#format-traits) - a trait type that defines a given serialization format
   - `T` - the type of the value to serialize
   - `InIt` - the type of the iterator, must meet [InputIterator][cpp-init] requirements
   - `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
@@ -74,8 +74,8 @@ namespace cxon {
 ###### Parameters
 
   - `t` - the out-parameter where the parsed value is stored in case of success
-  - `b`, `e` -  valid (`char`) range to parse
-  - `i` - an iterable type representing a valid (`char`) range to parse
+  - `b`, `e` - a valid (`char`) range to parse
+  - `i` - an iterable value representing a valid range (`char`) to parse
   - `p...` - named parameters (see [Context](#context))
 
 ###### Return value
@@ -148,7 +148,7 @@ namespace cxon {
 
 ###### Template parameters
 
-  - [`Traits`](#format-traits) - traits class specifying a given serialization format
+  - [`Traits`](#format-traits) - a traits type that defines a given serialization format
   - `T` - the type of the value to serialize
   - `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
   - `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
@@ -164,7 +164,7 @@ namespace cxon {
   - `o` - an output iterator to write to
   - `i` - a back insertable value to write to
   - `b`, `e` - a (`char`) range to write to
-  - `t` - serialization value
+  - `t` - input value
   - `p...` - named parameters (see [Context](#context))
 
 ###### Return value
@@ -211,7 +211,7 @@ int main() {
 #### Implementation Bridge
 
 The interface communicates the implementation via the so-called *implementation bridge*.  
-Read/write interfaces instantiate the [*context*](#context), with the named parameters (if any) 
+Read/write interfaces instantiate the [*context*](#context) with the named parameters (if any) 
 and then calls the *implementation bridge* with it:
 
 ``` c++
@@ -229,7 +229,7 @@ namespace cxon {
 }
 ```
 
-and it is the first non-intrusive way to extend `CXON` for a type - implementing it 
+and this is the first non-intrusive way to extend `CXON` for a type - implementing it 
 in namespace `cxon`.
 
 The _implementation bridge_ however, bridges three additional methods of extension:
@@ -289,10 +289,10 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
 `CXON` provides two ways to parametrize a given implementation:
   - [Format traits](#format-traits)
-    - passing of static parameters (e.g. to configure the format)
-    - passing of state parameters (e.g. to keep serialization state)
+    - for passing of static parameters (e.g. to configure the format)
+    - for passing of state parameters (e.g. to keep serialization state)
   - [Named parameters](#named-parameters)
-    - passing of constant (including constexpr) or mutable parameter(s) to arbitrary type 
+    - for passing of constant (including constexpr) or mutable parameters to arbitrary type 
       serializers (e.g. floating-point precision, allocator, etc.)
 
 
@@ -300,7 +300,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
 ##### Format Traits
 
-The purpose of `Traits` template parameter is to keep constant (including constexpr) and/or mutable 
+The purpose of `Traits` template parameter is to keep static and/or state 
 parameters for a given serialization format.
 As an example, `JSON` uses the following format traits structure:
 
@@ -334,8 +334,10 @@ namespace cxon { namespace json {
 }}
 ```
 
-As changing the `Traits` parameter introduces new type, specialization for given format 
-is not directly possible and because of this, `CXON` uses so-called *format-selectors* 
+As changing the `Traits` parameters (e.g. to have `unquoted_keys = true`) 
+can only be done by introducing a new type, specialization of a serializer 
+for a given format is not easy possible and because of this, 
+`CXON` uses so-called *format-selectors* 
 defined like this:
 
 ``` c++
@@ -352,7 +354,7 @@ namespace cxon {
 }
 ```
 
-and the interface should  be called with a *format-selector* instead of bare traits:
+and the interface is called with a *format-selector* instead of bare traits:
 
 ``` c++
 struct json_unquoted_keys_traits : cxon::json::format_traits {
@@ -388,12 +390,12 @@ namespace cxon {
 
 ##### Named parameters
 
-Are instances of napa::parameter with the concrete type as a tag and a value of 
-an arbitrary type. Provides various methods to access the actual value from 
-the [Context](#context).
+A named parameter is an instance of `napa::parameter` with a value of an arbitrary type.  
+`napa::parameter` provides various methods to access the value from the [Context](#context).
 
 ``` c++
 namespace cxon::napa {
+
     template <typename Tag, typename Type>
         struct parameter {
             using tag = Tag;
@@ -420,6 +422,7 @@ namespace cxon::napa {
             template <typename Pk>
                 static Type value(const Pk&, Type dflt);        (8)
         };
+
 }
 ```
 
@@ -427,7 +430,7 @@ namespace cxon::napa {
 - `(2)` - creates `constexpr` parameter `Tag` and type `Type`
 - `(3)`, `(4)` - creates parameter `Tag` and type `Type`
 - `(5)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise
-- `(6)` - returns a reference to parameter `Tag`, compilation error if not set
+- `(6)` - returns a reference of the value of parameter `Tag`, compilation error if not set
 - `(7)` - returns the value of parameter `Tag`, compilation error if not set
 - `(8)` - returns the value of parameter `Tag` if set, `dflt` otherwise
 
@@ -454,8 +457,9 @@ namespace cxon {
             // specialize if my_state is set
             -> enable_if_t< my_state::in<napa_type<Cx>>::value, bool>
         {
-            char buffer[my_constant::constant<napa_type<Cx>>(32)]; // 32 if not set
+            char buffer[my_constant::constant<napa_type<Cx>>(32)]; // constexpr, 32 if not set
             auto& state = my_state::reference(cx.px);
+            ++state;
             ...
         }
 
@@ -489,8 +493,10 @@ passed to the implementation bridge.
 
 ``` c++
 namespace cxon {
+
     template <typename X, typename ...NaPa>
         struct context;
+
 }
 ```
 
@@ -521,7 +527,7 @@ Member name |Type                                   | Description
     template <typename E>
         auto operator |(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, context&>;
     ```
-- `operator bool` - check if the context is good (i.e., no error condition)
+- `operator bool` - check if the context is good (i.e. no error condition)
     ``` c++
     operator bool() const noexcept;
     ```
