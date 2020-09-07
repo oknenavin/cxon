@@ -4,3 +4,4 @@
 // SPDX-License-Identifier: MIT
 
 #include "lang/json/json-fwd.hxx"
+#include "lang/cbor/cbor-fwd.hxx"
