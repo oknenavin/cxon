@@ -7,7 +7,6 @@
 #define CXON_BIO_IO_HXX_
 
 #include "cxon/utility.hxx"
-//#include "error.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -26,6 +25,8 @@ namespace cxon { namespace bio {
         inline byte peek(II i, II e);
     template <typename II>
         inline byte next(II& i, II e);
+    template <typename II>
+        inline byte get(II& i, II e);
 
     template <typename X, typename II>
         inline bool consume(byte b, II& i, II e);
@@ -61,6 +62,10 @@ namespace cxon { namespace bio {
         inline byte next(II& i, II e) {
             return ++i, peek(i, e);
         }
+    template <typename II>
+        inline byte get(II& i, II e) {
+            return i != e ? *i++ : 0xFF;
+        }
 
     template <typename X, typename II>
         inline bool consume(byte b, II& i, II e) {
@@ -68,7 +73,7 @@ namespace cxon { namespace bio {
         }
     template <typename X, typename II, typename Cx>
         inline bool consume(byte b, II& i, II e, Cx& cx) {
-            return (b == peek(i, e) && (next(i, e), true)) || false/*(cx|read_error::unexpected)*/;
+            return (b == peek(i, e) && (next(i, e), true)) || (cx|X::read_error::unexpected);
         }
 
     // output
@@ -103,7 +108,7 @@ namespace cxon { namespace bio {
 
         template <typename X, typename O, typename Cx, typename ...P>
             inline bool poke_(O& o, Cx& cx, P... p) {
-                return poke_(option<2>(), o, p...) || false/*(cx|write_error::output_failure)*/;
+                return poke_(option<2>(), o, p...) || (cx|X::write_error::output_failure);
             }
 
     }
