@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_TUPLE_HXX_
 #define CXON_JSON_LIB_STD_TUPLE_HXX_
 
-namespace cxon { namespace chio { namespace con { // container read/write helpers
+namespace cxon { namespace cio { namespace con { // container read/write helpers
 
     namespace bits {
 
@@ -15,7 +15,7 @@ namespace cxon { namespace chio { namespace con { // container read/write helper
                 template <typename II, typename Cx>
                     static bool value(T& t, II& i, II e, Cx& cx) {
                         if (!read_value<X>(std::get<N>(t), i, e, cx)) return false;
-                        if (N + 1 != L) if (!chio::consume<X>(X::list::sep, i, e, cx)) return false;
+                        if (N + 1 != L) if (!cio::consume<X>(X::list::sep, i, e, cx)) return false;
                         return tuple_read<X, T, N + 1, L>::value(t, i, e, cx);
                     }
             };
@@ -29,7 +29,7 @@ namespace cxon { namespace chio { namespace con { // container read/write helper
             struct tuple_write {
                 template <typename O, typename Cx>
                     static bool value(O& o, const T& t, Cx& cx) {
-                        return  write_value<X>(o, std::get<N>(t), cx) && chio::poke<X>(o, X::list::sep, cx) &&
+                        return  write_value<X>(o, std::get<N>(t), cx) && cio::poke<X>(o, X::list::sep, cx) &&
                                 tuple_write<X, T, N + 1, L>::value(o, t, cx)
                         ;
                     }
@@ -62,9 +62,9 @@ namespace cxon {
         struct read<JSON<X>, std::tuple<H, T...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::tuple<H, T...>& t, II& i, II e, Cx& cx) {
-                    return  chio::consume<J>(J::list::beg, i, e, cx) &&
-                                chio::con::read_tuple<J>(t, i, e, cx) &&
-                            chio::consume<J>(J::list::end, i, e, cx)
+                    return  cio::consume<J>(J::list::beg, i, e, cx) &&
+                                cio::con::read_tuple<J>(t, i, e, cx) &&
+                            cio::consume<J>(J::list::end, i, e, cx)
                     ;
                 }
         };
@@ -73,9 +73,9 @@ namespace cxon {
         struct write<JSON<X>, std::tuple<T...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::tuple<T...>& t, Cx& cx) {
-                    return  chio::poke<J>(o, J::list::beg, cx) &&
-                                chio::con::write_tuple<J>(o, t, cx) &&
-                            chio::poke<J>(o, J::list::end, cx)
+                    return  cio::poke<J>(o, J::list::beg, cx) &&
+                                cio::con::write_tuple<J>(o, t, cx) &&
+                            cio::poke<J>(o, J::list::end, cx)
                     ;
                 }
         };

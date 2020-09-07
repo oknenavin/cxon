@@ -25,7 +25,7 @@ namespace cxon {
                 static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
                 static bool index(size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return chio::read_key<X>(n, i, e, cx) && (n < cnt_ || (chio::rewind(i, o), cx|chio::read_error::unexpected));
+                    return cio::read_key<X>(n, i, e, cx) && (n < cnt_ || (cio::rewind(i, o), cx|cio::read_error::unexpected));
                 }
                 static bool read(V& t, II& i, II e, Cx& cx) {
                     size_t n;
@@ -38,33 +38,33 @@ namespace cxon {
     template <typename X, typename II, typename Cx>
         inline auto read_value(std::monostate&, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
             II const o = i;
-            return chio::consume<X>(X::id::nil, i, e) || (chio::rewind(i, o), cx|chio::read_error::unexpected);
+            return cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx|cio::read_error::unexpected);
         }
 
     template <typename X, typename ...T>
         struct read<JSON<X>, std::variant<T...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
-                    return  chio::consume<J>(J::map::beg, i, e, cx) &&
+                    return  cio::consume<J>(J::map::beg, i, e, cx) &&
                                 json::bits::variant<J, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
-                            chio::consume<J>(J::map::end, i, e, cx)
+                            cio::consume<J>(J::map::end, i, e, cx)
                     ;
                 }
         };
 
     template <typename X, typename O, typename Cx>
         inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, JSON> {
-            return chio::poke<X>(o, X::id::nil, cx);
+            return cio::poke<X>(o, X::id::nil, cx);
         }
 
     template <typename X, typename ...T>
         struct write<JSON<X>, std::variant<T...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
-                    return  chio::poke(o, J::map::beg) &&
-                                chio::write_key<J>(o, t.index(), cx) &&
+                    return  cio::poke(o, J::map::beg) &&
+                                cio::write_key<J>(o, t.index(), cx) &&
                                 std::visit([&](auto&& v) { return write_value<J>(o, v, cx); }, t) &&
-                            chio::poke(o, J::map::end)
+                            cio::poke(o, J::map::end)
                     ;
                 }
         };

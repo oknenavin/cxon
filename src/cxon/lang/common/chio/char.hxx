@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_CHAR_HXX_
-#define CXON_CHIO_CHAR_HXX_
+#ifndef CXON_CIO_CHAR_HXX_
+#define CXON_CIO_CHAR_HXX_
 
 #include "chio.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace chr { // character conversion: read
+namespace cxon { namespace cio { namespace chr { // character conversion: read
 
     template <typename T>
         using is_char16_t = std::integral_constant<
@@ -40,7 +40,7 @@ namespace cxon { namespace chio { namespace chr { // character conversion: read
 
 }}}
 
-namespace cxon { namespace chio { namespace chr { // character conversion: write
+namespace cxon { namespace cio { namespace chr { // character conversion: write
 
     template <typename X, typename T, typename O, typename Cx>
         inline bool write(O& o, T t, Cx& cx);
@@ -49,7 +49,7 @@ namespace cxon { namespace chio { namespace chr { // character conversion: write
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace chr {
+namespace cxon { namespace cio { namespace chr {
 
     template <typename T>
         using is_char16_t = std::integral_constant<
@@ -192,7 +192,7 @@ namespace cxon { namespace chio { namespace chr {
 
 }}}
 
-namespace cxon { namespace chio { namespace chr {
+namespace cxon { namespace cio { namespace chr {
 
     template <typename X, typename T>
         struct encode;
@@ -337,4 +337,4 @@ namespace cxon { namespace chio { namespace chr {
 
 }}}
 
-#endif // CXON_CHIO_CHAR_HXX_
+#endif // CXON_CIO_CHAR_HXX_

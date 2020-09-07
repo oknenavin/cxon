@@ -9,7 +9,7 @@
 #include "cxon/lang/common/chio/enum.hxx"
 
 namespace cxon { namespace json {
-    namespace enm = chio::enm;
+    namespace enm = cio::enm;
 }}
 
 #define CXON_JSON_ENM_VALUE(T, N, V)   cxon::json::enm::make_value(N, T::V)

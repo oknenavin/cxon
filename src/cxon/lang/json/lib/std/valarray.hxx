@@ -16,7 +16,7 @@ namespace cxon {
                 static bool value(std::valarray<T>& t, II& i, II e, Cx& cx) { // no, it sucks
                     std::valarray<T> v(4);
                     size_t p = 0;
-                    bool const r = chio::con::read_list<J>(i, e, cx, [&] {
+                    bool const r = cio::con::read_list<J>(i, e, cx, [&] {
                         if (p >= v.size()) {
                             std::valarray<T> n(std::move(v));
                             v.resize(p + p);
@@ -35,7 +35,7 @@ namespace cxon {
         struct write<JSON<X>, std::valarray<T>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::valarray<T>& t, Cx& cx) {
-                    return chio::con::write_list<J>(o, std::begin(t), std::end(t), cx);
+                    return cio::con::write_list<J>(o, std::begin(t), std::end(t), cx);
                 }
         };
 
