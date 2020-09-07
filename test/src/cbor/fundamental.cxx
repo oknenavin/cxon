@@ -15,13 +15,13 @@ TEST_BEG(cxon::CBOR<>)
         W_TEST(BS("\xF5"), true);
         R_TEST(false, "\xF4");
         W_TEST(BS("\xF4"), false);
-        //R_TEST(false, "\xF6", cbor::read_error::boolean_invalid, 0);
-        //R_TEST(false, "\xFF", cbor::read_error::boolean_invalid, 0);
-        //R_TEST(false, "", cbor::read_error::boolean_invalid, 0);
+        R_TEST(false, BS("\xF6"), cbor::read_error::boolean_invalid, 0);
+        R_TEST(false, BS("\xFF"), cbor::read_error::boolean_invalid, 0);
+        R_TEST(false, BS(""), cbor::read_error::boolean_invalid, 0);
     // nullptr_t
-        R_TEST(nullptr, "\xF6");
+        R_TEST(nullptr, BS("\xF6"));
         W_TEST(BS("\xF6"), nullptr);
-        //R_TEST(nullptr, "", cbor::read_error::unexpected, 0);
-        //R_TEST(nullptr, "\xF7", cbor::read_error::unexpected, 0);
-        //R_TEST(nullptr, "\xFF", cbor::read_error::unexpected, 0);
+        R_TEST(nullptr, BS(""), cbor::read_error::null_invalid, 0);
+        R_TEST(nullptr, BS("\xF7"), cbor::read_error::null_invalid, 0);
+        R_TEST(nullptr, BS("\xFF"), cbor::read_error::null_invalid, 0);
 TEST_END()

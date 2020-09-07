@@ -6,6 +6,8 @@
 #ifndef CXON_CBOR_CBOR_FWD_HXX_
 #define CXON_CBOR_CBOR_FWD_HXX_
 
+#include <system_error>
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cbor { // format traits
@@ -23,11 +25,14 @@ namespace cxon { // format selector
 
 namespace cxon { namespace cbor { // errors
 
-    struct read_error;
-    struct write_error;
+    enum class read_error;
+    enum class write_error;
 
     struct read_error_category;
+    inline std::error_condition make_error_condition(read_error e) noexcept;
+
     struct write_error_category;
+    inline std::error_condition make_error_condition(write_error e) noexcept;
 
 }}
 

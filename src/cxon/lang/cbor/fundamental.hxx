@@ -13,7 +13,7 @@ namespace cxon { // nullptr_t
     template <typename X, typename II, typename Cx>
         inline auto read_value(std::nullptr_t& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
             II const o = i;
-            return (bio::consume<X>(X::nil, i, e) || (bio::rewind(i, o), false/*cx|bio::read_error::unexpected*/)) &&
+            return (bio::consume<X>(X::nil, i, e) || (bio::rewind(i, o), cx|cbor::read_error::null_invalid)) &&
                     (t = nullptr, true)
             ;
         }
@@ -30,11 +30,11 @@ namespace cxon { // bool
     template <typename X, typename II, typename Cx>
         inline auto read_value(bool& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
             II const o = i;
-                switch (bio::peek(i, e)) {
-                    case X::pos: bio::next(i, e); return t = true,  true;
-                    case X::neg: bio::next(i, e); return t = false, true;
-                }
-            return bio::rewind(i, o), false/*cx|bio::read_error::boolean_invalid*/;
+                auto const b = bio::get(i, e);
+            return b != X::neg && b != X::pos ?
+                (bio::rewind(i, o), cx|cbor::read_error::boolean_invalid) :
+                (t = bool(b - X::neg),  true) // F5 - F4, F4 - F4
+            ;
         }
 
     template <typename X, typename O, typename Cx>
