@@ -6,8 +6,6 @@
 #ifndef CXON_TEST_HXX_
 #define CXON_TEST_HXX_
 
-#include "cxon/json.hxx"
-
 #include <string>
 #include <vector>
 #include <queue>
@@ -69,22 +67,18 @@ namespace cxon { namespace test {
     template <typename I>
         struct force_input_iterator;
 
-    struct input_iterator_traits : json::format_traits {
-        static constexpr bool force_input_iterator = true;
-    };
-
     template <typename X, typename T>
         inline std::string to_string(const T& t);
 
     template <typename X, typename T>
         static bool verify_read(const T& ref, const std::string& sbj);
-    template <typename X, typename T>
-        static bool verify_read(const T& ref, const std::string& sbj, json::read_error err, int pos = -1);
+    template <typename X, typename T, typename E>
+        static bool verify_read(const T& ref, const std::string& sbj, E err, int pos = -1);
 
     template <typename X, typename T>
         static bool verify_write(const std::string& ref, const T& sbj);
-    template <typename X, typename T>
-        static bool verify_write(const std::string& ref, const T& sbj, json::write_error err);
+    template <typename X, typename T, typename E>
+        static bool verify_write(const std::string& ref, const T& sbj, E err);
 
 }}
 
@@ -240,8 +234,8 @@ namespace cxon { namespace test {
                 auto const r = from_string<X>(res, sbj);
             return r && r.end == sbj.end() && match<T>::values(res, ref);
         }
-    template <typename X, typename T>
-        static bool verify_read(const T&, const std::string& sbj, json::read_error err, int pos) {
+    template <typename X, typename T, typename E>
+        static bool verify_read(const T&, const std::string& sbj, E err, int pos) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
             return r.ec.value() == (int)err && (pos == -1 || std::distance(sbj.begin(), r.end) == pos);
@@ -253,8 +247,8 @@ namespace cxon { namespace test {
                 auto const r = to_bytes<X>(res, sbj);
             return r && ref == res;
         }
-    template <typename X, typename T>
-        static bool verify_write(const std::string&, const T& sbj, json::write_error err) {
+    template <typename X, typename T, typename E>
+        static bool verify_write(const std::string&, const T& sbj, E err) {
             std::string res;
                 auto const r = to_bytes<X>(res, sbj);
             return r.ec.value() == (int)err;

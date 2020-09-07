@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "../test.hxx"
+#include "test.hxx"
 
 #include "cxon/lib/std/utility.hxx" // std::pair
 #include "cxon/lib/std/complex.hxx"
