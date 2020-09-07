@@ -11,12 +11,20 @@
 #endif
 
 #include "cxon/cxon.hxx"
+#include "cxon/lang/common/bio/bio.hxx"
+
+#include "fundamental.hxx"
 
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cbor { // format traits
 
     struct format_traits {
+        
+        static constexpr bio::byte  neg     = 0xF4;
+        static constexpr bio::byte  pos     = 0xF5;
+        static constexpr bio::byte  nil     = 0xF6;
+
         static constexpr bool strict = false;
     };
 
