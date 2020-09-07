@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_IO_HXX_
-#define CXON_CHIO_IO_HXX_
+#ifndef CXON_CIO_IO_HXX_
+#define CXON_CIO_IO_HXX_
 
 #include "cxon/utility.hxx"
 #include "chcls.hxx"
@@ -12,7 +12,7 @@
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio {
+namespace cxon { namespace cio {
 
     template<typename II>
         inline auto rewind(II& i, II o) noexcept -> enable_if_t<!cxon::is_forward_iterator<II>::value>;
@@ -70,7 +70,7 @@ namespace cxon { namespace chio {
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio {
+namespace cxon { namespace cio {
 
     template<typename II>
         inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::is_forward_iterator<II>::value> {}
@@ -216,4 +216,4 @@ namespace cxon { namespace chio {
 
 }}
 
-#endif // CXON_CHIO_IO_HXX_
+#endif // CXON_CIO_IO_HXX_

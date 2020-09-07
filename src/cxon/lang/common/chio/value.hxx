@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_VALUE_HXX_
-#define CXON_CHIO_VALUE_HXX_
+#ifndef CXON_CIO_VALUE_HXX_
+#define CXON_CIO_VALUE_HXX_
 
 #include "chio.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace val { // value parsing
+namespace cxon { namespace cio { namespace val { // value parsing
 
     template <typename O = void>    struct skip_t; // expecting valid poke<O, char>(...)
     template <typename T>           struct is_skip_t;
@@ -22,7 +22,7 @@ namespace cxon { namespace chio { namespace val { // value parsing
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace val {
+namespace cxon { namespace cio { namespace val {
 
     namespace bits {
 
@@ -98,4 +98,4 @@ namespace cxon { namespace chio { namespace val {
 
 }}}
 
-#endif // CXON_CHIO_VALUE_HXX_
+#endif // CXON_CIO_VALUE_HXX_

@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_CHCLS_HXX_
-#define CXON_CHIO_CHCLS_HXX_
+#ifndef CXON_CIO_CHCLS_HXX_
+#define CXON_CIO_CHCLS_HXX_
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace chr { // character classes
+namespace cxon { namespace cio { namespace chr { // character classes
 
     template <typename X>
         struct is; // ctrl, real, space, digit8, digit10, digit16, alpha, alnum
@@ -17,7 +17,7 @@ namespace cxon { namespace chio { namespace chr { // character classes
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace chr { // character classes
+namespace cxon { namespace cio { namespace chr { // character classes
 
     enum : unsigned char {
         CTRL    = 1 << 0,       // control
@@ -72,4 +72,4 @@ namespace cxon { namespace chio { namespace chr { // character classes
 
 }}}
 
-#endif // CXON_CHIO_CHCLS_HXX_
+#endif // CXON_CIO_CHCLS_HXX_

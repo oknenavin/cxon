@@ -25,11 +25,11 @@ namespace cxon { // format selector
 
 namespace cxon { namespace json { // errors
 
-    using chio::read_error;
-    using chio::write_error;
+    using cio::read_error;
+    using cio::write_error;
 
-    using chio::read_error_category;
-    using chio::write_error_category;
+    using cio::read_error_category;
+    using cio::write_error_category;
 
     // node
 

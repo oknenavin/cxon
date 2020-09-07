@@ -21,48 +21,48 @@ namespace cxon {
                 case json::node_kind::object: {
                         CXON_JSON_NODE_RG();
                         auto& j = json::get<typename node::object>(t);
-                        if (j.empty()) return chio::poke(out, "{}");
+                        if (j.empty()) return cio::poke(out, "{}");
                         auto i = std::begin(j);
                         lvl += tab;
                             CXON_JSON_NODE_CHECK((
-                                chio::poke(out, "{\n") && chio::poke(out, lvl, pad) &&
-                                chio::write_key<X>(out, i->first, cx), chio::poke(out, ' ') &&
+                                cio::poke(out, "{\n") && cio::poke(out, lvl, pad) &&
+                                cio::write_key<X>(out, i->first, cx), cio::poke(out, ' ') &&
                                     write_value<X>(o, i->second, cx)
                             ));
                             if (j.size() > 1) {
                                 auto const e = std::end(j);
                                 while (++i != e) {
                                     CXON_JSON_NODE_CHECK((
-                                        chio::poke(out, ",\n") && chio::poke(out, lvl, pad) &&
-                                        chio::write_key<X>(out, i->first, cx), chio::poke(out, ' ') &&
+                                        cio::poke(out, ",\n") && cio::poke(out, lvl, pad) &&
+                                        cio::write_key<X>(out, i->first, cx), cio::poke(out, ' ') &&
                                             write_value<X>(o, i->second, cx)
                                     ));
                                 }
                             }
                         lvl -= tab;
-                        return chio::poke(out, '\n') && chio::poke(out, lvl, pad) && chio::poke(out, '}');
+                        return cio::poke(out, '\n') && cio::poke(out, lvl, pad) && cio::poke(out, '}');
                     }
                     case json::node_kind::array: {
                         CXON_JSON_NODE_RG();
                         auto& j = json::get<typename node::array>(t);
-                        if (j.empty()) return chio::poke(out, "[]");
+                        if (j.empty()) return cio::poke(out, "[]");
                         auto i = std::begin(j);
                         lvl += tab;
                             CXON_JSON_NODE_CHECK((
-                                chio::poke(out, "[\n") && chio::poke(out, lvl, pad) &&
+                                cio::poke(out, "[\n") && cio::poke(out, lvl, pad) &&
                                     write_value<X>(o, *i, cx)
                             ));
                             if (j.size() > 1) {
                                 auto const e = std::end(j);
                                 while (++i != e) {
                                     CXON_JSON_NODE_CHECK((
-                                        chio::poke(out, ",\n") && chio::poke(out, lvl, pad) &&
+                                        cio::poke(out, ",\n") && cio::poke(out, lvl, pad) &&
                                             write_value<X>(o, *i, cx)
                                     ));
                                 }
                             }
                         lvl -= tab;
-                        return chio::poke(out, '\n') && chio::poke(out, lvl, pad) && chio::poke(out, ']');
+                        return cio::poke(out, '\n') && cio::poke(out, lvl, pad) && cio::poke(out, ']');
                     }
                     case json::node_kind::string:
                         return write_value<X>(out, json::get<typename node::string>(t), cx);

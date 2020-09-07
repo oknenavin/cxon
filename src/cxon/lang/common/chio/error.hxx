@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_ERROR_HXX_
-#define CXON_CHIO_ERROR_HXX_
+#ifndef CXON_CIO_ERROR_HXX_
+#define CXON_CIO_ERROR_HXX_
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio {
+namespace cxon { namespace cio {
 
     enum class read_error : int {
         ok,                     // no error
@@ -30,7 +30,7 @@ namespace cxon { namespace chio {
 
     struct read_error_category : std::error_category {
         const char* name() const noexcept override {
-            return "cxon/chio/read";
+            return "cxon/cio/read";
         }
         std::string message(int ev) const override {
             switch (static_cast<read_error>(ev)) {
@@ -58,7 +58,7 @@ namespace cxon { namespace chio {
 
     struct write_error_category : std::error_category {
         const char* name() const noexcept override {
-            return "cxon/chio/write";
+            return "cxon/cio/write";
         }
         std::string message(int ev) const override {
             switch (static_cast<write_error>(ev)) {
@@ -81,8 +81,8 @@ namespace cxon { namespace chio {
 }}
 
 namespace std { // cxon errors
-    template <> struct is_error_condition_enum<cxon::chio::read_error> : true_type {};
-    template <> struct is_error_condition_enum<cxon::chio::write_error> : true_type {};
+    template <> struct is_error_condition_enum<cxon::cio::read_error> : true_type {};
+    template <> struct is_error_condition_enum<cxon::cio::write_error> : true_type {};
 }
 
-#endif // CXON_CHIO_ERROR_HXX_
+#endif // CXON_CIO_ERROR_HXX_

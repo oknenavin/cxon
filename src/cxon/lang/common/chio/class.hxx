@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_CLASS_HXX_
-#define CXON_CHIO_CLASS_HXX_
+#ifndef CXON_CIO_CLASS_HXX_
+#define CXON_CIO_CLASS_HXX_
 
 #include "chio.hxx"
 #include "value.hxx"
@@ -12,7 +12,7 @@
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace cls { // structured types reader/writer construction helpers
+namespace cxon { namespace cio { namespace cls { // structured types reader/writer construction helpers
 
     template <typename D>
         struct field;
@@ -54,7 +54,7 @@ namespace cxon { namespace chio { namespace cls { // structured types reader/wri
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace cls {
+namespace cxon { namespace cio { namespace cls {
 
     template <typename D>
         constexpr field<D> make_field(const char* name, D d) { return { name, d }; }
@@ -205,4 +205,4 @@ namespace cxon { namespace chio { namespace cls {
 
 }}}
 
-#endif // CXON_CHIO_CLASS_HXX_
+#endif // CXON_CIO_CLASS_HXX_
