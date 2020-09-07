@@ -6,7 +6,7 @@
 #ifndef CXON_CIO_NUMERIC_HXX_
 #define CXON_CIO_NUMERIC_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 #include "chcls.hxx"
 #include "cxon/lang/common/charconv.hxx"
 #include <cmath> // isfinite, ...

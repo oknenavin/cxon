@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_CLASS_HXX_
 #define CXON_JSON_CLASS_HXX_
 
-#include "cxon/lang/common/chio/class.hxx"
+#include "cxon/lang/common/cio/class.hxx"
 
 namespace cxon { namespace json {
     namespace cls = cio::cls;

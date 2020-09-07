@@ -6,7 +6,7 @@
 #ifndef CXON_CIO_STRING_HXX_
 #define CXON_CIO_STRING_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 #include "key.hxx"
 #include "char.hxx"
 #include <algorithm>

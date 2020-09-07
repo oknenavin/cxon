@@ -6,7 +6,7 @@
 #ifndef CXON_CIO_ENUM_HXX_
 #define CXON_CIO_ENUM_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 #include <cstring> // strcmp
 
 // interface ///////////////////////////////////////////////////////////////////

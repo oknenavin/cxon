@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_JSON_FWD_HXX_
 #define CXON_JSON_JSON_FWD_HXX_
 
-#include "cxon/lang/common/chio/error-fwd.hxx"
+#include "cxon/lang/common/cio/error-fwd.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 

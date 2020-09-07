@@ -10,7 +10,7 @@ cxon-lang-common = \
 cxon-lang-common-cio = \
     $(srcdir)/lang/common/cio/char.hxx \
     $(srcdir)/lang/common/cio/chcls.hxx \
-    $(srcdir)/lang/common/cio/chio.hxx \
+    $(srcdir)/lang/common/cio/cio.hxx \
     $(srcdir)/lang/common/cio/class.hxx \
     $(srcdir)/lang/common/cio/container.hxx \
     $(srcdir)/lang/common/cio/enum.hxx \
