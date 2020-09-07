@@ -6,7 +6,7 @@
 #ifndef CXON_CIO_CLASS_HXX_
 #define CXON_CIO_CLASS_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 #include "value.hxx"
 #include <cstring> // strcmp
 

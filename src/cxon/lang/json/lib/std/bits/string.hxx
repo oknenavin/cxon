@@ -6,8 +6,8 @@
 #ifndef CXON_JSON_LIB_STD_BITS_STRING_HXX_
 #define CXON_JSON_LIB_STD_BITS_STRING_HXX_
 
-#include "cxon/lang/common/chio/char.hxx"
-#include "cxon/lang/common/chio/string.hxx"
+#include "cxon/lang/common/cio/char.hxx"
+#include "cxon/lang/common/cio/string.hxx"
 
 namespace cxon { namespace json { namespace bits { // std::basic_string read
 

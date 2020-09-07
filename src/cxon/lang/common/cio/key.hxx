@@ -6,7 +6,7 @@
 #ifndef CXON_CIO_KEY_HXX_
 #define CXON_CIO_KEY_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
