@@ -141,7 +141,7 @@ namespace cxon {
 
             range_output_iterator& operator =(const value_type& c) {
                 CXON_ASSERT(*this, "unexpected state");
-                return b_ != e_ ? (*b_ = c, ++b_, *this) : (g_ = false, *this); // lgtm [cpp/assignment-does-not-return-this]
+                return b_ != e_ ? (*b_ = c, ++b_, *this) : (g_ = false, *this);
             }
 
             template <typename T = value_type>
