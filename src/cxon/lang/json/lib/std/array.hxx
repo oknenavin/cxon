@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_ARRAY_HXX_
 #define CXON_JSON_LIB_STD_ARRAY_HXX_
 
-#include "cxon/lang/common/chio/container.hxx"
+#include "cxon/lang/common/cio/container.hxx"
 
 namespace cxon {
 
@@ -23,8 +23,8 @@ namespace cxon {
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return chio::con::read_list<J>(i, e, cx, [&] {
-                        return (p != N || (chio::rewind(i, o), cx|chio::read_error::overflow)) &&
+                    return cio::con::read_list<J>(i, e, cx, [&] {
+                        return (p != N || (cio::rewind(i, o), cx|cio::read_error::overflow)) &&
                                 read_value<J>(t[p++], i, e, cx)
                         ;
                     });
@@ -34,7 +34,7 @@ namespace cxon {
         struct read<JSON<X>, std::array<T, 0>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::array<T, 0>&, II& i, II e, Cx& cx) {
-                    return chio::consume<J>(J::list::beg, i, e, cx) && chio::consume<J>(J::list::end, i, e, cx);
+                    return cio::consume<J>(J::list::beg, i, e, cx) && cio::consume<J>(J::list::end, i, e, cx);
                 }
         };
 
@@ -42,7 +42,7 @@ namespace cxon {
         struct write<JSON<X>, std::array<T, S>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::array<T, S>& t, Cx& cx) {
-                    return chio::con::write_list<J>(o, t, cx);
+                    return cio::con::write_list<J>(o, t, cx);
                 }
         };
 

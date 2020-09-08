@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_CONTAINER_HXX_
-#define CXON_CHIO_CONTAINER_HXX_
+#ifndef CXON_CIO_CONTAINER_HXX_
+#define CXON_CIO_CONTAINER_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace con { // container read/write helpers
+namespace cxon { namespace cio { namespace con { // container read/write helpers
 
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_list(II& i, II e, Cx& cx, EA element_add);
@@ -40,7 +40,7 @@ namespace cxon { namespace chio { namespace con { // container read/write helper
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace con {
+namespace cxon { namespace cio { namespace con {
 
     namespace bits {
 
@@ -128,4 +128,4 @@ namespace cxon { namespace chio { namespace con {
 
 }}}
 
-#endif // CXON_CHIO_CONTAINER_HXX_
+#endif // CXON_CIO_CONTAINER_HXX_

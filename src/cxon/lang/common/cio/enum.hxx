@@ -3,15 +3,15 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_ENUM_HXX_
-#define CXON_CHIO_ENUM_HXX_
+#ifndef CXON_CIO_ENUM_HXX_
+#define CXON_CIO_ENUM_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 #include <cstring> // strcmp
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace enm { // enum reader/writer construction helpers
+namespace cxon { namespace cio { namespace enm { // enum reader/writer construction helpers
 
     template <typename E>
         struct value;
@@ -28,7 +28,7 @@ namespace cxon { namespace chio { namespace enm { // enum reader/writer construc
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace enm {
+namespace cxon { namespace cio { namespace enm {
 
     template <typename E>
         struct value {
@@ -60,4 +60,4 @@ namespace cxon { namespace chio { namespace enm {
 
 }}}
 
-#endif // CXON_CHIO_ENUM_HXX_
+#endif // CXON_CIO_ENUM_HXX_

@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_HXX_
-#define CXON_CHIO_HXX_
+#ifndef CXON_CIO_HXX_
+#define CXON_CIO_HXX_
 
 #include "io.hxx"
 
-namespace cxon { namespace chio { // context parameters
+namespace cxon { namespace cio { // context parameters
 
     CXON_PARAMETER(fp_precision, int);                  // write: constexpr: floating-points
     CXON_PARAMETER(allocator, std::allocator<char>);    // read: T*
@@ -17,7 +17,7 @@ namespace cxon { namespace chio { // context parameters
 
 }}
 
-namespace cxon { namespace chio { // format traits
+namespace cxon { namespace cio { // format traits
 
     struct format_traits {
         struct map {
@@ -48,4 +48,4 @@ namespace cxon { namespace chio { // format traits
 
 }}
 
-#endif // CXON_CHIO_HXX_
+#endif // CXON_CIO_HXX_

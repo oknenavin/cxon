@@ -373,8 +373,8 @@ namespace cxon {
             struct read<X, basic_node<Tr>> {
                 template <typename II, typename Cx>
                     static bool value(basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                        chio::consume<X>(i, e);
-                        switch (chio::peek(i, e)) {
+                        cio::consume<X>(i, e);
+                        switch (cio::peek(i, e)) {
 #                           define CXON_READ(T) read_value<X>(t.template imbue<typename basic_node<Tr>::T>(), i, e, cx)
                                 case '{'                : { CXON_JSON_NODE_RG();    return CXON_READ(object); }
                                 case '['                : { CXON_JSON_NODE_RG();    return CXON_READ(array);  }
