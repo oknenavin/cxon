@@ -38,7 +38,9 @@ namespace cxon {
 
     // type traits
 
+    template <typename T> struct is_bool;
     template <typename T> struct is_char;
+    template <typename T> struct is_numeric;
 
     // iterators
 
@@ -86,6 +88,9 @@ namespace cxon {
 
     // type traits
 
+    template <typename T>   struct is_bool : std::false_type {};
+    template <>             struct is_bool<bool> : std::true_type {};
+
     template <typename T>   struct is_char : std::false_type {};
     template <>             struct is_char<char> : std::true_type {};
     template <>             struct is_char<wchar_t> : std::true_type {};
@@ -94,6 +99,11 @@ namespace cxon {
 #   endif
     template <>             struct is_char<char16_t> : std::true_type {};
     template <>             struct is_char<char32_t> : std::true_type {};
+
+    template <typename T>
+        struct is_numeric {
+            static constexpr bool value = std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value;
+        };
 
     // iterators
 

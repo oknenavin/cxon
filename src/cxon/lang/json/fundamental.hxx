@@ -53,7 +53,7 @@ namespace cxon { // character
                 II const o = i;
                     char32_t const c32 = cio::chr::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF)  return cio::rewind(i, o), false;
-                        if (c32 > 0XFF)         return cio::rewind(i, o), cx|cio::read_error::character_invalid;
+                        if (c32 >  0XFF)        return cio::rewind(i, o), cx|cio::read_error::character_invalid;
             return cio::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
@@ -64,7 +64,7 @@ namespace cxon { // character
                 II const o = i;
                     char32_t const c32 = cio::chr::str_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF)  return cio::rewind(i, o), false;
-                        if (c32 > 0XFFFF)       return cio::rewind(i, o), cx|cio::read_error::character_invalid;
+                        if (c32 >  0XFFFF)      return cio::rewind(i, o), cx|cio::read_error::character_invalid;
             return cio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
     template <typename X, typename T, typename II, typename Cx>
@@ -78,58 +78,30 @@ namespace cxon { // character
             return cio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
         }
 
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char t, Cx& cx) -> enable_for_t<X, JSON>      { return cio::chr::write<X>(o, t, cx); }
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char16_t t, Cx& cx) -> enable_for_t<X, JSON>  { return cio::chr::write<X>(o, t, cx); }
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, char32_t t, Cx& cx) -> enable_for_t<X, JSON>  { return cio::chr::write<X>(o, t, cx); }
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, wchar_t t, Cx& cx) -> enable_for_t<X, JSON>   { return cio::chr::write<X>(o, t, cx); }
+    template <typename X, typename T, typename O, typename Cx>
+        inline auto write_value(O& o, T t, Cx& cx)
+            -> enable_if_t<is_char<T>::value && is_same_format<X, JSON>::value, bool>
+        {
+            return cio::chr::write<X>(o, t, cx);
+        }
 
 }
 
 namespace cxon { // numeric
 
-#   define CXON_READ_DEF(T)\
-        template <typename X, typename II, typename Cx>\
-            inline auto read_value(T& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {\
-                return cio::num::number_read<X>(t, i, e, cx);\
-            }
-        CXON_READ_DEF(signed char)
-        CXON_READ_DEF(unsigned char)
-        CXON_READ_DEF(short)
-        CXON_READ_DEF(unsigned short)
-        CXON_READ_DEF(int)
-        CXON_READ_DEF(unsigned int)
-        CXON_READ_DEF(long)
-        CXON_READ_DEF(unsigned long)
-        CXON_READ_DEF(long long)
-        CXON_READ_DEF(unsigned long long)
-        CXON_READ_DEF(float)
-        CXON_READ_DEF(double)
-        CXON_READ_DEF(long double)
-#   undef CXON_READ_DEF
+    template <typename X, typename T, typename II, typename Cx>
+        inline auto read_value(T& t, II& i, II e, Cx& cx)
+            -> enable_if_t<is_numeric<T>::value && is_same_format<X, JSON>::value, bool>
+        {
+            return cio::num::number_read<X>(t, i, e, cx);
+        }
 
-#   define CXON_WRITE_DEF(T)\
-        template <typename X, typename O, typename Cx>\
-            inline auto write_value(O& o, const T& t, Cx& cx) -> enable_for_t<X, JSON> {\
-                return cio::num::number_write<X>(o, t, cx);\
-            }
-        CXON_WRITE_DEF(signed char)
-        CXON_WRITE_DEF(unsigned char)
-        CXON_WRITE_DEF(short)
-        CXON_WRITE_DEF(unsigned short)
-        CXON_WRITE_DEF(int)
-        CXON_WRITE_DEF(unsigned int)
-        CXON_WRITE_DEF(long)
-        CXON_WRITE_DEF(unsigned long)
-        CXON_WRITE_DEF(long long)
-        CXON_WRITE_DEF(unsigned long long)
-        CXON_WRITE_DEF(float)
-        CXON_WRITE_DEF(double)
-        CXON_WRITE_DEF(long double)
-#   undef CXON_WRITE_DEF
+    template <typename X, typename T, typename O, typename Cx>
+        inline auto write_value(O& o, const T& t, Cx& cx)
+            -> enable_if_t<is_numeric<T>::value && is_same_format<X, JSON>::value, bool>
+        {
+            return cio::num::number_write<X>(o, t, cx);
+        }
 
 }
 
