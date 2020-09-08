@@ -6,17 +6,17 @@
 #ifndef CXON_JSON_CLASS_HXX_
 #define CXON_JSON_CLASS_HXX_
 
-#include "cxon/lang/common/chio/class.hxx"
+#include "cxon/lang/common/cio/class.hxx"
 
 namespace cxon { namespace json {
-    namespace cls = chio::cls;
+    namespace cls = cio::cls;
 }}
 
-namespace cxon { // chio::val::skip_t read
+namespace cxon { // cio::val::skip_t read
 
     template <typename X, typename T, typename II, typename Cx>
-        inline auto read_value(chio::val::skip_t<T>& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
-            return chio::val::skip<X>(t, i, e, cx);
+        inline auto read_value(cio::val::skip_t<T>& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
+            return cio::val::skip<X>(t, i, e, cx);
         }
 
 }

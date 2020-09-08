@@ -3,17 +3,17 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_NUMERIC_HXX_
-#define CXON_CHIO_NUMERIC_HXX_
+#ifndef CXON_CIO_NUMERIC_HXX_
+#define CXON_CIO_NUMERIC_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 #include "chcls.hxx"
 #include "cxon/lang/common/charconv.hxx"
 #include <cmath> // isfinite, ...
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace num { // number conversion: read
+namespace cxon { namespace cio { namespace num { // number conversion: read
 
     template <typename T>
         inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool>;
@@ -31,7 +31,7 @@ namespace cxon { namespace chio { namespace num { // number conversion: read
 
 }}}
 
-namespace cxon { namespace chio { namespace num { // number conversion: write
+namespace cxon { namespace cio { namespace num { // number conversion: write
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool>;
@@ -43,7 +43,7 @@ namespace cxon { namespace chio { namespace num { // number conversion: write
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { namespace num {
+namespace cxon { namespace cio { namespace num {
 
     template <typename T>
         inline auto is_sign(char c) -> enable_if_t<std::is_signed<T>::value, bool> {
@@ -77,7 +77,7 @@ namespace cxon { namespace chio { namespace num {
                 static auto consume(const char*& i, const char* e)
                     -> enable_if_t<std::is_integral<N>::value, int>
                 {
-                    chio::consume<X>(i, e);
+                    cio::consume<X>(i, e);
                     char c = peek(i, e);
                     if (is_sign<T>(c)) goto trap_neg;
                     // trap_pos
@@ -302,7 +302,7 @@ namespace cxon { namespace chio { namespace num {
 
 }}}
 
-namespace cxon { namespace chio { namespace num { // number conversion: write
+namespace cxon { namespace cio { namespace num { // number conversion: write
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
@@ -334,4 +334,4 @@ namespace cxon { namespace chio { namespace num { // number conversion: write
 
 }}}
 
-#endif // CXON_CHIO_NUMERIC_HXX_
+#endif // CXON_CIO_NUMERIC_HXX_

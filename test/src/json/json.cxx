@@ -181,7 +181,7 @@ TEST_BEG(cxon::JSON<>) // errors
     {   std::error_condition ec;
             ec = json::read_error::ok;
                 CXON_ASSERT(ec.category() == json::read_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/chio/read") == 0, "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cio/read") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
             ec = json::read_error::unexpected;
                 CXON_ASSERT(ec.message() == "unexpected input", "check failed");
@@ -205,7 +205,7 @@ TEST_BEG(cxon::JSON<>) // errors
     {   std::error_condition ec;
             ec = json::write_error::ok;
                 CXON_ASSERT(ec.category() == json::write_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/chio/write") == 0, "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cio/write") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
             ec = json::write_error::output_failure;
                 CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
@@ -335,7 +335,7 @@ namespace jsonrpc {
 
             template <typename X, typename O, typename Cx, typename J = X>
                 auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON> {
-                    return cxon::chio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
+                    return cxon::cio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
                 }
         };
 
@@ -388,7 +388,7 @@ namespace jsonrpc {
             )
         };
 
-    template <typename R, typename D = cxon::chio::val::skip_t<>>
+    template <typename R, typename D = cxon::cio::val::skip_t<>>
         struct response {
             char            jsonrpc[8];
             size_t          id;
@@ -414,9 +414,9 @@ namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON obj
         struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
-                    return  chio::poke<J>(o, J::map::beg, cx) &&
-                                chio::con::write_tuple<J>(o, t, cx) &&
-                            chio::poke<J>(o, J::map::end, cx)
+                    return  cio::poke<J>(o, J::map::beg, cx) &&
+                                cio::con::write_tuple<J>(o, t, cx) &&
+                            cio::poke<J>(o, J::map::end, cx)
                     ;
                 }
         };

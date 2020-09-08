@@ -7,20 +7,20 @@ srcdir = src/cxon
 cxon-lang-common = \
     $(srcdir)/lang/common/charconv.hxx
 
-cxon-lang-common-chio = \
-    $(srcdir)/lang/common/chio/char.hxx \
-    $(srcdir)/lang/common/chio/chcls.hxx \
-    $(srcdir)/lang/common/chio/chio.hxx \
-    $(srcdir)/lang/common/chio/class.hxx \
-    $(srcdir)/lang/common/chio/container.hxx \
-    $(srcdir)/lang/common/chio/enum.hxx \
-    $(srcdir)/lang/common/chio/error.hxx \
-    $(srcdir)/lang/common/chio/error-fwd.hxx \
-    $(srcdir)/lang/common/chio/io.hxx \
-    $(srcdir)/lang/common/chio/key.hxx \
-    $(srcdir)/lang/common/chio/numeric.hxx \
-    $(srcdir)/lang/common/chio/string.hxx \
-    $(srcdir)/lang/common/chio/value.hxx
+cxon-lang-common-cio = \
+    $(srcdir)/lang/common/cio/char.hxx \
+    $(srcdir)/lang/common/cio/chcls.hxx \
+    $(srcdir)/lang/common/cio/cio.hxx \
+    $(srcdir)/lang/common/cio/class.hxx \
+    $(srcdir)/lang/common/cio/container.hxx \
+    $(srcdir)/lang/common/cio/enum.hxx \
+    $(srcdir)/lang/common/cio/error.hxx \
+    $(srcdir)/lang/common/cio/error-fwd.hxx \
+    $(srcdir)/lang/common/cio/io.hxx \
+    $(srcdir)/lang/common/cio/key.hxx \
+    $(srcdir)/lang/common/cio/numeric.hxx \
+    $(srcdir)/lang/common/cio/string.hxx \
+    $(srcdir)/lang/common/cio/value.hxx
 
 cxon-lang-json-lib-std-bits = \
     $(srcdir)/lang/json/lib/std/bits/map.hxx \
@@ -110,8 +110,8 @@ install-cxon:
 	@install -p -m 0644 $(cxon)                         $(insdir)/cxon
 
 install-common: install-cxon
-	@install -d $(insdir)/cxon/lang/common/chio
-	@install -p -m 0644 $(cxon-lang-common-chio)        $(insdir)/cxon/lang/common/chio
+	@install -d $(insdir)/cxon/lang/common/cio
+	@install -p -m 0644 $(cxon-lang-common-cio)         $(insdir)/cxon/lang/common/cio
 	@install -p -m 0644 $(cxon-lang-common)             $(insdir)/cxon/lang/common
 
 install-json: install-cxon install-common

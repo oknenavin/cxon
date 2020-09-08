@@ -62,7 +62,7 @@ namespace cxon { namespace test {
 #               endif
 
                 indent_iterator& operator =(char c) {
-                    using chio::poke;
+                    using cio::poke;
                     switch (stt()) {
                         case quo:
                                               poke(o_, c);
@@ -102,7 +102,7 @@ namespace cxon { namespace test {
                 template <typename VI>
                     bool indent_value(VI indent_value) {
                         if (stt() == con) {
-                            mut(grn), chio::poke(o_, '\n') && chio::poke(o_, lvl_ += tab_, pad_);
+                            mut(grn), cio::poke(o_, '\n') && cio::poke(o_, lvl_ += tab_, pad_);
                         }
                         return indent_value(o_, lvl_, tab_, pad_);
                     }
@@ -117,14 +117,14 @@ namespace cxon { namespace test {
                     template <typename S = out_type>
                         auto append(const char* s, size_t n) -> enable_if_t<has_append_sn<S>::value> {
                             indent_value([&](out_type out, unsigned&, unsigned, char) {
-                                return chio::poke(out, s, n);
+                                return cio::poke(out, s, n);
                             });
                         }
                 HAS_METH_DEF(append_s, append(std::declval<char*>()));
                     template <typename S = out_type>
                         auto append(const char* s) -> enable_if_t<has_append_s<S>::value> {
                             indent_value([&](out_type out, unsigned&, unsigned, char) {
-                                return chio::poke(out, s);
+                                return cio::poke(out, s);
                             });
                         }
 
@@ -146,7 +146,7 @@ namespace cxon { namespace test {
                     static bool qub(char c) { return c == X::string::beg; }
                     static bool que(char c) { return c == X::string::end; }
                     static bool esc(char c) { return c == '\\'; }
-                    static bool spc(char c) { return chio::chr::is<X>::space(c); }
+                    static bool spc(char c) { return cio::chr::is<X>::space(c); }
                     static bool nsp(char c) { return !spc(c); }
                 };
 

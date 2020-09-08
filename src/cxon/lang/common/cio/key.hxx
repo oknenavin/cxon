@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_KEY_HXX_
-#define CXON_CHIO_KEY_HXX_
+#ifndef CXON_CIO_KEY_HXX_
+#define CXON_CIO_KEY_HXX_
 
-#include "chio.hxx"
+#include "cio.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { // key read/write helpers
+namespace cxon { namespace cio { // key read/write helpers
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_key(T& t, II& i, II e, Cx& cx);
@@ -20,7 +20,7 @@ namespace cxon { namespace chio { // key read/write helpers
 
 }}
 
-namespace cxon { namespace chio { // key quoting
+namespace cxon { namespace cio { // key quoting
 
     template <typename T> struct is_quoted;
     template <typename S> struct UQKEY;
@@ -29,7 +29,7 @@ namespace cxon { namespace chio { // key quoting
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio {
+namespace cxon { namespace cio {
 
     template <typename T> struct is_quoted : std::false_type {};
 #   define CXON_QUOTED(T)\
@@ -47,7 +47,7 @@ namespace cxon { namespace chio {
 
 }}
 
-namespace cxon { namespace chio {
+namespace cxon { namespace cio {
 
     namespace bits {
 
@@ -79,9 +79,9 @@ namespace cxon { namespace chio {
                     static auto value(T& t, II& i, II e, Cx& cx)
                         -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
                     {
-                        return  chio::consume<E>(E::string::beg, i, e, cx) &&
+                        return  cio::consume<E>(E::string::beg, i, e, cx) &&
                                     read_value<E>(t, i, e, cx) &&
-                                chio::consume<E>(E::string::end, i, e, cx)
+                                cio::consume<E>(E::string::end, i, e, cx)
                         ;
                     }
             };
@@ -114,9 +114,9 @@ namespace cxon { namespace chio {
                     static auto value(O& o, const T& t, Cx& cx)
                         -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
                     {
-                        return  chio::poke<E>(o, E::string::beg, cx) &&
+                        return  cio::poke<E>(o, E::string::beg, cx) &&
                                     write_value<E>(o, t, cx) &&
-                                chio::poke<E>(o, E::string::end, cx)
+                                cio::poke<E>(o, E::string::end, cx)
                         ;
                     }
             };
@@ -135,4 +135,4 @@ namespace cxon { namespace chio {
 
 }}
 
-#endif // CXON_CHIO_KEY_HXX_
+#endif // CXON_CIO_KEY_HXX_

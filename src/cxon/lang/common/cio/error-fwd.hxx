@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CHIO_ERROR_FWD_HXX_
-#define CXON_CHIO_ERROR_FWD_HXX_
+#ifndef CXON_CIO_ERROR_FWD_HXX_
+#define CXON_CIO_ERROR_FWD_HXX_
 
 #include <system_error>
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace chio { // errors
+namespace cxon { namespace cio { // errors
 
     enum class read_error;
     enum class write_error;
@@ -25,9 +25,9 @@ namespace cxon { namespace chio { // errors
 
 namespace std { // cxon errors
 
-    template <> struct is_error_condition_enum<cxon::chio::read_error>;
-    template <> struct is_error_condition_enum<cxon::chio::write_error>;
+    template <> struct is_error_condition_enum<cxon::cio::read_error>;
+    template <> struct is_error_condition_enum<cxon::cio::write_error>;
 
 }
 
-#endif // CXON_CHIO_ERROR_FWD_HXX_
+#endif // CXON_CIO_ERROR_FWD_HXX_
