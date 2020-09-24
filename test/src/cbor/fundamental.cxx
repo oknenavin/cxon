@@ -24,4 +24,25 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST(nullptr, BS(""), cbor::read_error::null_invalid, 0);
         R_TEST(nullptr, BS("\xF7"), cbor::read_error::null_invalid, 0);
         R_TEST(nullptr, BS("\xFF"), cbor::read_error::null_invalid, 0);
+    // unsigned char
+        R_TEST((unsigned char)23, BS("\x17"));
+        R_TEST((unsigned char)24, BS("\x18\x18"));
+        W_TEST(BS("\x17"), (unsigned char)23);
+        W_TEST(BS("\x18\x18"), (unsigned char)24);
+    // unsigned short
+        R_TEST((unsigned short)23, BS("\x17"));
+        R_TEST((unsigned short)24, BS("\x18\x18"));
+        R_TEST((unsigned short)384, BS("\x19\x1\x80"));
+    // unsigned int
+        R_TEST((unsigned int)23, BS("\x17"));
+        R_TEST((unsigned int)24, BS("\x18\x18"));
+        R_TEST((unsigned int)384, BS("\x19\x1\x80"));
+    // unsigned long
+        R_TEST((unsigned long)23, BS("\x17"));
+        R_TEST((unsigned long)24, BS("\x18\x18"));
+        R_TEST((unsigned long)384, BS("\x19\x1\x80"));
+    // unsigned long long
+        R_TEST((unsigned long long)23, BS("\x17"));
+        R_TEST((unsigned long long)24, BS("\x18\x18"));
+        R_TEST((unsigned long long)384, BS("\x19\x1\x80"));
 TEST_END()

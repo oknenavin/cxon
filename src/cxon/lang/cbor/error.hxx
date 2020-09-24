@@ -14,7 +14,12 @@ namespace cxon { namespace cbor {
         ok,                     // no error
         unexpected,             // unexpected input
         boolean_invalid,        // boolean invalid
-        null_invalid            // null invalid
+        null_invalid,           // null invalid
+        u8_invalid,             // uint8_t invalid
+        u16_invalid,            // uint16_t invalid
+        u32_invalid,            // uint32_t invalid
+        u64_invalid,            // uint64_t invalid
+        u_invalid               // unsigned invalid
     };
 
     enum class write_error : int {
@@ -33,6 +38,11 @@ namespace cxon { namespace cbor {
                 case read_error::unexpected:                return "unexpected input";
                 case read_error::boolean_invalid:           return "invalid boolean";
                 case read_error::null_invalid:              return "invalid null";
+                case read_error::u8_invalid:                return "invalid 8-bit unsigned integer";
+                case read_error::u16_invalid:               return "invalid 16-bit unsigned integer";
+                case read_error::u32_invalid:               return "invalid 32-bit unsigned integer";
+                case read_error::u64_invalid:               return "invalid 64-bit unsigned integer";
+                case read_error::u_invalid:                 return "invalid unsigned integer";
                 default:                                    return "unknown error";
             }
         }
