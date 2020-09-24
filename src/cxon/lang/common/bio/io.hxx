@@ -22,16 +22,11 @@ namespace cxon { namespace bio {
     // input
 
     template <typename II>
-        inline byte peek(II i, II e);
-    template <typename II>
-        inline byte next(II& i, II e);
-    template <typename II>
         inline byte get(II& i, II e);
 
-    template <typename X, typename II>
-        inline bool consume(byte b, II& i, II e);
-    template <typename X, typename II, typename Cx>
-        inline bool consume(byte b, II& i, II e, Cx& cx);
+    template <unsigned N, typename T, typename II>
+        inline auto get(T& t, II& i, II e)
+            -> enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, bool>;
 
     // output
 
@@ -55,25 +50,81 @@ namespace cxon { namespace bio {
     // input
 
     template <typename II>
-        inline byte peek(II i, II e) {
-            return i != e ? *i : 0xFF;
-        }
-    template <typename II>
-        inline byte next(II& i, II e) {
-            return ++i, peek(i, e);
-        }
-    template <typename II>
         inline byte get(II& i, II e) {
             return i != e ? *i++ : 0xFF;
         }
 
-    template <typename X, typename II>
-        inline bool consume(byte b, II& i, II e) {
-            return b == peek(i, e) && (next(i, e), true);
-        }
-    template <typename X, typename II, typename Cx>
-        inline bool consume(byte b, II& i, II e, Cx& cx) {
-            return (b == peek(i, e) && (next(i, e), true)) || (cx|X::read_error::unexpected);
+    namespace bits {
+
+        template <typename II, unsigned N>
+            inline auto get_n(byte (&bs)[N], II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
+                using dt = typename std::iterator_traits<II>::difference_type;
+                return  std::distance(i, e) >= static_cast<dt>(N) &&
+                        (std::copy(i, e, std::begin(bs)), std::advance(i, N), true)
+                ;
+            }
+        template <typename II>
+            inline auto get_n(byte (&bs)[2], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e)
+                ;
+            }
+        template <typename II>
+            inline auto get_n(byte (&bs)[4], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
+                        get<1>(bs[2], i, e) && get<1>(bs[3], i, e)
+                ;
+            }
+        template <typename II>
+            inline auto get_n(byte (&bs)[8], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
+                        get<1>(bs[2], i, e) && get<1>(bs[3], i, e) &&
+                        get<1>(bs[4], i, e) && get<1>(bs[5], i, e) &&
+                        get<1>(bs[6], i, e) && get<1>(bs[7], i, e)
+                ;
+            }
+
+        template <typename T>
+            inline T be_to_t(const byte (&bs)[2]) {
+                using R = unsigned short;
+                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing!");
+                return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
+            }
+        template <typename T>
+            inline T be_to_t(const byte (&bs)[4]) {
+                using R = unsigned long;
+                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing!");
+                return  (R(bs[3])<< 0) | (R(bs[2])<< 8) |
+                        (R(bs[1])<<16) | (R(bs[0])<<24)
+                ;
+            }
+        template <typename T>
+            inline T be_to_t(const byte (&bs)[8]) {
+                using R = unsigned long long;
+                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing!");
+                return  (R(bs[7])<< 0) | (R(bs[6])<< 8) |
+                        (R(bs[5])<<16) | (R(bs[4])<<24) |
+                        (R(bs[3])<<32) | (R(bs[2])<<40) |
+                        (R(bs[1])<<48) | (R(bs[0])<<56)
+                ;
+            }
+
+        template <unsigned N, typename T, typename II>
+            inline auto get(T& t, II& i, II e) -> enable_if_t<N == 1, bool> {
+                return i != e && (t = T(*i++), true);
+            }
+        template <unsigned N, typename T, typename II>
+            inline auto get(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {
+                byte bs[N];
+                return get_n(bs, i, e) && (t = be_to_t<T>(bs), true);
+            }
+
+    }
+
+    template <unsigned N, typename T, typename II>
+        inline auto get(T& t, II& i, II e)
+            -> enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, bool>
+        {
+            return bits::get<N>(t, i, e);
         }
 
     // output

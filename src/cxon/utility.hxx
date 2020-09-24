@@ -42,17 +42,25 @@ namespace cxon {
     template <typename T> struct is_char;
     template <typename T> struct is_numeric;
 
-    // iterators
+    // container
 
-    template <typename I>
-        using iterator_category_t = typename std::iterator_traits<I>::iterator_category;
-
-    template <typename, typename = void> struct is_output_iterator;
-    template <typename, typename = void> struct is_forward_iterator;
-    template <typename, typename = void> struct is_back_insertable;
+    template <typename, typename = void>
+        struct is_back_insertable;
 
     template <typename I>
         struct continuous;
+
+    // iterators
+
+    template <typename I>
+        using   iterator_category_t = typename std::iterator_traits<I>::iterator_category;
+
+    template <typename I>
+        using   is_output_iterator = std::is_same<iterator_category_t<I>, std::output_iterator_tag>;
+    template <typename, typename = void>
+        struct  is_forward_iterator;
+    template <typename I>
+        using   is_random_access_iterator = std::is_same<iterator_category_t<I>, std::random_access_iterator_tag>;
 
     template <typename FwIt>
         struct range_output_iterator;
@@ -105,32 +113,26 @@ namespace cxon {
             static constexpr bool value = std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value;
         };
 
-    // iterators
-
-    template <typename I>
-        using iterator_category_t = typename std::iterator_traits<I>::iterator_category;
-
-    template <typename, typename/* = void*/>
-        struct is_output_iterator : std::false_type {};
-    template <typename I>
-        struct is_output_iterator<I, enable_if_t<std::is_same<iterator_category_t<I>, std::output_iterator_tag>::value>> : std::true_type {};
-
-    template <typename, typename/* = void*/>
-        struct is_forward_iterator : std::false_type {};
-    template <typename I>
-        struct is_forward_iterator<I, enable_if_t<!std::is_same<iterator_category_t<I>, std::input_iterator_tag>::value>> : std::true_type {};
+    // container
 
     template <typename, typename/* = void*/>
         struct is_back_insertable : std::false_type {};
     template <typename C>
         struct is_back_insertable<C, decltype(C().push_back(' '))> : std::true_type {};
 
-    template <typename I>
+    template <typename C>
         struct continuous {
-            static constexpr auto range(const I& i) -> decltype(std::make_pair(std::begin(i), std::end(i))) {
-                return std::make_pair(std::begin(i), std::end(i));
+            static constexpr auto range(const C& c) -> decltype(std::make_pair(std::begin(c), std::end(c))) {
+                return std::make_pair(std::begin(c), std::end(c));
             }
         };
+
+    // iterators
+
+    template <typename, typename/* = void*/>
+        struct is_forward_iterator : std::false_type {};
+    template <typename I>
+        struct is_forward_iterator<I, enable_if_t<!std::is_same<iterator_category_t<I>, std::input_iterator_tag>::value>> : std::true_type {};
 
     template <typename FwIt>
         struct range_output_iterator {
