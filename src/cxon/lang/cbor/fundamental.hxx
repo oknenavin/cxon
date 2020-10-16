@@ -20,7 +20,7 @@ namespace cxon { // nullptr_t
 
     template <typename X, typename O, typename Cx>
         inline auto write_value(O& o, std::nullptr_t, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke<X>(o, X::nil, cx);
+            return bio::poke(o, X::nil) || (cx|X::write_error::output_failure);
         }
 
 }
@@ -38,7 +38,7 @@ namespace cxon { // bool
 
     template <typename X, typename O, typename Cx>
         inline auto write_value(O& o, bool t, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke<X>(o, t ? X::pos : X::neg, cx);
+            return bio::poke(o, t ? X::pos : X::neg) || (cx|X::write_error::output_failure);
         }
 
 }
@@ -72,13 +72,35 @@ namespace cxon { // numeric
             }
         }
 
+    namespace bits {
+
+        template <typename T>
+            inline auto bytes(T t) -> enable_if_t<sizeof(T) == 1, unsigned> {
+                return 1;
+            }
+        template <typename T>
+            inline auto bytes(T t) -> enable_if_t<sizeof(T) == 2, unsigned> {
+                return t >> 8 ? 2 : 1;
+            }
+        template <typename T>
+            inline auto bytes(T t) -> enable_if_t<sizeof(T) == 4, unsigned> {
+                return t >> 16 ? (t >> 24 ? 4 : 3) : (t >> 8 ? 2 : 1);
+            }
+        template <typename T>
+            inline auto bytes(T t) -> enable_if_t<sizeof(T) == 8, unsigned> {
+                return t >> 32 ? (t >> 48 ? (t >> 56 ? 8 : 7) : (t >> 40 ? 6 : 5)) : (t >> 16 ? (t >> 24 ? 4 : 3) : (t >> 8 ? 2 : 1));
+            }
+
+    }
+
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, const T& t, Cx&/* cx*/)
             -> enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            return t > T(23) ?
-                bio::poke(o, X::uint + 24) && bio::poke(o, t) :
-                bio::poke(o, X::uint + t)
+            unsigned const c = bits::bytes(t);
+            return t > 23 ?
+                bio::poke(o, bio::byte(X::uint + 23 + c)) && bio::poke(o, t, c) :
+                bio::poke(o, bio::byte(X::uint + t))
             ;
         }
 

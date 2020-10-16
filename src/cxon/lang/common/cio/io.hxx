@@ -187,7 +187,7 @@ namespace cxon { namespace cio {
 
         template <typename X, typename O, typename Cx, typename ...P>
             inline bool poke_(O& o, Cx& cx, P... p) {
-                return poke_(option<2>(), o, p...) || (cx|write_error::output_failure);
+                return poke_(o, p...) || (cx|write_error::output_failure);
             }
 
     }
