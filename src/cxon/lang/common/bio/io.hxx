@@ -33,8 +33,9 @@ namespace cxon { namespace bio {
     template <typename O>
         inline bool poke(O& o, byte b);
 
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, byte b, Cx& cx);
+    template <typename O, typename T>
+        inline auto poke(O& o, T t, unsigned c)
+            -> enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, bool>;
 
 }}
 
@@ -57,25 +58,25 @@ namespace cxon { namespace bio {
     namespace bits {
 
         template <typename II, unsigned N>
-            inline auto get_n(byte (&bs)[N], II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
+            inline auto get_n_(byte (&bs)[N], II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
                 using dt = typename std::iterator_traits<II>::difference_type;
                 return  std::distance(i, e) >= static_cast<dt>(N) &&
                         (std::copy(i, e, std::begin(bs)), std::advance(i, N), true)
                 ;
             }
         template <typename II>
-            inline auto get_n(byte (&bs)[2], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+            inline auto get_n_(byte (&bs)[2], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
                 return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e)
                 ;
             }
         template <typename II>
-            inline auto get_n(byte (&bs)[4], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+            inline auto get_n_(byte (&bs)[4], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
                 return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
                         get<1>(bs[2], i, e) && get<1>(bs[3], i, e)
                 ;
             }
         template <typename II>
-            inline auto get_n(byte (&bs)[8], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+            inline auto get_n_(byte (&bs)[8], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
                 return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
                         get<1>(bs[2], i, e) && get<1>(bs[3], i, e) &&
                         get<1>(bs[4], i, e) && get<1>(bs[5], i, e) &&
@@ -84,13 +85,13 @@ namespace cxon { namespace bio {
             }
 
         template <typename T>
-            inline T be_to_t(const byte (&bs)[2]) {
+            inline T be_to_t_(const byte (&bs)[2]) {
                 using R = unsigned short;
                 CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing!");
                 return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
             }
         template <typename T>
-            inline T be_to_t(const byte (&bs)[4]) {
+            inline T be_to_t_(const byte (&bs)[4]) {
                 using R = unsigned long;
                 CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing!");
                 return  (R(bs[3])<< 0) | (R(bs[2])<< 8) |
@@ -98,7 +99,7 @@ namespace cxon { namespace bio {
                 ;
             }
         template <typename T>
-            inline T be_to_t(const byte (&bs)[8]) {
+            inline T be_to_t_(const byte (&bs)[8]) {
                 using R = unsigned long long;
                 CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing!");
                 return  (R(bs[7])<< 0) | (R(bs[6])<< 8) |
@@ -109,13 +110,13 @@ namespace cxon { namespace bio {
             }
 
         template <unsigned N, typename T, typename II>
-            inline auto get(T& t, II& i, II e) -> enable_if_t<N == 1, bool> {
+            inline auto get_(T& t, II& i, II e) -> enable_if_t<N == 1, bool> {
                 return i != e && (t = T(*i++), true);
             }
         template <unsigned N, typename T, typename II>
-            inline auto get(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {
+            inline auto get_(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {
                 byte bs[N];
-                return get_n(bs, i, e) && (t = be_to_t<T>(bs), true);
+                return get_n_(bs, i, e) && (t = be_to_t_<T>(bs), true);
             }
 
     }
@@ -124,7 +125,7 @@ namespace cxon { namespace bio {
         inline auto get(T& t, II& i, II e)
             -> enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, bool>
         {
-            return bits::get<N>(t, i, e);
+            return bits::get_<N>(t, i, e);
         }
 
     // output
@@ -138,6 +139,19 @@ namespace cxon { namespace bio {
         template <typename O>
             inline auto push_(O& o, byte b) -> enable_if_t<is_back_insertable<O>::value> {
                 o.push_back(b);
+            }
+
+        template <typename O>
+            inline auto push_(option<1>, O& o, const byte* s, unsigned n) -> decltype(o.append(s, n), void()) {
+                o.append(s, n);
+            }
+        template <typename O>
+            inline void push_(option<0>, O& o, const byte* s, unsigned n) {
+                while (n) push_(o, *s), ++s, --n;
+            }
+        template <typename O>
+            inline void push_(O& o, const byte* s, unsigned n) {
+                push_(option<1>(), o, s, n);
             }
 
         template <typename O, typename ...P>
@@ -156,19 +170,35 @@ namespace cxon { namespace bio {
             inline bool poke_(O& o, P... p) {
                 return poke_(option<2>(), o, p...);
             }
+    }
 
-        template <typename X, typename O, typename Cx, typename ...P>
-            inline bool poke_(O& o, Cx& cx, P... p) {
-                return poke_(option<2>(), o, p...) || (cx|X::write_error::output_failure);
+    namespace bits {
+
+        template <typename T, typename O>
+            inline auto put(O& o, T t, unsigned  ) -> enable_if_t<sizeof(T) == 1, bool> {
+                return bits::poke_(o, t);
+            }
+        template <typename T, typename O> // TODO: unroll?
+            inline auto put(O& o, T t, unsigned c) -> enable_if_t<sizeof(T) != 1, bool> {
+                byte bs[sizeof(T)];
+                    for (unsigned i = 0; i != c; ++i)
+                        bs[i] = byte(t >> (c - i - 1) * 8);
+                return bits::poke_(o, bs, c);
             }
 
     }
 
     template <typename O>
-        inline bool poke(O& o, byte b)              { return bits::poke_(o, b); }
+        inline bool poke(O& o, byte b) {
+            return bits::put(o, b, 1);
+        }
 
-    template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, byte b, Cx& cx)      { return bits::poke_<X>(o, cx, b); }
+    template <typename O, typename T>
+        inline auto poke(O& o, T t, unsigned c)
+            -> enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, bool>
+        {
+            return bits::put(o, t, c);
+        }
 
 }}
 

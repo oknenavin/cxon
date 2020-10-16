@@ -32,17 +32,35 @@ TEST_BEG(cxon::CBOR<>)
     // unsigned short
         R_TEST((unsigned short)23, BS("\x17"));
         R_TEST((unsigned short)24, BS("\x18\x18"));
-        R_TEST((unsigned short)384, BS("\x19\x1\x80"));
+        R_TEST((unsigned short)257, BS("\x19\x01\x01"));
+        W_TEST(BS("\x18\x80"), (unsigned short)128);
+        W_TEST(BS("\x19\x01\x01"), (unsigned short)257);
     // unsigned int
         R_TEST((unsigned int)23, BS("\x17"));
         R_TEST((unsigned int)24, BS("\x18\x18"));
-        R_TEST((unsigned int)384, BS("\x19\x1\x80"));
+        R_TEST((unsigned int)257, BS("\x19\x01\x01"));
+        W_TEST(BS("\x18\x80"), (unsigned int)128);
+        W_TEST(BS("\x19\x01\x01"), (unsigned int)257);
+        W_TEST(BS("\x1A\x01\x01\x01"), (unsigned int)65793);
+        W_TEST(BS("\x1B\x01\x01\x01\x01"), (unsigned int)16843009);
     // unsigned long
         R_TEST((unsigned long)23, BS("\x17"));
         R_TEST((unsigned long)24, BS("\x18\x18"));
-        R_TEST((unsigned long)384, BS("\x19\x1\x80"));
+        R_TEST((unsigned long)257, BS("\x19\x01\x01"));
+        W_TEST(BS("\x18\x80"), (unsigned long)128);
+        W_TEST(BS("\x19\x01\x01"), (unsigned long)257);
+        W_TEST(BS("\x1A\x01\x01\x01"), (unsigned long)65793);
+        W_TEST(BS("\x1B\x01\x01\x01\x01"), (unsigned long)16843009);
     // unsigned long long
         R_TEST((unsigned long long)23, BS("\x17"));
         R_TEST((unsigned long long)24, BS("\x18\x18"));
-        R_TEST((unsigned long long)384, BS("\x19\x1\x80"));
+        R_TEST((unsigned long long)257, BS("\x19\x01\x01"));
+        W_TEST(BS("\x18\x80"), (unsigned long long)128);
+        W_TEST(BS("\x19\x01\x01"), (unsigned long long)257);
+        W_TEST(BS("\x1A\x01\x01\x01"), (unsigned long long)65793);
+        W_TEST(BS("\x1B\x01\x01\x01\x01"), (unsigned long long)16843009);
+        W_TEST(BS("\x1C\x01\x01\x01\x01\x01"), (unsigned long long)4311810305);
+        W_TEST(BS("\x1D\x01\x01\x01\x01\x01\x01"), (unsigned long long)1103823438081);
+        W_TEST(BS("\x1E\x01\x01\x01\x01\x01\x01\x01"), (unsigned long long)282578800148737);
+        W_TEST(BS("\x1F\x01\x01\x01\x01\x01\x01\x01\x01"), (unsigned long long)72340172838076673);
 TEST_END()
