@@ -23,8 +23,8 @@ namespace cxon { namespace cbor { // format traits
 
     struct format_traits {
 
-        using read_error = read_error;
-        using write_error = write_error;
+        using read_error = cbor::read_error;
+        using write_error = cbor::write_error;
         
         static constexpr bio::byte  pint    = 0x00; // 0, unsigned integer
         static constexpr bio::byte  nint    = 0x20; // 1, negative integer
