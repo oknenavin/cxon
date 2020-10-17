@@ -194,10 +194,40 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((float)3.1415926, BS("\xFA\x40\x49\x0F\xDA"));
         W_TEST(BS("\xFA\x40\x49\x0F\xDA"), (float)3.1415926);
         //R_TEST((float)0, BS("\xFB\x00\x00\x00\x00\x00\x00\x00\x00")); // narrowing
+        // from integral
+        R_TEST((float)0x17, BS("\x17"));
+        R_TEST((float)0x18, BS("\x18\x18"));
+        R_TEST((float)0x0101, BS("\x19\x01\x01"));
+        R_TEST((float)0x010101, BS("\x1A\x01\x01\x01"));
+        R_TEST((float)0x01010101, BS("\x1B\x01\x01\x01\x01"));
+        R_TEST((float)-0x01010102, BS("\x3B\x01\x01\x01\x01"));
+        R_TEST((float)-0x010102, BS("\x3A\x01\x01\x01"));
+        R_TEST((float)-0x0102, BS("\x39\x01\x01"));
+        R_TEST((float)-0x19, BS("\x38\x18"));
+        R_TEST((float)-0x18, BS("\x37"));
     // double
         R_TEST((double)0, BS("\xFB\x00\x00\x00\x00\x00\x00\x00\x00"));
         W_TEST(BS("\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), (double)0);
         R_TEST((double)3.1415926, BS("\xFB\x40\x09\x21\xFB\x4D\x12\xD8\x4A"));
         W_TEST(BS("\xFB\x40\x09\x21\xFB\x4D\x12\xD8\x4A"), (double)3.1415926);
         R_TEST((double)0, BS("\xFA\x00\x00\x00\x00"));
+        // from integral
+        R_TEST((double)0x17, BS("\x17"));
+        R_TEST((double)0x18, BS("\x18\x18"));
+        R_TEST((double)0x0101, BS("\x19\x01\x01"));
+        R_TEST((double)0x010101, BS("\x1A\x01\x01\x01"));
+        R_TEST((double)0x01010101, BS("\x1B\x01\x01\x01\x01"));
+        R_TEST((double)0x0101010101, BS("\x1C\x01\x01\x01\x01\x01"));
+        R_TEST((double)0x010101010101, BS("\x1D\x01\x01\x01\x01\x01\x01"));
+        R_TEST((double)0x01010101010101, BS("\x1E\x01\x01\x01\x01\x01\x01\x01"));
+        R_TEST((double)0x0101010101010101, BS("\x1F\x01\x01\x01\x01\x01\x01\x01\x01"));
+        R_TEST((double)-0x0101010101010102, BS("\x3F\x01\x01\x01\x01\x01\x01\x01\x01"));
+        R_TEST((double)-0x01010101010102, BS("\x3E\x01\x01\x01\x01\x01\x01\x01"));
+        R_TEST((double)-0x010101010102, BS("\x3D\x01\x01\x01\x01\x01\x01"));
+        R_TEST((double)-0x0101010102, BS("\x3C\x01\x01\x01\x01\x01"));
+        R_TEST((double)-0x01010102, BS("\x3B\x01\x01\x01\x01"));
+        R_TEST((double)-0x010102, BS("\x3A\x01\x01\x01"));
+        R_TEST((double)-0x0102, BS("\x39\x01\x01"));
+        R_TEST((double)-0x19, BS("\x38\x18"));
+        R_TEST((double)-0x18, BS("\x37"));
 TEST_END()

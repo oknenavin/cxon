@@ -182,7 +182,7 @@ namespace cxon { namespace bio {
             }
 
         template <typename T>
-            inline T be_to_fp_(const byte (&bs)[2]) {
+            inline T be_to_fp_(const byte (&/*bs*/)[2]) {
                 return CXON_ASSERT(0, "not implemented"), 0;
             }
         template <typename T>
