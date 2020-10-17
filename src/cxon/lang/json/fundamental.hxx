@@ -97,7 +97,7 @@ namespace cxon { // numeric
         }
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto write_value(O& o, const T& t, Cx& cx)
+        inline auto write_value(O& o, T t, Cx& cx)
             -> enable_if_t<is_numeric<T>::value && is_same_format<X, JSON>::value, bool>
         {
             return cio::num::number_write<X>(o, t, cx);

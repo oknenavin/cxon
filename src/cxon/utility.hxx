@@ -151,9 +151,9 @@ namespace cxon {
             :   b_(b), e_(e)
             { CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range"); }
 
-            range_output_iterator& operator =(const value_type& c) {
+            range_output_iterator& operator =(const value_type& b) {
                 CXON_ASSERT(*this, "unexpected state");
-                return b_ != e_ ? (*b_ = c, ++b_, *this) : (g_ = false, *this);
+                return b_ != e_ ? (*b_ = b, ++b_, *this) : (g_ = false, *this);
             }
 
             template <typename T = value_type>
