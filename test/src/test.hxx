@@ -17,7 +17,8 @@
 
 namespace cxon { namespace test {
 
-    using bytes = std::basic_string<unsigned char>;
+    using byte = unsigned char;
+    using bytes = std::basic_string<byte>;
 
 }}
 
@@ -69,7 +70,7 @@ namespace cxon { namespace test {
 #define W_TEST(ref, ...) TEST_CHECK(cxon::test::verify_write<XXON>(ref, __VA_ARGS__))
 
 #define QS(s) "\"" s "\""
-#define BS(s) (unsigned char*) s
+#define BS(s) test::bytes((test::byte*)s, sizeof(s) - 1)
 
 namespace cxon { namespace test {
 
@@ -205,10 +206,10 @@ namespace cxon { namespace test {
     template <typename I>
         struct force_input_iterator {
             using iterator_category = std::input_iterator_tag;
-            using value_type        = typename I::value_type;
-            using difference_type   = typename I::difference_type;
-            using pointer           = typename I::pointer;
-            using reference         = typename I::reference;
+            using value_type        = typename std::iterator_traits<I>::value_type;
+            using difference_type   = typename std::iterator_traits<I>::difference_type;
+            using pointer           = typename std::iterator_traits<I>::pointer;
+            using reference         = typename std::iterator_traits<I>::reference;
 
             I i_;
 
@@ -232,15 +233,15 @@ namespace cxon { namespace test {
 
     template <typename X, typename T, typename S>
         inline auto from_string(T& t, const S& s)
-            -> enable_if_t< is_force_input_iterator<X>::value, from_bytes_result<decltype(s.begin())>>
+            -> enable_if_t< is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
         {
-            auto b = make_force_input_iterator(s.begin()), e = make_force_input_iterator(s.end());
+            auto b = make_force_input_iterator(std::begin(s)), e = make_force_input_iterator(std::end(s));
             auto const r =  from_bytes<X>(t, b, e);
             return { r.ec, r.end.i_ };
         }
     template <typename X, typename T, typename S>
         inline auto from_string(T& t, const S& s)
-            -> enable_if_t<!is_force_input_iterator<X>::value, from_bytes_result<decltype(s.begin())>>
+            -> enable_if_t<!is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
         {
             return from_bytes<X>(t, s);
         }
@@ -249,13 +250,13 @@ namespace cxon { namespace test {
         static bool verify_read_(const T& ref, const C& sbj) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
-            return r && r.end == sbj.end() && match<T>::values(res, ref);
+            return r && r.end == std::end(sbj) && match<T>::values(res, ref);
         }
     template <typename X, typename T, typename C, typename E>
         static bool verify_read_(const T&, const C& sbj, E err, int pos) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
-            return r.ec.value() == (int)err && (pos == -1 || std::distance(sbj.begin(), r.end) == pos);
+            return r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
         }
 
     template <typename X, typename T>
