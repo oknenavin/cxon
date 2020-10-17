@@ -188,4 +188,16 @@ TEST_BEG(cxon::CBOR<>)
         W_TEST(BS("\x39\x01\x01"), (long long)-0x0102);
         W_TEST(BS("\x38\x18"), (long long)-0x19);
         W_TEST(BS("\x37"), (long long)-0x18);
+    // float
+        R_TEST((float)0, BS("\xFA\x00\x00\x00\x00"));
+        W_TEST(BS("\xFA\x00\x00\x00\x00"), (float)0);
+        R_TEST((float)3.1415926, BS("\xFA\x40\x49\x0F\xDA"));
+        W_TEST(BS("\xFA\x40\x49\x0F\xDA"), (float)3.1415926);
+        //R_TEST((float)0, BS("\xFB\x00\x00\x00\x00\x00\x00\x00\x00")); // narrowing
+    // double
+        R_TEST((double)0, BS("\xFB\x00\x00\x00\x00\x00\x00\x00\x00"));
+        W_TEST(BS("\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), (double)0);
+        R_TEST((double)3.1415926, BS("\xFB\x40\x09\x21\xFB\x4D\x12\xD8\x4A"));
+        W_TEST(BS("\xFB\x40\x09\x21\xFB\x4D\x12\xD8\x4A"), (double)3.1415926);
+        R_TEST((double)0, BS("\xFA\x00\x00\x00\x00"));
 TEST_END()
