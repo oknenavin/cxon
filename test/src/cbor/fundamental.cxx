@@ -15,15 +15,47 @@ TEST_BEG(cxon::CBOR<>)
         W_TEST(BS("\xF5"), true);
         R_TEST(false, "\xF4");
         W_TEST(BS("\xF4"), false);
-        R_TEST(false, BS("\xF6"), cbor::read_error::boolean_invalid, 0);
-        R_TEST(false, BS("\xFF"), cbor::read_error::boolean_invalid, 0);
-        R_TEST(false, BS(""), cbor::read_error::boolean_invalid, 0);
+            R_TEST(false, BS("\xF6"), cbor::read_error::boolean_invalid, 0);
+            R_TEST(false, BS("\xFF"), cbor::read_error::boolean_invalid, 0);
+            R_TEST(false, BS(""), cbor::read_error::boolean_invalid, 0);
     // nullptr_t
         R_TEST(nullptr, BS("\xF6"));
         W_TEST(BS("\xF6"), nullptr);
-        R_TEST(nullptr, BS(""), cbor::read_error::null_invalid, 0);
-        R_TEST(nullptr, BS("\xF7"), cbor::read_error::null_invalid, 0);
-        R_TEST(nullptr, BS("\xFF"), cbor::read_error::null_invalid, 0);
+            R_TEST(nullptr, BS(""), cbor::read_error::null_invalid, 0);
+            R_TEST(nullptr, BS("\xF7"), cbor::read_error::null_invalid, 0);
+            R_TEST(nullptr, BS("\xFF"), cbor::read_error::null_invalid, 0);
+    // char
+        R_TEST((char)0x00, BS("\x00"));
+        R_TEST((char)0x17, BS("\x17"));
+        R_TEST((char)0x18, BS("\x18\x18"));
+        W_TEST(BS("\x18\x18"), (char)0x18);
+        W_TEST(BS("\x17"), (char)0x17);
+        W_TEST(BS("\x00"), (char)0x00);
+    // char16_t
+        R_TEST((char16_t)0x17, BS("\x17"));
+        R_TEST((char16_t)0x18, BS("\x18\x18"));
+        R_TEST((char16_t)0x0101, BS("\x19\x01\x01"));
+        W_TEST(BS("\x19\x01\x01"), (char16_t)0x0101);
+        W_TEST(BS("\x18\x18"), (char16_t)0x18);
+        W_TEST(BS("\x17"), (char16_t)0x17);
+    // char32_t
+        R_TEST((char32_t)0x17, BS("\x17"));
+        R_TEST((char32_t)0x18, BS("\x18\x18"));
+        R_TEST((char32_t)0x0101, BS("\x19\x01\x01"));
+        R_TEST((char32_t)0x010101, BS("\x1A\x01\x01\x01"));
+        R_TEST((char32_t)0x01010101, BS("\x1B\x01\x01\x01\x01"));
+        W_TEST(BS("\x1B\x01\x01\x01\x01"), (char32_t)0x01010101);
+        W_TEST(BS("\x1A\x01\x01\x01"), (char32_t)0x010101);
+        W_TEST(BS("\x19\x01\x01"), (char32_t)0x0101);
+        W_TEST(BS("\x18\x18"), (char32_t)0x18);
+        W_TEST(BS("\x17"), (char32_t)0x17);
+    // wchar_t
+        R_TEST((wchar_t)0x17, BS("\x17"));
+        R_TEST((wchar_t)0x18, BS("\x18\x18"));
+        R_TEST((wchar_t)0x0101, BS("\x19\x01\x01"));
+        W_TEST(BS("\x19\x01\x01"), (wchar_t)0x0101);
+        W_TEST(BS("\x18\x18"), (wchar_t)0x18);
+        W_TEST(BS("\x17"), (wchar_t)0x17);
     // unsigned char
         R_TEST((unsigned char)0x00, BS("\x00"));
         R_TEST((unsigned char)0x17, BS("\x17"));
@@ -47,14 +79,14 @@ TEST_BEG(cxon::CBOR<>)
         W_TEST(BS("\x19\x01\x01"), (unsigned short)0x0101);
         W_TEST(BS("\x18\x18"), (unsigned short)0x18);
         W_TEST(BS("\x17"), (unsigned short)0x17);
-        R_TEST((unsigned short)0x00, BS(""), cbor::read_error::integer_invalid, 0);
-        R_TEST((unsigned short)0x0101, BS("\x18"), cbor::read_error::integer_invalid, 0);
-        R_TEST((unsigned short)0x0101, BS("\x19"), cbor::read_error::integer_invalid, 0);
-        R_TEST((unsigned short)0x0101, BS("\x19\x01"), cbor::read_error::integer_invalid, 0);
-        {   byte bs[2];
-            auto const r = to_bytes<XXON>(std::begin(bs), std::end(bs), (unsigned short)0x0101);
-            TEST_CHECK(r.ec == cbor::write_error::output_failure);
-        }
+            R_TEST((unsigned short)0x00, BS(""), cbor::read_error::integer_invalid, 0);
+            R_TEST((unsigned short)0x0101, BS("\x18"), cbor::read_error::integer_invalid, 0);
+            R_TEST((unsigned short)0x0101, BS("\x19"), cbor::read_error::integer_invalid, 0);
+            R_TEST((unsigned short)0x0101, BS("\x19\x01"), cbor::read_error::integer_invalid, 0);
+            {   byte bs[2];
+                auto const r = to_bytes<XXON>(std::begin(bs), std::end(bs), (unsigned short)0x0101);
+                TEST_CHECK(r.ec == cbor::write_error::output_failure);
+            }
     // short
         R_TEST((short)0x17, BS("\x17"));
         R_TEST((short)0x18, BS("\x18\x18"));

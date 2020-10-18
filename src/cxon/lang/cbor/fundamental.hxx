@@ -43,11 +43,7 @@ namespace cxon { // bool
 
 }
 
-namespace cxon { // character
-
-}
-
-namespace cxon { // numeric
+namespace cxon { // numeric & character
 
     namespace bits {
 
