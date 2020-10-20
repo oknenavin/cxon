@@ -34,10 +34,10 @@ namespace cxon { namespace cio { namespace num { // number conversion: read
 namespace cxon { namespace cio { namespace num { // number conversion: write
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool>;
+        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool>;
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool>;
+        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool>;
 
 }}}
 
@@ -305,7 +305,7 @@ namespace cxon { namespace cio { namespace num {
 namespace cxon { namespace cio { namespace num { // number conversion: write
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
+        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
             char s[std::numeric_limits<T>::digits10 + 3];
             auto const r = charconv::to_chars(s, s + sizeof(s) / sizeof(char), t);
             return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
@@ -314,7 +314,7 @@ namespace cxon { namespace cio { namespace num { // number conversion: write
         }
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, const T& t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
+        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
             if (std::isinf(t)) {
                 if (!poke<X>(o, X::string::beg, cx)) return false;
                 if (std::signbit(t) && !poke<X>(o, '-', cx)) return false;

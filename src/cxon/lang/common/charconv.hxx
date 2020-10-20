@@ -252,7 +252,7 @@ namespace cxon { namespace charconv { // <charconv>
                 return { r.ptr, r.ec };
             }
         template <typename T>
-            inline auto to_chars(char* f, char* l, T& t, int base = 10)
+            inline auto to_chars(char* f, char* l, T t, int base = 10)
                     noexcept(noexcept(to_chars_i_(option<1>(), f, l, t, base)))
                 ->  enable_if_t<std::is_integral<T>::value, std::to_chars_result>
             {
@@ -297,7 +297,7 @@ namespace cxon { namespace charconv { // <charconv>
                 return { r.ptr, r.ec };
             }
         template <typename T>
-            inline auto to_chars(char* f, char* l, T& t, int precision)
+            inline auto to_chars(char* f, char* l, T t, int precision)
                     noexcept(noexcept(to_chars_f_(option<1>(), f, l, t, precision)))
                 ->  enable_if_t<std::is_floating_point<T>::value, std::to_chars_result>
             {
