@@ -22,6 +22,9 @@ namespace cxon { namespace bio {
     // input
 
     template <typename II>
+        inline byte peak(II& i, II e);
+
+    template <typename II>
         inline byte get(II& i, II e);
 
     template <typename T, typename II>
@@ -45,6 +48,17 @@ namespace cxon { namespace bio {
         inline auto poke(O& o, T t)
             -> enable_if_t<std::is_floating_point<T>::value, bool>;
 
+    template <typename X, typename O, typename Cx>
+        inline bool poke(O& o, byte b, Cx& cx);
+
+    template <typename X, typename O, typename T, typename Cx>
+        inline auto poke(O& o, T t, unsigned n, Cx& cx)
+            -> enable_if_t<std::is_integral<T>::value, bool>;
+
+    template <typename X, typename O, typename T, typename Cx>
+        inline auto poke(O& o, T t, Cx& cx)
+            -> enable_if_t<std::is_floating_point<T>::value, bool>;
+
 }}
 
 // implementation //////////////////////////////////////////////////////////////
@@ -57,6 +71,11 @@ namespace cxon { namespace bio {
         inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value> { i = o; }
 
     // input
+
+    template <typename II>
+        inline byte peak(II& i, II e) {
+            return i != e ? *i : 0xFF;
+        }
 
     template <typename II>
         inline byte get(II& i, II e) {
@@ -341,6 +360,25 @@ namespace cxon { namespace bio {
             -> enable_if_t<std::is_floating_point<T>::value, bool>
         {
             return bits::put_(o, t);
+        }
+
+    template <typename X, typename O, typename Cx>
+        inline bool poke(O& o, byte b, Cx& cx) {
+            return bits::put_(o, b, 1) || (cx|cbor::write_error::output_failure);
+        }
+
+    template <typename X, typename O, typename T, typename Cx>
+        inline auto poke(O& o, T t, unsigned n, Cx& cx)
+            -> enable_if_t<std::is_integral<T>::value, bool>
+        {
+            return bits::put_(o, t, n) || (cx|cbor::write_error::output_failure);
+        }
+
+    template <typename X, typename O, typename T, typename Cx>
+        inline auto poke(O& o, T t, Cx& cx)
+            -> enable_if_t<std::is_floating_point<T>::value, bool>
+        {
+            return bits::put_(o, t) || (cx|cbor::write_error::output_failure);
         }
 
 }}

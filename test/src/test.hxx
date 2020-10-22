@@ -125,6 +125,12 @@ namespace cxon { namespace test {
                     return !std::isgreater(t0, t1) && !std::isless(t0, t1);
                 }
         };
+    template <typename T>
+        struct match<T*> {
+            static bool values(const T* t0, const T* t1) {
+                return t0 == t1 || (t0 && match<T>::values(*t0, *t1));
+            }
+        };
     template <>
         struct match<const char*> {
             static bool values(const char* t0, const char* t1) {

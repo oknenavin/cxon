@@ -20,7 +20,7 @@ namespace cxon { // nullptr_t
 
     template <typename X, typename O, typename Cx>
         inline auto write_value(O& o, std::nullptr_t, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke(o, X::nil) || (cx|X::write_error::output_failure);
+            return bio::poke<X>(o, X::nil, cx);
         }
 
 }
@@ -38,7 +38,7 @@ namespace cxon { // bool
 
     template <typename X, typename O, typename Cx>
         inline auto write_value(O& o, bool t, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke(o, t ? X::pos : X::neg) || (cx|X::write_error::output_failure);
+            return bio::poke<X>(o, t ? X::pos : X::neg, cx);
         }
 
 }
@@ -188,8 +188,8 @@ namespace cxon { // numeric & character
         {
             unsigned const n = bits::bytes_(t);
             return t > 23 ?
-                (bio::poke(o, bio::byte(X::pint + 23 + n)) && bio::poke(o, t, n))   || (cx|X::write_error::output_failure) :
-                 bio::poke(o, bio::byte(X::pint + t))                               || (cx|X::write_error::output_failure)
+                bio::poke<X>(o, bio::byte(X::pint + 23 + n), cx) && bio::poke<X>(o, t, n, cx) :
+                bio::poke<X>(o, bio::byte(X::pint + t), cx)
             ;
         }
     template <typename X, typename T, typename O, typename Cx>
@@ -199,8 +199,8 @@ namespace cxon { // numeric & character
             bio::byte const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
             unsigned const n = bits::bytes_(t);
             return t > 23 ?
-                (bio::poke(o, bio::byte(m + 23 + n)) && bio::poke(o, t, n)) || (cx|X::write_error::output_failure) :
-                 bio::poke(o, bio::byte(m + t))                             || (cx|X::write_error::output_failure)
+                bio::poke<X>(o, bio::byte(m + 23 + n), cx) && bio::poke<X>(o, t, n, cx) :
+                bio::poke<X>(o, bio::byte(m + t), cx)
             ;
         }
 
@@ -210,7 +210,7 @@ namespace cxon { // numeric & character
             -> enable_if_t<std::is_floating_point<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             static constexpr bio::byte m = sizeof(T) == sizeof(float) ? X::fp32 : X::fp64;
-            return (bio::poke(o, m) && bio::poke(o, t)) || (cx|X::write_error::output_failure);
+            return bio::poke<X>(o, m, cx) && bio::poke<X>(o, t, cx);
         }
 
 }

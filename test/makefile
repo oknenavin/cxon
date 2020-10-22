@@ -16,7 +16,8 @@ check-json-node-src = \
 
 check-cbor-src = \
     $(srcdir)/cbor/cbor.cxx \
-    $(srcdir)/cbor/fundamental.cxx
+    $(srcdir)/cbor/fundamental.cxx \
+    $(srcdir)/cbor/compound.cxx
 
 check: check-json check-json-node check-cbor
 
