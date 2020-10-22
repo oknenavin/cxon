@@ -10,6 +10,8 @@
 
 namespace cxon { namespace bio { // context parameters
 
+    CXON_PARAMETER(allocator, std::allocator<char>);    // read: T*
+
 }}
 
 

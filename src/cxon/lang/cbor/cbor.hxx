@@ -14,8 +14,7 @@
 
 #include "error.hxx"
 #include "fundamental.hxx"
-
-#include "cxon/lang/common/bio/bio.hxx"
+#include "compound.hxx"
 
 // implementation //////////////////////////////////////////////////////////////
 

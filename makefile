@@ -22,6 +22,10 @@ cxon-lang-common-cio = \
     $(srcdir)/lang/common/cio/string.hxx \
     $(srcdir)/lang/common/cio/value.hxx
 
+cxon-lang-common-bio = \
+    $(srcdir)/lang/common/bio/bio.hxx \
+    $(srcdir)/lang/common/bio/io.hxx
+
 cxon-lang-json-lib-std-bits = \
     $(srcdir)/lang/json/lib/std/bits/map.hxx \
     $(srcdir)/lang/json/lib/std/bits/set.hxx \
@@ -62,8 +66,16 @@ cxon-lang-json = \
     $(srcdir)/lang/json/json-fwd.hxx \
     $(srcdir)/lang/json/node.hxx
 
-cxon-json = \
-    $(srcdir)/json.hxx
+cxon-lang-cbor = \
+    $(srcdir)/lang/cbor/cbor.hxx \
+    $(srcdir)/lang/cbor/cbor-fwd.hxx \
+    $(srcdir)/lang/cbor/compound.hxx \
+    $(srcdir)/lang/cbor/error.hxx \
+    $(srcdir)/lang/cbor/fundamental.hxx
+
+cxon-lang = \
+    $(srcdir)/json.hxx \
+    $(srcdir)/cbor.hxx
 
 cxon-lib-std = \
     $(srcdir)/lib/std/array.hxx \
@@ -102,25 +114,30 @@ check-json:
 check-json-node:
 	@$(MAKE) -C test check-json-node
 
-install: install-json
+install: install-lang
 
 install-cxon:
-	@install -d $(insdir)/cxon/lib/std
+	@install -d                                         $(insdir)/cxon/lib/std
 	@install -p -m 0644 $(cxon-lib-std)                 $(insdir)/cxon/lib/std
 	@install -p -m 0644 $(cxon)                         $(insdir)/cxon
 
 install-common: install-cxon
-	@install -d $(insdir)/cxon/lang/common/cio
+	@install -d                                         $(insdir)/cxon/lang/common/cio
 	@install -p -m 0644 $(cxon-lang-common-cio)         $(insdir)/cxon/lang/common/cio
+	@install -d                                         $(insdir)/cxon/lang/common/bio
+	@install -p -m 0644 $(cxon-lang-common-bio)         $(insdir)/cxon/lang/common/bio
 	@install -p -m 0644 $(cxon-lang-common)             $(insdir)/cxon/lang/common
 
-install-json: install-cxon install-common
-	@install -d $(insdir)/cxon/lang/json/lib/std/bits   $(insdir)/cxon/lang/json/node
+install-lang: install-cxon install-common
+	@install -d                                         $(insdir)/cxon/lang/json/lib/std/bits
 	@install -p -m 0644 $(cxon-lang-json-lib-std-bits)  $(insdir)/cxon/lang/json/lib/std/bits
 	@install -p -m 0644 $(cxon-lang-json-lib-std)       $(insdir)/cxon/lang/json/lib/std
+	@install -d                                         $(insdir)/cxon/lang/json/node
 	@install -p -m 0644 $(cxon-lang-json-node)          $(insdir)/cxon/lang/json/node
 	@install -p -m 0644 $(cxon-lang-json)               $(insdir)/cxon/lang/json
-	@install -p -m 0644 $(cxon-json)                    $(insdir)/cxon
+	@install -d                                         $(insdir)/cxon/lang/cbor
+	@install -p -m 0644 $(cxon-lang-cbor)               $(insdir)/cxon/lang/cbor
+	@install -p -m 0644 $(cxon-lang)                    $(insdir)/cxon
 
 uninstall:
 	@rm -fr $(insdir)/cxon
@@ -128,4 +145,4 @@ uninstall:
 clean:
 	@$(MAKE) -C test clean
 
-.PHONY: check check-json check-json-node install install-cxon install-common install-json uninstall clean
+.PHONY: check check-json check-json-node install install-cxon install-common install-lang uninstall clean
