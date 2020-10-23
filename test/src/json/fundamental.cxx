@@ -5,17 +5,36 @@
 
 #include "test.hxx"
 
+#include <limits>
 #include <string>
+#include <cstdio>
 
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace test {
 
-    template <typename T>   inline std::string to_string(T t)           { return std::to_string(t); }
-    // TODO: using cxon -> nok, use std lib
-    template <>             inline std::string to_string(float t)       { return test::to_string<JSON<>>(t); }
-    template <>             inline std::string to_string(double t)      { return test::to_string<JSON<>>(t); }
-    template <>             inline std::string to_string(long double t) { return test::to_string<JSON<>>(t); }
+    template <typename T>
+        inline auto to_string(T t)
+            -> enable_if_t<std::is_integral<T>::value, std::string>
+        {
+            return std::to_string(t);
+        }
+
+    template <typename> struct fmt;
+    template <> struct fmt<float>       { static constexpr char const*const str = "%.*g";   };
+    template <> struct fmt<double>      { static constexpr char const*const str = "%.*g";   };
+    template <> struct fmt<long double> { static constexpr char const*const str = "%.*Lg";  };
+
+    template <typename T>
+        inline auto to_string(T t)
+            -> enable_if_t<std::is_floating_point<T>::value, std::string>
+        {
+            char s[std::numeric_limits<T>::max_digits10 * 2] = { 0 };
+            size_t const l = sizeof(s) / sizeof(char);
+            int const w = std::snprintf(s, l, fmt<T>::str, std::numeric_limits<T>::max_digits10, t);
+                CXON_ASSERT(w > 0 && (size_t)w < l, "conversion failed");
+            return s;
+        }
 
     template <typename T>   constexpr T tmin() { return std::numeric_limits<T>::lowest(); }
     template <typename T>   inline std::string smin() { return to_string(tmin<T>()); }

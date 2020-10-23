@@ -22,10 +22,10 @@ namespace cxon { namespace bio {
     // input
 
     template <typename II>
-        inline byte peak(II& i, II e);
+        inline byte peak(II& i, II e, byte d = 0xFF);
 
     template <typename II>
-        inline byte get(II& i, II e);
+        inline byte get(II& i, II e, byte d = 0xFF);
 
     template <typename T, typename II>
         inline auto get(T& t, unsigned n, II& i, II e)
@@ -73,13 +73,13 @@ namespace cxon { namespace bio {
     // input
 
     template <typename II>
-        inline byte peak(II& i, II e) {
-            return i != e ? *i : 0xFF;
+        inline byte peak(II& i, II e, byte d/* = 0xFF*/) {
+            return i != e ? *i : d;
         }
 
     template <typename II>
-        inline byte get(II& i, II e) {
-            return i != e ? *i++ : 0xFF;
+        inline byte get(II& i, II e, byte d/* = 0xFF*/) {
+            return i != e ? *i++ : d;
         }
 
     namespace bits {

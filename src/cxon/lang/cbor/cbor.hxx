@@ -34,19 +34,17 @@ namespace cxon { namespace cbor { // format traits
         static constexpr bio::byte  map     = 0xA0; // 5, map of pairs of data items
         static constexpr bio::byte  tag     = 0xC0; // 6, optional semantic tagging of other major types
 
-                                                    // 7, 0xE0-0xF3 - undefined
+                                           // 0xE0  // 7, 0xE0-0xF3 - simple value (unassigned)
         static constexpr bio::byte  neg     = 0xF4; // 7, false
         static constexpr bio::byte  pos     = 0xF5; // 7, true
         static constexpr bio::byte  nil     = 0xF6; // 7, null
         static constexpr bio::byte  und     = 0xF7; // 7, undefined
-                                                    // 7, 0xF8 - simple value, one byte follows
-
+                                                    // 7, 0xF8 - simple value (value 32..255 in following byte)
         static constexpr bio::byte  fp16    = 0xF9; // 7, half-precision float (two-byte IEEE 754)
         static constexpr bio::byte  fp32    = 0xFA; // 7, single-precision float (four-byte IEEE 754)
         static constexpr bio::byte  fp64    = 0xFB; // 7, double-precision float (eight-byte IEEE 754)
-
-                                                    // 7, 0xFC-0xFE, reserved
-        static constexpr bio::byte  brk     = 0xFF; // 7, break stop code for indefinite-length items
+                                                    // 7, 0xFC-0xFE, unassigned
+        static constexpr bio::byte  brk     = 0xFF; // 7, break stop code for indefinite length items
 
         static constexpr bool strict = false;
     };
