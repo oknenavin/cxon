@@ -78,9 +78,6 @@ namespace cxon { namespace test {
         struct force_input_iterator;
 
     template <typename X, typename T>
-        inline std::string to_string(const T& t);
-
-    template <typename X, typename T>
         inline bool verify_read(const T& ref, const std::string& sbj);
     template <typename X, typename T, typename E>
         inline bool verify_read(const T& ref, const std::string& sbj, E err, int pos = -1);
@@ -104,103 +101,55 @@ namespace cxon { namespace test {
 
 namespace cxon { namespace test {
 
-    template <typename X, typename T>
-        inline std::string to_string(const T& t) {
-            std::string s;
-                to_bytes<X>(s, t);
-            return s;
-        }
-
     template <typename ...>
         struct match;
 
     template <typename T>
         struct match<T> {
             template <typename U = T>
-                static auto values(const U& t0, const U& t1) -> enable_if_t<!std::is_floating_point<U>::value, bool> {
+                static auto values(U t0, U t1) -> enable_if_t<!std::is_floating_point<U>::value, bool> {
                     return t0 == t1;
                 }
             template <typename U = T>
-                static auto values(const U& t0, const U& t1) -> enable_if_t< std::is_floating_point<U>::value, bool> {
+                static auto values(U t0, U t1) -> enable_if_t< std::is_floating_point<U>::value, bool> {
                     return !std::isgreater(t0, t1) && !std::isless(t0, t1);
                 }
         };
     template <typename T>
         struct match<T*> {
-            static bool values(const T* t0, const T* t1) {
-                return t0 == t1 || (t0 && match<T>::values(*t0, *t1));
-            }
-        };
-    template <>
-        struct match<const char*> {
-            static bool values(const char* t0, const char* t1) {
-                return t0 == t1 || (t0 && std::strcmp(t0, t1) == 0);
-            }
-        };
-    template <>
-        struct match<char*> {
-            static bool values(const char* t0, const char* t1) {
-                return t0 == t1 || (t0 && std::strcmp(t0, t1) == 0);
-            }
-        };
-    template <>
-        struct match<const char16_t*> {
-            static bool values(const char16_t* t0, const char16_t* t1) {
-                while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
-                return *t0 == *t1;
-            }
-        };
-    template <>
-        struct match<char16_t*> {
-            static bool values(const char16_t* t0, const char16_t* t1) {
-                while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
-                return *t0 == *t1;
-            }
-        };
-    template <>
-        struct match<const char32_t*> {
-            static bool values(const char32_t* t0, const char32_t* t1) {
-                while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
-                return *t0 == *t1;
-            }
-        };
-    template <>
-        struct match<char32_t*> {
-            static bool values(const char32_t* t0, const char32_t* t1) {
-                while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
-                return *t0 == *t1;
-            }
-        };
-    template <>
-        struct match<const wchar_t*> {
-            static bool values(const wchar_t* t0, const wchar_t* t1) {
-                while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
-                return *t0 == *t1;
-            }
-        };
-    template <>
-        struct match<wchar_t*> {
-            static bool values(const wchar_t* t0, const wchar_t* t1) {
-                while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
-                return *t0 == *t1;
-            }
+            template <typename U = T>
+                static auto values(const T* t0, const T* t1) -> enable_if_t<!is_char<U>::value, bool> {
+                    return t0 == t1 || (t0 && t1 && match<T>::values(*t0, *t1));
+                }
+            template <typename U = T>
+                static auto values(const T* t0, const T* t1) -> enable_if_t< is_char<U>::value, bool> {
+                    if (!t0 || !t1) return t0 == t1;
+                    while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
+                    return *t0 == *t1;
+                }
         };
     template <typename T, size_t N>
         struct match<T[N]> {
             static bool values(const T (&t0)[N], const T (&t1)[N]) {
-                return std::equal(std::begin(t0), std::end(t0), std::begin(t1), [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); });
+                return std::equal(
+                    std::begin(t0), std::end(t0), std::begin(t1),
+                    [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); }
+                );
             }
         };
     template <typename T>
         struct match<std::valarray<T>> {
             static bool values(const std::valarray<T>& t0, const std::valarray<T>& t1) {
-                return std::equal(std::begin(t0), std::end(t0), std::begin(t1), [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); });
+                return std::equal(
+                    std::begin(t0), std::end(t0), std::begin(t1),
+                    [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); }
+                );
             }
         };
     template <typename T>
         struct match<std::priority_queue<T>> {
             static bool values(const std::priority_queue<T>& t0, const std::priority_queue<T>& t1) {
-                auto r0 = t0; auto r1 = t1;
+                auto r0 = t0, r1 = t1;
                     while (!r0.empty() && !r1.empty()) {
                         if (!match<T>::values(r0.top(), r1.top())) return false;
                         r0.pop(); r1.pop();
