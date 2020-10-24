@@ -22,7 +22,7 @@ namespace cxon { namespace bio {
     // input
 
     template <typename II>
-        inline byte peak(II& i, II e, byte d = 0xFF);
+        inline byte peek(II& i, II e, byte d = 0xFF);
 
     template <typename II>
         inline byte get(II& i, II e, byte d = 0xFF);
@@ -73,7 +73,7 @@ namespace cxon { namespace bio {
     // input
 
     template <typename II>
-        inline byte peak(II& i, II e, byte d/* = 0xFF*/) {
+        inline byte peek(II& i, II e, byte d/* = 0xFF*/) {
             return i != e ? *i : d;
         }
 
