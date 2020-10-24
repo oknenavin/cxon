@@ -19,6 +19,10 @@ TEST_BEG(cxon::CBOR<>)
     // T[]
         {   unsigned a[] = {1, 2, 3};
             R_TEST(a, BS("\x83\x01\x02\x03"));
+                R_TEST(a, BS("\xA3\x01\x02\x03"), cbor::read_error::size_invalid, 0);       // bad major type
+                R_TEST(a, BS("\x82\x01\x02"), cbor::read_error::size_invalid, 0);           // bad size
+                R_TEST(a, BS("\x84\x01\x02\x03\x04"), cbor::read_error::size_invalid, 0);   // bad size
+                R_TEST(a, BS("\x83\x01\x02\xF5"), cbor::read_error::integer_invalid, 3);    // bad element type
             W_TEST(BS("\x83\x01\x02\x03"), a);
         }
         {   int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25};

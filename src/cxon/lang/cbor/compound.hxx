@@ -51,11 +51,19 @@ namespace cxon { // array
                         return  s = b, true;
                     case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
                         return  (bio::get(s, b - 23, i, e)) ||
-                                (bio::rewind(i, o), cx|cbor::read_error::integer_invalid) // TODO: size invalid
+                                (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                         ;
                     default:
-                        return  (bio::rewind(i, o), cx|cbor::read_error::integer_invalid); // TODO: size invalid
+                        return  (bio::rewind(i, o), cx|cbor::read_error::size_invalid);
                 }
+            }
+
+        template <typename X, size_t N, typename II, typename Cx>
+            inline bool read_size_n_(bio::byte m, size_t& s, II& i, II e, Cx& cx) {
+                II const o = i;
+                return  read_size_<X>(m, s, i, e, cx) &&
+                        (s == N || (bio::rewind(i, o), cx|cbor::read_error::size_invalid))
+                ;
             }
 
     }
@@ -64,12 +72,10 @@ namespace cxon { // array
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    size_t s;
-                    if (!bits::read_size_<J>(X::arr, s, i, e, cx)) return false;
-                    for (size_t j = 0; j != N; ++j) {
-                        if (!read_value<J>(t[j], i, e, cx)) return false;
-                    }
-                    return true;
+                    size_t s, j = 0;
+                    if (bits::read_size_n_<J, N>(J::arr, s, i, e, cx))
+                        for ( ; j != N && read_value<J>(t[j], i, e, cx); ++j) ;
+                    return j == N;
                 }
         };
 
@@ -90,11 +96,10 @@ namespace cxon { // array
         struct write<CBOR<X>, T[N]> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    if (!bits::write_size_<X>(o, X::arr, N, cx)) return false;
-                    for (auto& e : t) {
-                        if (!write_value<J>(o, e, cx)) return false;
-                    }
-                    return true;
+                    size_t i = 0;
+                    if (bits::write_size_<J>(o, J::arr, N, cx))
+                        for ( ; i != N && write_value<J>(o, t[i], cx); ++ i) ;
+                    return i == N;
                 }
         };
 

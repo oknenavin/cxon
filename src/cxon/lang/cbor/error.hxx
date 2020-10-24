@@ -16,7 +16,8 @@ namespace cxon { namespace cbor {
         boolean_invalid,        // boolean invalid
         null_invalid,           // null invalid
         integer_invalid,        // integer invalid
-        floating_point_invalid  // integer invalid
+        floating_point_invalid, // integer invalid
+        size_invalid            // size invalid
     };
 
     enum class write_error : int {
@@ -37,6 +38,7 @@ namespace cxon { namespace cbor {
                 case read_error::null_invalid:              return "invalid null";
                 case read_error::integer_invalid:           return "invalid integer";
                 case read_error::floating_point_invalid:    return "invalid floating-point";
+                case read_error::size_invalid:              return "invalid size";
                 default:                                    return "unknown error";
             }
         }
