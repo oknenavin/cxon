@@ -43,7 +43,7 @@ namespace cxon { namespace cbor { // format traits
         static constexpr bio::byte  fp16    = 0xF9; // 7, half-precision float (two-byte IEEE 754)
         static constexpr bio::byte  fp32    = 0xFA; // 7, single-precision float (four-byte IEEE 754)
         static constexpr bio::byte  fp64    = 0xFB; // 7, double-precision float (eight-byte IEEE 754)
-                                                    // 7, 0xFC-0xFE, unassigned
+                                                    // 7, 0xFC-0xFE, unassigned (reserved?)
         static constexpr bio::byte  brk     = 0xFF; // 7, break stop code for indefinite length items
 
         static constexpr bool strict = false;
