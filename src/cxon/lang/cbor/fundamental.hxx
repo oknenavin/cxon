@@ -45,17 +45,6 @@ namespace cxon { // bool
 
 namespace cxon { // numeric & character
 
-    namespace bits {
-
-        template <typename X, typename T, typename II>
-            inline auto get_(T& t, unsigned n, II& i, II e, bio::byte m)
-                -> enable_if_t<std::is_integral<T>::value, bool>
-            {
-                return bio::get(t, n, i, e) && (!(m & X::nint) || (t = -1 - t, true));
-            }
-
-    }
-
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && is_same_format<X, CBOR>::value, bool>
@@ -65,16 +54,17 @@ namespace cxon { // numeric & character
                 case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
                 case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
                 case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
+                    return  t = T(b), true;
                 case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
                 case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
                 case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55:
-                    return  t = static_cast<T>((b & X::nint) ? -1 - (b - X::nint) : b), true;
+                    return  t = T(-1 - (b - X::nint)), true;
                 case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
-                    return  bits::get_<X>(t, b - 23, i, e, b) ||
+                    return  (bio::get(t, b - 23, i, e)) ||
                             (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
                     ;
                 case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63:
-                    return  bits::get_<X>(t, b - 55, i, e, b) ||
+                    return  (bio::get(t, b - 55, i, e) && (t = -1 - t, true)) ||
                             (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
                     ;
                 default:
@@ -84,15 +74,15 @@ namespace cxon { // numeric & character
 
     namespace bits {
 
-        template <typename FP>  struct unsigned_;
-        template <>             struct unsigned_<float> { using type = unsigned long; };
-        template <>             struct unsigned_<double> { using type = unsigned long long; };
+        template <typename T>   struct unsigned_;
+        template <>             struct unsigned_<float>     { using type = unsigned long; };
+        template <>             struct unsigned_<double>    { using type = unsigned long long; };
         template <typename T>
             using unsigned_type_ = typename unsigned_<T>::type;
 
-        template <typename FP>  struct signed_;
-        template <>             struct signed_<float> { using type = long; };
-        template <>             struct signed_<double> { using type = long long; };
+        template <typename T>   struct signed_;
+        template <>             struct signed_<float>       { using type = long; };
+        template <>             struct signed_<double>      { using type = long long; };
         template <typename T>
             using signed_type_ = typename signed_<T>::type;
 
@@ -104,24 +94,6 @@ namespace cxon { // numeric & character
         {
             II const o = i;
             switch (bio::byte const b = bio::get(i, e)) {
-                case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
-                case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
-                case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
-                case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
-                case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
-                case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55:
-                    return  t = static_cast<T>((b & X::nint) ? -1 - (b - X::nint) : b), true;
-                case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: {
-                    bits::unsigned_type_<T> tt;
-                    return  (bits::get_<X>(tt, b - 23, i, e, b) && (t = static_cast<T>(tt), true)) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
-                    ;
-                }
-                case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63:
-                    bits::signed_type_<T> tt;
-                    return  (bits::get_<X>(tt, b - 55, i, e, b) && (t = static_cast<T>(tt), true)) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
-                    ;
                 case X::fp16:
                     /*return  bio ::get<2>(t, i, e) ||
                             (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
@@ -137,6 +109,27 @@ namespace cxon { // numeric & character
                     ;
                 default:
                     return  (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid);
+                // from integral
+                case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
+                case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
+                case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
+                    return  t = T(b), true;
+                case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
+                case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
+                case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55:
+                    return  t = T(-1 - (b - X::nint)), true;
+                case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: {
+                    bits::unsigned_type_<T> u;
+                    return  (bio::get(u, b - 23, i, e) && (t = T(u), true)) ||
+                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
+                    ;
+                }
+                case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: {
+                    bits::signed_type_<T> u;
+                    return  (bio::get(u, b - 55, i, e) && (t = T(-1 - u), true)) ||
+                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
+                    ;
+                }
             }
         }
 
