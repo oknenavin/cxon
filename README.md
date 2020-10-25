@@ -6,7 +6,7 @@
 [![Format][img-fmt]](http://json.org)  
 [![License][img-lic]](LICENSE)
 
-[![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.org/oknenavin/cxon)
+[![Build][img-lnx]![img-osx]![img-win]![img-bld]](https://travis-ci.com/oknenavin/cxon)
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 [![Quality][img-cod]](https://www.codacy.com/app/oknenavin/cxon?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
 [![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
@@ -215,7 +215,7 @@ of such a polymorphic type (and also an example of how `CXON` can be used).
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`, 
-`clang++-3.5` and `msvc++ 14.1` (see [builds](https://travis-ci.org/oknenavin/cxon)).
+`clang++-3.5` and `msvc++ 14.1` (see [builds](https://travis-ci.com/oknenavin/cxon)).
 
 
 --------------------------------------------------------------------------------
@@ -270,7 +270,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-lnx]: .rc/linux.png
 [img-osx]: .rc/osx.png
 [img-win]: .rc/windows.png
-[img-bld]: https://travis-ci.org/oknenavin/cxon.svg?branch=master
+[img-bld]: https://travis-ci.com/oknenavin/cxon.svg?branch=master
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
 [img-cod]: https://api.codacy.com/project/badge/Grade/503ff2e908b745ba9dfeba2b50ec2201
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
