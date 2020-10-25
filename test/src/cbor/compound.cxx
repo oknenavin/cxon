@@ -15,18 +15,33 @@ TEST_BEG(cxon::CBOR<>)
             W_TEST(BS("\x1B\x01\x01\x01\x01"), &n);
         }
         R_TEST((int*)nullptr, BS("\xF6"));
+        R_TEST((int*)nullptr, BS("\xF7"), cbor::read_error::integer_invalid, 0);
         W_TEST(BS("\xF6"), (int*)nullptr);
     // T[]
-        {   unsigned a[] = {1, 2, 3};
-            R_TEST(a, BS("\x83\x01\x02\x03"));
+        {   unsigned a[] = { 1, 2, 3 };
+            R_TEST(a, BS("\x83\x01\x02\x03"));      // definite
+            R_TEST(a, BS("\x9F\x01\x02\x03\xFF"));  // indefinite
+                // definite
                 R_TEST(a, BS("\xA3\x01\x02\x03"), cbor::read_error::size_invalid, 0);       // bad major type
-                R_TEST(a, BS("\x82\x01\x02"), cbor::read_error::size_invalid, 0);           // bad size
-                R_TEST(a, BS("\x84\x01\x02\x03\x04"), cbor::read_error::size_invalid, 0);   // bad size
+                R_TEST(a, BS("\x82\x01\x02"), cbor::read_error::size_invalid, 1);           // bad size
+                R_TEST(a, BS("\x84\x01\x02\x03\x04"), cbor::read_error::size_invalid, 1);   // bad size
                 R_TEST(a, BS("\x83\x01\x02\xF5"), cbor::read_error::integer_invalid, 3);    // bad element type
+                // indefinite
+                R_TEST(a, BS("\x9F\x01\x02\xFF"), cbor::read_error::size_invalid, 1);           // bad size
+                R_TEST(a, BS("\x9F\x01\x02\x03\x04\xFF"), cbor::read_error::size_invalid, 1);   // bad size
+                R_TEST(a, BS("\x9F\x01\x02\xF5\xFF"), cbor::read_error::integer_invalid, 3);    // bad element type
             W_TEST(BS("\x83\x01\x02\x03"), a);
         }
-        {   int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25};
-            R_TEST(a, BS("\x98\x19\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x18\x18\x19"));
+        {   unsigned a[][3] = { {1, 2, 3}, {1, 2, 3} };
+            R_TEST(a, BS("\x82\x83\x01\x02\x03\x83\x01\x02\x03"));              // definite
+            R_TEST(a, BS("\x9F\x83\x01\x02\x03\x83\x01\x02\x03\xFF"));          // indefinite
+            R_TEST(a, BS("\x82\x9F\x01\x02\x03\xFF\x83\x01\x02\x03"));          // indefinite
+            R_TEST(a, BS("\x82\x83\x01\x02\x03\x9F\x01\x02\x03\xFF"));          // indefinite
+            R_TEST(a, BS("\x9F\x9F\x01\x02\x03\xFF\x9F\x01\x02\x03\xFF\xFF"));  // indefinite
+        }
+        {   int a[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 };
+            R_TEST(a, BS("\x98\x19\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x18\x18\x19"));  // definite
+            R_TEST(a, BS("\x9F\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x18\x18\x19\xFF"));  // indefinite
             W_TEST(BS("\x98\x19\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x18\x18\x19"), a);
         }
 TEST_END()

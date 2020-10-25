@@ -41,6 +41,8 @@ namespace cxon { // array
 
     namespace bits {
 
+        static constexpr size_t size_indefinite_ = std::numeric_limits<size_t>::max();
+
         template <typename X, typename II, typename Cx>
             inline bool read_size_(bio::byte m, size_t& s, II& i, II e, Cx& cx) {
                 II const o = i;
@@ -49,20 +51,40 @@ namespace cxon { // array
                     case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
                     case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
                         return  s = b, true;
-                    case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
+                    case 24: case 25: case 26: case 27: case 28: case 29: case 30:
                         return  (bio::get(s, b - 23, i, e)) ||
                                 (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                         ;
+                    case 31:
+                        return  s = size_indefinite_, true;
                     default:
                         return  (bio::rewind(i, o), cx|cbor::read_error::size_invalid);
                 }
             }
 
-        template <typename X, size_t N, typename II, typename Cx>
-            inline bool read_size_n_(bio::byte m, size_t& s, II& i, II e, Cx& cx) {
-                II const o = i;
-                return  read_size_<X>(m, s, i, e, cx) &&
-                        (s == N || (bio::rewind(i, o), cx|cbor::read_error::size_invalid))
+        template <typename X, typename T, size_t N, typename II, typename Cx>
+            inline bool read_array_fix_(T (&t)[N], size_t n, II& i, II e, Cx& cx) {
+                    if (n != N) return cx|cbor::read_error::size_invalid;
+                size_t j = 0;
+                    for ( ; j != n && read_value<X>(t[j], i, e, cx); ++j) ;
+                return j == n;
+            }
+
+        template <typename X, typename T, typename II, typename Cx>
+            inline bool read_array_var_(T* t, size_t n, II& i, II e, Cx& cx) {
+                II const o = i; size_t j = 0;
+                    for ( ; j != n && bio::peek(i, e, 0) != X::brk; ++j)
+                        if (!read_value<X>(t[j], i, e, cx)) return false;
+                return  (j == n && bio::get(i, e, 0) == X::brk) ||
+                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
+                ;
+            }
+
+        template <typename X, typename T, size_t N, typename II, typename Cx>
+            inline bool read_array_(T (&t)[N], size_t n, II& i, II e, Cx& cx) {
+                return n == bits::size_indefinite_ ?
+                    read_array_var_<X>(t, N, i, e, cx) :
+                    read_array_fix_<X>(t, n, i, e, cx)
                 ;
             }
 
@@ -72,10 +94,10 @@ namespace cxon { // array
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    size_t s, j = 0;
-                    if (bits::read_size_n_<J, N>(J::arr, s, i, e, cx))
-                        for ( ; j != N && read_value<J>(t[j], i, e, cx); ++j) ;
-                    return j == N;
+                    size_t n;
+                    return  bits::read_size_<J>(J::arr, n, i, e, cx) &&
+                            bits::read_array_<J>(t, n, i, e, cx)
+                    ;
                 }
         };
 
