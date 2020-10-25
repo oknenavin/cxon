@@ -297,4 +297,3 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [std-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
 [std-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
- 
