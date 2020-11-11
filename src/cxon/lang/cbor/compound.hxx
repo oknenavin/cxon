@@ -41,10 +41,10 @@ namespace cxon { // array
 
     namespace bits {
 
-        static constexpr size_t size_indefinite_ = std::numeric_limits<size_t>::max();
+        static constexpr size_t count_indefinite_ = std::numeric_limits<size_t>::max();
 
         template <typename X, typename II, typename Cx>
-            inline bool read_size_(bio::byte m, size_t& s, II& i, II e, Cx& cx) {
+            inline bool read_count_(bio::byte m, size_t& s, II& i, II e, Cx& cx) {
                 II const o = i;
                 switch (bio::byte const b = bio::get(i, e) - m) {
                     case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
@@ -56,7 +56,7 @@ namespace cxon { // array
                                 (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                         ;
                     case 31:
-                        return  s = size_indefinite_, true;
+                        return  s = count_indefinite_, true;
                     default:
                         return  (bio::rewind(i, o), cx|cbor::read_error::size_invalid);
                 }
@@ -64,25 +64,25 @@ namespace cxon { // array
 
         template <typename X, typename T, size_t N, typename II, typename Cx>
             inline bool read_array_fix_(T (&t)[N], size_t n, II& i, II e, Cx& cx) {
-                    if (n != N) return cx|cbor::read_error::size_invalid;
-                size_t j = 0;
-                    for ( ; j != n && read_value<X>(t[j], i, e, cx); ++j) ;
-                return j == n;
+                    if (n > N) return cx|cbor::read_error::size_invalid;
+                for (size_t j = 0; j != n; ++j) 
+                    if (!read_value<X>(t[j], i, e, cx)) return false;
+                return true;
             }
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_var_(T* t, size_t n, II& i, II e, Cx& cx) {
-                II const o = i; size_t j = 0;
-                    for ( ; j != n && bio::peek(i, e, 0) != X::brk; ++j)
+                II const o = i;
+                    for (size_t j = 0; j != n && bio::peek(i, e, 0) != X::brk; ++j)
                         if (!read_value<X>(t[j], i, e, cx)) return false;
-                return  (j == n && bio::get(i, e, 0) == X::brk) ||
+                return  (bio::get(i, e, 0) == X::brk) ||
                         (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                 ;
             }
 
         template <typename X, typename T, size_t N, typename II, typename Cx>
             inline bool read_array_(T (&t)[N], size_t n, II& i, II e, Cx& cx) {
-                return n == bits::size_indefinite_ ?
+                return n == bits::count_indefinite_ ?
                     read_array_var_<X>(t, N, i, e, cx) :
                     read_array_fix_<X>(t, n, i, e, cx)
                 ;
@@ -95,7 +95,7 @@ namespace cxon { // array
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
                     size_t n;
-                    return  bits::read_size_<J>(J::arr, n, i, e, cx) &&
+                    return  bits::read_count_<J>(J::arr, n, i, e, cx) &&
                             bits::read_array_<J>(t, n, i, e, cx)
                     ;
                 }
@@ -104,7 +104,7 @@ namespace cxon { // array
     namespace bits {
 
         template <typename X, typename O, typename Cx>
-            inline bool write_size_(O& o, bio::byte m, size_t s, Cx& cx) {
+            inline bool write_count_(O& o, bio::byte m, size_t s, Cx& cx) {
                 unsigned const n = bits::bytes_(s);
                 return s > 23 ?
                     bio::poke<X>(o, bio::byte(m + 23 + n), cx) && bio::poke<X>(o, s, n, cx) :
@@ -119,7 +119,7 @@ namespace cxon { // array
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
                     size_t i = 0;
-                    if (bits::write_size_<J>(o, J::arr, N, cx))
+                    if (bits::write_count_<J>(o, J::arr, N, cx))
                         for ( ; i != N && write_value<J>(o, t[i], cx); ++ i) ;
                     return i == N;
                 }
