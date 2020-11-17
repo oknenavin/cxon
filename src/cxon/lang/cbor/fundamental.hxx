@@ -173,11 +173,24 @@ namespace cxon { // numeric & character
                 return t >> 32 ? (t >> 48 ? (t >> 56 ? 8 : 7) : (t >> 40 ? 6 : 5)) : (t >> 16 ? (t >> 24 ? 4 : 3) : (t >> 8 ? 2 : 1));
             }
 
+        template <typename T>
+            struct is_signed {
+                static constexpr bool value = std::is_signed<T>::value && !std::is_same<T, char>::value && !std::is_same<T, wchar_t>::value;
+            };
+        template <typename T>
+            struct is_unsigned {
+                static constexpr bool value = std::is_unsigned<T>::value && !std::is_same<T, char>::value && !std::is_same<T, wchar_t>::value;
+            };
+        template <typename T>
+            struct is_quantum {
+                static constexpr bool value = std::is_same<T, char>::value || std::is_same<T, wchar_t>::value;
+            };
+
     }
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && bits::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             unsigned const n = bits::bytes_(t);
             return t > 23 ?
@@ -187,7 +200,18 @@ namespace cxon { // numeric & character
         }
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && bits::is_quantum<T>::value && is_same_format<X, CBOR>::value, bool>
+        {
+            using Q = typename std::make_unsigned<T>::type;
+            unsigned const n = bits::bytes_(t);
+            return Q(t) > 23 ?
+                bio::poke<X>(o, bio::byte(X::pint + 23 + n), cx) && bio::poke<X>(o, Q(t), n, cx) :
+                bio::poke<X>(o, bio::byte(X::pint + Q(t)), cx)
+            ;
+        }
+    template <typename X, typename T, typename O, typename Cx>
+        inline auto write_value(O& o, T t, Cx& cx)
+            -> enable_if_t<std::is_integral<T>::value && bits::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             bio::byte const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
             unsigned const n = bits::bytes_(t);
