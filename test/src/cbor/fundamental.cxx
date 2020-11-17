@@ -24,10 +24,14 @@ TEST_BEG(cxon::CBOR<>)
             R_TEST(nullptr, BS(""), cbor::read_error::null_invalid, 0);
             R_TEST(nullptr, BS("\xF7"), cbor::read_error::null_invalid, 0);
             R_TEST(nullptr, BS("\xFF"), cbor::read_error::null_invalid, 0);
-    // char
+    // char, unspecified signedness
         R_TEST((char)0x00, BS("\x00"));
         R_TEST((char)0x17, BS("\x17"));
         R_TEST((char)0x18, BS("\x18\x18"));
+        R_TEST((char)0x80, BS("\x18\x80"));
+        R_TEST((char)0xFF, BS("\x18\xFF"));
+        W_TEST(BS("\x18\xFF"), (char)0xFF);
+        W_TEST(BS("\x18\x80"), (char)0x80);
         W_TEST(BS("\x18\x18"), (char)0x18);
         W_TEST(BS("\x17"), (char)0x17);
         W_TEST(BS("\x00"), (char)0x00);
@@ -49,10 +53,14 @@ TEST_BEG(cxon::CBOR<>)
         W_TEST(BS("\x19\x01\x01"), (char32_t)0x0101);
         W_TEST(BS("\x18\x18"), (char32_t)0x18);
         W_TEST(BS("\x17"), (char32_t)0x17);
-    // wchar_t
+    // wchar_t, unspecified signedness
         R_TEST((wchar_t)0x17, BS("\x17"));
         R_TEST((wchar_t)0x18, BS("\x18\x18"));
         R_TEST((wchar_t)0x0101, BS("\x19\x01\x01"));
+        R_TEST((wchar_t)0x8000, BS("\x19\x80\x00"));
+        R_TEST((wchar_t)0xFFFF, BS("\x19\xFF\xFF"));
+        W_TEST(BS("\x19\xFF\xFF"), (wchar_t)0xFFFF);
+        W_TEST(BS("\x19\x80\x00"), (wchar_t)0x8000);
         W_TEST(BS("\x19\x01\x01"), (wchar_t)0x0101);
         W_TEST(BS("\x18\x18"), (wchar_t)0x18);
         W_TEST(BS("\x17"), (wchar_t)0x17);

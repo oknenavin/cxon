@@ -88,7 +88,7 @@ namespace cxon { namespace bio {
             inline auto get_n_(byte (&bs)[N], II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
                 using dt = typename std::iterator_traits<II>::difference_type;
                 return  std::distance(i, e) >= static_cast<dt>(N) &&
-                        (std::copy(i, e, std::begin(bs)), std::advance(i, N), true)
+                        (std::copy(i, i + N, std::begin(bs)), std::advance(i, N), true)
                 ;
             }
         template <typename II>
