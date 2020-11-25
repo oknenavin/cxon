@@ -181,9 +181,9 @@ namespace cxon {
             operator FwIt() const noexcept { return b_; }
 
             private:
-                FwIt        b_;
-                FwIt const  e_;
-                bool        g_ = true;
+                FwIt b_;
+                FwIt e_;
+                bool g_ = true;
         };
 
     template <typename FwIt>

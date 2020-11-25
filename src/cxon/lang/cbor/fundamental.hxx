@@ -45,30 +45,42 @@ namespace cxon { // bool
 
 namespace cxon { // numeric & character
 
+    namespace bits {
+
+        template <typename X, typename T, typename II, typename Cx>
+            inline bool read_unsigned_(T& t, II& i, II e, Cx& cx) {
+                II const o = i;
+                switch (auto const b = bio::get(i, e) & X::mnr) {
+                    case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
+                    case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+                    case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                        return  (t = T(b), true);
+                    case 0x18: case 0x19: case 0x1A: case 0x1B:
+                        return  (bio::get(t, 1 << (b - 0x18), i, e)) ||
+                                (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
+                        ;
+                    case 0x1C: case 0x1D: case 0x1E: case 0x1F:
+                        return  (bio::rewind(i, o), cx|cbor::read_error::integer_invalid);
+                    default:
+                        return CXON_ASSERT(0, "unexpected"), false;
+                }
+            }
+
+        template <typename X, typename T, typename II, typename Cx>
+            inline bool read_signed_(T& t, II& i, II e, Cx& cx) {
+                return read_unsigned_<X>(t, i, e, cx) && (t = -1 - t, true);
+            }
+
+    }
+
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            II const o = i;
-            switch (bio::byte const b = bio::get(i, e)) {
-                case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
-                case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
-                case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
-                    return  t = T(b), true;
-                case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
-                case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
-                case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55:
-                    return  t = T(-1 - (b - X::nint)), true;
-                case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
-                    return  (bio::get(t, b - 23, i, e)) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
-                    ;
-                case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63:
-                    return  (bio::get(t, b - 55, i, e) && (t = -1 - t, true)) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
-                    ;
-                default:
-                    return  (bio::rewind(i, o), cx|cbor::read_error::integer_invalid);
+            switch (bio::peek(i, e) & X::mjr) {
+                case 0x00:  return bits::read_unsigned_<X>(t, i, e, cx);
+                case 0x20:  return bits::read_signed_<X>(t, i, e, cx);
+                default:    return cx|cbor::read_error::integer_invalid;
             }
         }
 
@@ -92,99 +104,59 @@ namespace cxon { // numeric & character
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_floating_point<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            II const o = i;
-            switch (bio::byte const b = bio::get(i, e)) {
-                case X::fp16:
-                    /*return  bio ::get<2>(t, i, e) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
-                    ;*/
-                    return  CXON_ASSERT(0, "not implemented"), false;
-                case X::fp32:
-                    return  bio ::get<4>(t, i, e) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
-                    ;
-                case X::fp64:
-                    return  bio ::get<8>(t, i, e) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
-                    ;
-                default:
-                    return  (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid);
+            switch (bio::peek(i, e) & X::mjr) {
+                case 0xE0: {
+                    II const o = i;
+                    switch (bio::get(i, e)) {
+                        case X::fp16:
+                            /*return  (bio ::get<2>(t, i, e)) ||
+                                    (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                            ;*/
+                            return  CXON_ASSERT(0, "not implemented"), false;
+                        case X::fp32:
+                            return  (bio ::get<4>(t, i, e)) ||
+                                    (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                            ;
+                        case X::fp64:
+                            return  (bio ::get<8>(t, i, e)) ||
+                                    (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                            ;
+                        default:
+                            return  (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid);
+                    }
+                    break;
+                }
                 // from integral
-                case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
-                case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
-                case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
-                    return  t = T(b), true;
-                case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
-                case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
-                case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55:
-                    return  t = T(-1 - (b - X::nint)), true;
-                case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: {
+                case 0x00: {
                     bits::unsigned_type_<T> u;
-                    return  (bio::get(u, b - 23, i, e) && (t = T(u), true)) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
-                    ;
+                    return bits::read_unsigned_<X>(u, i, e, cx) && (t = T(u), true);
                 }
-                case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: {
+                case 0x20: {
                     bits::signed_type_<T> u;
-                    return  (bio::get(u, b - 55, i, e) && (t = T(-1 - u), true)) ||
-                            (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
-                    ;
+                    return bits::read_signed_<X>(u, i, e, cx) && (t = T(u), true);
                 }
+                default:
+                    return cx|cbor::read_error::floating_point_invalid;
             }
         }
 
     namespace bits {
 
         template <typename T>
-            inline auto bytes_(T  ) -> enable_if_t<sizeof(T) == 1, unsigned> {
-                return 1;
-            }
+            inline auto power_(T  ) -> enable_if_t<sizeof(T) == 1, unsigned> { return 0; }
         template <typename T>
-            inline auto bytes_(T t) -> enable_if_t<sizeof(T) == 2, unsigned> {
-                /*unsigned r, s;
-                r = (t > 0x00FF) << 3, t >>= r;
-                s = (t > 0x000F) << 2, t >>= s, r |= s;
-                s = (t > 0x0003) << 1, t >>= s, r |= s;
-                                                r |= (t >> 1), r >>= 3, ++r;
-                return r;*/
-                return t >> 8 ? 2 : 1;
-            }
+            inline auto power_(T t) -> enable_if_t<sizeof(T) == 2, unsigned> { return !(t >> 8) ? 0 : 1; }
         template <typename T>
-            inline auto bytes_(T t) -> enable_if_t<sizeof(T) == 4, unsigned> {
-                /*unsigned r, s;
-                r = (t > 0xFFFF) << 4, t >>= r;
-                s = (t > 0x00FF) << 3, t >>= s, r |= s;
-                s = (t > 0x000F) << 2, t >>= s, r |= s;
-                s = (t > 0x0003) << 1, t >>= s, r |= s;
-                                                r |= (t >> 1), r >>= 3, ++r;
-                return r;*/
-                return t >> 16 ? (t >> 24 ? 4 : 3) : (t >> 8 ? 2 : 1);
-            }
+            inline auto power_(T t) -> enable_if_t<sizeof(T) == 4, unsigned> { return !(t >> 16) ? !(t >> 8) ? 0 : 1 : 2; }
         template <typename T>
-            inline auto bytes_(T t) -> enable_if_t<sizeof(T) == 8, unsigned> {
-                /*unsigned r, s;
-                r = (t > 0xFFFFFFFF) << 5, t >>= r;
-                s = (t > 0x0000FFFF) << 4, t >>= s, r |= s;
-                s = (t > 0x000000FF) << 3, t >>= s, r |= s;
-                s = (t > 0x0000000F) << 2, t >>= s, r |= s;
-                s = (t > 0x00000003) << 1, t >>= s, r |= s;
-                                                    r |= (t >> 1), r >>= 3, ++r;
-                return r;*/
-                return t >> 32 ? (t >> 48 ? (t >> 56 ? 8 : 7) : (t >> 40 ? 6 : 5)) : (t >> 16 ? (t >> 24 ? 4 : 3) : (t >> 8 ? 2 : 1));
-            }
+            inline auto power_(T t) -> enable_if_t<sizeof(T) == 8, unsigned> { return !(t >> 32) ? !(t >> 16) ? !(t >> 8) ? 0 : 1 : 2 : 3; }
 
         template <typename T>
-            struct is_signed {
-                static constexpr bool value = std::is_signed<T>::value && !std::is_same<T, char>::value && !std::is_same<T, wchar_t>::value;
-            };
+            struct is_quantum   { static constexpr bool value = std::is_same<T, char>::value || std::is_same<T, wchar_t>::value; };
         template <typename T>
-            struct is_unsigned {
-                static constexpr bool value = std::is_unsigned<T>::value && !std::is_same<T, char>::value && !std::is_same<T, wchar_t>::value;
-            };
+            struct is_signed    { static constexpr bool value = std::is_signed<T>::value   && !is_quantum<T>::value; };
         template <typename T>
-            struct is_quantum {
-                static constexpr bool value = std::is_same<T, char>::value || std::is_same<T, wchar_t>::value;
-            };
+            struct is_unsigned  { static constexpr bool value = std::is_unsigned<T>::value && !is_quantum<T>::value; };
 
     }
 
@@ -192,9 +164,9 @@ namespace cxon { // numeric & character
         inline auto write_value(O& o, T t, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && bits::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            unsigned const n = bits::bytes_(t);
-            return t > 23 ?
-                bio::poke<X>(o, bio::byte(X::pint + 23 + n), cx) && bio::poke<X>(o, t, n, cx) :
+            auto const p = bits::power_(t);
+            return t > 0x17 ?
+                bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(X::pint + t), cx)
             ;
         }
@@ -203,9 +175,9 @@ namespace cxon { // numeric & character
             -> enable_if_t<std::is_integral<T>::value && bits::is_quantum<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             using Q = typename std::make_unsigned<T>::type;
-            unsigned const n = bits::bytes_(t);
-            return Q(t) > 23 ?
-                bio::poke<X>(o, bio::byte(X::pint + 23 + n), cx) && bio::poke<X>(o, Q(t), n, cx) :
+            auto const p = bits::power_(t);
+            return Q(t) > 0x17 ?
+                bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, Q(t), 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(X::pint + Q(t)), cx)
             ;
         }
@@ -213,10 +185,10 @@ namespace cxon { // numeric & character
         inline auto write_value(O& o, T t, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && bits::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            bio::byte const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
-            unsigned const n = bits::bytes_(t);
-            return t > 23 ?
-                bio::poke<X>(o, bio::byte(m + 23 + n), cx) && bio::poke<X>(o, t, n, cx) :
+            auto const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
+            auto const p = bits::power_(t);
+            return t > 0x17 ?
+                bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(m + t), cx)
             ;
         }
