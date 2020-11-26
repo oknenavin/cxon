@@ -285,10 +285,8 @@ namespace cxon { namespace bio {
             }
         template <typename OI, typename II>
             inline auto get_n_(OI o, II& i, II e, size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
-                CXON_ASSERT(e >= i, "unexpected");
-                return  (static_cast<size_t>(std::distance(i, e)) >= n) &&
-                        (std::copy(i, i + n, o), std::advance(i, n), true)
-                ;
+                auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
+                return  std::copy(i, i + m, o), std::advance(i, m), m == n;
             }
 
     }

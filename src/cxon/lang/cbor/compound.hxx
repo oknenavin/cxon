@@ -55,9 +55,8 @@ namespace cxon { // array
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_bytes_(T*& t, size_t n, II& i, II e, Cx& cx) {
-                II const o = i;
                 return  (bio::get(t, i, e, n) && (t += n, true)) ||
-                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
+                        (cx|cbor::read_error::unexpected)
                 ;
             }
 
