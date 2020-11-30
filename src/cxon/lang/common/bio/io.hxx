@@ -240,7 +240,7 @@ namespace cxon { namespace bio {
 
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N == 1, bool> {
-                return i != e && (t = T(*i++), true);
+                return i != e && (t = T(*i), ++i, true);
             }
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {
@@ -286,7 +286,7 @@ namespace cxon { namespace bio {
         template <typename OI, typename II>
             inline auto get_n_(OI o, II& i, II e, size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
                 auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
-                return  std::copy(i, i + m, o), std::advance(i, m), m == n;
+                return std::copy(i, i + m, o), std::advance(i, m), m == n;
             }
 
     }

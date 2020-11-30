@@ -47,8 +47,8 @@ namespace cxon { // array
             }
         template <typename X, typename II, typename Cx>
             inline bool read_size_(size_t& s, size_t n, II& i, II e, Cx& cx) {
-                II const o = i;
-                return  (read_size_<X>(s, i, e, cx) && s <= n) ||
+                II const o = i; size_t t;
+                return  (read_size_<X>(t, i, e, cx) && t <= n && (s = t, true)) ||
                         (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                 ;
             }
@@ -89,13 +89,11 @@ namespace cxon { // array
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_fix_(T* f, T* l, II& i, II e, Cx& cx) {
-                size_t n;
-                if (!read_size_<X>(n, std::distance(f, l), i, e, cx))
-                    return false;
-                for (size_t j = 0; j != n; ++j) 
-                    if (!read_value<X>(f[j], i, e, cx))
-                        return false;
-                return true;
+                size_t n = 1;
+                if (read_size_<X>(n, std::distance(f, l), i, e, cx))
+                    while (n != 0 && read_value<X>(*f, i, e, cx)) 
+                        --n, ++f;
+                return n == 0;
             }
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_var_(T* f, T* l, II& i, II e, Cx& cx) {
