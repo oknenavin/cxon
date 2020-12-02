@@ -14,6 +14,10 @@ TEST_BEG(cxon::CBOR<>)
             R_TEST(&n, BS("\x1A\x01\x01\x01\x01"));
             W_TEST(BS("\x1A\x01\x01\x01\x01"), &n);
         }
+        {   int *n = new int[3]; n[0] = 0, n[1] = 1, n[2] = 2;
+            R_TEST(n, BS("\x83\x00\x01\x02"));
+            //W_TEST(BS("\x83\x01\x02\x03"), n);
+        }
         R_TEST((int*)nullptr, BS("\xF6"));
         W_TEST(BS("\xF6"), (int*)nullptr);
         R_TEST((int*)nullptr, BS("\xF7"), cbor::read_error::integer_invalid, 0);

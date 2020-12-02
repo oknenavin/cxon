@@ -8,35 +8,6 @@
 
 #include "cxon/lang/common/bio/bio.hxx"
 
-namespace cxon { // pointer
-
-    template <typename X, typename T>
-        struct read<CBOR<X>, T*> {
-            template <typename II, typename Cx, typename Y = CBOR<X>>
-                static bool value(T*& t, II& i, II e, Cx& cx) {
-                    auto const b = bio::peek(i, e);
-                    if (b == Y::nil)
-                        return bio::get(i, e), t = nullptr, true;
-                    auto ax = bio::allocator::value(cx.px, std::allocator<T>());
-                    typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
-                        using al = std::allocator_traits<decltype(at)>;
-                    T *const n = al::allocate(at, 1); al::construct(at, n);
-                        if (!read_value<Y>(*n, i, e, cx))
-                            return al::destroy(at, n), al::deallocate(at, n, 1), false;
-                    return t = n, true;
-                }
-        };
-
-    template <typename X, typename T>
-        struct write<CBOR<X>, T*> {
-            template <typename O, typename Cx, typename Y = CBOR<X>>
-                static bool value(O& o, const T* t, Cx& cx) {
-                    return t ? write_value<Y>(o, *t, cx) : bio::poke<Y>(o, Y::nil, cx);
-                }
-        };
-
-}
-
 namespace cxon { // array
 
     namespace bits {
@@ -88,12 +59,15 @@ namespace cxon { // array
             }
 
         template <typename X, typename T, typename II, typename Cx>
-            inline bool read_array_w_fix_(T* f, T* l, II& i, II e, Cx& cx) {
-                size_t n = 1;
-                if (read_size_<X>(n, std::distance(f, l), i, e, cx))
-                    while (n != 0 && read_value<X>(*f, i, e, cx)) 
-                        --n, ++f;
+            inline bool read_array_w_fix_(T* f, size_t n, II& i, II e, Cx& cx) {
+                while (n != 0 && read_value<X>(*f, i, e, cx)) 
+                    --n, ++f;
                 return n == 0;
+            }
+        template <typename X, typename T, typename II, typename Cx>
+            inline bool read_array_w_fix_(T* f, T* l, II& i, II e, Cx& cx) {
+                size_t n;
+                return read_size_<X>(n, std::distance(f, l), i, e, cx) && read_array_w_fix_<X>(f, n, i, e, cx);
             }
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_var_(T* f, T* l, II& i, II e, Cx& cx) {
@@ -190,7 +164,86 @@ namespace cxon { // array
 
 }
 
-namespace cxon { // character pointer & array
+namespace cxon { // pointer
+
+    namespace bits {
+
+        template <typename X, typename T, typename Ax>
+            struct allocator_ {
+                T* create() {
+                    auto t = tr::allocate(al_, 1);
+                    return tr::construct(al_, t), t;
+                }
+                T* create(size_t n) {
+                    auto p = tr::allocate(al_, n);
+                        for (T *t = p, *te = t + n; t != te; ++t)
+                            tr::construct(al_, t);
+                    return p;
+                }
+
+                void release(T* t) {
+                    tr::destroy(al_, t), tr::deallocate(al_, t, 1);
+                }
+                void release(T* p, size_t n) {
+                    for (T *t = p, *te = t + n; t != te; ++t)
+                        tr::destroy(al_, t);
+                    tr::deallocate(al_, p, n);
+                }
+
+                private:
+                    using al = typename std::allocator_traits<Ax>::template rebind_alloc<T>;
+                    using tr = std::allocator_traits<al>;
+                    al al_;
+            };
+
+        template <typename X, typename T, typename Cx>
+            inline auto make_allocator_(Cx& cx)
+                -> allocator_<X, T, decltype(bio::allocator::value(cx.px, std::allocator<T>()))>
+            {
+                return allocator_<X, T, decltype(bio::allocator::value(cx.px, std::allocator<T>()))>{};
+            }
+
+    }
+
+    template <typename X, typename T>
+        struct read<CBOR<X>, T*> {
+            template <typename II, typename Cx, typename Y = CBOR<X>>
+                static bool value(T*& t, II& i, II e, Cx& cx) {
+                    auto const b = bio::peek(i, e);
+                    if (b == Y::nil)
+                        return bio::get(i, e), t = nullptr, true;
+
+                    auto al = bits::make_allocator_<X, T>(cx);
+
+                    switch (b & Y::mjr) {
+                        case Y::arr: {
+                            size_t n;
+                            if (!bits::read_size_<Y>(n, i, e, cx))
+                                return false;
+                        
+                            T *const a = al.create(n);
+                                if (!a || !bits::read_array_w_fix_<Y>(a, n, i, e, cx)) {
+                                    return al.release(a, n), false;
+                                }
+                            return t = a, true;
+                        }
+                        default: {
+                            T *const v = al.create();
+                                if (!v || !read_value<Y>(*v, i, e, cx))
+                                    return al.release(v), false;
+                            return t = v, true;
+                        }
+                    }
+                }
+        };
+
+    template <typename X, typename T>
+        struct write<CBOR<X>, T*> {
+            template <typename O, typename Cx, typename Y = CBOR<X>>
+                static bool value(O& o, const T* t, Cx& cx) {
+                    return t ? write_value<Y>(o, *t, cx) : bio::poke<Y>(o, Y::nil, cx);
+                }
+        };
 
 }
 

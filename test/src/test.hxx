@@ -115,6 +115,15 @@ namespace cxon { namespace test {
                     return !std::isgreater(t0, t1) && !std::isless(t0, t1);
                 }
         };
+    template <typename T, size_t N>
+        struct match<T[N]> {
+            static bool values(const T (&t0)[N], const T (&t1)[N]) {
+                return std::equal(
+                    std::begin(t0), std::end(t0), std::begin(t1),
+                    [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); }
+                );
+            }
+        };
     template <typename T>
         struct match<T*> {
             template <typename U = T>
@@ -127,15 +136,6 @@ namespace cxon { namespace test {
                     while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
                     return *t0 == *t1;
                 }
-        };
-    template <typename T, size_t N>
-        struct match<T[N]> {
-            static bool values(const T (&t0)[N], const T (&t1)[N]) {
-                return std::equal(
-                    std::begin(t0), std::end(t0), std::begin(t1),
-                    [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); }
-                );
-            }
         };
     template <typename T>
         struct match<std::valarray<T>> {
