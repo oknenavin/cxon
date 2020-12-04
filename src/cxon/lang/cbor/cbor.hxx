@@ -31,7 +31,7 @@ namespace cxon { namespace cbor { // format traits
         static constexpr bio::byte  pint    = 0x00; // 0, unsigned integer
         static constexpr bio::byte  nint    = 0x20; // 1, negative integer
         static constexpr bio::byte  bstr    = 0x40; // 2, byte string
-        static constexpr bio::byte  ustr    = 0x60; // 3, text string
+        static constexpr bio::byte  tstr    = 0x60; // 3, text string
 
         static constexpr bio::byte  arr     = 0x80; // 4, array of data items
         static constexpr bio::byte  map     = 0xA0; // 5, map of pairs of data items
