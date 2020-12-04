@@ -96,17 +96,30 @@ namespace cxon {
 
     // type traits
 
-    template <typename T>   struct is_bool : std::false_type {};
-    template <>             struct is_bool<bool> : std::true_type {};
+    namespace bits {
 
-    template <typename T>   struct is_char : std::false_type {};
-    template <>             struct is_char<char> : std::true_type {};
-    template <>             struct is_char<wchar_t> : std::true_type {};
-#   if __cplusplus >= 202002L
-        template <>             struct is_char<char8_t> : std::true_type {};
-#   endif
-    template <>             struct is_char<char16_t> : std::true_type {};
-    template <>             struct is_char<char32_t> : std::true_type {};
+        template <typename T>   struct is_bool_ : std::false_type {};
+        template <>             struct is_bool_<bool> : std::true_type {};
+
+        template <typename T>   struct is_char_ : std::false_type {};
+        template <>             struct is_char_<char> : std::true_type {};
+        template <>             struct is_char_<wchar_t> : std::true_type {};
+#       if __cplusplus >= 202002L
+            template <>             struct is_char_<char8_t> : std::true_type {};
+#       endif
+        template <>             struct is_char_<char16_t> : std::true_type {};
+        template <>             struct is_char_<char32_t> : std::true_type {};
+    }
+
+    template <typename T>
+        struct is_bool {
+            static constexpr bool value = bits::is_bool_<typename std::remove_cv<T>::type>::value;
+        };
+
+    template <typename T>
+        struct is_char {
+            static constexpr bool value = bits::is_char_<typename std::remove_cv<T>::type>::value;
+        };
 
     template <typename T>
         struct is_numeric {

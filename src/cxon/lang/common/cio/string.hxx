@@ -209,7 +209,7 @@ namespace cxon { namespace cio { namespace str {
             auto ax = allocator::value(cx.px, std::allocator<T>());
             typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
                 using al = std::allocator_traits<decltype(at)>;
-            T *b = al::allocate(at, 4), *p = b; T* be = b + 4;
+            T *b = al::allocate(at, 4), *p = b, *be = b + 4;
             for ( ; ; ) {
                 if (p + 4 > be) {
                     T *const n = al::allocate(at, 2 * (be - b));
