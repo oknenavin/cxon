@@ -173,23 +173,33 @@ namespace cxon { // pointer
             struct allocator_ {
                 T* create() {
                     auto t = tr::allocate(al_, 1);
-                    return tr::construct(al_, t), t;
+                    return construct(t), t;
                 }
                 T* create(size_t n) {
                     auto p = tr::allocate(al_, n);
                         for (T *t = p, *te = t + n; t != te; ++t)
-                            tr::construct(al_, t);
+                            construct(t);
                     return p;
                 }
 
                 void release(T* t) {
-                    tr::destroy(al_, t), tr::deallocate(al_, t, 1);
+                    destroy(t), tr::deallocate(al_, t, 1);
                 }
                 void release(T* p, size_t n) {
                     for (T *t = p, *te = t + n; t != te; ++t)
-                        tr::destroy(al_, t);
+                        destroy(t);
                     tr::deallocate(al_, p, n);
                 }
+
+                template <typename U = T> auto construct(U *u)
+                    -> enable_if_t<!std::is_trivial<U>::value> { tr::construct(al_, u); }
+                template <typename U = T> auto construct(U *)
+                    -> enable_if_t< std::is_trivial<U>::value> {}
+
+                template <typename U = T> auto destroy(U *u)
+                    -> enable_if_t<!std::is_trivial<U>::value> { tr::destroy(al_, u); }
+                template <typename U = T> auto destroy(U *)
+                    -> enable_if_t< std::is_trivial<U>::value> {}
 
                 private:
                     using al = typename std::allocator_traits<Ax>::template rebind_alloc<T>;
@@ -213,7 +223,7 @@ namespace cxon { // pointer
                 T *const a = al.create(n + 1);
                     if (!a || !rx_(a, n, i, e, cx))
                         return al.release(a, n + 1), false;
-                return t = a, true;
+                return a[n] = {}, t = a, true;
             }
 
         template <typename X, typename T, typename II, typename Cx>
@@ -222,26 +232,31 @@ namespace cxon { // pointer
             }
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_b_var_(T*& t, II& i, II e, Cx& cx) {
-                bio::byte const m = bio::get(i, e) & X::mjr;
                 auto al = bits::make_allocator_<X, T>(cx);
+                {   bio::byte const m = bio::get(i, e) & X::mjr;
+                    size_t cs = 0, ns;
+                    T *p = nullptr;
+                    for ( ; ; ) {
+                        auto const b = bio::peek(i, e, 0);
 
-                size_t cs = 0, ns;
-                T* p = nullptr;
-                for (auto b = bio::peek(i, e, 0); ; b = bio::peek(i, e, 0), cs += ns) {
-                    if (b == X::brk)
-                        return bio::get(i, e, 0), p || (p = al.create()), t = p, true;
-                    if (m != (b & X::mjr))
-                        return al.release(p, cs + 1), cx|cbor::read_error::array_invalid;
-                    if (!bits::read_size_<X>(ns, i, e, cx))
-                        return al.release(p, cs + 1), false;
-                    T *const n = al.create(cs + ns + 1);
+                        if (b == X::brk)
+                            return bio::get(i, e, 0), (p || (p = al.create())) && (p[cs] = {}, t = p, true);
+
+                        if (m != (b & X::mjr))
+                            return al.release(p, cs + 1), cx|cbor::read_error::array_invalid;
+
+                        if (!bits::read_size_<X>(ns, i, e, cx))
+                            return al.release(p, cs + 1), false;
+                        T *const n = al.create(cs + ns + 1);
                             std::copy_n(p, cs, n);
-                        al.release(p, cs + 1);
-                    p = n;
-                    if (!read_bytes_<X>(p + cs, ns, i, e, cx))
-                        return al.release(p, cs + ns + 1), false;
-                }
+                        al.release(p, cs + 1), p = n;
 
+                        if (!read_bytes_<X>(p + cs, ns, i, e, cx))
+                            return al.release(p, cs + ns + 1), false;
+
+                        cs += ns;
+                    }
+                }
                 return CXON_ASSERT(0, "unexpected"), false;
             }
         template <typename X, typename T, typename II, typename Cx>
@@ -262,23 +277,21 @@ namespace cxon { // pointer
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_w_var_(T*& t, II& i, II e, Cx& cx) {
                 bio::get(i, e);
-                auto al = bits::make_allocator_<X, T>(cx);
-
-                T *f = al.create(4), *l = f + 4;
-                for (T *p = f; ; ++p) {
-                    if (p == l) {
-                        T *const n = al.create(2 * (l - f));
-                            std::copy_n(f, l - f, n);
-                        p = n + (l - f);
-                        al.release(f, l - f);
-                        l = n + 2 * (l - f), f = n;
+                {   auto al = bits::make_allocator_<X, T>(cx);
+                    T *f = al.create(4), *l = f + 4;
+                    for (T *p = f; ; ++p) {
+                        if (p == l) {
+                            T *const n = al.create(2 * (l - f));
+                                std::copy_n(f, l - f, n);
+                            p = n + (l - f), al.release(f, l - f);
+                            l = n + 2 * (l - f), f = n;
+                        }
+                        if (bio::peek(i, e, 0) == X::brk)
+                            return bio::get(i, e, 0), p && (*p = {}, t = f, true);
+                        if (!p || !read_value<X>(*p, i, e, cx))
+                            return al.release(f, l - f), cx|cbor::read_error::unexpected;
                     }
-                    if (bio::peek(i, e, 0) == X::brk)
-                        return bio::get(i, e, 0), t = f, true;
-                    if (!read_value<X>(*p, i, e, cx))
-                        return al.release(f, l - f), cx|cbor::read_error::unexpected;
                 }
-
                 return CXON_ASSERT(0, "unexpected"), false;
             }
         template <typename X, typename T, typename II, typename Cx>
