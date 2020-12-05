@@ -43,7 +43,7 @@ namespace cxon { // bool
 
 }
 
-namespace cxon { // numeric & character
+namespace cxon { // numeric|character/read
 
     namespace bits {
 
@@ -139,6 +139,10 @@ namespace cxon { // numeric & character
                     return cx|cbor::read_error::floating_point_invalid;
             }
         }
+
+}
+
+namespace cxon { // numeric|character/write
 
     namespace bits {
 

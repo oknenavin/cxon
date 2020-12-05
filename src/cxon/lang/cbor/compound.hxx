@@ -7,8 +7,9 @@
 #define CXON_CBOR_COMPOUND_HXX_
 
 #include "cxon/lang/common/bio/bio.hxx"
+#include <cstring>
 
-namespace cxon { // array
+namespace cxon { // array/read
 
     namespace bits {
 
@@ -121,6 +122,10 @@ namespace cxon { // array
                 }
         };
 
+}
+
+namespace cxon { // array/write
+
     namespace bits {
 
         template <typename X, typename O, typename Cx>
@@ -165,7 +170,7 @@ namespace cxon { // array
 
 }
 
-namespace cxon { // pointer
+namespace cxon { // pointer/read
 
     namespace bits {
 
@@ -350,11 +355,29 @@ namespace cxon { // pointer
                 }
         };
 
+}
+
+namespace cxon { // pointer/write
+
     template <typename X, typename T>
         struct write<CBOR<X>, T*> {
-            template <typename O, typename Cx, typename Y = CBOR<X>>
-                static bool value(O& o, const T* t, Cx& cx) {
-                    return t ? write_value<Y>(o, *t, cx) : bio::poke<Y>(o, Y::nil, cx);
+            template <typename O, typename Cx, typename U = T, typename Y = CBOR<X>>
+                static auto value(O& o, const T* t, Cx& cx)
+                    -> enable_if_t<!is_char<U>::value, bool>
+                {
+                    return t ?
+                        write_value<Y>(o, *t, cx) :
+                        bio::poke<Y>(o, Y::nil, cx)
+                    ;
+                }
+            template <typename O, typename Cx, typename U = T, typename Y = CBOR<X>>
+                static auto value(O& o, const T* t, Cx& cx)
+                    -> enable_if_t< is_char<U>::value, bool>
+                {
+                    return t ?
+                        bits::write_array_<Y>(o, t, t + std::strlen(t), cx) :
+                        bio::poke<Y>(o, Y::nil, cx)
+                    ;
                 }
         };
 
