@@ -294,7 +294,7 @@ namespace cxon { // pointer/read
                         if (bio::peek(i, e, 0) == X::brk)
                             return bio::get(i, e, 0), p && (*p = {}, t = f, true);
                         if (!p || !read_value<X>(*p, i, e, cx))
-                            return al.release(f, l - f), cx|cbor::read_error::unexpected;
+                            return al.release(f, l - f), (p || cx|cbor::read_error::unexpected, false);
                     }
                 }
                 return CXON_ASSERT(0, "unexpected"), false;
@@ -375,7 +375,7 @@ namespace cxon { // pointer/write
                     -> enable_if_t< is_char<U>::value, bool>
                 {
                     return t ?
-                        bits::write_array_<Y>(o, t, t + std::strlen(t), cx) :
+                        bits::write_array_<Y>(o, t, t + std::char_traits<T>::length(t), cx) :
                         bio::poke<Y>(o, Y::nil, cx)
                     ;
                 }

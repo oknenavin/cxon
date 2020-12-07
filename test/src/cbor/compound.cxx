@@ -39,9 +39,9 @@ TEST_BEG(cxon::CBOR<>)
                     R_TEST(a, BS("\x7F\x62\x7F\x80\x41\x81\xFF"), cbor::read_error::array_invalid, 4);              // indefinite byte/text string mix
                     R_TEST(a, BS("\x7F\x41\x7F\x62\x80\x81\xFF"), cbor::read_error::array_invalid, 1);              // indefinite byte/text string mix
                     R_TEST(a, BS("\x44\x7F\x80\x81\x82"), cbor::read_error::size_invalid, 0);                       // more, invalid size (4)
-                    R_TEST(a, BS("\x84\x18\x7F\x18\x80\x18\x81\x18\x82"), cbor::read_error::size_invalid, 0);       // more invalid size (4)
-                    R_TEST(a, BS("\x9D\x18\x7F\x18\x80\x18\x81\x18\x82\xFF"), cbor::read_error::size_invalid, 0);   // more invalid size (4)
-                    R_TEST(a, BS("\x5F\x44\x7F\x80\x81\x82\xFF"), cbor::read_error::size_invalid, 1);               // more invalid size (4)
+                    R_TEST(a, BS("\x84\x18\x7F\x18\x80\x18\x81\x18\x82"), cbor::read_error::size_invalid, 0);       // more, invalid size (4)
+                    R_TEST(a, BS("\x9D\x18\x7F\x18\x80\x18\x81\x18\x82\xFF"), cbor::read_error::size_invalid, 0);   // more, invalid size (4)
+                    R_TEST(a, BS("\x5F\x44\x7F\x80\x81\x82\xFF"), cbor::read_error::size_invalid, 1);               // more, invalid size (4)
                     R_TEST(a, BS("\x5F\x43\x7F\x80\x81\x41\x82\xFF"), cbor::read_error::size_invalid, 5);           // more, invalid size (3|1)
                     R_TEST(a, BS("\x5F\x41\x7F\x43\x80\x81\x82\xFF"), cbor::read_error::size_invalid, 3);           // more, invalid size (1|3)
                     R_TEST(a, BS("\x43\x7F\x80"), cbor::read_error::unexpected, 3);                                 // less, unexpected end (2)
@@ -197,7 +197,7 @@ TEST_BEG(cxon::CBOR<>)
     // char[]
         R_TEST(/*u8*/"", BS("\x80"));      // definite
         R_TEST(/*u8*/"", BS("\x9F\xFF"));  // indefinite
-        R_TEST(/*u8*/"\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80", BS("\x6A\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80"));     // definite
+        R_TEST(/*u8*/"\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80", BS("\x6A\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80")); // definite
         R_TEST(/*u8*/"\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80", BS("\x9F\x18\x20\x18\xC2\x18\xAE\x18\xE2\x18\x9C\x18\x88\x18\xF0\x18\x9F\x18\x9A\x18\x80\xFF")); // indefinite
         W_TEST(BS("\x6B\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80\x00"), /*u8*/"\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80");
         R_TEST(/*u8*/"xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA", // definite
@@ -211,12 +211,12 @@ TEST_BEG(cxon::CBOR<>)
         W_TEST(   BS("\x78\x1D\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\xF0\x9F\x8D\xBA\x00"),
                 /*u8*/"xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA");
         {   char a[][3] = { {1, 2, 3}, {1, 2, 3} };
-            R_TEST(a, BS("\x82\x63\x01\x02\x03\x63\x01\x02\x03"));              // definite
-            W_TEST(BS("\x82\x63\x01\x02\x03\x63\x01\x02\x03"), a);
+            R_TEST(a, BS("\x82\x63\x01\x02\x03\x63\x01\x02\x03"));  // definite
+            W_TEST(BS("\x82\x63\x01\x02\x03\x63\x01\x02\x03"), a);  // definite    
             
-            R_TEST(a, BS("\x9F\x63\x01\x02\x03\x63\x01\x02\x03\xFF"));          // indefinite
-            R_TEST(a, BS("\x82\x63\x01\x02\x03\x7F\x63\x01\x02\x03\xFF"));          // indefinite
-            R_TEST(a, BS("\x9F\x7F\x63\x01\x02\x03\xFF\x63\x01\x02\x03\xFF"));  // indefinite
+            R_TEST(a, BS("\x9F\x63\x01\x02\x03\x63\x01\x02\x03\xFF"));                  // indefinite
+            R_TEST(a, BS("\x82\x63\x01\x02\x03\x7F\x63\x01\x02\x03\xFF"));              // indefinite
+            R_TEST(a, BS("\x9F\x7F\x63\x01\x02\x03\xFF\x63\x01\x02\x03\xFF"));          // indefinite
             R_TEST(a, BS("\x9F\x7F\x63\x01\x02\x03\xFF\x7F\x63\x01\x02\x03\xFF\xFF"));  // indefinite
 
             R_TEST(a, BS("\x9F\x83\x01\x02\x03\x83\x01\x02\x03\xFF"));          // indefinite
@@ -225,8 +225,8 @@ TEST_BEG(cxon::CBOR<>)
             R_TEST(a, BS("\x9F\x9F\x01\x02\x03\xFF\x9F\x01\x02\x03\xFF\xFF"));  // indefinite
         }
     // char16_t[]
-        R_TEST(u"", BS("\x80"));      // definite
-        R_TEST(u"", BS("\x9F\xFF"));  // indefinite
+        R_TEST(u"", BS("\x80"));        // definite
+        R_TEST(u"", BS("\x9F\xFF"));    // indefinite
         R_TEST(u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));        // definite
         R_TEST(u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF"));    // indefinite
         W_TEST(BS("\x85\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\x00"), u"\x00AE\x2708\xD83D\xDE80");
@@ -237,8 +237,8 @@ TEST_BEG(cxon::CBOR<>)
         W_TEST( BS("\x98\x1B\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\x00"),
                     u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A");
     // char32_t[]
-        R_TEST(U"", BS("\x80"));      // definite
-        R_TEST(U"", BS("\x9F\xFF"));  // indefinite
+        R_TEST(U"", BS("\x80"));        // definite
+        R_TEST(U"", BS("\x9F\xFF"));    // indefinite
         R_TEST(U"\x000000AE\x00002708\x0001F680", BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"));      // definite
         R_TEST(U"\x000000AE\x00002708\x0001F680", BS("\x9F\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\xFF"));  // indefinite
         W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\x00"), U"\x000000AE\x00002708\x0001F680");
@@ -249,8 +249,8 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST(   U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // indefinite
                 BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
     // wchar_t[]
-        R_TEST(L"", BS("\x80"));      // definite
-        R_TEST(L"", BS("\x9F\xFF"));  // indefinite
+        R_TEST(L"", BS("\x80"));        // definite
+        R_TEST(L"", BS("\x9F\xFF"));    // indefinite
     // T*
         R_TEST((int*)nullptr, BS("\xF6"));
         W_TEST(BS("\xF6"), (int*)nullptr);
@@ -259,31 +259,122 @@ TEST_BEG(cxon::CBOR<>)
             R_TEST(&n, BS("\x1A\x01\x01\x01\x01"));
             W_TEST(BS("\x1A\x01\x01\x01\x01"), &n);
         }
-        {   char const*const s = "\x03\x02\x01";
-            R_TEST(s, BS("\x83\x03\x02\x01"));
-            R_TEST(s, BS("\x63\x03\x02\x01"));
-            R_TEST(s, BS("\x43\x03\x02\x01"));
-            R_TEST(s, BS("\x9F\x03\x02\x01\xFF"));
-            R_TEST(s, BS("\x7F\x63\x03\x02\x01\xFF"));
-            R_TEST(s, BS("\x7F\x61\x03\x62\x02\x01\xFF"));
-            R_TEST(s, BS("\x5F\x43\x03\x02\x01\xFF"));
-            R_TEST(s, BS("\x5F\x42\x03\x02\x41\x01\xFF"));
-            W_TEST(BS("\x63\x03\x02\x01"), s);
-        }
-        {   char const*const s = "";
-            R_TEST(s, BS("\x80"));
-            R_TEST(s, BS("\x60"));
-            R_TEST(s, BS("\x40"));
-            R_TEST(s, BS("\x9F\xFF"));
-            R_TEST(s, BS("\x7F\xFF"));
-            R_TEST(s, BS("\x5F\xFF"));
-        }
     // const char*
+        R_TEST((const char*)"", BS("\x80"));        // definite
+        R_TEST((const char*)"", BS("\x60"));        // definite
+        R_TEST((const char*)"", BS("\x40"));        // definite
+        R_TEST((const char*)"", BS("\x9F\xFF"));    // indefinite
+        R_TEST((const char*)"", BS("\x7F\xFF"));    // indefinite
+        R_TEST((const char*)"", BS("\x5F\xFF"));    // indefinite
+            R_TEST((const char*)nullptr, BS("\xF7"), cbor::read_error::integer_invalid, 0);
+        R_TEST((const char*)"\x03\x02\x01", BS("\x83\x03\x02\x01"));        // definite array
+        R_TEST((const char*)"xyz",          BS("\x63xyz"));                 // definite test string
+        R_TEST((const char*)"xyz",          BS("\x43xyz"));                 // definite byte string
+        R_TEST((const char*)"\x03\x02\x01", BS("\x9F\x03\x02\x01\xFF"));    // indefinite array (3)
+        R_TEST((const char*)"xyz",          BS("\x7F\x63xyz\xFF"));         // indefinite text string (3)
+        R_TEST((const char*)"xyz",          BS("\x7F\x61x\x62yz\xFF"));     // indefinite test string (1|2)
+        R_TEST((const char*)"xyz",          BS("\x5F\x43xyz\xFF"));         // indefinite byte string (3)
+        R_TEST((const char*)"xyz",          BS("\x5F\x42xy\x41z\xFF"));     // indefinite byte string (2|1)
+        W_TEST(BS("\x63xyz"), (const char*)"xyz");                          // always written as definite
+            R_TEST((const char*)"", BS("\xA3\x03\x02\x01"), cbor::read_error::integer_invalid, 0);      // invalid type
+            R_TEST((const char*)"", BS("\x83\x03\xA2\x01"), cbor::read_error::integer_invalid, 2);      // definite array, invalid element
+            R_TEST((const char*)"", BS("\x9F\x03\xA2\x01\xFF"), cbor::read_error::integer_invalid, 2);  // indefinite array, invalid element
+            R_TEST((const char*)"", BS("\x7F\x41x\x62yz\xFF"), cbor::read_error::array_invalid, 1);     // indefinite byte/text string mix
+            R_TEST((const char*)"", BS("\x7F\x61x\x42yz\xFF"), cbor::read_error::array_invalid, 3);     // indefinite byte/text string mix
+            R_TEST((const char*)"", BS("\x5F\x62xy\x41z\xFF"), cbor::read_error::array_invalid, 1);     // indefinite byte/text string mix
+            R_TEST((const char*)"", BS("\x5F\x42xy\x61z\xFF"), cbor::read_error::array_invalid, 4);     // indefinite byte/text string mix
+            R_TEST((const char*)"", BS("\x7F\x7Cx\x62yz\xFF"), cbor::read_error::size_invalid, 1);      // invalid size
+            R_TEST((const char*)"", BS("\x7F\x7Dx\x62yz\xFF"), cbor::read_error::size_invalid, 1);      // invalid size
+            R_TEST((const char*)"", BS("\x7F\x7Ex\x62yz\xFF"), cbor::read_error::size_invalid, 1);      // invalid size
+            R_TEST((const char*)"", BS("\x7F\x7Fx\x62yz\xFF"), cbor::read_error::size_invalid, 1);      // invalid size
+            R_TEST((const char*)"", BS("\x5F\x42xy\x5Cz\xFF"), cbor::read_error::size_invalid, 4);      // invalid size
+            R_TEST((const char*)"", BS("\x5F\x42xy\x5Dz\xFF"), cbor::read_error::size_invalid, 4);      // invalid size
+            R_TEST((const char*)"", BS("\x5F\x42xy\x5Ez\xFF"), cbor::read_error::size_invalid, 4);      // invalid size
+            R_TEST((const char*)"", BS("\x5F\x42xy\x5Fz\xFF"), cbor::read_error::size_invalid, 4);      // invalid size
     // const char16_t*
+        R_TEST((const char16_t*)u"", BS("\x80"));     // definite
+        R_TEST((const char16_t*)u"", BS("\x9F\xFF")); // indefinite
+        R_TEST((const char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));     // definite
+        R_TEST((const char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF")); // indefinite
+        W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"), (const char16_t*)u"\x00AE\x2708\xD83D\xDE80");
+        R_TEST((const char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // definite
+                        BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"));
+        R_TEST((const char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // indefinite
+                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\xFF"));
+        W_TEST(         BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"),
+               (const char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A");
     // const char32_t*
+        R_TEST((const char32_t*)U"", BS("\x80"));       // definite
+        R_TEST((const char32_t*)U"", BS("\x9F\xFF"));   // indefinite
+        R_TEST((const char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"));     // definite
+        R_TEST((const char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x9F\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\xFF")); // indefinite
+        W_TEST(BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"), (const char32_t*)U"\x000000AE\x00002708\x0001F680");
+        R_TEST((const char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // definite
+                              BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"));
+        W_TEST(               BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"),
+               (const char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A");
+        R_TEST((const char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // indefinite
+                              BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
     // const wchar_t*
+        R_TEST((const wchar_t*)L"", BS("\x80"));        // definite
+        R_TEST((const wchar_t*)L"", BS("\x9F\xFF"));    // indefinite
     // char*
+        R_TEST((char*)"", BS("\x80"));      // definite
+        R_TEST((char*)"", BS("\x60"));      // definite
+        R_TEST((char*)"", BS("\x40"));      // definite
+        R_TEST((char*)"", BS("\x9F\xFF"));  // indefinite
+        R_TEST((char*)"", BS("\x7F\xFF"));  // indefinite
+        R_TEST((char*)"", BS("\x5F\xFF"));  // indefinite
+            R_TEST((char*)nullptr, BS("\xF7"), cbor::read_error::integer_invalid, 0);
+        R_TEST((char*)"\x03\x02\x01", BS("\x83\x03\x02\x01"));      // definite array
+        R_TEST((char*)"xyz",          BS("\x63xyz"));               // definite test string
+        R_TEST((char*)"xyz",          BS("\x43xyz"));               // definite byte string
+        R_TEST((char*)"\x03\x02\x01", BS("\x9F\x03\x02\x01\xFF"));  // indefinite array (3)
+        R_TEST((char*)"xyz",          BS("\x7F\x63xyz\xFF"));       // indefinite text string (3)
+        R_TEST((char*)"xyz",          BS("\x7F\x61x\x62yz\xFF"));   // indefinite test string (1|2)
+        R_TEST((char*)"xyz",          BS("\x5F\x43xyz\xFF"));       // indefinite byte string (3)
+        R_TEST((char*)"xyz",          BS("\x5F\x42xy\x41z\xFF"));   // indefinite byte string (2|1)
+        W_TEST(BS("\x63xyz"), (char*)"xyz");                        // always written as definite
+            R_TEST((char*)"", BS("\xA3\x03\x02\x01"), cbor::read_error::integer_invalid, 0);        // invalid type
+            R_TEST((char*)"", BS("\x83\x03\xA2\x01"), cbor::read_error::integer_invalid, 2);        // definite array, invalid element
+            R_TEST((char*)"", BS("\x9F\x03\xA2\x01\xFF"), cbor::read_error::integer_invalid, 2);    // indefinite array, invalid element
+            R_TEST((char*)"", BS("\x7F\x41x\x62yz\xFF"), cbor::read_error::array_invalid, 1);       // indefinite byte/text string mix
+            R_TEST((char*)"", BS("\x7F\x61x\x42yz\xFF"), cbor::read_error::array_invalid, 3);       // indefinite byte/text string mix
+            R_TEST((char*)"", BS("\x5F\x62xy\x41z\xFF"), cbor::read_error::array_invalid, 1);       // indefinite byte/text string mix
+            R_TEST((char*)"", BS("\x5F\x42xy\x61z\xFF"), cbor::read_error::array_invalid, 4);       // indefinite byte/text string mix
+            R_TEST((char*)"", BS("\x7F\x7Cx\x62yz\xFF"), cbor::read_error::size_invalid, 1);        // invalid size
+            R_TEST((char*)"", BS("\x7F\x7Dx\x62yz\xFF"), cbor::read_error::size_invalid, 1);        // invalid size
+            R_TEST((char*)"", BS("\x7F\x7Ex\x62yz\xFF"), cbor::read_error::size_invalid, 1);        // invalid size
+            R_TEST((char*)"", BS("\x7F\x7Fx\x62yz\xFF"), cbor::read_error::size_invalid, 1);        // invalid size
+            R_TEST((char*)"", BS("\x5F\x42xy\x5Cz\xFF"), cbor::read_error::size_invalid, 4);        // invalid size
+            R_TEST((char*)"", BS("\x5F\x42xy\x5Dz\xFF"), cbor::read_error::size_invalid, 4);        // invalid size
+            R_TEST((char*)"", BS("\x5F\x42xy\x5Ez\xFF"), cbor::read_error::size_invalid, 4);        // invalid size
+            R_TEST((char*)"", BS("\x5F\x42xy\x5Fz\xFF"), cbor::read_error::size_invalid, 4);        // invalid size
     // char16_t*
+        R_TEST((char16_t*)u"", BS("\x80"));     // definite
+        R_TEST((char16_t*)u"", BS("\x9F\xFF")); // indefinite
+        R_TEST((char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));     // definite
+        R_TEST((char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF")); // indefinite
+        W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"), (char16_t*)u"\x00AE\x2708\xD83D\xDE80");
+        R_TEST((char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // definite
+                        BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"));
+        R_TEST((char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // indefinite
+                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\xFF"));
+        W_TEST(         BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"),
+               (char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A");
     // char32_t*
+        R_TEST((char32_t*)U"", BS("\x80"));     // definite
+        R_TEST((char32_t*)U"", BS("\x9F\xFF")); // indefinite
+        R_TEST((char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"));       // definite
+        R_TEST((char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x9F\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\xFF"));   // indefinite
+        W_TEST(BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"), (char32_t*)U"\x000000AE\x00002708\x0001F680");
+        R_TEST((char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // definite
+                        BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"));
+        W_TEST(         BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"),
+               (char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A");
+        R_TEST((char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // indefinite
+                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
     // wchar_t*
+        R_TEST((wchar_t*)L"", BS("\x80"));      // definite
+        R_TEST((wchar_t*)L"", BS("\x9F\xFF"));  // indefinite
 TEST_END()
