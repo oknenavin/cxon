@@ -73,6 +73,29 @@ TEST_BEG(cxon::JSON<>)
         R_TEST('\0', QS("\xff"), json::read_error::character_invalid, 1); // invalid utf-8
         R_TEST('\0', QS("\\z"), json::read_error::escape_invalid, 1);
         R_TEST('\0', QS("\\u1111"), json::read_error::character_invalid, 1);
+    // wchar_t
+        R_TEST(L'a', QS("a"));
+        W_TEST(QS("a"), L'a');
+    // char8_t
+#       if __cplusplus > 201703L /* C++20 */
+            R_TEST(u8'\0', QS("\\u0000"));
+            W_TEST(QS("\\u0000"), u8'\0');
+            R_TEST(u8'\x1f', QS("\\u001f"));
+            W_TEST(QS("\\u001f"), u8'\x1f');
+            R_TEST(u8'"', QS("\\\""));
+            W_TEST(QS("\\\""), u8'"');
+            R_TEST(u8'\'', QS("'"));
+            W_TEST(QS("'"), u8'\'');
+            R_TEST(u8'\x7f', QS("\\u007f"));
+            W_TEST(QS("\x7f"), u8'\x7f');
+            R_TEST(u8'\x8f', QS("\\u008f"));
+            W_TEST(QS("\x8f"), u8'\x8f');
+            R_TEST(u8'\xff', QS("\\u00ff")); // invalid utf-8
+            W_TEST(QS("\xff"), u8'\xff'); // invalid utf-8
+            R_TEST(u8'\0', QS("\xff"), json::read_error::character_invalid, 1); // invalid utf-8
+            R_TEST(u8'\0', QS("\\z"), json::read_error::escape_invalid, 1);
+            R_TEST(u8'\0', QS("\\u1111"), json::read_error::character_invalid, 1);
+#       endif
     // char16_t
         R_TEST(u'a', QS("a"));
         W_TEST(QS("a"), u'a');
@@ -101,9 +124,6 @@ TEST_BEG(cxon::JSON<>)
         R_TEST(U'\0', QS("\xF0"), json::read_error::character_invalid, 1);
         W_TEST(QS("\xF0\xA8\x91\x80"), U'\x28440');
         W_TEST(QS(""), U'\x200000');
-    // wchar_t
-        R_TEST(L'a', QS("a"));
-        W_TEST(QS("a"), L'a');
     // signed char
         R_TEST(tmin<signed char>(), smin<signed char>());
         W_TEST(smin<signed char>(), tmin<signed char>());
@@ -488,6 +508,9 @@ namespace cxon { namespace test {
 }}
 
 TEST_BEG(cxon::JSON<cxon::test::strict_js_traits>)
+    W_TEST(QS("x"), "x");
+    W_TEST(QS("\\u2028"), "\xE2\x80\xA8");
+    W_TEST(QS("\\u2029"), "\xE2\x80\xA9");
     W_TEST(QS("x"), u8"x");
     W_TEST(QS("\\u2028"), u8"\u2028");
     W_TEST(QS("\\u2029"), u8"\u2029");

@@ -47,8 +47,10 @@ namespace cxon { // bool
 
 namespace cxon { // character
 
-    template <typename X, typename II, typename Cx>
-        inline auto read_value(char& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
+    template <typename X, typename T, typename II, typename Cx>
+        inline auto read_value(T& t, II& i, II e, Cx& cx)
+            -> enable_if_t<is_same_format<X, JSON>::value && cio::chr::is_char_8<T>::value, bool>
+        {
             if (!cio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
                     char32_t const c32 = cio::chr::str_to_utf32<X>(i, e, cx);
@@ -58,7 +60,7 @@ namespace cxon { // character
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t<is_same_format<X, JSON>::value && cio::chr::is_char16_t<T>::value, bool>
+            -> enable_if_t<is_same_format<X, JSON>::value && cio::chr::is_char_16<T>::value, bool>
         {
             if (!cio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;
@@ -69,7 +71,7 @@ namespace cxon { // character
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t<is_same_format<X, JSON>::value && cio::chr::is_char32_t<T>::value, bool>
+            -> enable_if_t<is_same_format<X, JSON>::value && cio::chr::is_char_32<T>::value, bool>
         {
             if (!cio::consume<X>(X::string::beg, i, e, cx)) return false;
                 II const o = i;

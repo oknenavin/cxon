@@ -130,19 +130,21 @@ namespace cxon { namespace cio { namespace str {
 
 namespace cxon { namespace cio { namespace str {
 
-    template <typename X, typename II, typename Cx> // TODO: common with std::basic_string?
-        inline bool array_char_read(char*& t, const char* te, II& i, II ie, Cx& cx) {
+    template <typename X, typename T, typename II, typename Cx> // TODO: common with std::basic_string?
+        inline auto array_char_read(T*& t, const T* te, II& i, II ie, Cx& cx)
+            -> enable_if_t<chr::is_char_8<T>::value, bool>
+        {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
-                char b[4]; int const n = chr::utf32_to_utf8(b, c32);
+                T b[4]; int const n = chr::utf32_to_utf8(b, c32);
                     if (n == 0 || t + n > te) return cx|read_error::overflow;
                 std::copy_n(b, n, t);
             return t += n, true;
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto array_char_read(T*& t, const T* te, II& i, II ie, Cx& cx)
-            -> enable_if_t<std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t)), bool>
+            -> enable_if_t<chr::is_char_16<T>::value, bool>
         {
             II const o = i;
                 char32_t c32 = consume_str<X>::chr(i, ie, cx);
@@ -159,7 +161,7 @@ namespace cxon { namespace cio { namespace str {
         }
     template <typename X, typename T, typename II, typename Cx>
         inline auto array_char_read(T*& t, const T*, II& i, II ie, Cx& cx)
-            -> enable_if_t<std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t)), bool>
+            -> enable_if_t<chr::is_char_32<T>::value, bool>
         {
             II const o = i;
                 char32_t const c32 = consume_str<X>::chr(i, ie, cx);
