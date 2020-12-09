@@ -51,6 +51,55 @@ TEST_BEG(cxon::JSON<>)
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
+    // wchar_t[]
+        R_TEST(L"", QS(""));
+        {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
+            R_TEST(a, QS("123\\u00004"));
+            W_TEST(QS("123\\u00004"), a);
+        }
+        {   wchar_t a[] = {L'1', L'2', L'3'};
+            R_TEST(a, QS("1234"), json::read_error::overflow, 0);
+        }
+        {   wchar_t a[] = {L'1', L'2', L'\0'};
+            R_TEST(a, "12", json::read_error::unexpected, 0);
+            R_TEST(a, "\"12", json::read_error::unexpected, 3);
+            R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "{1,2,0}", json::read_error::unexpected, 0);
+            R_TEST(a, "", json::read_error::unexpected, 0);
+            R_TEST(a, "}", json::read_error::unexpected, 0);
+            R_TEST(a, "{", json::read_error::unexpected, 0);
+            R_TEST(a, "\"", json::read_error::unexpected, 1);
+        }
+    // char8_t[]
+#       if __cplusplus > 201703L /* C++20 */
+            R_TEST(u8"", QS(""));
+            R_TEST(u8"123", QS("123"));
+            {   char8_t a[] = {'1', '2', '3', '\0'};
+                R_TEST(a, QS("123"));
+                R_TEST(a, QS("123\\u0000"));
+                W_TEST(QS("123"), a);
+            }
+            {   char8_t a[] = {'1', '2', '3', '\0', '4', '\0'};
+                R_TEST(a, QS("123\\u00004"));
+                W_TEST(QS("123\\u00004"), a);
+            }
+            {   char8_t a[] = {'1', '2', '3'};
+                R_TEST(a, QS("1234"), json::read_error::overflow, 0);
+                R_TEST(a, QS("12\\u2728"), json::read_error::overflow, 0);
+            }
+            {   char8_t a[] = {'1', '2', '\0'};
+                R_TEST(a, "12", json::read_error::unexpected, 0);
+                R_TEST(a, "\"12", json::read_error::unexpected, 3);
+                R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
+                R_TEST(a, "", json::read_error::unexpected, 0);
+                R_TEST(a, "{1,2,0}", json::read_error::unexpected, 0);
+                R_TEST(a, "", json::read_error::unexpected, 0);
+                R_TEST(a, "}", json::read_error::unexpected, 0);
+                R_TEST(a, "{", json::read_error::unexpected, 0);
+                R_TEST(a, "\"", json::read_error::unexpected, 1);
+            }
+#       endif
     // char16_t[]
         R_TEST(u"", QS(""));
         R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
@@ -125,26 +174,6 @@ TEST_BEG(cxon::JSON<>)
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
-    // wchar_t[]
-        R_TEST(L"", QS(""));
-        {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
-            R_TEST(a, QS("123\\u00004"));
-            W_TEST(QS("123\\u00004"), a);
-        }
-        {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), json::read_error::overflow, 0);
-        }
-        {   wchar_t a[] = {L'1', L'2', L'\0'};
-            R_TEST(a, "12", json::read_error::unexpected, 0);
-            R_TEST(a, "\"12", json::read_error::unexpected, 3);
-            R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
-            R_TEST(a, "", json::read_error::unexpected, 0);
-            R_TEST(a, "{1,2,0}", json::read_error::unexpected, 0);
-            R_TEST(a, "", json::read_error::unexpected, 0);
-            R_TEST(a, "}", json::read_error::unexpected, 0);
-            R_TEST(a, "{", json::read_error::unexpected, 0);
-            R_TEST(a, "\"", json::read_error::unexpected, 1);
-        }
     // const char*
         R_TEST((const char*)"test", QS("test"));
         R_TEST((const char*)nullptr, "null");
@@ -152,6 +181,19 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("null", (const char*)nullptr);
         R_TEST((const char*)nullptr, "nil", json::read_error::unexpected, 1);
         R_TEST((const char*)nullptr, "\"nil", json::read_error::unexpected, 4);
+    // const wchar_t*
+        R_TEST((const wchar_t*)L"test", QS("test"));
+        W_TEST(QS("test"), (const wchar_t*)L"test");
+        R_TEST((const wchar_t*)nullptr, "\"", json::read_error::unexpected, 1);
+    // const char8_t*
+#       if __cplusplus > 201703L /* C++20 */
+            R_TEST((const char8_t*)"test", QS("test"));
+            R_TEST((const char8_t*)nullptr, "null");
+            W_TEST(QS("test"), (const char8_t*)u8"test");
+            W_TEST("null", (const char8_t*)nullptr);
+            R_TEST((const char8_t*)nullptr, "nil", json::read_error::unexpected, 1);
+            R_TEST((const char8_t*)nullptr, "\"nil", json::read_error::unexpected, 4);
+#       endif
     // const char16_t*
         R_TEST((const char16_t*)u"test", QS("test"));
         W_TEST(QS("test"), (const char16_t*)u"test");
@@ -160,24 +202,27 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((const char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (const char32_t*)U"test");
         R_TEST((const char32_t*)nullptr, "\"", json::read_error::unexpected, 1);
-    // const wchar_t*
-        R_TEST((const wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (const wchar_t*)L"test");
-        R_TEST((const wchar_t*)nullptr, "\"", json::read_error::unexpected, 1);
     // char*
         R_TEST((char*)"test", QS("test"));
         R_TEST((char*)nullptr, "null");
         W_TEST(QS("test"), (char*)"test");
         W_TEST("null", (char*)nullptr);
+    // wchar_t*
+        R_TEST((wchar_t*)L"test", QS("test"));
+        W_TEST(QS("test"), (wchar_t*)L"test");
+    // char8_t*
+#       if __cplusplus > 201703L /* C++20 */
+            R_TEST((char8_t*)"test", QS("test"));
+            R_TEST((char8_t*)nullptr, "null");
+            W_TEST(QS("test"), (char8_t*)u8"test");
+            W_TEST("null", (char8_t*)nullptr);
+#       endif
     // char16_t*
         R_TEST((char16_t*)u"test", QS("test"));
         W_TEST(QS("test"), (char16_t*)u"test");
     // char32_t*
         R_TEST((char32_t*)U"test", QS("test"));
         W_TEST(QS("test"), (char32_t*)U"test");
-    // wchar_t*
-        R_TEST((wchar_t*)L"test", QS("test"));
-        W_TEST(QS("test"), (wchar_t*)L"test");
 TEST_END()
 
 

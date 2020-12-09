@@ -38,9 +38,12 @@ namespace cxon { namespace cio {
         template <>                 struct is_quoted<T*>                                : std::true_type  {};\
         template <>                 struct is_quoted<const T*>                          : std::true_type  {};
         CXON_QUOTED(char)
+        CXON_QUOTED(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_QUOTED(char8_t)
+#       endif
         CXON_QUOTED(char16_t)
         CXON_QUOTED(char32_t)
-        CXON_QUOTED(wchar_t)
 #   undef CXON_QUOTED
 
     template <typename S> struct UQKEY : S { using X = S; };

@@ -13,11 +13,15 @@
 namespace cxon { namespace cio { namespace chr { // character conversion: read
 
     template <typename T>
-        using is_char16_t = std::integral_constant<
+        using is_char_8 = std::integral_constant<
+            bool, is_char<T>::value && sizeof(T) == sizeof(char)
+        >;
+    template <typename T>
+        using is_char_16 = std::integral_constant<
             bool, std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t))
         >;
     template <typename T>
-        using is_char32_t = std::integral_constant<
+        using is_char_32 = std::integral_constant<
             bool, std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t))
         >;
     
@@ -35,8 +39,9 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
     template <typename X, typename II, typename Cx>
         static char32_t str_to_utf32(II& i, II e, Cx& cx);
 
-    template <typename = void> // instantiate only if used
-        static int utf32_to_utf8(char (&t)[4], char32_t c32) noexcept;
+    template <typename T>
+        static auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
+            -> enable_if_t<is_char_8<T>::value, int>;
 
 }}}
 
@@ -50,15 +55,6 @@ namespace cxon { namespace cio { namespace chr { // character conversion: write
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace chr {
-
-    template <typename T>
-        using is_char16_t = std::integral_constant<
-            bool, std::is_same<T, char16_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char16_t))
-        >;
-    template <typename T>
-        using is_char32_t = std::integral_constant<
-            bool, std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t))
-        >;
     
     template <typename II, typename IsX>
         inline unsigned consume(char* f, const char* l, II& i, II e, IsX is_x) {
@@ -162,8 +158,10 @@ namespace cxon { namespace cio { namespace chr {
             }
 #   undef CXON_EXPECT
 
-    template <typename> // instantiate only if used
-        static int utf32_to_utf8(char (&t)[4], char32_t c32) noexcept {
+    template <typename T>
+        static auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
+            -> enable_if_t<is_char_8<T>::value, int>
+        {
             if (c32 < 0x80)  // 0XXX XXXX
                 return t[0] = char(c32), 1;
             if (c32 < 0x800) { // 110XXXXX
@@ -226,13 +224,14 @@ namespace cxon { namespace cio { namespace chr {
             template <typename O, typename II, typename Cx, typename S = X>
                 // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
                 static auto value(O& o, II& i, II e, Cx& cx)    -> enable_if_t< S::strict_js, bool> {
-                    if (*i == '\xE2') {
+                    using T = typename std::iterator_traits<II>::value_type;
+                    if (*i == T('\xE2')) {
                         ++i; CXON_ASSERT(i != e, "unexpected");
-                        if (*i == '\x80') {
+                        if (*i == T('\x80')) {
                             ++i; CXON_ASSERT(i != e, "unexpected");
                             switch (*i) {
-                                case '\xA8':    return poke<X>(o, "\\u2028", cx);
-                                case '\xA9':    return poke<X>(o, "\\u2029", cx);
+                                case T('\xA8'): return poke<X>(o, "\\u2028", cx);
+                                case T('\xA9'): return poke<X>(o, "\\u2029", cx);
                                 default:        return value(o, '\xE2', cx) && value(o, '\x80', cx) && value(o, *i, cx); } }
                         else                    return value(o, '\xE2', cx) && value(o, *i, cx); }
                     else                        return value(o, *i, cx);
@@ -243,6 +242,39 @@ namespace cxon { namespace cio { namespace chr {
                     return i == e;
                 }
         };
+
+    template <typename X>
+        struct encode<X, wchar_t> {
+            template <typename O, typename Cx, typename T = wchar_t>
+                static auto value(O& o, T c, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::value(o, char16_t(c), cx);
+                }
+            template <typename O, typename Cx, typename T = wchar_t>
+                static auto value(O& o, T c, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::value(o, char32_t(c), cx);
+                }
+            template <typename O, typename Cx, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::value(o, i, e, cx);
+                }
+            template <typename O, typename Cx, typename T = wchar_t, typename II>
+                static auto value(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::value(o, i, e, cx);
+                }
+            template <typename O, typename Cx, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    return encode<X, char16_t>::range(o, i, e, cx);
+                }
+            template <typename O, typename Cx, typename T = wchar_t, typename II>
+                static auto range(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    return encode<X, char32_t>::range(o, i, e, cx);
+                }
+        };
+
+#   if __cplusplus > 201703L /* C++20 */
+        template <typename X>
+            struct encode<X, char8_t> : encode<X, char> {};
+#   endif
 
     template <typename X>
         struct encode<X, char16_t> {
@@ -296,34 +328,6 @@ namespace cxon { namespace cio { namespace chr {
                 static bool range(O& o, II i, II e, Cx& cx) {
                     for ( ; i != e && value(o, *i, cx); ++i) ;
                     return i == e;
-                }
-        };
-
-    template <typename X>
-        struct encode<X, wchar_t> {
-            template <typename O, typename Cx, typename T = wchar_t>
-                static auto value(O& o, T c, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
-                    return encode<X, char16_t>::value(o, char16_t(c), cx);
-                }
-            template <typename O, typename Cx, typename T = wchar_t>
-                static auto value(O& o, T c, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
-                    return encode<X, char32_t>::value(o, char32_t(c), cx);
-                }
-            template <typename O, typename Cx, typename T = wchar_t, typename II>
-                static auto value(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
-                    return encode<X, char16_t>::value(o, i, e, cx);
-                }
-            template <typename O, typename Cx, typename T = wchar_t, typename II>
-                static auto value(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
-                    return encode<X, char32_t>::value(o, i, e, cx);
-                }
-            template <typename O, typename Cx, typename T = wchar_t, typename II>
-                static auto range(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
-                    return encode<X, char16_t>::range(o, i, e, cx);
-                }
-            template <typename O, typename Cx, typename T = wchar_t, typename II>
-                static auto range(O& o, II i, II e, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
-                    return encode<X, char32_t>::range(o, i, e, cx);
                 }
         };
 

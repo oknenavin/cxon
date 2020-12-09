@@ -11,17 +11,19 @@
 
 namespace cxon { namespace json { namespace bits { // std::basic_string read
 
-    template <typename X, typename ...R, typename II, typename Cx> // TODO: common with arrays?
-        inline bool basic_string_char_read(std::basic_string<char, R...>& t, II& i, II e, Cx& cx) {
+    template <typename X, typename T, typename ...R, typename II, typename Cx> // TODO: common with arrays?
+        inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
+            -> enable_if_t<cio::chr::is_char_8<T>::value, bool>
+        {
             II const o = i;
                 char32_t const c32 = cio::str::consume_str<X>::chr(i, e, cx);
                     if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
-                char b[4]; t.append(b, cio::chr::utf32_to_utf8(b, c32));
+                T b[4]; t.append(b, cio::chr::utf32_to_utf8(b, c32));
             return true;
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<cio::chr::is_char16_t<T>::value, bool>
+            -> enable_if_t<cio::chr::is_char_16<T>::value, bool>
         {
             II const o = i;
                 char32_t c32 = cio::str::consume_str<X>::chr(i, e, cx);
@@ -38,7 +40,7 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<cio::chr::is_char32_t<T>::value, bool>
+            -> enable_if_t<cio::chr::is_char_32<T>::value, bool>
         {
             II const o = i;
                 char32_t const c32 = cio::str::consume_str<X>::chr(i, e, cx);
