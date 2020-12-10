@@ -11,5 +11,18 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/std/array.hxx"
 #   endif
+#   ifdef CXON_CBOR_DEFINED
+#       include "cxon/lang/cbor/lib/std/array.hxx"
+#   endif
+
+namespace cxon {
+
+    template <typename T, size_t N>
+        struct continuous<std::array<T, N>> {
+            static auto range(const std::array<T, N>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
+                return std::make_pair(&i[0], &i[0] + i.size());
+            }
+        };
+}
 
 #endif // CXON_LIB_STD_ARRAY_

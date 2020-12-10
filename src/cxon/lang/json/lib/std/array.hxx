@@ -10,13 +10,6 @@
 
 namespace cxon {
 
-    template <typename T, size_t N>
-        struct continuous<std::array<T, N>> {
-            static auto range(const std::array<T, N>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
-                return std::make_pair(&i[0], &i[0] + i.size());
-            }
-        };
-
     template <typename X, typename T, size_t N>
         struct read<JSON<X>, std::array<T, N>> {
             template <typename II, typename Cx, typename J = JSON<X>>
@@ -38,10 +31,10 @@ namespace cxon {
                 }
         };
 
-    template <typename X, typename T, size_t S>
-        struct write<JSON<X>, std::array<T, S>> {
+    template <typename X, typename T, size_t N>
+        struct write<JSON<X>, std::array<T, N>> {
             template <typename O, typename Cx, typename J = JSON<X>>
-                static bool value(O& o, const std::array<T, S>& t, Cx& cx) {
+                static bool value(O& o, const std::array<T, N>& t, Cx& cx) {
                     return cio::con::write_list<J>(o, t, cx);
                 }
         };

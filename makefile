@@ -54,6 +54,9 @@ cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/variant.hxx \
     $(srcdir)/lang/json/lib/std/vector.hxx
 
+cxon-lang-cbor-lib-std = \
+    $(srcdir)/lang/json/lib/std/array.hxx
+
 cxon-lang-json-node = \
     $(srcdir)/lang/json/node/node.hxx
 
@@ -132,6 +135,8 @@ install-lang: install-cxon install-common
 	@install -d                                         $(insdir)/cxon/lang/json/lib/std/bits
 	@install -p -m 0644 $(cxon-lang-json-lib-std-bits)  $(insdir)/cxon/lang/json/lib/std/bits
 	@install -p -m 0644 $(cxon-lang-json-lib-std)       $(insdir)/cxon/lang/json/lib/std
+	@install -d                                         $(insdir)/cxon/lang/cbor/lib/std/bits
+	@install -p -m 0644 $(cxon-lang-cbor-lib-std)       $(insdir)/cxon/lang/cbor/lib/std
 	@install -d                                         $(insdir)/cxon/lang/json/node
 	@install -p -m 0644 $(cxon-lang-json-node)          $(insdir)/cxon/lang/json/node
 	@install -p -m 0644 $(cxon-lang-json)               $(insdir)/cxon/lang/json
