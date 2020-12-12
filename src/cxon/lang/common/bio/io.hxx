@@ -47,8 +47,8 @@ namespace cxon { namespace bio {
         inline auto poke(O& o, T t, unsigned n)
             -> enable_if_t<std::is_integral<T>::value, bool>;
 
-    template <typename O, typename T>
-        inline auto poke(O& o, const T* t, size_t n)
+    template <typename O, typename FI, typename T = typename std::iterator_traits<FI>::value_type>
+        inline auto poke(O& o, FI i, size_t n)
             -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>;
 
     template <typename O, typename T>
@@ -62,8 +62,8 @@ namespace cxon { namespace bio {
         inline auto poke(O& o, T t, unsigned n, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value, bool>;
 
-    template <typename X, typename O, typename T, typename Cx>
-        inline auto poke(O& o, const T* t, size_t n, Cx& cx)
+    template <typename X, typename O, typename FI, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+        inline auto poke(O& o, FI i, size_t n, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>;
 
     template <typename X, typename O, typename T, typename Cx>
@@ -309,17 +309,17 @@ namespace cxon { namespace bio {
                 o.push_back(b);
             }
 
-        template <typename O>
-            inline auto push_(option<1>, O& o, const byte* b, size_t n) -> decltype(o.append(b, n), void()) {
-                o.append(b, n);
+        template <typename O, typename FI>
+            inline auto push_(option<1>, O& o, FI i, size_t n) -> decltype(o.append(i, n), void()) {
+                o.append(i, n);
             }
-        template <typename O>
-            inline void push_(option<0>, O& o, const byte* b, size_t n) {
-                while (n) push_(o, *b), ++b, --n;
+        template <typename O, typename FI>
+            inline void push_(option<0>, O& o, FI i, size_t n) {
+                while (n) push_(o, *i), ++i, --n;
             }
-        template <typename O>
-            inline void push_(O& o, const byte* b, size_t n) {
-                push_(option<1>(), o, b, n);
+        template <typename O, typename FI>
+            inline void push_(O& o, FI i, size_t n) {
+                push_(option<1>(), o, i, n);
             }
 
         template <typename O, typename ...P>
@@ -357,12 +357,11 @@ namespace cxon { namespace bio {
                         bs[i] = byte(t >> (n - i - 1) * 8);
                 return bits::poke_(o, bs, n);
             }
-        template <typename O, typename T>
-            inline auto put_(O& o, const T* t, size_t n)
+        template <typename O, typename FI, typename T = typename std::iterator_traits<FI>::value_type>
+            inline auto put_(O& o, FI i, size_t n)
                 -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
             {
-                using U = typename std::make_unsigned<T>::type;
-                return bits::poke_(o, (const U*)t, n);
+                return bits::poke_(o, i, n);
             }
 
         template <typename O>
@@ -398,11 +397,11 @@ namespace cxon { namespace bio {
             return bits::put_(o, t, n);
         }
 
-    template <typename O, typename T>
-        inline auto poke(O& o, const T* t, size_t n)
+    template <typename O, typename FI, typename T>
+        inline auto poke(O& o, FI i, size_t n)
             -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
         {
-            return bits::put_(o, t, n);
+            return bits::put_(o, i, n);
         }
 
     template <typename O, typename T>
@@ -424,11 +423,11 @@ namespace cxon { namespace bio {
             return bits::put_(o, t, n) || (cx|cbor::write_error::output_failure);
         }
 
-    template <typename X, typename O, typename T, typename Cx>
-        inline auto poke(O& o, const T* t, size_t n, Cx& cx)
+    template <typename X, typename O, typename FI, typename Cx, typename T>
+        inline auto poke(O& o, FI i, size_t n, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
         {
-            return bits::put_(o, t, n) || (cx|cbor::write_error::output_failure);
+            return bits::put_(o, i, n) || (cx|cbor::write_error::output_failure);
         }
 
     template <typename X, typename O, typename T, typename Cx>

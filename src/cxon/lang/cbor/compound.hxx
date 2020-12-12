@@ -25,22 +25,22 @@ namespace cxon { // array/read
                 ;
             }
 
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_bytes_(T* t, size_t n, II& i, II e, Cx& cx) {
-                return  (bio::get(t, i, e, n)) ||
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_bytes_(FI f, size_t n, II& i, II e, Cx& cx) {
+                return  (bio::get(f, i, e, n)) ||
                         (cx|cbor::read_error::unexpected)
                 ;
             }
 
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_array_b_fix_(T*& f, T* l, II& i, II e, Cx& cx) {
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_array_b_fix_(FI& f, FI l, II& i, II e, Cx& cx) {
                 size_t n;
                 return  read_size_<X>(n, std::distance(f, l), i, e, cx) &&
-                        read_bytes_<X>(f, n, i, e, cx) && (f += n, true);
+                        read_bytes_<X>(f, n, i, e, cx) && (std::advance(f, n), true);
                 ;
             }
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_array_b_var_(T* f, T* l, II& i, II e, Cx& cx) {
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_array_b_var_(FI f, FI l, II& i, II e, Cx& cx) {
                 bio::byte const m = bio::get(i, e) & X::mjr;
                     for (auto b = bio::peek(i, e, 0); b != X::brk; b = bio::peek(i, e, 0)) {
                         if (m != (b & X::mjr))
@@ -50,8 +50,8 @@ namespace cxon { // array/read
                     }
                 return bio::get(i, e, 0), true;
             }
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_array_b_(T* f, T* l, bio::byte m, II& i, II e, Cx& cx) {
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_array_b_(FI f, FI l, bio::byte m, II& i, II e, Cx& cx) {
                 switch (m & X::mnr) {
                     case 0x1C: case 0x1D: case 0x1E:    return cx|cbor::read_error::size_invalid;
                     case 0x1F:                          return read_array_b_var_<X>(f, l, i, e, cx);
@@ -59,20 +59,20 @@ namespace cxon { // array/read
                 }
             }
 
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_elements_(T* f, size_t n, II& i, II e, Cx& cx) {
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_elements_(FI f, size_t n, II& i, II e, Cx& cx) {
                 while (n != 0 && read_value<X>(*f, i, e, cx)) 
                     --n, ++f;
                 return n == 0;
             }
 
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_array_w_fix_(T* f, T* l, II& i, II e, Cx& cx) {
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_array_w_fix_(FI f, FI l, II& i, II e, Cx& cx) {
                 size_t n;
                 return read_size_<X>(n, std::distance(f, l), i, e, cx) && read_elements_<X>(f, n, i, e, cx);
             }
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_array_w_var_(T* f, T* l, II& i, II e, Cx& cx) {
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_array_w_var_(FI f, FI l, II& i, II e, Cx& cx) {
                 II const o = i;
                     for (bio::get(i, e); f != l && bio::peek(i, e, 0) != X::brk; ++f)
                         if (!read_value<X>(*f, i, e, cx))
@@ -81,8 +81,8 @@ namespace cxon { // array/read
                         (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                 ;
             }
-        template <typename X, typename T, typename II, typename Cx>
-            inline bool read_array_w_(T* f, T* l, bio::byte m, II& i, II e, Cx& cx) {
+        template <typename X, typename FI, typename II, typename Cx>
+            inline bool read_array_w_(FI f, FI l, bio::byte m, II& i, II e, Cx& cx) {
                 switch (m & X::mnr) {
                     case 0x1C: case 0x1D: case 0x1E:    return cx|cbor::read_error::size_invalid;
                     case 0x1F:                          return read_array_w_var_<X>(f, l, i, e, cx);
@@ -90,8 +90,8 @@ namespace cxon { // array/read
                 }
             }
 
-        template <typename X, typename T, typename II, typename Cx>
-            inline auto read_array_(T* f, T* l, II& i, II e, Cx& cx)
+        template <typename X, typename FI, typename II, typename Cx>
+            inline auto read_array_(FI f, FI l, II& i, II e, Cx& cx)
                 -> enable_if_t< std::is_assignable<decltype(*f), decltype(*i)>::value, bool>
             {
                 auto const m = bio::peek(i, e) ;
@@ -101,8 +101,8 @@ namespace cxon { // array/read
                     default:                    return cx|cbor::read_error::array_invalid;
                 }
             }
-        template <typename X, typename T, typename II, typename Cx>
-            inline auto read_array_(T* f, T* l, II& i, II e, Cx& cx)
+        template <typename X, typename FI, typename II, typename Cx>
+            inline auto read_array_(FI f, FI l, II& i, II e, Cx& cx)
                 -> enable_if_t<!std::is_assignable<decltype(*f), decltype(*i)>::value, bool>
             {
                 auto const m = bio::peek(i, e);
@@ -137,22 +137,22 @@ namespace cxon { // array/write
                 ;
             }
 
-        template <typename X, typename T, typename O, typename Cx>
-            inline auto write_array_(O& o, const T* f, const T* l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
+        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
                 size_t const n = std::distance(f, l);
                 return  write_count_<X>(o, X::tstr, n, cx) &&
                         bio::poke<X>(o, f, n, cx)
                 ;
             }
-        template <typename X, typename T, typename O, typename Cx>
-            inline auto write_array_(O& o, const T* f, const T* l, Cx& cx) -> enable_if_t<sizeof(T) == 1 && !is_char<T>::value, bool> {
+        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 && !is_char<T>::value, bool> {
                 size_t const n = std::distance(f, l);
                 return  write_count_<X>(o, X::bstr, n, cx) &&
                         bio::poke<X>(o, f, n, cx)
                 ;
             }
-        template <typename X, typename T, typename O, typename Cx>
-            inline auto write_array_(O& o, const T* f, const T* l, Cx& cx) -> enable_if_t<sizeof(T) != 1, bool> {
+        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) != 1, bool> {
                 if (write_count_<X>(o, X::arr, std::distance(f, l), cx))
                     for ( ; f != l && write_value<X>(o, *f, cx); ++f) ;
                 return f == l;
@@ -233,7 +233,7 @@ namespace cxon { // pointer/read
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_b_fix_(T*& t, II& i, II e, Cx& cx) {
-                return read_pointer_x_fix_<X>(t, &read_bytes_<X, T, II, Cx>, i, e, cx);
+                return read_pointer_x_fix_<X>(t, &read_bytes_<X, T*, II, Cx>, i, e, cx);
             }
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_b_var_(T*& t, II& i, II e, Cx& cx) {
@@ -277,7 +277,7 @@ namespace cxon { // pointer/read
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_w_fix_(T*& t, II& i, II e, Cx& cx) {
-                return read_pointer_x_fix_<X>(t, &read_elements_<X, T, II, Cx>, i, e, cx);
+                return read_pointer_x_fix_<X>(t, &read_elements_<X, T*, II, Cx>, i, e, cx);
             }
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_w_var_(T*& t, II& i, II e, Cx& cx) {
