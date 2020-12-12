@@ -42,7 +42,15 @@ TEST_BEG(cxon::CBOR<>)
     // std::array<T, n>
         R_TEST((array<int, 3>{2, 1, 0}), BS("\x83\x02\x01\x00"));
         R_TEST((array<int, 3>{2, 1, 0}), BS("\x9F\x02\x01\x00\xFF"));
+        R_TEST((array<int, 3>{2, 1, 0}), BS("\x63\x02\x01\x00"));
+        R_TEST((array<int, 3>{2, 1, 0}), BS("\x7F\x63\x02\x01\x00\xFF"));
+        R_TEST((array<int, 3>{2, 1, 0}), BS("\x7F\x62\x02\x01\x61\x00\xFF"));
+        R_TEST((array<int, 3>{2, 1, 0}), BS("\x5F\x42\x02\x01\x41\x00\xFF"));
+        R_TEST((array<int, 3>{2, 1, 0}), BS("\x5F\x43\x02\x01\x00\xFF"));
+        R_TEST((array<int, 3>{2, 1, 0}), BS("\x43\x02\x01\x00"));
         W_TEST(BS("\x83\x02\x01\x00"), (array<int, 3>{2, 1, 0}));
         R_TEST((array<int, 3>{2, 1, 0}), BS("\x82\x02\x01")); // less
         R_TEST((array<int, 3>{2, 1, 0}), BS("\x9F\x02\x01\xFF")); // less
+        W_TEST(BS("\x63\x02\x01\x00"), (array<char, 3>{2, 1, 0}));
+        W_TEST(BS("\x43\x02\x01\x00"), (array<unsigned char, 3>{2, 1, 0}));
 TEST_END()
