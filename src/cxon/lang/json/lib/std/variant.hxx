@@ -41,6 +41,11 @@ namespace cxon {
             return cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx|cio::read_error::unexpected);
         }
 
+    template <typename X, typename O, typename Cx>
+        inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, JSON> {
+            return cio::poke<X>(o, X::id::nil, cx);
+        }
+
     template <typename X, typename ...T>
         struct read<JSON<X>, std::variant<T...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
@@ -51,11 +56,6 @@ namespace cxon {
                     ;
                 }
         };
-
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, JSON> {
-            return cio::poke<X>(o, X::id::nil, cx);
-        }
 
     template <typename X, typename ...T>
         struct write<JSON<X>, std::variant<T...>> {

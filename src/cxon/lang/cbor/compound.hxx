@@ -11,16 +11,23 @@
 
 namespace cxon { // array/read
 
-    namespace bits {
+    namespace cbor { namespace bits {
 
         template <typename X, typename II, typename Cx>
             inline bool read_size_(size_t& s, II& i, II e, Cx& cx) {
                 return read_unsigned_<X>(s, i, e, cx) || cx|cbor::read_error::size_invalid;
             }
         template <typename X, typename II, typename Cx>
-            inline bool read_size_(size_t& s, size_t n, II& i, II e, Cx& cx) {
+            inline bool read_size_le_(size_t& s, size_t n, II& i, II e, Cx& cx) {
                 II const o = i; size_t t;
                 return  (read_size_<X>(t, i, e, cx) && t <= n && (s = t, true)) ||
+                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
+                ;
+            }
+        template <typename X, typename II, typename Cx>
+            inline bool read_size_eq_(size_t& s, size_t n, II& i, II e, Cx& cx) {
+                II const o = i; size_t t;
+                return  (read_size_<X>(t, i, e, cx) && t == n && (s = t, true)) ||
                         (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                 ;
             }
@@ -35,7 +42,7 @@ namespace cxon { // array/read
         template <typename X, typename FI, typename II, typename Cx>
             inline bool read_array_b_fix_(FI& f, FI l, II& i, II e, Cx& cx) {
                 size_t n;
-                return  read_size_<X>(n, std::distance(f, l), i, e, cx) &&
+                return  read_size_le_<X>(n, std::distance(f, l), i, e, cx) &&
                         read_bytes_<X>(f, n, i, e, cx) && (std::advance(f, n), true);
                 ;
             }
@@ -69,7 +76,7 @@ namespace cxon { // array/read
         template <typename X, typename FI, typename II, typename Cx>
             inline bool read_array_w_fix_(FI f, FI l, II& i, II e, Cx& cx) {
                 size_t n;
-                return read_size_<X>(n, std::distance(f, l), i, e, cx) && read_elements_<X>(f, n, i, e, cx);
+                return read_size_le_<X>(n, std::distance(f, l), i, e, cx) && read_elements_<X>(f, n, i, e, cx);
             }
         template <typename X, typename FI, typename II, typename Cx>
             inline bool read_array_w_var_(FI f, FI l, II& i, II e, Cx& cx) {
@@ -112,13 +119,13 @@ namespace cxon { // array/read
                 }
             }
 
-    }
+    }}
 
     template <typename X, typename T, size_t N>
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    return bits::read_array_<Y>(std::begin(t), std::end(t), i, e, cx);
+                    return cbor::bits::read_array_<Y>(std::begin(t), std::end(t), i, e, cx);
                 }
         };
 
@@ -126,10 +133,10 @@ namespace cxon { // array/read
 
 namespace cxon { // array/write
 
-    namespace bits {
+    namespace cbor { namespace bits {
 
         template <typename X, typename O, typename Cx>
-            inline bool write_count_(O& o, bio::byte m, size_t s, Cx& cx) {
+            inline bool write_size_(O& o, bio::byte m, size_t s, Cx& cx) {
                 unsigned const p = bits::power_(s);
                 return s > 0x17 ?
                     bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, s, 1 << p, cx) :
@@ -140,31 +147,31 @@ namespace cxon { // array/write
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
             inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
                 size_t const n = std::distance(f, l);
-                return  write_count_<X>(o, X::tstr, n, cx) &&
+                return  write_size_<X>(o, X::tstr, n, cx) &&
                         bio::poke<X>(o, f, n, cx)
                 ;
             }
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
             inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 && !is_char<T>::value, bool> {
                 size_t const n = std::distance(f, l);
-                return  write_count_<X>(o, X::bstr, n, cx) &&
+                return  write_size_<X>(o, X::bstr, n, cx) &&
                         bio::poke<X>(o, f, n, cx)
                 ;
             }
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
             inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) != 1, bool> {
-                if (write_count_<X>(o, X::arr, std::distance(f, l), cx))
+                if (write_size_<X>(o, X::arr, std::distance(f, l), cx))
                     for ( ; f != l && write_value<X>(o, *f, cx); ++f) ;
                 return f == l;
             }
 
-    }
+    }}
 
     template <typename X, typename T, size_t N>
         struct write<CBOR<X>, T[N]> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return bits::write_array_<J>(o, std::begin(t), std::end(t), cx);
+                    return cbor::bits::write_array_<J>(o, std::begin(t), std::end(t), cx);
                 }
         };
 
@@ -172,7 +179,7 @@ namespace cxon { // array/write
 
 namespace cxon { // pointer/read
 
-    namespace bits {
+    namespace cbor { namespace bits {
 
         template <typename X, typename T, typename Ax>
             struct allocator_ {
@@ -321,7 +328,7 @@ namespace cxon { // pointer/read
                 return t = v, true;
             }
 
-    }
+    }}
 
     template <typename X, typename T>
         struct read<CBOR<X>, T*> {
@@ -331,9 +338,9 @@ namespace cxon { // pointer/read
                 {
                     auto const m = bio::peek(i, e);
                     switch (m & Y::mjr) {
-                        case Y::bstr: case Y::tstr: return bits::read_pointer_b_<Y>(t, m, i, e, cx);
-                        case Y::arr:                return bits::read_pointer_w_<Y>(t, m, i, e, cx);
-                        default:                    return bits::read_pointer_t_<Y>(t, m, i, e, cx);
+                        case Y::bstr: case Y::tstr: return cbor::bits::read_pointer_b_<Y>(t, m, i, e, cx);
+                        case Y::arr:                return cbor::bits::read_pointer_w_<Y>(t, m, i, e, cx);
+                        default:                    return cbor::bits::read_pointer_t_<Y>(t, m, i, e, cx);
                     }
                 }
             template <typename II, typename Cx, typename Y = CBOR<X>>
@@ -342,8 +349,8 @@ namespace cxon { // pointer/read
                 {
                     auto const m = bio::peek(i, e);
                     switch (m & Y::mjr) {
-                        case Y::arr:    return bits::read_pointer_w_<Y>(t, m, i, e, cx);
-                        default:        return bits::read_pointer_t_<Y>(t, m, i, e, cx);
+                        case Y::arr:    return cbor::bits::read_pointer_w_<Y>(t, m, i, e, cx);
+                        default:        return cbor::bits::read_pointer_t_<Y>(t, m, i, e, cx);
                     }
                 }
         };
@@ -375,7 +382,7 @@ namespace cxon { // pointer/write
                     -> enable_if_t< is_char<U>::value, bool>
                 {
                     return t ?
-                        bits::write_array_<Y>(o, t, t + std::char_traits<T>::length(t), cx) :
+                        cbor::bits::write_array_<Y>(o, t, t + std::char_traits<T>::length(t), cx) :
                         bio::poke<Y>(o, Y::nil, cx)
                     ;
                 }

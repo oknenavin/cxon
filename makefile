@@ -55,7 +55,27 @@ cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/vector.hxx
 
 cxon-lang-cbor-lib-std = \
-    $(srcdir)/lang/json/lib/std/array.hxx
+    $(srcdir)/lang/cbor/lib/std/array.hxx \
+    $(srcdir)/lang/cbor/lib/std/bitset.hxx \
+    $(srcdir)/lang/cbor/lib/std/chrono.hxx \
+    $(srcdir)/lang/cbor/lib/std/complex.hxx \
+    $(srcdir)/lang/cbor/lib/std/deque.hxx \
+    $(srcdir)/lang/cbor/lib/std/forward_list.hxx \
+    $(srcdir)/lang/cbor/lib/std/list.hxx \
+    $(srcdir)/lang/cbor/lib/std/map.hxx \
+    $(srcdir)/lang/cbor/lib/std/optional.hxx \
+    $(srcdir)/lang/cbor/lib/std/queue.hxx \
+    $(srcdir)/lang/cbor/lib/std/set.hxx \
+    $(srcdir)/lang/cbor/lib/std/stack.hxx \
+    $(srcdir)/lang/cbor/lib/std/string.hxx \
+    $(srcdir)/lang/cbor/lib/std/string_view.hxx \
+    $(srcdir)/lang/cbor/lib/std/tuple.hxx \
+    $(srcdir)/lang/cbor/lib/std/unordered_map.hxx \
+    $(srcdir)/lang/cbor/lib/std/unordered_set.hxx \
+    $(srcdir)/lang/cbor/lib/std/utility.hxx \
+    $(srcdir)/lang/cbor/lib/std/valarray.hxx \
+    $(srcdir)/lang/cbor/lib/std/variant.hxx \
+    $(srcdir)/lang/cbor/lib/std/vector.hxx
 
 cxon-lang-json-node = \
     $(srcdir)/lang/json/node/node.hxx
