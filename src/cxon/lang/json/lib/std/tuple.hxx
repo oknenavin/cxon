@@ -45,7 +45,7 @@ namespace cxon { namespace cio { namespace con { // container read/write helpers
     }
 
     template <typename X, typename II, typename Cx, typename ...T>
-        inline constexpr bool read_tuple(std::tuple<T...>& t, II& i, II e, Cx& cx) {
+        inline bool read_tuple(std::tuple<T...>& t, II& i, II e, Cx& cx) {
             return bits::tuple_read<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value>::value(t, i, e, cx);
         }
 
