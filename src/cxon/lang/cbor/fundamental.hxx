@@ -45,7 +45,7 @@ namespace cxon { // bool
 
 namespace cxon { // numeric|character/read
 
-    namespace bits {
+    namespace cbor { namespace bits {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_unsigned_(T& t, II& i, II e, Cx& cx) {
@@ -71,20 +71,20 @@ namespace cxon { // numeric|character/read
                 return read_unsigned_<X>(t, i, e, cx) && (t = -1 - t, true);
             }
 
-    }
+    }}
 
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             switch (bio::peek(i, e) & X::mjr) {
-                case 0x00:  return bits::read_unsigned_<X>(t, i, e, cx);
-                case 0x20:  return bits::read_signed_<X>(t, i, e, cx);
+                case 0x00:  return cbor::bits::read_unsigned_<X>(t, i, e, cx);
+                case 0x20:  return cbor::bits::read_signed_<X>(t, i, e, cx);
                 default:    return cx|cbor::read_error::integer_invalid;
             }
         }
 
-    namespace bits {
+    namespace cbor { namespace bits {
 
         template <typename T>   struct unsigned_;
         template <>             struct unsigned_<float>     { using type = unsigned long; };
@@ -98,7 +98,7 @@ namespace cxon { // numeric|character/read
         template <typename T>
             using signed_type_ = typename signed_<T>::type;
 
-    }
+    }}
 
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
@@ -128,12 +128,12 @@ namespace cxon { // numeric|character/read
                 }
                 // from integral
                 case 0x00: {
-                    bits::unsigned_type_<T> u;
-                    return bits::read_unsigned_<X>(u, i, e, cx) && (t = T(u), true);
+                    cbor::bits::unsigned_type_<T> u;
+                    return cbor::bits::read_unsigned_<X>(u, i, e, cx) && (t = T(u), true);
                 }
                 case 0x20: {
-                    bits::signed_type_<T> u;
-                    return bits::read_signed_<X>(u, i, e, cx) && (t = T(u), true);
+                    cbor::bits::signed_type_<T> u;
+                    return cbor::bits::read_signed_<X>(u, i, e, cx) && (t = T(u), true);
                 }
                 default:
                     return cx|cbor::read_error::floating_point_invalid;
@@ -144,7 +144,7 @@ namespace cxon { // numeric|character/read
 
 namespace cxon { // numeric|character/write
 
-    namespace bits {
+    namespace cbor { namespace bits {
 
         template <typename T>
             inline auto power_(T  ) -> enable_if_t<sizeof(T) == 1, unsigned> { return 0; }
@@ -162,13 +162,13 @@ namespace cxon { // numeric|character/write
         template <typename T>
             struct is_unsigned  { static constexpr bool value = std::is_unsigned<T>::value && !is_quantum<T>::value; };
 
-    }
+    }}
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && bits::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::bits::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            auto const p = bits::power_(t);
+            auto const p = cbor::bits::power_(t);
             return t > 0x17 ?
                 bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(X::pint + t), cx)
@@ -176,10 +176,10 @@ namespace cxon { // numeric|character/write
         }
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && bits::is_quantum<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::bits::is_quantum<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             using Q = typename std::make_unsigned<T>::type;
-            auto const p = bits::power_(t);
+            auto const p = cbor::bits::power_(t);
             return Q(t) > 0x17 ?
                 bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, Q(t), 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(X::pint + Q(t)), cx)
@@ -187,10 +187,10 @@ namespace cxon { // numeric|character/write
         }
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && bits::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::bits::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             auto const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
-            auto const p = bits::power_(t);
+            auto const p = cbor::bits::power_(t);
             return t > 0x17 ?
                 bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(m + t), cx)

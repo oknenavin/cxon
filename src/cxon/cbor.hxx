@@ -7,6 +7,6 @@
 #   define CXON_CBOR_HXX_
 
 #   include "lang/cbor/cbor.hxx"
-#   define CXON_CBOR_DEFINED /* tell the world that CBOR is in use */
+#   define CXON_CBOR_DEFINED
 
 #endif // CXON_CBOR_HXX_

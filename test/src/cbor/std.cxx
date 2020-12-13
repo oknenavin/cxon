@@ -7,6 +7,8 @@
 #include "../test.hxx"
 
 #include "cxon/lib/std/array.hxx"
+#include "cxon/lib/std/chrono.hxx"
+#include "cxon/lib/std/complex.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,4 +55,35 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((array<int, 3>{2, 1, 0}), BS("\x9F\x02\x01\xFF")); // less
         W_TEST(BS("\x63\x02\x01\x00"), (array<char, 3>{2, 1, 0}));
         W_TEST(BS("\x43\x02\x01\x00"), (array<unsigned char, 3>{2, 1, 0}));
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // std::chrono
+    using namespace std::chrono;
+    R_TEST(duration<unsigned>(42), BS("\x18\x2A"));
+    R_TEST(duration<unsigned>(42), BS("\x1C"), cbor::read_error::integer_invalid, 0);
+    W_TEST(BS("\x18\x2A"), duration<unsigned>(42));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), BS("\x18\x2A"));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), BS("\x1C"), cbor::read_error::integer_invalid, 0);
+    W_TEST(BS("\x18\x2A"), time_point<system_clock>(system_clock::duration(42)));
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // std::complex
+    using namespace std;
+    R_TEST(complex<float>(), BS("\x82\x00\x00"));
+    R_TEST(complex<float>(), BS("\x82\xFA\x00\x00\x00\x00\xFA\x00\x00\x00\x00"));
+    R_TEST(complex<float>(1, 2), BS("\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
+    R_TEST(complex<float>(), BS("\x80"), cbor::read_error::size_invalid, 0);
+    R_TEST(complex<float>(), BS("\x81"), cbor::read_error::size_invalid, 0);
+    R_TEST(complex<float>(), BS("\x83"), cbor::read_error::size_invalid, 0);
+    R_TEST(complex<float>(), BS("\x82"), cbor::read_error::floating_point_invalid, 1);
+    R_TEST(complex<float>(), BS("\x82\x00"), cbor::read_error::floating_point_invalid, 2);
+    W_TEST(BS("\x82\xFA\x00\x00\x00\x00\xFA\x00\x00\x00\x00"), complex<float>());
+    W_TEST(BS("\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"), complex<float>(1, 2));
+    R_TEST(complex<double>(), BS("\x82\x00\x00"));
+    R_TEST(complex<double>(), BS("\x82\xFB\x00\x00\x00\x00\x00\x00\x00\x00\xFB\x00\x00\x00\x00\x00\x00\x00\x00"));
+    W_TEST(BS("\x82\xFB\x00\x00\x00\x00\x00\x00\x00\x00\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), complex<double>());
+    R_TEST(complex<double>(1, 2), BS("\x82\xFB\x3F\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"));
+    W_TEST(BS("\x82\xFB\x3F\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"), complex<double>(1, 2));
 TEST_END()

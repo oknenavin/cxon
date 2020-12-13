@@ -23,6 +23,7 @@ namespace cxon {
                 return std::make_pair(&i[0], &i[0] + i.size());
             }
         };
+
 }
 
 #endif // CXON_LIB_STD_ARRAY_

@@ -23,13 +23,6 @@ namespace cxon { namespace cio {
 
 namespace cxon {
 
-    template <typename T, typename ...R>
-        struct continuous<std::basic_string_view<T, R...>> {
-            static auto range(const std::basic_string_view<T, R...>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
-                return std::make_pair(&i[0], &i[0] + i.size());
-            }
-        };
-
     template <typename X, typename T, typename ...R>
         struct read<JSON<X>, std::basic_string_view<T, R...>> {
             template <typename II, typename Cx>

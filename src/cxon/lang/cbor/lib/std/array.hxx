@@ -14,14 +14,14 @@ namespace cxon {
         struct read<CBOR<X>, std::array<T, N>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
-                    return bits::read_array_<J>(t.begin(), t.end(), i, e, cx);
+                    return cbor::bits::read_array_<J>(t.begin(), t.end(), i, e, cx);
                 }
         };
     template <typename X, typename T>
         struct read<CBOR<X>, std::array<T, 0>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::array<T, 0>& t, II& i, II e, Cx& cx) {
-                    return bits::read_array_<J>(t.begin(), t.end(), i, e, cx);
+                    return cbor::bits::read_array_<J>(t.begin(), t.end(), i, e, cx);
                 }
         };
 
@@ -29,7 +29,7 @@ namespace cxon {
         struct write<CBOR<X>, std::array<T, N>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::array<T, N>& t, Cx& cx) {
-                    return bits::write_array_<J>(o, t.begin(), t.end(), cx);
+                    return cbor::bits::write_array_<J>(o, t.begin(), t.end(), cx);
                 }
         };
 
