@@ -6,13 +6,70 @@
 #ifndef CXON_CBOR_LIB_STD_TUPLE_HXX_
 #define CXON_CBOR_LIB_STD_TUPLE_HXX_
 
+namespace cxon { namespace cbor { namespace con { // container read/write helpers
+
+    namespace bits {
+
+        template <typename X, typename T, unsigned N, unsigned L>
+            struct tuple_read {
+                template <typename II, typename Cx>
+                    static bool value(T& t, II& i, II e, Cx& cx) {
+                        return  read_value<X>(std::get<N>(t), i, e, cx) &&
+                                tuple_read<X, T, N + 1, L>::value(t, i, e, cx)
+                        ;
+                    }
+            };
+        template <typename X, typename T, unsigned N>
+            struct tuple_read<X, T, N, N> {
+                template <typename II, typename Cx>
+                    static constexpr bool value(T&, II&, II, Cx&) { return true; }
+            };
+
+        template <typename X, typename T, unsigned N, unsigned L>
+            struct tuple_write {
+                template <typename O, typename Cx>
+                    static bool value(O& o, const T& t, Cx& cx) {
+                        return  write_value<X>(o, std::get<N>(t), cx) &&
+                                tuple_write<X, T, N + 1, L>::value(o, t, cx)
+                        ;
+                    }
+            };
+        template <typename X, typename T, unsigned N>
+            struct tuple_write<X, T, N, N> {
+                template <typename O, typename Cx>
+                    static bool value(O& o, const T& t, Cx& cx) {
+                        return write_value<X>(o, std::get<N>(t), cx);
+                    }
+            };
+
+    }
+
+    template <typename X, typename II, typename Cx, typename ...T>
+        inline bool read_tuple(std::tuple<T...>& t, II& i, II e, Cx& cx) {
+            static constexpr auto N = std::tuple_size<std::tuple<T...>>::value;
+            size_t s;
+            return  cbor::bits::read_size_eq_<X>(s, N, i, e, cx) &&
+                    bits::tuple_read<X, std::tuple<T...>, 0, N>::value(t, i, e, cx)
+            ;
+        }
+
+    template <typename X, typename O, typename Cx, typename ...T>
+        inline bool write_tuple(O& o, const std::tuple<T...>& t, Cx& cx) {
+            static constexpr auto N = std::tuple_size<std::tuple<T...>>::value;
+            return  cbor::bits::write_size_<X>(o, X::arr, N, cx) &&
+                    bits::tuple_write<X, std::tuple<T...>, 0, N - 1>::value(o, t, cx)
+            ;
+        }
+
+}}}
+
 namespace cxon {
 
     template <typename X, typename H, typename ...T>
         struct read<CBOR<X>, std::tuple<H, T...>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::tuple<H, T...>& t, II& i, II e, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::con::read_tuple<J>(t, i, e, cx);
                 }
         };
 
@@ -20,7 +77,7 @@ namespace cxon {
         struct write<CBOR<X>, std::tuple<T...>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::tuple<T...>& t, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::con::write_tuple<J>(o, t, cx);
                 }
         };
 

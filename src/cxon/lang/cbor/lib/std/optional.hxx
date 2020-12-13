@@ -12,7 +12,9 @@ namespace cxon {
         struct read<CBOR<X>, std::optional<T>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return (bio::peek(i, e) == J::nil && (bio::get(i, e), true)) ||
+                            read_value<J>(t.emplace(), i, e, cx)
+                    ;
                 }
         };
 
@@ -20,7 +22,10 @@ namespace cxon {
         struct write<CBOR<X>, std::optional<T>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::optional<T>& t, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return t.has_value() ?
+                        write_value<J>(o, t.value(), cx) :
+                        bio::poke<J>(o, J::nil, cx)
+                    ;
                 }
         };
 

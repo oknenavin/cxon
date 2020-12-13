@@ -9,10 +9,14 @@
 #include "cxon/lib/std/array.hxx"
 #include "cxon/lib/std/chrono.hxx"
 #include "cxon/lib/std/complex.hxx"
+#include "cxon/lib/std/tuple.hxx"
+#include "cxon/lib/std/optional.hxx"
+#include "cxon/lib/std/utility.hxx"
+#include "cxon/lib/std/variant.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(cxon::CBOR<>) // std::array
     using namespace std;
     // std::array<T, 0>
         R_TEST((array<int, 0>{}), BS("\x80"));
@@ -86,4 +90,56 @@ TEST_BEG(cxon::CBOR<>) // std::complex
     W_TEST(BS("\x82\xFB\x00\x00\x00\x00\x00\x00\x00\x00\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), complex<double>());
     R_TEST(complex<double>(1, 2), BS("\x82\xFB\x3F\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"));
     W_TEST(BS("\x82\xFB\x3F\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"), complex<double>(1, 2));
+TEST_END()
+
+
+#ifdef CXON_HAS_LIB_STD_OPTIONAL
+    TEST_BEG(cxon::CBOR<>) // std::optional
+        using namespace std;
+        R_TEST(optional<int>(42), BS("\x18\x2A"));
+        W_TEST(BS("\x18\x2A"), optional<int>(42));
+        R_TEST(optional<int>(), BS("\xF6"));
+        W_TEST(BS("\xF6"), optional<int>());
+    TEST_END()
+#endif
+
+
+TEST_BEG(cxon::CBOR<>) // std::pair
+    using namespace std;
+    R_TEST(pair<int, float>(1, 2.f), BS("\x82\x01\x02"));
+    R_TEST(pair<int, float>(1, 2.f), BS("\x82\x01\xFA\x40\x00\x00\x00"));
+    W_TEST(BS("\x82\x01\xFA\x40\x00\x00\x00"), pair<int, float>(1, 2.f));
+    R_TEST(pair<int, float>(), BS("\x80"), cbor::read_error::size_invalid, 0);
+    R_TEST(pair<int, float>(), BS("\x81"), cbor::read_error::size_invalid, 0);
+    R_TEST(pair<int, float>(), BS("\x83"), cbor::read_error::size_invalid, 0);
+    R_TEST(pair<int, float>(), BS("\x82"), cbor::read_error::integer_invalid, 1);
+    R_TEST(pair<int, float>(), BS("\x82\x00"), cbor::read_error::floating_point_invalid, 2);
+TEST_END()
+
+
+#ifdef CXON_HAS_LIB_STD_VARIANT
+    TEST_BEG(cxon::CBOR<>) // std::variant
+        using namespace std;
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\x82\x00\x01"));
+        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x01\x00"));
+        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x02\x00"), cbor::read_error::unexpected, 1);
+        W_TEST(BS("\x82\x00\x01"), variant<int, double>(1));
+        W_TEST(BS("\x82\x01\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), variant<int, double>(in_place_index_t<1>(), 0));
+        R_TEST(variant<monostate, int>(), BS("\x82\x00\xF6"));
+        R_TEST(variant<monostate, int>(), BS("\x82\x00\x00"), cbor::read_error::unexpected, 2);
+        W_TEST(BS("\x82\x00\xF6"), variant<monostate, int>());
+    TEST_END()
+#endif
+
+
+TEST_BEG(cxon::CBOR<>) // std::tuple
+    using namespace std;
+    R_TEST(tuple<int, float>(1, 2.f), BS("\x82\x01\x02"));
+    R_TEST(tuple<int, float>(1, 2.f), BS("\x82\x01\xFA\x40\x00\x00\x00"));
+    W_TEST(BS("\x82\x01\xFA\x40\x00\x00\x00"), tuple<int, float>(1, 2.f));
+    R_TEST(tuple<int, float>(), BS("\x80"), cbor::read_error::size_invalid, 0);
+    R_TEST(tuple<int, float>(), BS("\x81"), cbor::read_error::size_invalid, 0);
+    R_TEST(tuple<int, float>(), BS("\x83"), cbor::read_error::size_invalid, 0);
+    R_TEST(tuple<int, float>(), BS("\x82"), cbor::read_error::integer_invalid, 1);
+    R_TEST(tuple<int, float>(), BS("\x82\x00"), cbor::read_error::floating_point_invalid, 2);
 TEST_END()
