@@ -6,13 +6,31 @@
 #ifndef CXON_CBOR_LIB_STD_FORWARD_LIST_HXX_
 #define CXON_CBOR_LIB_STD_FORWARD_LIST_HXX_
 
+#include "cxon/lang/cbor/common/container.hxx"
+
+namespace cxon { namespace cbor { namespace cnt {
+
+    template <typename X, typename T, typename ...R>
+        struct append<CBOR<X>, std::forward_list<T, R...>> {
+            template <typename II, typename Cx, typename J = CBOR<X>>
+                static bool value(std::forward_list<T, R...>& t, II& i, II e, Cx& cx) {
+#                   if __cplusplus < 201703L
+                        return t.emplace_front(), read_value<J>(t.front(), i, e, cx);
+#                   else
+                        return read_value<J>(t.emplace_front(), i, e, cx);
+#                   endif
+                }
+        };
+
+}}}
+
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct read<CBOR<X>, std::forward_list<T, R...>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::forward_list<T, R...>& t, II& i, II e, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::cnt::read_array<J>(t, i, e, cx) && (t.reverse(), true);
                 }
         };
 
@@ -20,7 +38,7 @@ namespace cxon {
         struct write<CBOR<X>, std::forward_list<T, R...>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::forward_list<T, R...>& t, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::cnt::write_array<J>(o, t.begin(), t.end(), cx);
                 }
         };
 

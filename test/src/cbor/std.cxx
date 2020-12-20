@@ -9,6 +9,8 @@
 #include "cxon/lib/std/array.hxx"
 #include "cxon/lib/std/chrono.hxx"
 #include "cxon/lib/std/complex.hxx"
+#include "cxon/lib/std/forward_list.hxx"
+#include "cxon/lib/std/list.hxx"
 #include "cxon/lib/std/optional.hxx"
 #include "cxon/lib/std/utility.hxx"
 #include "cxon/lib/std/variant.hxx"
@@ -94,6 +96,26 @@ TEST_BEG(cxon::CBOR<>) // std::complex
 TEST_END()
 
 
+TEST_BEG(cxon::CBOR<>) // std::forward_list
+    using namespace std;
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x63\x02\x01\x00"));
+    W_TEST(BS("\x83\x02\x01\x00"), forward_list<int>{2, 1, 0});
+    W_TEST(BS("\x43\x02\x01\x00"), forward_list<unsigned char>{2, 1, 0});
+    W_TEST(BS("\x63\x02\x01\x00"), forward_list<char>{2, 1, 0});
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // std::list
+    using namespace std;
+    R_TEST(list<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    W_TEST(BS("\x83\x02\x01\x00"), list<int>{2, 1, 0});
+TEST_END()
+
+
 #ifdef CXON_HAS_LIB_STD_OPTIONAL
     TEST_BEG(cxon::CBOR<>) // std::optional
         using namespace std;
@@ -137,6 +159,7 @@ TEST_BEG(cxon::CBOR<>) // std::vector
     using namespace std;
     R_TEST(vector<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
     R_TEST(vector<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    R_TEST(vector<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
     W_TEST(BS("\x83\x02\x01\x00"), vector<int>{2, 1, 0});
 TEST_END()
 
