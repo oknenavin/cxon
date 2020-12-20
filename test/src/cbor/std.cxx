@@ -9,10 +9,11 @@
 #include "cxon/lib/std/array.hxx"
 #include "cxon/lib/std/chrono.hxx"
 #include "cxon/lib/std/complex.hxx"
-#include "cxon/lib/std/tuple.hxx"
 #include "cxon/lib/std/optional.hxx"
 #include "cxon/lib/std/utility.hxx"
 #include "cxon/lib/std/variant.hxx"
+#include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/tuple.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -130,6 +131,14 @@ TEST_END()
         W_TEST(BS("\x82\x00\xF6"), variant<monostate, int>());
     TEST_END()
 #endif
+
+
+TEST_BEG(cxon::CBOR<>) // std::vector
+    using namespace std;
+    R_TEST(vector<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
+    R_TEST(vector<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    W_TEST(BS("\x83\x02\x01\x00"), vector<int>{2, 1, 0});
+TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::tuple
