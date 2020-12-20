@@ -32,7 +32,7 @@ namespace cxon { namespace cbor { namespace cnt {
                     {
                         return t.reserve(n), true;
                     }
-                static constexpr bool make_(option<0>, T& t, size_t n) {
+                static constexpr bool make_(option<0>, T&, size_t) {
                     return true;
                 }
                 static bool make(T& t, size_t n) {
