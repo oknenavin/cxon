@@ -28,7 +28,7 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename T>
         struct append_n;
         //  template <typename II, typename Cx>
-        //      static bool value(T& t, II& i, II e, Cx& cx);
+        //      static bool value(T& t, II i, II e, Cx& cx);
     template <typename X, typename T, typename II, typename Cx>
         inline bool append_value(T& t, size_t n, II& i, II e, Cx& cx);
 
@@ -89,10 +89,31 @@ namespace cxon { namespace cbor { namespace cnt {
             return append<X, T>::value(t, i, e, cx);
         }
 
+    namespace bits {
+
+        template <typename X, typename T, typename II, typename Cx>
+            inline auto append_value_(T& t, size_t n, II& i, II e, Cx& cx)
+                -> enable_if_t< is_forward_iterator<II>::value, bool>
+            {
+                auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
+                II l = i; std::advance(l, m);
+                return append_n<X, T>::value(t, i, l, cx) && (std::advance(i, m), true);
+            }
+        template <typename X, typename T, typename II, typename Cx>
+            inline auto append_value_(T& t, size_t n, II& i, II e, Cx& cx)
+                -> enable_if_t<!is_forward_iterator<II>::value, bool>
+            {
+                for ( ; n != 0 && append_value<X>(t, i, e, cx); --n)
+                    ;
+                return n == 0;
+            }
+
+    }
+
     template <typename X, typename T>
         struct append_n {
             template <typename II, typename Cx>
-                static bool value(T& t, II& i, II e, Cx& cx) {
+                static bool value(T& t, II i, II e, Cx& cx) {
                     for ( ; i != e && append_value<X>(t, i, e, cx); )
                         ;
                     return i == e;
@@ -100,8 +121,7 @@ namespace cxon { namespace cbor { namespace cnt {
         };
     template <typename X, typename T, typename II, typename Cx>
         inline bool append_value(T& t, size_t n, II& i, II e, Cx& cx) {
-            auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
-            return append_n<X, T>::value(t, i, i + m, cx); // TODO: i + m => handle input-iterators
+            return bits::append_value_<X>(t, n, i, e, cx);
         }
 
 }}}

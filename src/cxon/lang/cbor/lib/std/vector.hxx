@@ -8,6 +8,18 @@
 
 #include "cxon/lang/cbor/common/container.hxx"
 
+namespace cxon { namespace cbor { namespace cnt {
+
+    template <typename X, typename T, typename ...R>
+        struct append_n<CBOR<X>, std::vector<T, R...>> {
+            template <typename II, typename Cx, typename J = CBOR<X>>
+                static bool value(std::vector<T, R...>& t, II i, II e, Cx&) {
+                    return t.insert(t.end(), i, e), true;
+                }
+        };
+
+}}}
+
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
