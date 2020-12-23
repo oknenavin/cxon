@@ -19,8 +19,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+using namespace std;
+
 TEST_BEG(cxon::CBOR<>) // std::array
-    using namespace std;
     // std::array<T, 0>
         R_TEST((array<int, 0>{}), BS("\x80"));
         R_TEST((array<int, 0>{}), BS("\x9F\xFF"));
@@ -77,7 +78,6 @@ TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::complex
-    using namespace std;
     R_TEST(complex<float>(), BS("\x82\x00\x00"));
     R_TEST(complex<float>(), BS("\x82\xFA\x00\x00\x00\x00\xFA\x00\x00\x00\x00"));
     R_TEST(complex<float>(1, 2), BS("\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
@@ -97,10 +97,13 @@ TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::forward_list
-    using namespace std;
     R_TEST(forward_list<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
     R_TEST(forward_list<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
     R_TEST(forward_list<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x5F\x43\x02\x01\x00\xFF"));
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x5F\x42\x02\x01\x41\x00\xFF"));
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x7F\x61\x02\x62\x01\x00\xFF"));
+    R_TEST(forward_list<int>{2, 1, 0}, BS("\x7F\x63\x02\x01\x00\xFF"));
     R_TEST(forward_list<int>{2, 1, 0}, BS("\x63\x02\x01\x00"));
     W_TEST(BS("\x83\x02\x01\x00"), forward_list<int>{2, 1, 0});
     W_TEST(BS("\x43\x02\x01\x00"), forward_list<unsigned char>{2, 1, 0});
@@ -109,16 +112,22 @@ TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::list
-    using namespace std;
     R_TEST(list<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
     R_TEST(list<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x5F\x43\x02\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x5F\x42\x02\x01\x41\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x7F\x61\x02\x62\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x7F\x63\x02\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x63\x02\x01\x00"));
     W_TEST(BS("\x83\x02\x01\x00"), list<int>{2, 1, 0});
+    W_TEST(BS("\x43\x02\x01\x00"), list<unsigned char>{2, 1, 0});
+    W_TEST(BS("\x63\x02\x01\x00"), list<char>{2, 1, 0});
 TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_OPTIONAL
     TEST_BEG(cxon::CBOR<>) // std::optional
-        using namespace std;
         R_TEST(optional<int>(42), BS("\x18\x2A"));
         W_TEST(BS("\x18\x2A"), optional<int>(42));
         R_TEST(optional<int>(), BS("\xF6"));
@@ -128,7 +137,6 @@ TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::pair
-    using namespace std;
     R_TEST(pair<int, float>(1, 2.f), BS("\x82\x01\x02"));
     R_TEST(pair<int, float>(1, 2.f), BS("\x82\x01\xFA\x40\x00\x00\x00"));
     W_TEST(BS("\x82\x01\xFA\x40\x00\x00\x00"), pair<int, float>(1, 2.f));
@@ -142,7 +150,6 @@ TEST_END()
 
 #ifdef CXON_HAS_LIB_STD_VARIANT
     TEST_BEG(cxon::CBOR<>) // std::variant
-        using namespace std;
         R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\x82\x00\x01"));
         R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x01\x00"));
         R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x02\x00"), cbor::read_error::unexpected, 1);
@@ -156,16 +163,21 @@ TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::vector
-    using namespace std;
     R_TEST(vector<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
     R_TEST(vector<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
     R_TEST(vector<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(vector<int>{2, 1, 0}, BS("\x5F\x43\x02\x01\x00\xFF"));
+    R_TEST(vector<int>{2, 1, 0}, BS("\x5F\x42\x02\x01\x41\x00\xFF"));
+    R_TEST(vector<int>{2, 1, 0}, BS("\x7F\x61\x02\x62\x01\x00\xFF"));
+    R_TEST(vector<int>{2, 1, 0}, BS("\x7F\x63\x02\x01\x00\xFF"));
+    R_TEST(vector<int>{2, 1, 0}, BS("\x63\x02\x01\x00"));
     W_TEST(BS("\x83\x02\x01\x00"), vector<int>{2, 1, 0});
+    W_TEST(BS("\x43\x02\x01\x00"), vector<unsigned char>{2, 1, 0});
+    W_TEST(BS("\x63\x02\x01\x00"), vector<char>{2, 1, 0});
 TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::tuple
-    using namespace std;
     R_TEST(tuple<int, float>(1, 2.f), BS("\x82\x01\x02"));
     R_TEST(tuple<int, float>(1, 2.f), BS("\x82\x01\xFA\x40\x00\x00\x00"));
     W_TEST(BS("\x82\x01\xFA\x40\x00\x00\x00"), tuple<int, float>(1, 2.f));
