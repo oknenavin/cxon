@@ -32,6 +32,12 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename T, typename II, typename Cx>
         inline bool append_value(T& t, size_t n, II& i, II e, Cx& cx);
 
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_array(T& t, II& i, II e, Cx& cx);
+    
+    template <typename X, typename FI, typename O, typename Cx>
+        inline bool write_array(O& o, FI f, FI l, Cx& cx);
+
 }}}
 
 // implementation //////////////////////////////////////////////////////////////
@@ -49,6 +55,7 @@ namespace cxon { namespace cbor { namespace cnt {
             static constexpr bool space_(option<0>, T&, size_t) {
                 return true;
             }
+
             static bool space(T& t, size_t n) {
                 return space_(option<1>(), t, n);
             }
@@ -60,21 +67,30 @@ namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename T>
         struct append {
+            template <typename U>
+                using has_emplace_back      = std::is_same<decltype(std::declval<U>().emplace_back()), typename U::reference>;
+            template <typename U>
+                using has_emplace_back_void = std::is_same<decltype(std::declval<U>().emplace_back()), void>;
+            template <typename U>
+                using has_back              = std::is_same<decltype(std::declval<U>().back()), typename U::reference>;
+            template <typename U>
+                using has_push_back         = std::is_same<decltype(std::declval<U>().push_back(std::declval<typename T::value_type>())), void>;
+
             template <typename II, typename Cx, typename U = T>
                 static auto value_(option<2>, U& t, II& i, II e, Cx& cx)
-                    -> enable_if_t<std::is_same<decltype(t.emplace_back()), typename U::reference>::value, bool>
+                    -> enable_if_t<has_emplace_back<U>::value, bool>
                 {
                     return read_value<X>(t.emplace_back(), i, e, cx);
                 }
-            template <typename II, typename Cx>
-                static auto value_(option<1>, T& t, II& i, II e, Cx& cx)
-                    -> decltype(t.emplace_back(), t.back(), bool())
+            template <typename II, typename Cx, typename U = T>
+                static auto value_(option<1>, U& t, II& i, II e, Cx& cx)
+                    -> enable_if_t<has_emplace_back_void<U>::value && has_back<U>::value, bool>
                 {
                     return t.emplace_back(), read_value<X>(t.back(), i, e, cx);
                 }
-            template <typename II, typename Cx>
-                static auto value_(option<0>, T& t, II& i, II e, Cx& cx)
-                    -> decltype(t.push_back(std::declval<typename T::value_type>()), t.back(), bool())
+            template <typename II, typename Cx, typename U = T>
+                static auto value_(option<0>, U& t, II& i, II e, Cx& cx)
+                    -> enable_if_t<has_push_back<U>::value &&has_back<U>::value, bool>
                 {
                     return t.push_back({}), read_value<X>(t.back(), i, e, cx);
                 }
@@ -134,10 +150,17 @@ namespace cxon { namespace cbor { namespace cnt {
             inline bool read_size_(size_t& s, II& i, II e, Cx& cx) {
                 return cbor::bits::read_unsigned_<X>(s, i, e, cx) || cx|cbor::read_error::size_invalid;
             }
+        template <typename X, typename II, typename Cx>
+            inline bool read_size_le_(size_t& s, size_t n, II& i, II e, Cx& cx) {
+                II const o = i; size_t t;
+                return  (read_size_<X>(t, i, e, cx) && t <= n && (s = t, true)) ||
+                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
+                ;
+            }
 
     }
 
-    namespace bits {
+    namespace bits { // byte/text arrays
 
         template <typename C>
             inline auto size__(option<1>, const C& c)
@@ -166,7 +189,7 @@ namespace cxon { namespace cbor { namespace cnt {
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_b_fix_(T& t, II& i, II e, Cx& cx) {
                 size_t n;
-                return  read_size_<X>(n, i, e, cx) &&
+                return  read_size_le_<X>(n, t.max_size() - size_(t), i, e, cx) &&
                         reserve_space<X>(t, size_(t) + n) &&
                         read_bytes_<X>(t, n, i, e, cx)
                 ;
@@ -182,6 +205,7 @@ namespace cxon { namespace cbor { namespace cnt {
                     }
                 return bio::get(i, e, 0), true;
             }
+
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_b_(T& t, bio::byte m, II& i, II e, Cx& cx) {
                 switch (m & X::mnr) {
@@ -193,7 +217,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
     }
 
-    namespace bits {
+    namespace bits { // value arrays
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_elements_(T& t, size_t n, II& i, II e, Cx& cx) {
@@ -205,7 +229,7 @@ namespace cxon { namespace cbor { namespace cnt {
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_fix_(T& t, II& i, II e, Cx& cx) {
                 size_t n;
-                return  read_size_<X>(n, i, e, cx) &&
+                return  read_size_le_<X>(n, t.max_size() - size_(t), i, e, cx) &&
                         reserve_space<X>(t, n) &&
                         read_elements_<X>(t, n, i, e, cx)
                 ;
@@ -213,13 +237,14 @@ namespace cxon { namespace cbor { namespace cnt {
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_var_(T& t, II& i, II e, Cx& cx) {
                 II const o = i;
-                    for (bio::get(i, e); bio::peek(i, e, 0) != X::brk; )
+                    for (bio::get(i, e); size_(t) < t.max_size() && bio::peek(i, e, 0) != X::brk; )
                         if (!append_value<X>(t, i, e, cx))
                             return false;
                 return  (bio::get(i, e, 0) == X::brk) ||
                         (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
                 ;
             }
+
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_(T& t, bio::byte m, II& i, II e, Cx& cx) {
                 switch (m & X::mnr) {
@@ -231,26 +256,34 @@ namespace cxon { namespace cbor { namespace cnt {
 
     }
 
-    template <typename X, typename T, typename II, typename Cx>
-        inline auto read_array(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t< std::is_assignable<decltype(*std::begin(t)), decltype(*i)>::value, bool>
-        {
-            auto const m = bio::peek(i, e);
-            switch (m & X::mjr) {
-                case X::bstr: case X::tstr: return bits::read_array_b_<X>(t, m, i, e, cx);
-                case X::arr:                return bits::read_array_w_<X>(t, m, i, e, cx);
-                default:                    return cx|cbor::read_error::array_invalid;
+    namespace bits {
+
+        template <typename X, typename T, typename II, typename Cx>
+            inline auto read_array_(T& t, II& i, II e, Cx& cx)
+                -> enable_if_t< std::is_assignable<decltype(*std::begin(t)), decltype(*i)>::value, bool>
+            {
+                auto const m = bio::peek(i, e);
+                switch (m & X::mjr) {
+                    case X::bstr: case X::tstr: return bits::read_array_b_<X>(t, m, i, e, cx);
+                    case X::arr:                return bits::read_array_w_<X>(t, m, i, e, cx);
+                    default:                    return cx|cbor::read_error::array_invalid;
+                }
             }
-        }
-    template <typename X, typename T, typename II, typename Cx>
-        inline auto read_array(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t<!std::is_assignable<decltype(*std::begin(t)), decltype(*i)>::value, bool>
-        {
-            auto const m = bio::peek(i, e);
-            switch (m & X::mjr) {
-                case X::arr:    return bits::read_array_w_<X>(t, m, i, e, cx);
-                default:        return cx|cbor::read_error::array_invalid;
+        template <typename X, typename T, typename II, typename Cx>
+            inline auto read_array_(T& t, II& i, II e, Cx& cx)
+                -> enable_if_t<!std::is_assignable<decltype(*std::begin(t)), decltype(*i)>::value, bool>
+            {
+                auto const m = bio::peek(i, e);
+                switch (m & X::mjr) {
+                    case X::arr:    return bits::read_array_w_<X>(t, m, i, e, cx);
+                    default:        return cx|cbor::read_error::array_invalid;
+                }
             }
+
+    }
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_array(T& t, II& i, II e, Cx& cx) {
+            return bits::read_array_<X>(t, i, e, cx);
         }
 
 }}}
@@ -290,8 +323,7 @@ namespace cxon { namespace cbor { namespace cnt {
             }
 
     }
-    
-    template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+    template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx) {
             return bits::write_array_<X>(o, f, l, cx);
         }
