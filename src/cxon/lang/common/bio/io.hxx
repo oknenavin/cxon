@@ -156,14 +156,14 @@ namespace cxon { namespace bio {
                 CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
                 return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
             }
-        template <typename T>
-            inline T be_to_i_(const byte (&bs)[3]) {
-                using R = unsigned long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-                return  (R(bs[2])<< 0) | (R(bs[1])<< 8) |
-                        (R(bs[0])<<16)
-                ;
-            }
+        //template <typename T>
+        //    inline T be_to_i_(const byte (&bs)[3]) {
+        //        using R = unsigned long;
+        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+        //        return  (R(bs[2])<< 0) | (R(bs[1])<< 8) |
+        //                (R(bs[0])<<16)
+        //        ;
+        //    }
         template <typename T>
             inline T be_to_i_(const byte (&bs)[4]) {
                 using R = unsigned long;
@@ -172,34 +172,34 @@ namespace cxon { namespace bio {
                         (R(bs[1])<<16) | (R(bs[0])<<24)
                 ;
             }
-        template <typename T>
-            inline T be_to_i_(const byte (&bs)[5]) {
-                using R = unsigned long long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-                return  (R(bs[4])<< 0) | (R(bs[3])<< 8) |
-                        (R(bs[2])<<16) | (R(bs[1])<<24) |
-                        (R(bs[0])<<32)
-                ;
-            }
-        template <typename T>
-            inline T be_to_i_(const byte (&bs)[6]) {
-                using R = unsigned long long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-                return  (R(bs[5])<< 0) | (R(bs[4])<< 8) |
-                        (R(bs[3])<<16) | (R(bs[2])<<24) |
-                        (R(bs[1])<<32) | (R(bs[0])<<40)
-                ;
-            }
-        template <typename T>
-            inline T be_to_i_(const byte (&bs)[7]) {
-                using R = unsigned long long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-                return  (R(bs[6])<< 0) | (R(bs[5])<< 8) |
-                        (R(bs[4])<<16) | (R(bs[3])<<24) |
-                        (R(bs[2])<<32) | (R(bs[1])<<40) |
-                        (R(bs[0])<<48)
-                ;
-            }
+        //template <typename T>
+        //    inline T be_to_i_(const byte (&bs)[5]) {
+        //        using R = unsigned long long;
+        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+        //        return  (R(bs[4])<< 0) | (R(bs[3])<< 8) |
+        //                (R(bs[2])<<16) | (R(bs[1])<<24) |
+        //                (R(bs[0])<<32)
+        //        ;
+        //    }
+        //template <typename T>
+        //    inline T be_to_i_(const byte (&bs)[6]) {
+        //        using R = unsigned long long;
+        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+        //        return  (R(bs[5])<< 0) | (R(bs[4])<< 8) |
+        //                (R(bs[3])<<16) | (R(bs[2])<<24) |
+        //                (R(bs[1])<<32) | (R(bs[0])<<40)
+        //        ;
+        //    }
+        //template <typename T>
+        //    inline T be_to_i_(const byte (&bs)[7]) {
+        //        using R = unsigned long long;
+        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+        //        return  (R(bs[6])<< 0) | (R(bs[5])<< 8) |
+        //                (R(bs[4])<<16) | (R(bs[3])<<24) |
+        //                (R(bs[2])<<32) | (R(bs[1])<<40) |
+        //                (R(bs[0])<<48)
+        //        ;
+        //    }
         template <typename T>
             inline T be_to_i_(const byte (&bs)[8]) {
                 using R = unsigned long long;
@@ -257,11 +257,11 @@ namespace cxon { namespace bio {
             switch (n) {
                 case 1:     return bits::get_<1>(t, i, e);
                 case 2:     return bits::get_<2>(t, i, e);
-                case 3:     return bits::get_<3>(t, i, e);
+                //case 3:     return bits::get_<3>(t, i, e);
                 case 4:     return bits::get_<4>(t, i, e);
-                case 5:     return bits::get_<5>(t, i, e);
-                case 6:     return bits::get_<6>(t, i, e);
-                case 7:     return bits::get_<7>(t, i, e);
+                //case 5:     return bits::get_<5>(t, i, e);
+                //case 6:     return bits::get_<6>(t, i, e);
+                //case 7:     return bits::get_<7>(t, i, e);
                 case 8:     return bits::get_<8>(t, i, e);
                 default:    return CXON_ASSERT(0, "unexpected"), false;
             }
