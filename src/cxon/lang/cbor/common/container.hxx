@@ -6,7 +6,7 @@
 #ifndef CXON_CBOR_COMMON_CONTAINER_HXX_
 #define CXON_CBOR_COMMON_CONTAINER_HXX_
 
-#include "cxon/lang/cbor/compound.hxx"
+#include "cxon/lang/cbor/fundamental.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -130,6 +130,15 @@ namespace cxon { namespace cbor { namespace cnt {
 
     namespace bits {
 
+        template <typename X, typename II, typename Cx>
+            inline bool read_size_(size_t& s, II& i, II e, Cx& cx) {
+                return cbor::bits::read_unsigned_<X>(s, i, e, cx) || cx|cbor::read_error::size_invalid;
+            }
+
+    }
+
+    namespace bits {
+
         template <typename C>
             inline auto size__(option<1>, const C& c)
                 -> decltype(c.size(), size_t())
@@ -157,7 +166,7 @@ namespace cxon { namespace cbor { namespace cnt {
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_b_fix_(T& t, II& i, II e, Cx& cx) {
                 size_t n;
-                return  cbor::bits::read_size_<X>(n, i, e, cx) &&
+                return  read_size_<X>(n, i, e, cx) &&
                         reserve_space<X>(t, size_(t) + n) &&
                         read_bytes_<X>(t, n, i, e, cx)
                 ;
@@ -196,7 +205,7 @@ namespace cxon { namespace cbor { namespace cnt {
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_fix_(T& t, II& i, II e, Cx& cx) {
                 size_t n;
-                return  cbor::bits::read_size_<X>(n, i, e, cx) &&
+                return  read_size_<X>(n, i, e, cx) &&
                         reserve_space<X>(t, n) &&
                         read_elements_<X>(t, n, i, e, cx)
                 ;
@@ -247,10 +256,44 @@ namespace cxon { namespace cbor { namespace cnt {
 }}}
 
 namespace cxon { namespace cbor { namespace cnt {
+
+    namespace bits {
+
+        template <typename X, typename O, typename Cx>
+            inline bool write_size_(O& o, bio::byte m, size_t s, Cx& cx) {
+                unsigned const p = cbor::bits::power_(s);
+                return s > 0x17 ?
+                    bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, s, 1 << p, cx) :
+                    bio::poke<X>(o, bio::byte(m + s), cx)
+                ;
+            }
+
+        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
+                size_t const n = std::distance(f, l);
+                return  write_size_<X>(o, X::tstr, n, cx) &&
+                        bio::poke<X>(o, f, n, cx)
+                ;
+            }
+        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 && !is_char<T>::value, bool> {
+                size_t const n = std::distance(f, l);
+                return  write_size_<X>(o, X::bstr, n, cx) &&
+                        bio::poke<X>(o, f, n, cx)
+                ;
+            }
+        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) != 1, bool> {
+                if (write_size_<X>(o, X::arr, std::distance(f, l), cx))
+                    for ( ; f != l && write_value<X>(o, *f, cx); ++f) ;
+                return f == l;
+            }
+
+    }
     
     template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
         inline bool write_array(O& o, FI f, FI l, Cx& cx) {
-            return cbor::bits::write_array_<X>(o, f, l, cx);
+            return bits::write_array_<X>(o, f, l, cx);
         }
 
 }}}
