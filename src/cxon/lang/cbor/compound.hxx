@@ -6,7 +6,7 @@
 #ifndef CXON_CBOR_COMPOUND_HXX_
 #define CXON_CBOR_COMPOUND_HXX_
 
-#include "cxon/lang/common/bio/bio.hxx"
+#include "cxon/lang/cbor/common/container.hxx"
 #include <cstring>
 
 namespace cxon { // array/read
@@ -125,6 +125,7 @@ namespace cxon { // array/read
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
+                    //return cbor::cnt::read_array<Y>(std::begin(t), std::end(t), i, e, cx);
                     return cbor::bits::read_array_<Y>(std::begin(t), std::end(t), i, e, cx);
                 }
         };
@@ -144,34 +145,13 @@ namespace cxon { // array/write
                 ;
             }
 
-        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
-            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
-                size_t const n = std::distance(f, l);
-                return  write_size_<X>(o, X::tstr, n, cx) &&
-                        bio::poke<X>(o, f, n, cx)
-                ;
-            }
-        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
-            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 && !is_char<T>::value, bool> {
-                size_t const n = std::distance(f, l);
-                return  write_size_<X>(o, X::bstr, n, cx) &&
-                        bio::poke<X>(o, f, n, cx)
-                ;
-            }
-        template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
-            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) != 1, bool> {
-                if (write_size_<X>(o, X::arr, std::distance(f, l), cx))
-                    for ( ; f != l && write_value<X>(o, *f, cx); ++f) ;
-                return f == l;
-            }
-
     }}
 
     template <typename X, typename T, size_t N>
         struct write<CBOR<X>, T[N]> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return cbor::bits::write_array_<J>(o, std::begin(t), std::end(t), cx);
+                    return cbor::cnt::write_array<J>(o, std::begin(t), std::end(t), cx);
                 }
         };
 
@@ -382,7 +362,7 @@ namespace cxon { // pointer/write
                     -> enable_if_t< is_char<U>::value, bool>
                 {
                     return t ?
-                        cbor::bits::write_array_<Y>(o, t, t + std::char_traits<T>::length(t), cx) :
+                        cbor::cnt::write_array<Y>(o, t, t + std::char_traits<T>::length(t), cx) :
                         bio::poke<Y>(o, Y::nil, cx)
                     ;
                 }

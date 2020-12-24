@@ -28,12 +28,14 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename T>
         struct append_n;
         //  template <typename II, typename Cx>
-        //      static bool value(T& t, II i, II e, Cx& cx);
+        //      static bool value(T& t, II l, II l, Cx& cx);
     template <typename X, typename T, typename II, typename Cx>
-        inline bool append_value(T& t, size_t n, II& i, II e, Cx& cx);
+        inline bool append_value(T& t, size_t n, II& f, II l, Cx& cx);
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_array(T& t, II& i, II e, Cx& cx);
+    template <typename X, typename FI, typename II, typename Cx>
+        inline bool read_array(FI f, FI l, II& i, II e, Cx& cx);
     
     template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx);
@@ -108,18 +110,18 @@ namespace cxon { namespace cbor { namespace cnt {
     namespace bits {
 
         template <typename X, typename T, typename II, typename Cx>
-            inline auto append_value_(T& t, size_t n, II& i, II e, Cx& cx)
+            inline auto append_value_(T& t, size_t n, II& f, II l, Cx& cx)
                 -> enable_if_t< is_forward_iterator<II>::value, bool>
             {
-                auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
-                II l = i; std::advance(l, m);
-                return append_n<X, T>::value(t, i, l, cx) && (std::advance(i, m), true);
+                auto const m = std::min(n, static_cast<size_t>(std::distance(f, l)));
+                II e = f; std::advance(e, m);
+                return append_n<X, T>::value(t, f, e, cx) && (std::advance(f, m), true);
             }
         template <typename X, typename T, typename II, typename Cx>
-            inline auto append_value_(T& t, size_t n, II& i, II e, Cx& cx)
+            inline auto append_value_(T& t, size_t n, II& f, II l, Cx& cx)
                 -> enable_if_t<!is_forward_iterator<II>::value, bool>
             {
-                for ( ; n != 0 && append_value<X>(t, i, e, cx); --n)
+                for ( ; n != 0 && append_value<X>(t, f, l, cx); --n)
                     ;
                 return n == 0;
             }
@@ -129,15 +131,15 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename T>
         struct append_n {
             template <typename II, typename Cx>
-                static bool value(T& t, II i, II e, Cx& cx) {
-                    for ( ; i != e && append_value<X>(t, i, e, cx); )
+                static bool value(T& t, II f, II l, Cx& cx) {
+                    for ( ; f != l && append_value<X>(t, f, l, cx); )
                         ;
-                    return i == e;
+                    return f == l;
                 }
         };
     template <typename X, typename T, typename II, typename Cx>
-        inline bool append_value(T& t, size_t n, II& i, II e, Cx& cx) {
-            return bits::append_value_<X>(t, n, i, e, cx);
+        inline bool append_value(T& t, size_t n, II& f, II l, Cx& cx) {
+            return bits::append_value_<X>(t, n, f, l, cx);
         }
 
 }}}
@@ -284,6 +286,40 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_array(T& t, II& i, II e, Cx& cx) {
             return bits::read_array_<X>(t, i, e, cx);
+        }
+
+    namespace bits {
+
+        template <typename FI>
+            struct range_container {
+                using value_type = typename std::iterator_traits<FI>::value_type;
+                using reference = value_type&;
+
+                range_container(FI f, FI l) : f_(f), l_(l), e_(f) {}
+
+                size_t size() const     { return std::distance(f_, e_); }
+                size_t max_size() const { return std::distance(f_, l_); }
+
+                FI begin()  { return f_; }
+                FI end()    { return e_; }
+
+                reference emplace_back()            { return *e_++; }
+                void push_back(const value_type& t) { *e_ = t, ++e_; }
+                void push_back(value_type&& t)      { *e_ = std::move(t), ++e_; }
+
+                private:
+                    FI f_, l_, e_;
+            };
+        template <typename FI>
+            range_container<FI> make_range_container(FI f, FI l) {
+                return {f, l};
+            }
+
+    }
+    template <typename X, typename FI, typename II, typename Cx>
+        inline bool read_array(FI f, FI l, II& i, II e, Cx& cx) {
+            auto c = bits::make_range_container(f, l);
+            return read_array<X>(c, i, e, cx);
         }
 
 }}}
