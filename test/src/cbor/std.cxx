@@ -49,6 +49,11 @@ TEST_BEG(cxon::CBOR<>) // std::array
         R_TEST((array<unsigned char, 0>{}), BS("\x60"));
         W_TEST("\x40", (array<unsigned char, 0>{}));
             R_TEST((array<int, 0>{}), BS("\x81\x00"), cbor::read_error::size_invalid, 0);
+            R_TEST((array<int, 0>{}), BS("\x9F\x00\xFF"), cbor::read_error::size_invalid, 0);
+            R_TEST((array<char, 0>{}), BS("\x41\x00"), cbor::read_error::size_invalid, 0);
+            R_TEST((array<char, 0>{}), BS("\x5F\x42\x02\x01\x41\x00\xFF"), cbor::read_error::size_invalid, 1);
+            R_TEST((array<char, 0>{}), BS("\x7F\x61\x02\x62\x01\x00\xFF"), cbor::read_error::size_invalid, 1);
+            R_TEST((array<char, 0>{}), BS("\x61\x00"), cbor::read_error::size_invalid, 0);
     // std::array<T, n>
         R_TEST((array<int, 3>{2, 1, 0}), BS("\x83\x02\x01\x00"));
         R_TEST((array<int, 3>{2, 1, 0}), BS("\x9F\x02\x01\x00\xFF"));
