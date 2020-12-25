@@ -44,11 +44,21 @@ namespace cxon {
 
     // container
 
-    template <typename, typename = void>
-        struct is_back_insertable;
+    template <typename C>
+        using has_emplace_back      = std::is_same<decltype(std::declval<C>().emplace_back()), typename C::reference>;
+    template <typename C>
+        using has_emplace_back_void = std::is_same<decltype(std::declval<C>().emplace_back()), void>;
+    template <typename C>
+        using has_back              = std::is_same<decltype(std::declval<C>().back()), typename C::reference>;
+    template <typename C>
+        using has_push_back         = std::is_same<decltype(std::declval<C>().push_back(std::declval<typename C::value_type>())), void>;
 
-    template <typename I>
+    template <typename C>
+        using is_back_insertable    = has_push_back<C>;
+
+    template <typename C>
         struct continuous;
+            //std::pair<auto, auto> range(const C& c);
 
     // iterators
 
@@ -127,11 +137,6 @@ namespace cxon {
         };
 
     // container
-
-    template <typename, typename/* = void*/>
-        struct is_back_insertable : std::false_type {};
-    template <typename C>
-        struct is_back_insertable<C, decltype(C().push_back(' '))> : std::true_type {};
 
     template <typename C>
         struct continuous {

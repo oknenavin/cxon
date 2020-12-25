@@ -11,9 +11,9 @@
 namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename T, typename ...R>
-        struct append_n<CBOR<X>, std::list<T, R...>> {
+        struct append_element<CBOR<X>, std::list<T, R...>> {
             template <typename II, typename Cx>
-                static bool value(std::list<T, R...>& t, II f, II l, Cx&) {
+                static bool range(std::list<T, R...>& t, II f, II l, Cx&) {
                     return t.insert(t.end(), f, l), true;
                 }
         };
