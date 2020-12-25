@@ -26,11 +26,11 @@ namespace cxon { namespace cbor { namespace cnt {
         inline bool append_value(T& t, II& i, II e, Cx& cx);
 
     template <typename X, typename T>
-        struct append_n;
+        struct append_element;
         //  template <typename II, typename Cx>
-        //      static bool value(T& t, II l, II l, Cx& cx);
+        //      static bool range(T& t, II f, II l, Cx& cx);
     template <typename X, typename T, typename II, typename Cx>
-        inline bool append_value(T& t, size_t n, II& f, II l, Cx& cx);
+        inline bool append_element_range(T& t, size_t n, II& f, II l, Cx& cx);
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_array(T& t, II& i, II e, Cx& cx);
@@ -69,15 +69,6 @@ namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename T>
         struct append {
-            template <typename U>
-                using has_emplace_back      = std::is_same<decltype(std::declval<U>().emplace_back()), typename U::reference>;
-            template <typename U>
-                using has_emplace_back_void = std::is_same<decltype(std::declval<U>().emplace_back()), void>;
-            template <typename U>
-                using has_back              = std::is_same<decltype(std::declval<U>().back()), typename U::reference>;
-            template <typename U>
-                using has_push_back         = std::is_same<decltype(std::declval<U>().push_back(std::declval<typename T::value_type>())), void>;
-
             template <typename II, typename Cx, typename U = T>
                 static auto value_(option<2>, U& t, II& i, II e, Cx& cx)
                     -> enable_if_t<has_emplace_back<U>::value, bool>
@@ -92,7 +83,7 @@ namespace cxon { namespace cbor { namespace cnt {
                 }
             template <typename II, typename Cx, typename U = T>
                 static auto value_(option<0>, U& t, II& i, II e, Cx& cx)
-                    -> enable_if_t<has_push_back<U>::value &&has_back<U>::value, bool>
+                    -> enable_if_t<has_push_back<U>::value && has_back<U>::value, bool>
                 {
                     return t.push_back({}), read_value<X>(t.back(), i, e, cx);
                 }
@@ -110,15 +101,15 @@ namespace cxon { namespace cbor { namespace cnt {
     namespace bits {
 
         template <typename X, typename T, typename II, typename Cx>
-            inline auto append_value_(T& t, size_t n, II& f, II l, Cx& cx)
+            inline auto append_element_range_(T& t, size_t n, II& f, II l, Cx& cx)
                 -> enable_if_t< is_forward_iterator<II>::value, bool>
             {
                 auto const m = std::min(n, static_cast<size_t>(std::distance(f, l)));
                 II e = f; std::advance(e, m);
-                return append_n<X, T>::value(t, f, e, cx) && (std::advance(f, m), true);
+                return append_element<X, T>::range(t, f, e, cx) && (std::advance(f, m), m == n);
             }
         template <typename X, typename T, typename II, typename Cx>
-            inline auto append_value_(T& t, size_t n, II& f, II l, Cx& cx)
+            inline auto append_element_range_(T& t, size_t n, II& f, II l, Cx& cx)
                 -> enable_if_t<!is_forward_iterator<II>::value, bool>
             {
                 for ( ; n != 0 && append_value<X>(t, f, l, cx); --n)
@@ -129,17 +120,17 @@ namespace cxon { namespace cbor { namespace cnt {
     }
 
     template <typename X, typename T>
-        struct append_n {
+        struct append_element {
             template <typename II, typename Cx>
-                static bool value(T& t, II f, II l, Cx& cx) {
+                static bool range(T& t, II f, II l, Cx& cx) {
                     for ( ; f != l && append_value<X>(t, f, l, cx); )
                         ;
                     return f == l;
                 }
         };
     template <typename X, typename T, typename II, typename Cx>
-        inline bool append_value(T& t, size_t n, II& f, II l, Cx& cx) {
-            return bits::append_value_<X>(t, n, f, l, cx);
+        inline bool append_element_range(T& t, size_t n, II& f, II l, Cx& cx) {
+            return bits::append_element_range_<X>(t, n, f, l, cx);
         }
 
 }}}
@@ -183,7 +174,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_bytes_(T& t, size_t n, II& i, II e, Cx& cx) {
-                return  (append_value<X>(t, n, i, e, cx)) ||
+                return  (append_element_range<X>(t, n, i, e, cx)) ||
                         (cx|cbor::read_error::unexpected)
                 ;
             }

@@ -79,11 +79,14 @@ namespace cxon { namespace cio { namespace val {
     template <typename O>
         struct skip_t {
             O value;
-            void push_back(char c) const { poke(value, c); }
+            using value_type = char; // for is_back_insertable
+                                        // TODO: consider O's value type
+            void push_back(value_type c) const { poke(value, c); }
         };
     template <>
         struct skip_t<void> {
-            void push_back(char) const {}
+            using value_type = char; // for is_back_insertable
+            void push_back(value_type) const {}
         };
 
     template <typename T>
