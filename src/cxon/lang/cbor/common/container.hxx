@@ -327,11 +327,11 @@ namespace cxon { namespace cbor { namespace cnt {
     namespace bits {
 
         template <typename FI>
-            struct range_container {
+            struct range_container_ {
                 using value_type = typename std::iterator_traits<FI>::value_type;
                 using reference = value_type&;
 
-                range_container(FI f, FI l) : f_(f), l_(l), e_(f) {}
+                range_container_(FI f, FI l) : f_(f), l_(l), e_(f) {}
 
                 size_t size() const     { return std::distance(f_, e_); }
                 size_t max_size() const { return std::distance(f_, l_); }
@@ -347,14 +347,14 @@ namespace cxon { namespace cbor { namespace cnt {
                     FI f_, l_, e_;
             };
         template <typename FI>
-            range_container<FI> make_range_container(FI f, FI l) {
+            range_container_<FI> make_range_container_(FI f, FI l) {
                 return {f, l};
             }
 
     }
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, II& i, II e, Cx& cx) {
-            auto c = bits::make_range_container(f, l);
+            auto c = bits::make_range_container_(f, l);
             return read_array<X>(c, i, e, cx);
         }
 
