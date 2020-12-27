@@ -48,7 +48,7 @@ namespace cxon { namespace cbor { namespace con { // container read/write helper
         inline bool read_tuple(std::tuple<T...>& t, II& i, II e, Cx& cx) {
             static constexpr auto N = std::tuple_size<std::tuple<T...>>::value;
             size_t s;
-            return  cbor::bits::read_size_eq_<X>(s, N, i, e, cx) &&
+            return  cbor::cnt::read_size_eq<X>(s, N, i, e, cx) &&
                     bits::tuple_read<X, std::tuple<T...>, 0, N>::value(t, i, e, cx)
             ;
         }
@@ -56,7 +56,7 @@ namespace cxon { namespace cbor { namespace con { // container read/write helper
     template <typename X, typename O, typename Cx, typename ...T>
         inline bool write_tuple(O& o, const std::tuple<T...>& t, Cx& cx) {
             static constexpr auto N = std::tuple_size<std::tuple<T...>>::value;
-            return  cbor::bits::write_size_<X>(o, X::arr, N, cx) &&
+            return  cbor::cnt::write_size<X>(o, X::arr, N, cx) &&
                     bits::tuple_write<X, std::tuple<T...>, 0, N - 1>::value(o, t, cx)
             ;
         }
