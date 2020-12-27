@@ -13,57 +13,11 @@ namespace cxon { // array/read
 
     namespace cbor { namespace bits {
 
-        template <typename X, typename II, typename Cx>
-            inline bool read_size_(size_t& s, II& i, II e, Cx& cx) {
-                return read_unsigned_<X>(s, i, e, cx) || cx|cbor::read_error::size_invalid;
-            }
-        template <typename X, typename II, typename Cx>
-            inline bool read_size_le_(size_t& s, size_t n, II& i, II e, Cx& cx) {
-                II const o = i; size_t t;
-                return  (read_size_<X>(t, i, e, cx) && t <= n && (s = t, true)) ||
-                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
-                ;
-            }
-        template <typename X, typename II, typename Cx>
-            inline bool read_size_eq_(size_t& s, size_t n, II& i, II e, Cx& cx) {
-                II const o = i; size_t t;
-                return  (read_size_<X>(t, i, e, cx) && t == n && (s = t, true)) ||
-                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
-                ;
-            }
-
         template <typename X, typename FI, typename II, typename Cx>
             inline bool read_bytes_(FI f, size_t n, II& i, II e, Cx& cx) {
                 return  (bio::get(f, i, e, n)) ||
                         (cx|cbor::read_error::unexpected)
                 ;
-            }
-
-        template <typename X, typename FI, typename II, typename Cx>
-            inline bool read_array_b_fix_(FI& f, FI l, II& i, II e, Cx& cx) {
-                size_t n;
-                return  read_size_le_<X>(n, std::distance(f, l), i, e, cx) &&
-                        read_bytes_<X>(f, n, i, e, cx) && (std::advance(f, n), true);
-                ;
-            }
-        template <typename X, typename FI, typename II, typename Cx>
-            inline bool read_array_b_var_(FI f, FI l, II& i, II e, Cx& cx) {
-                bio::byte const m = bio::get(i, e) & X::mjr;
-                    for (auto b = bio::peek(i, e, 0); b != X::brk; b = bio::peek(i, e, 0)) {
-                        if (m != (b & X::mjr))
-                            return cx|cbor::read_error::array_invalid;
-                        if (!read_array_b_fix_<X>(f, l, i, e, cx))
-                            return false;
-                    }
-                return bio::get(i, e, 0), true;
-            }
-        template <typename X, typename FI, typename II, typename Cx>
-            inline bool read_array_b_(FI f, FI l, bio::byte m, II& i, II e, Cx& cx) {
-                switch (m & X::mnr) {
-                    case 0x1C: case 0x1D: case 0x1E:    return cx|cbor::read_error::size_invalid;
-                    case 0x1F:                          return read_array_b_var_<X>(f, l, i, e, cx);
-                    default:                            return read_array_b_fix_<X>(f, l, i, e, cx);
-                }
             }
 
         template <typename X, typename FI, typename II, typename Cx>
@@ -73,79 +27,19 @@ namespace cxon { // array/read
                 return n == 0;
             }
 
-        template <typename X, typename FI, typename II, typename Cx>
-            inline bool read_array_w_fix_(FI f, FI l, II& i, II e, Cx& cx) {
-                size_t n;
-                return read_size_le_<X>(n, std::distance(f, l), i, e, cx) && read_elements_<X>(f, n, i, e, cx);
-            }
-        template <typename X, typename FI, typename II, typename Cx>
-            inline bool read_array_w_var_(FI f, FI l, II& i, II e, Cx& cx) {
-                II const o = i;
-                    for (bio::get(i, e); f != l && bio::peek(i, e, 0) != X::brk; ++f)
-                        if (!read_value<X>(*f, i, e, cx))
-                            return false;
-                return  (bio::get(i, e, 0) == X::brk) ||
-                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
-                ;
-            }
-        template <typename X, typename FI, typename II, typename Cx>
-            inline bool read_array_w_(FI f, FI l, bio::byte m, II& i, II e, Cx& cx) {
-                switch (m & X::mnr) {
-                    case 0x1C: case 0x1D: case 0x1E:    return cx|cbor::read_error::size_invalid;
-                    case 0x1F:                          return read_array_w_var_<X>(f, l, i, e, cx);
-                    default:                            return read_array_w_fix_<X>(f, l, i, e, cx);
-                }
-            }
-
-        template <typename X, typename FI, typename II, typename Cx>
-            inline auto read_array_(FI f, FI l, II& i, II e, Cx& cx)
-                -> enable_if_t< std::is_assignable<decltype(*f), decltype(*i)>::value, bool>
-            {
-                auto const m = bio::peek(i, e) ;
-                switch (m & X::mjr) {
-                    case X::bstr: case X::tstr: return read_array_b_<X>(f, l, m, i, e, cx);
-                    case X::arr:                return read_array_w_<X>(f, l, m, i, e, cx);
-                    default:                    return cx|cbor::read_error::array_invalid;
-                }
-            }
-        template <typename X, typename FI, typename II, typename Cx>
-            inline auto read_array_(FI f, FI l, II& i, II e, Cx& cx)
-                -> enable_if_t<!std::is_assignable<decltype(*f), decltype(*i)>::value, bool>
-            {
-                auto const m = bio::peek(i, e);
-                switch (m & X::mjr) {
-                    case X::arr:    return read_array_w_<X>(f, l, m, i, e, cx);
-                    default:        return cx|cbor::read_error::array_invalid;
-                }
-            }
-
     }}
 
     template <typename X, typename T, size_t N>
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    //return cbor::cnt::read_array<Y>(std::begin(t), std::end(t), i, e, cx);
-                    return cbor::bits::read_array_<Y>(std::begin(t), std::end(t), i, e, cx);
+                    return cbor::cnt::read_array<Y>(std::begin(t), std::end(t), i, e, cx);
                 }
         };
 
 }
 
 namespace cxon { // array/write
-
-    namespace cbor { namespace bits {
-
-        template <typename X, typename O, typename Cx>
-            inline bool write_size_(O& o, bio::byte m, size_t s, Cx& cx) {
-                unsigned const p = bits::power_(s);
-                return s > 0x17 ?
-                    bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, s, 1 << p, cx) :
-                    bio::poke<X>(o, bio::byte(m + s), cx)
-                ;
-            }
-
-    }}
 
     template <typename X, typename T, size_t N>
         struct write<CBOR<X>, T[N]> {
@@ -209,7 +103,7 @@ namespace cxon { // pointer/read
         template <typename X, typename T, typename RX, typename II, typename Cx>
             inline bool read_pointer_x_fix_(T*& t, RX rx_, II& i, II e, Cx& cx) {
                 size_t n;
-                if (!bits::read_size_<X>(n, i, e, cx))
+                if (!cnt::read_size<X>(n, i, e, cx))
                     return false;
                 auto al = bits::make_allocator_<X, T>(cx);
                 T *const a = al.create(n + 1);
@@ -237,7 +131,7 @@ namespace cxon { // pointer/read
                         if (m != (b & X::mjr))
                             return al.release(p, cs + 1), cx|cbor::read_error::array_invalid;
 
-                        if (!bits::read_size_<X>(ns, i, e, cx))
+                        if (!cnt::read_size<X>(ns, i, e, cx))
                             return al.release(p, cs + 1), false;
                         T *const n = al.create(cs + ns + 1);
                             std::copy_n(p, cs, n);

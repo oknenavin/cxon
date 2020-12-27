@@ -52,7 +52,7 @@ namespace cxon {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
                     size_t s;
-                    return  cbor::bits::read_size_eq_<J>(s, 2, i, e, cx) &&
+                    return  cbor::cnt::read_size_eq<J>(s, 2, i, e, cx) &&
                             cbor::bits::variant<J, std::variant<T...>, II, Cx>::read(t, i, e, cx)
                     ;
                 }
@@ -62,7 +62,7 @@ namespace cxon {
         struct write<CBOR<X>, std::variant<T...>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
-                    return cbor::bits::write_size_<J>(o, J::arr, 2, cx) &&
+                    return cbor::cnt::write_size<J>(o, J::arr, 2, cx) &&
                                 write_value<J>(o, t.index(), cx) &&
                                 std::visit([&](auto&& v) { return write_value<J>(o, v, cx); }, t)
                     ;

@@ -13,7 +13,7 @@ namespace cxon {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::pair<F, S>& t, II& i, II e, Cx& cx) {
                     size_t s;
-                    return  cbor::bits::read_size_eq_<J>(s, 2, i, e, cx) &&
+                    return  cbor::cnt::read_size_eq<J>(s, 2, i, e, cx) &&
                                 read_value<J>(t.first, i, e, cx) &&
                                 read_value<J>(t.second, i, e, cx)
                     ;
@@ -24,7 +24,7 @@ namespace cxon {
         struct write<CBOR<X>, std::pair<F, S>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::pair<F, S>& t, Cx& cx) {
-                    return  cbor::bits::write_size_<J>(o, J::arr, 2, cx) &&
+                    return  cbor::cnt::write_size<J>(o, J::arr, 2, cx) &&
                                 write_value<J>(o, t.first, cx) &&
                                 write_value<J>(o, t.second, cx)
                     ;

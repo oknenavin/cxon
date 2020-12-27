@@ -16,7 +16,7 @@ namespace cxon {
                 static bool value(std::complex<T>& t, II& i, II e, Cx& cx) {
                     size_t s;
                     T rl, mg;
-                    return  cbor::bits::read_size_eq_<J>(s, 2, i, e, cx) &&
+                    return  cbor::cnt::read_size_eq<J>(s, 2, i, e, cx) &&
                                 read_value<J>(rl, i, e, cx) &&
                                 read_value<J>(mg, i, e, cx) &&
                             (t.real(rl), t.imag(mg), true)
@@ -28,7 +28,7 @@ namespace cxon {
         struct write<CBOR<X>, std::complex<T>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::complex<T>& t, Cx& cx) {
-                    return  cbor::bits::write_size_<J>(o, J::arr, 2, cx) &&
+                    return  cbor::cnt::write_size<J>(o, J::arr, 2, cx) &&
                                 write_value<J>(o, t.real(), cx) &&
                                 write_value<J>(o, t.imag(), cx)
                     ;
