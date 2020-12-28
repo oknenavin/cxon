@@ -6,21 +6,35 @@
 #ifndef CXON_CBOR_LIB_STD_STRING_HXX_
 #define CXON_CBOR_LIB_STD_STRING_HXX_
 
+#include "cxon/lang/cbor/common/container.hxx"
+
+namespace cxon { namespace cbor { namespace cnt {
+
+    template <typename X, typename T, typename ...R>
+        struct append_element<CBOR<X>, std::basic_string<T, R...>> {
+            template <typename II, typename Cx>
+                static bool range(std::basic_string<T, R...>& t, II f, II l, Cx&) {
+                    return t.append(f, l), true;
+                }
+        };
+
+}}}
+
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct read<CBOR<X>, std::basic_string<T, R...>> {
-            template <typename II, typename Cx, typename J = CBOR<X>>
+            template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::cnt::read_array<Y>(t, i, e, cx);
                 }
         };
 
     template <typename X, typename T, typename ...R>
         struct write<CBOR<X>, std::basic_string<T, R...>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::cnt::write_array<Y>(o, t.begin(), t.end(), cx);
                 }
         };
 

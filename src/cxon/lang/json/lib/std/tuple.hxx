@@ -58,13 +58,33 @@ namespace cxon { namespace cio { namespace con { // container read/write helpers
 
 namespace cxon {
 
-    template <typename X, typename H, typename ...T>
-        struct read<JSON<X>, std::tuple<H, T...>> {
+    template <typename X>
+        struct read<JSON<X>, std::tuple<>> {
             template <typename II, typename Cx, typename J = JSON<X>>
-                static bool value(std::tuple<H, T...>& t, II& i, II e, Cx& cx) {
+                static bool value(std::tuple<>&, II& i, II e, Cx& cx) {
+                    return  cio::consume<J>(J::list::beg, i, e, cx) &&
+                            cio::consume<J>(J::list::end, i, e, cx)
+                    ;
+                }
+        };
+
+    template <typename X, typename ...T>
+        struct read<JSON<X>, std::tuple<T...>> {
+            template <typename II, typename Cx, typename J = JSON<X>>
+                static bool value(std::tuple<T...>& t, II& i, II e, Cx& cx) {
                     return  cio::consume<J>(J::list::beg, i, e, cx) &&
                                 cio::con::read_tuple<J>(t, i, e, cx) &&
                             cio::consume<J>(J::list::end, i, e, cx)
+                    ;
+                }
+        };
+
+    template <typename X>
+        struct write<JSON<X>, std::tuple<>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::tuple<>&, Cx& cx) {
+                    return  cio::poke<J>(o, J::list::beg, cx) &&
+                            cio::poke<J>(o, J::list::end, cx)
                     ;
                 }
         };
