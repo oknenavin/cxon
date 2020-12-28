@@ -6,6 +6,8 @@
 #ifndef CXON_CBOR_LIB_STD_STRING_VIEW_HXX_
 #define CXON_CBOR_LIB_STD_STRING_VIEW_HXX_
 
+#include "cxon/lang/cbor/common/container.hxx"
+
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
@@ -19,9 +21,9 @@ namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct write<CBOR<X>, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::cnt::write_array<Y>(o, t.begin(), t.end(), cx);
                 }
         };
 

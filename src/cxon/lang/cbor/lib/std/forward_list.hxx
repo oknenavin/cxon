@@ -12,14 +12,13 @@ namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename T, typename ...R>
         struct append<CBOR<X>, std::forward_list<T, R...>> {
-            template <typename U = std::forward_list<T, R...>>
-                static auto reference(U& c) -> typename std::forward_list<T, R...>::reference {
-    #               if __cplusplus < 201703L
-                        return c.emplace_front(), c.front();
-    #               else
-                        return c.emplace_front();
-    #               endif
-                }
+            static auto reference(std::forward_list<T, R...>& c) -> typename std::forward_list<T, R...>::reference {
+#               if __cplusplus < 201703L
+                    return c.emplace_front(), c.front();
+#               else
+                    return c.emplace_front();
+#               endif
+            }
         };
 
 }}}

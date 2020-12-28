@@ -238,6 +238,13 @@ TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     using namespace std;
+    // std::tuple<>
+        R_TEST((tuple<>{}), "[]");
+        R_TEST((tuple<>{}), "[ ]");
+        W_TEST("[]", (tuple<>{}));
+        R_TEST((tuple<>{}), "", json::read_error::unexpected, 0);
+        R_TEST((tuple<>{}), " ", json::read_error::unexpected, 1);
+        R_TEST((tuple<>{}), "[", json::read_error::unexpected, 1);
     // std::tuple<int, double, std::string>
         R_TEST((tuple<int, double, string>{0, 0, "0"}), "[0, 0, \"0\"]");
         W_TEST("[0,0,\"0\"]", (tuple<int, double, string>{0, 0, "0"}));
