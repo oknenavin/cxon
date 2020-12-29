@@ -12,7 +12,7 @@ namespace cxon { namespace cbor { namespace bits {
         struct map_element_reader {
             template <typename II, typename Cx>
                 static bool read(M& m, II& i, II e, Cx& cx) {
-                    typename M::key_type k{}; typename M::mapped_type v{};
+                    auto k = typename M::key_type {}; auto v = typename M::mapped_type {};
                     return  read_value<X>(k, i, e, cx) &&
                             read_value<X>(v, i, e, cx) &&
                             (m.emplace(std::move(k), std::move(v)), true)
