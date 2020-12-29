@@ -54,6 +54,12 @@ cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/variant.hxx \
     $(srcdir)/lang/json/lib/std/vector.hxx
 
+cxon-lang-cbor-common = \
+    $(srcdir)/lang/cbor/common/container.hxx
+
+cxon-lang-cbor-lib-std-bits = \
+    $(srcdir)/lang/cbor/lib/std/bits/map.hxx
+
 cxon-lang-cbor-lib-std = \
     $(srcdir)/lang/cbor/lib/std/array.hxx \
     $(srcdir)/lang/cbor/lib/std/bitset.hxx \
@@ -137,6 +143,9 @@ check-json:
 check-json-node:
 	@$(MAKE) -C test check-json-node
 
+check-cbor:
+	@$(MAKE) -C test check-cbor
+
 install: install-lang
 
 install-cxon:
@@ -155,7 +164,10 @@ install-lang: install-cxon install-common
 	@install -d                                         $(insdir)/cxon/lang/json/lib/std/bits
 	@install -p -m 0644 $(cxon-lang-json-lib-std-bits)  $(insdir)/cxon/lang/json/lib/std/bits
 	@install -p -m 0644 $(cxon-lang-json-lib-std)       $(insdir)/cxon/lang/json/lib/std
+	@install -d                                         $(insdir)/cxon/lang/cbor/common
+	@install -p -m 0644 $(cxon-lang-cbor-common)        $(insdir)/cxon/lang/cbor/common
 	@install -d                                         $(insdir)/cxon/lang/cbor/lib/std/bits
+	@install -p -m 0644 $(cxon-lang-cbor-lib-std-bits)  $(insdir)/cxon/lang/cbor/lib/std/bits
 	@install -p -m 0644 $(cxon-lang-cbor-lib-std)       $(insdir)/cxon/lang/cbor/lib/std
 	@install -d                                         $(insdir)/cxon/lang/json/node
 	@install -p -m 0644 $(cxon-lang-json-node)          $(insdir)/cxon/lang/json/node
@@ -170,4 +182,4 @@ uninstall:
 clean:
 	@$(MAKE) -C test clean
 
-.PHONY: check check-json check-json-node install install-cxon install-common install-lang uninstall clean
+.PHONY: check check-json check-json-node check-cbor install install-cxon install-common install-lang uninstall clean

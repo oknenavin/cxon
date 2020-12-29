@@ -7,20 +7,19 @@
 #define CXON_CBOR_LIB_STD_MAP_HXX_
 
 #include "cxon/lang/cbor/common/container.hxx"
+#include "bits/map.hxx"
 
 namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct append<CBOR<X>, std::map<K, V, R...>> {
-            template <typename II, typename Cx, typename U = std::map<K, V, R...>, typename Y = CBOR<X>>
-                static bool read(U& c, II& i, II e, Cx& cx) {
-                    typename U::key_type k{}; typename U::mapped_type v{};
-                    return  read_value<Y>(k, i, e, cx) &&
-                            read_value<Y>(v, i, e, cx) &&
-                            (c.emplace(std::move(k), std::move(v)), true)
-                    ;
-                }
-        };
+        struct element_reader<CBOR<X>, std::map<K, V, R...>>        : cbor::bits::map_element_reader<CBOR<X>, std::map<K, V, R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct element_writer<CBOR<X>, std::map<K, V, R...>>        : cbor::bits::map_element_writer<CBOR<X>, std::map<K, V, R...>> {};
+
+    template <typename X, typename K, typename V, typename ...R>
+        struct element_reader<CBOR<X>, std::multimap<K, V, R...>>   : cbor::bits::map_element_reader<CBOR<X>, std::multimap<K, V, R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct element_writer<CBOR<X>, std::multimap<K, V, R...>>   : cbor::bits::map_element_writer<CBOR<X>, std::multimap<K, V, R...>> {};
 
 }}}
 
@@ -38,7 +37,7 @@ namespace cxon {
         struct write<CBOR<X>, std::map<K, V, R...>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::map<K, V, R...>& t, Cx& cx) {
-                    return cbor::cnt::write_array<Y>(o, t.begin(), t.end(), cx);
+                    return cbor::cnt::write_array<Y, Y::map>(o, t, cx);
                 }
         };
 
@@ -46,7 +45,7 @@ namespace cxon {
         struct read<CBOR<X>, std::multimap<K, V, R...>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::multimap<K, V, R...>& t, II& i, II e, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::cnt::read_array<Y>(t, i, e, cx);
                 }
         };
 
@@ -54,7 +53,7 @@ namespace cxon {
         struct write<CBOR<X>, std::multimap<K, V, R...>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::multimap<K, V, R...>& t, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    return cbor::cnt::write_array<Y, Y::map>(o, t, cx);
                 }
         };
 

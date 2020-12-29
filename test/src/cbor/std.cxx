@@ -12,14 +12,15 @@
 #include "cxon/lib/std/deque.hxx"
 #include "cxon/lib/std/forward_list.hxx"
 #include "cxon/lib/std/list.hxx"
-//#include "cxon/lib/std/map.hxx"
+#include "cxon/lib/std/map.hxx"
 #include "cxon/lib/std/optional.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/string_view.hxx"
+#include "cxon/lib/std/tuple.hxx"
+#include "cxon/lib/std/unordered_map.hxx"
 #include "cxon/lib/std/utility.hxx"
 #include "cxon/lib/std/variant.hxx"
 #include "cxon/lib/std/vector.hxx"
-#include "cxon/lib/std/tuple.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -235,13 +236,40 @@ TEST_BEG(cxon::CBOR<>) // std::list
 TEST_END()
 
 
-//TEST_BEG(cxon::CBOR<>) // std::map
-//    R_TEST(map<int, int>{}, BS("\xA0"));
-//    R_TEST(map<int, int>{}, BS("\xBF\xFF"));
-//    W_TEST(BS("\xA0"), map<int, int>{});
-//    R_TEST(map<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
-//    W_TEST(BS("\xA1\x01\x02"), map<int, int>{{1, 2}});
-//TEST_END()
+TEST_BEG(cxon::CBOR<>) // std::map
+    R_TEST(map<int, int>{}, BS("\xA0"));
+    R_TEST(map<int, int>{}, BS("\xBF\xFF"));
+    W_TEST(BS("\xA0"), map<int, int>{});
+    R_TEST(map<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+    W_TEST(BS("\xA1\x01\x02"), map<int, int>{{1, 2}});
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // std::multimap
+    R_TEST(multimap<int, int>{}, BS("\xA0"));
+    R_TEST(multimap<int, int>{}, BS("\xBF\xFF"));
+    W_TEST(BS("\xA0"), multimap<int, int>{});
+    R_TEST(multimap<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+    W_TEST(BS("\xA1\x01\x02"), multimap<int, int>{{1, 2}});
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // std::unordered_map
+    R_TEST(unordered_map<int, int>{}, BS("\xA0"));
+    R_TEST(unordered_map<int, int>{}, BS("\xBF\xFF"));
+    W_TEST(BS("\xA0"), unordered_map<int, int>{});
+    R_TEST(unordered_map<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+    W_TEST(BS("\xA1\x01\x02"), unordered_map<int, int>{{1, 2}});
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // std::unordered_multimap
+    R_TEST(unordered_multimap<int, int>{}, BS("\xA0"));
+    R_TEST(unordered_multimap<int, int>{}, BS("\xBF\xFF"));
+    W_TEST(BS("\xA0"), unordered_multimap<int, int>{});
+    R_TEST(unordered_multimap<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+    W_TEST(BS("\xA1\x01\x02"), unordered_multimap<int, int>{{1, 2}});
+TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_OPTIONAL
