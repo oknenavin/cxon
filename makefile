@@ -58,7 +58,8 @@ cxon-lang-cbor-common = \
     $(srcdir)/lang/cbor/common/container.hxx
 
 cxon-lang-cbor-lib-std-bits = \
-    $(srcdir)/lang/cbor/lib/std/bits/map.hxx
+    $(srcdir)/lang/cbor/lib/std/bits/map.hxx \
+    $(srcdir)/lang/cbor/lib/std/bits/set.hxx
 
 cxon-lang-cbor-lib-std = \
     $(srcdir)/lang/cbor/lib/std/array.hxx \
