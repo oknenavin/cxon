@@ -6,21 +6,25 @@
 #ifndef CXON_CBOR_LIB_STD_STACK_HXX_
 #define CXON_CBOR_LIB_STD_STACK_HXX_
 
+#include "cxon/lang/cbor/common/container.hxx"
+
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct read<CBOR<X>, std::stack<T, R...>> {
-            template <typename II, typename Cx, typename J = CBOR<X>>
+            template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::stack<T, R...>& t, II& i, II e, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    auto& c = cbor::cnt::adaptor<std::stack<T, R...>>::container(t);
+                    return cbor::cnt::read_array<Y>(c, i, e, cx);
                 }
         };
 
     template <typename X, typename T, typename ...R>
         struct write<CBOR<X>, std::stack<T, R...>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::stack<T, R...>& t, Cx& cx) {
-                    return CXON_ASSERT(0, "TODO"), false;
+                    auto const& c = cbor::cnt::adaptor<std::stack<T, R...>>::container(t);
+                    return cbor::cnt::write_array<Y>(o, c.begin(), c.end(), cx);
                 }
         };
 

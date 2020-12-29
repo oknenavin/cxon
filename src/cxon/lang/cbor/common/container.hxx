@@ -67,6 +67,16 @@ namespace cxon { namespace cbor { namespace cnt {
 
 namespace cxon { namespace cbor { namespace cnt {
 
+    template <typename A>
+        struct adaptor : A {
+            static const typename A::container_type& container(const A& a) noexcept { return ((adaptor&)a).c; }
+            static       typename A::container_type& container(      A& a) noexcept { return ((adaptor&)a).c; }
+        };
+
+}}}
+
+namespace cxon { namespace cbor { namespace cnt {
+
     template <typename X, typename C>
         struct reserve {
             template <typename U = C>
