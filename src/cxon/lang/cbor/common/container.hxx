@@ -138,7 +138,7 @@ namespace cxon { namespace cbor { namespace cnt {
     namespace bits {
 
         template <typename X, typename C, typename II, typename Cx>
-            inline auto element_read_(C& c, size_t n, II& f, II l, Cx& cx)
+            inline auto element_range_read_(C& c, size_t n, II& f, II l, Cx& cx)
                 -> enable_if_t< is_forward_iterator<II>::value, bool>
             {
                 auto const m = std::min(n, static_cast<size_t>(std::distance(f, l)));
@@ -146,7 +146,7 @@ namespace cxon { namespace cbor { namespace cnt {
                 return element_range_reader<X, C>::read(c, f, e, cx) && (std::advance(f, m), m == n);
             }
         template <typename X, typename C, typename II, typename Cx>
-            inline auto element_read_(C& c, size_t n, II& f, II l, Cx&)
+            inline auto element_range_read_(C& c, size_t n, II& f, II l, Cx&)
                 -> enable_if_t<!is_forward_iterator<II>::value, bool>
             {
                 for ( ; n != 0 && f != l; --n, ++f)
@@ -167,7 +167,7 @@ namespace cxon { namespace cbor { namespace cnt {
         };
     template <typename X, typename C, typename II, typename Cx>
         inline bool element_read(C& c, size_t n, II& f, II l, Cx& cx) {
-            return bits::element_read_<X>(c, n, f, l, cx);
+            return bits::element_range_read_<X>(c, n, f, l, cx);
         }
 
 }}}
