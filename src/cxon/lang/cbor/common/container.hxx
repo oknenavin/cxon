@@ -19,19 +19,27 @@ namespace cxon { namespace cbor { namespace cnt {
         inline bool reserve_space(C& c, size_t n);
 
     template <typename X, typename C>
-        struct append;
+        struct element_reader;
         //  template <typename II, typename Cx>
         //      static bool read(C& c, II& i, II e, Cx& cx);
         //  static auto reference(C& c) -> typename C::reference;
     template <typename X, typename C, typename II, typename Cx>
-        inline bool append_value(C& c, II& i, II e, Cx& cx);
+        inline bool element_read(C& c, II& i, II e, Cx& cx);
 
     template <typename X, typename C>
-        struct append_element;
+        struct element_range_reader;
         //  template <typename II, typename Cx>
-        //      static bool range(C& c, II f, II l, Cx& cx);
+        //      static bool read(C& c, II f, II l, Cx& cx);
     template <typename X, typename C, typename II, typename Cx>
-        inline bool append_element_range(C& c, size_t n, II& f, II l, Cx& cx);
+        inline bool element_read(C& c, size_t n, II& f, II l, Cx& cx);
+
+    template <typename X, typename C>
+        struct element_writer;
+        //  template <typename O, typename Cx>
+        //      static bool write(O& o, const typename C::value_type& t, Cx& cx);
+    template <typename X, typename C, typename O, typename Cx>
+        inline bool element_write(O& o, const typename C::value_type& t, Cx& cx);
+
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_array(T& t, II& i, II e, Cx& cx);
@@ -40,6 +48,8 @@ namespace cxon { namespace cbor { namespace cnt {
     
     template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx);
+    template <typename X, bio::byte M, typename T, typename O, typename Cx>
+        inline bool write_array(O& o, const T& t, Cx& cx);
         
     template <typename X, typename II, typename Cx>
         inline bool read_size(size_t& s, II& i, II e, Cx& cx);
@@ -79,7 +89,7 @@ namespace cxon { namespace cbor { namespace cnt {
         }
 
     template <typename X, typename C>
-        struct append {
+        struct element_reader {
             template <typename U = C>
                 static auto reference_(option<2>, U& c)
                     -> enable_if_t<has_emplace_back<U>::value, typename C::reference>
@@ -107,57 +117,57 @@ namespace cxon { namespace cbor { namespace cnt {
     namespace bits {
 
         template <typename X, typename C, typename II, typename Cx>
-            inline auto append_value_(option<1>, C& c, II& i, II e, Cx& cx)
-                -> decltype(append<X, C>::read(c, i, e, cx), bool())
+            inline auto element_read_(option<1>, C& c, II& i, II e, Cx& cx)
+                -> decltype(element_reader<X, C>::read(c, i, e, cx), bool())
             {
-                return append<X, C>::read(c, i, e, cx);
+                return element_reader<X, C>::read(c, i, e, cx);
             }
         template <typename X, typename C, typename II, typename Cx>
-            inline auto append_value_(option<0>, C& c, II& i, II e, Cx& cx)
-                -> decltype(append<X, C>::reference(c), bool())
+            inline auto element_read_(option<0>, C& c, II& i, II e, Cx& cx)
+                -> decltype(element_reader<X, C>::reference(c), bool())
             {
-                return read_value<X>(append<X, C>::reference(c), i, e, cx);
+                return read_value<X>(element_reader<X, C>::reference(c), i, e, cx);
             }
 
     }
     template <typename X, typename C, typename II, typename Cx>
-        inline bool append_value(C& c, II& i, II e, Cx& cx) {
-            return bits::append_value_<X>(option<1>(), c, i, e, cx);
+        inline bool element_read(C& c, II& i, II e, Cx& cx) {
+            return bits::element_read_<X>(option<1>(), c, i, e, cx);
         }
 
     namespace bits {
 
         template <typename X, typename C, typename II, typename Cx>
-            inline auto append_element_range_(C& c, size_t n, II& f, II l, Cx& cx)
+            inline auto element_read_(C& c, size_t n, II& f, II l, Cx& cx)
                 -> enable_if_t< is_forward_iterator<II>::value, bool>
             {
                 auto const m = std::min(n, static_cast<size_t>(std::distance(f, l)));
                 II e = f; std::advance(e, m);
-                return append_element<X, C>::range(c, f, e, cx) && (std::advance(f, m), m == n);
+                return element_range_reader<X, C>::read(c, f, e, cx) && (std::advance(f, m), m == n);
             }
         template <typename X, typename C, typename II, typename Cx>
-            inline auto append_element_range_(C& c, size_t n, II& f, II l, Cx&)
+            inline auto element_read_(C& c, size_t n, II& f, II l, Cx&)
                 -> enable_if_t<!is_forward_iterator<II>::value, bool>
             {
                 for ( ; n != 0 && f != l; --n, ++f)
-                    append<X, C>::reference(c) = *f;
+                    element_reader<X, C>::reference(c) = *f;
                 return n == 0;
             }
 
     }
 
     template <typename X, typename C>
-        struct append_element {
+        struct element_range_reader {
             template <typename II, typename Cx>
-                static bool range(C& c, II f, II l, Cx&) {
+                static bool read(C& c, II f, II l, Cx&) {
                     for ( ; f != l; ++f)
-                        append<X, C>::reference(c) = *f;
+                        element_reader<X, C>::reference(c) = *f;
                     return f == l;
                 }
         };
     template <typename X, typename C, typename II, typename Cx>
-        inline bool append_element_range(C& c, size_t n, II& f, II l, Cx& cx) {
-            return bits::append_element_range_<X>(c, n, f, l, cx);
+        inline bool element_read(C& c, size_t n, II& f, II l, Cx& cx) {
+            return bits::element_read_<X>(c, n, f, l, cx);
         }
 
 }}}
@@ -219,7 +229,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_bytes_(T& t, size_t n, II& i, II e, Cx& cx) {
-                return  (append_element_range<X>(t, n, i, e, cx)) ||
+                return  (element_read<X>(t, n, i, e, cx)) ||
                         (cx|cbor::read_error::unexpected)
                 ;
             }
@@ -259,7 +269,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_elements_(T& t, size_t n, II& i, II e, Cx& cx) {
-                for ( ; n != 0 && append_value<X>(t, i, e, cx); --n) 
+                for ( ; n != 0 && element_read<X>(t, i, e, cx); --n) 
                     ;
                 return n == 0;
             }
@@ -276,7 +286,7 @@ namespace cxon { namespace cbor { namespace cnt {
             inline bool read_array_w_var_(T& t, II& i, II e, Cx& cx) {
                 II const o = i;
                     for (bio::get(i, e); size_(t) < t.max_size() && bio::peek(i, e, 0) != X::brk; )
-                        if (!append_value<X>(t, i, e, cx))
+                        if (!element_read<X>(t, i, e, cx))
                             return false;
                 return  (bio::get(i, e, 0) == X::brk) ||
                         (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
@@ -313,8 +323,8 @@ namespace cxon { namespace cbor { namespace cnt {
             {
                 auto const m = bio::peek(i, e);
                 switch (m & X::mjr) {
-                    case X::arr:    return bits::read_array_w_<X>(t, m, i, e, cx);
-                    default:        return cx|cbor::read_error::array_invalid;
+                    case X::arr: case X::map:   return bits::read_array_w_<X>(t, m, i, e, cx);
+                    default:                    return cx|cbor::read_error::array_invalid;
                 }
             }
 
@@ -362,6 +372,15 @@ namespace cxon { namespace cbor { namespace cnt {
 
 namespace cxon { namespace cbor { namespace cnt {
 
+    template <typename X, typename C, typename O, typename Cx>
+        inline bool element_write(O& o, const typename C::value_type& t, Cx& cx) {
+            return element_writer<X, C>::write(o, t, cx);
+        }
+
+}}}
+
+namespace cxon { namespace cbor { namespace cnt {
+
     namespace bits {
 
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
@@ -389,6 +408,14 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx) {
             return bits::write_array_<X>(o, f, l, cx);
+        }
+
+    template <typename X, bio::byte M, typename T, typename O, typename Cx>
+        inline bool write_array(O& o, const T& t, Cx& cx) {
+            auto f = std::begin(t), l = std::end(t);
+            if (write_size<X>(o, M, std::distance(f, l), cx))
+                for ( ; f != l && element_write<X, T>(o, *f, cx); ++f) ;
+            return f == l;
         }
 
 }}}

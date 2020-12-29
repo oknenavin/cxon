@@ -11,9 +11,9 @@
 namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename T, typename ...R>
-        struct append_element<CBOR<X>, std::basic_string<T, R...>> {
+        struct element_range_reader<CBOR<X>, std::basic_string<T, R...>> {
             template <typename II, typename Cx>
-                static bool range(std::basic_string<T, R...>& t, II f, II l, Cx&) {
+                static bool read(std::basic_string<T, R...>& t, II f, II l, Cx&) {
                     return t.append(f, l), true;
                 }
         };
