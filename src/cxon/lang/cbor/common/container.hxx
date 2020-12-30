@@ -56,7 +56,7 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename II, typename Cx>
         inline bool read_size_le(size_t& s, size_t n, II& i, II e, Cx& cx);
     template <typename X, typename II, typename Cx>
-        inline bool read_size_eq(size_t& s, size_t n, II& i, II e, Cx& cx);
+        inline bool read_size_eq(size_t n, II& i, II e, Cx& cx);
 
     template <typename X, typename O, typename Cx>
         inline bool write_size(O& o, bio::byte m, size_t s, Cx& cx);
@@ -198,9 +198,9 @@ namespace cxon { namespace cbor { namespace cnt {
             ;
         }
     template <typename X, typename II, typename Cx>
-        inline bool read_size_eq(size_t& s, size_t n, II& i, II e, Cx& cx) {
-            II const o = i; size_t t;
-            return  (read_size<X>(t, i, e, cx) && t == n && (s = t, true)) ||
+        inline bool read_size_eq(size_t n, II& i, II e, Cx& cx) {
+            II const o = i; size_t s;
+            return  (read_size<X>(s, i, e, cx) && s == n) ||
                     (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
             ;
         }

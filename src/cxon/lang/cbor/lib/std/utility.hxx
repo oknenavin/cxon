@@ -6,14 +6,15 @@
 #ifndef CXON_CBOR_LIB_STD_UTILITY_HXX_
 #define CXON_CBOR_LIB_STD_UTILITY_HXX_
 
+#include "cxon/lang/cbor/compound.hxx"
+
 namespace cxon {
 
     template <typename X, typename F, typename S>
         struct read<CBOR<X>, std::pair<F, S>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::pair<F, S>& t, II& i, II e, Cx& cx) {
-                    size_t s;
-                    return  cbor::cnt::read_size_eq<J>(s, 2, i, e, cx) &&
+                    return  cbor::cnt::read_size_eq<J>(2, i, e, cx) &&
                                 read_value<J>(t.first, i, e, cx) &&
                                 read_value<J>(t.second, i, e, cx)
                     ;

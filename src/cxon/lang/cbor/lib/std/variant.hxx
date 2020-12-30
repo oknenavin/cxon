@@ -6,6 +6,8 @@
 #ifndef CXON_CBOR_LIB_STD_VARIANT_HXX_
 #define CXON_CBOR_LIB_STD_VARIANT_HXX_
 
+#include "cxon/lang/cbor/compound.hxx"
+
 namespace cxon {
 
     namespace cbor { namespace bits {
@@ -51,8 +53,7 @@ namespace cxon {
         struct read<CBOR<X>, std::variant<T...>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
-                    size_t s;
-                    return  cbor::cnt::read_size_eq<J>(s, 2, i, e, cx) &&
+                    return  cbor::cnt::read_size_eq<J>(2, i, e, cx) &&
                             cbor::bits::variant<J, std::variant<T...>, II, Cx>::read(t, i, e, cx)
                     ;
                 }
