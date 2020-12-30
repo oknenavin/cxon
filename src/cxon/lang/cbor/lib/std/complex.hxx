@@ -14,9 +14,8 @@ namespace cxon {
         struct read<CBOR<X>, std::complex<T>> {
             template <typename II, typename Cx, typename J = CBOR<X>>
                 static bool value(std::complex<T>& t, II& i, II e, Cx& cx) {
-                    size_t s;
                     T rl, mg;
-                    return  cbor::cnt::read_size_eq<J>(s, 2, i, e, cx) &&
+                    return  cbor::cnt::read_size_eq<J>(2, i, e, cx) &&
                                 read_value<J>(rl, i, e, cx) &&
                                 read_value<J>(mg, i, e, cx) &&
                             (t.real(rl), t.imag(mg), true)

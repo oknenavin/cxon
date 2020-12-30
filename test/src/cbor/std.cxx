@@ -7,6 +7,7 @@
 #include "../test.hxx"
 
 #include "cxon/lib/std/array.hxx"
+#include "cxon/lib/std/bitset.hxx"
 #include "cxon/lib/std/chrono.hxx"
 #include "cxon/lib/std/complex.hxx"
 #include "cxon/lib/std/deque.hxx"
@@ -154,6 +155,52 @@ TEST_END()
                    u32string_view(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"));
     TEST_END()
 #endif
+
+
+TEST_BEG(cxon::CBOR<>) // std::bitset
+    R_TEST(bitset<32>{0x000000FF}, BS("\x44\x00\x00\x00\xFF")); //                         11111111
+    R_TEST(bitset<32>{0x0000FFFF}, BS("\x44\x00\x00\xFF\xFF")); //                 1111111111111111
+    R_TEST(bitset<32>{0xFFFFFFFF}, BS("\x44\xFF\xFF\xFF\xFF")); // 11111111111111111111111111111111
+    R_TEST(bitset<32>{0xFFFF0000}, BS("\x44\xFF\xFF\x00\x00")); // 11111111111111110000000000000000
+    R_TEST(bitset<32>{0xFF000000}, BS("\x44\xFF\x00\x00\x00")); // 11111111000000000000000000000000
+    W_TEST(BS("\x44\xFF\x00\x00\x00"), bitset<32>{0xFF000000}); // 11111111000000000000000000000000
+    W_TEST(BS("\x44\xFF\xFF\x00\x00"), bitset<32>{0xFFFF0000}); // 11111111111111110000000000000000
+    W_TEST(BS("\x44\xFF\xFF\xFF\xFF"), bitset<32>{0xFFFFFFFF}); // 11111111111111111111111111111111
+    W_TEST(BS("\x44\x00\x00\xFF\xFF"), bitset<32>{0x0000FFFF}); //                 1111111111111111
+    W_TEST(BS("\x44\x00\x00\x00\xFF"), bitset<32>{0x000000FF}); //                         11111111
+    R_TEST(bitset< 1>{0x00000001}, BS("\x41\x01"));             //                               01
+    R_TEST(bitset< 3>{0x00000005}, BS("\x41\x05"));             //                             0101
+    R_TEST(bitset< 5>{0x00000015}, BS("\x41\x15"));             //                           010101
+    R_TEST(bitset< 7>{0x00000055}, BS("\x41\x55"));             //                         01010101
+    R_TEST(bitset< 9>{0x00000155}, BS("\x42\x01\x55"));         //                       0101010101
+    R_TEST(bitset<11>{0x00000555}, BS("\x42\x05\x55"));         //                     010101010101
+    R_TEST(bitset<13>{0x00001555}, BS("\x42\x15\x55"));         //                   01010101010101
+    R_TEST(bitset<15>{0x00005555}, BS("\x42\x55\x55"));         //                 0101010101010101
+    R_TEST(bitset<18>{0x0002AAAA}, BS("\x43\x02\xAA\xAA"));     //               101010101010101010
+    R_TEST(bitset<20>{0x000AAAAA}, BS("\x43\x0A\xAA\xAA"));     //             10101010101010101010
+    R_TEST(bitset<22>{0x002AAAAA}, BS("\x43\x2A\xAA\xAA"));     //           1010101010101010101010
+    R_TEST(bitset<24>{0x00AAAAAA}, BS("\x43\xAA\xAA\xAA"));     //         101010101010101010101010
+    R_TEST(bitset<26>{0x02AAAAAA}, BS("\x44\x02\xAA\xAA\xAA")); //       10101010101010101010101010
+    R_TEST(bitset<28>{0x0AAAAAAA}, BS("\x44\x0A\xAA\xAA\xAA")); //     1010101010101010101010101010
+    R_TEST(bitset<30>{0x2AAAAAAA}, BS("\x44\x2A\xAA\xAA\xAA")); //   101010101010101010101010101010
+    R_TEST(bitset<32>{0xAAAAAAAA}, BS("\x44\xAA\xAA\xAA\xAA")); // 10101010101010101010101010101010
+    W_TEST(BS("\x44\xAA\xAA\xAA\xAA"), bitset<32>{0xAAAAAAAA}); // 10101010101010101010101010101010
+    W_TEST(BS("\x44\x2A\xAA\xAA\xAA"), bitset<30>{0x2AAAAAAA}); //   101010101010101010101010101010
+    W_TEST(BS("\x44\x0A\xAA\xAA\xAA"), bitset<28>{0x0AAAAAAA}); //     1010101010101010101010101010
+    W_TEST(BS("\x44\x02\xAA\xAA\xAA"), bitset<26>{0x02AAAAAA}); //       10101010101010101010101010
+    W_TEST(BS("\x43\xAA\xAA\xAA"), bitset<24>{0x00AAAAAA});     //         101010101010101010101010
+    W_TEST(BS("\x43\x2A\xAA\xAA"), bitset<22>{0x002AAAAA});     //           1010101010101010101010
+    W_TEST(BS("\x43\x0A\xAA\xAA"), bitset<20>{0x000AAAAA});     //             10101010101010101010
+    W_TEST(BS("\x43\x02\xAA\xAA"), bitset<18>{0x0002AAAA});     //               101010101010101010
+    W_TEST(BS("\x42\x55\x55"), bitset<15>{0x00005555});         //                 0101010101010101
+    W_TEST(BS("\x42\x15\x55"), bitset<13>{0x00001555});         //                   01010101010101
+    W_TEST(BS("\x42\x05\x55"), bitset<11>{0x00000555});         //                     010101010101
+    W_TEST(BS("\x42\x01\x55"), bitset< 9>{0x00000155});         //                       0101010101
+    W_TEST(BS("\x41\x55"), bitset< 7>{0x00000055});             //                         01010101
+    W_TEST(BS("\x41\x15"), bitset< 5>{0x00000015});             //                           010101
+    W_TEST(BS("\x41\x05"), bitset< 3>{0x00000005});             //                             0101
+    W_TEST(BS("\x41\x01"), bitset< 1>{0x00000001});             //                               01
+TEST_END()
 
 
 TEST_BEG(cxon::CBOR<>) // std::chrono
