@@ -24,6 +24,7 @@
 #include "cxon/lib/std/unordered_map.hxx"
 #include "cxon/lib/std/unordered_set.hxx"
 #include "cxon/lib/std/utility.hxx"
+#include "cxon/lib/std/valarray.hxx"
 #include "cxon/lib/std/variant.hxx"
 #include "cxon/lib/std/vector.hxx"
 
@@ -429,6 +430,21 @@ TEST_BEG(cxon::CBOR<>) // std::unordered_multiset
     R_TEST(unordered_multiset<int>{1, 2}, BS("\x82\x01\x02"));
     R_TEST(unordered_multiset<int>{1, 1, 2}, BS("\x83\x01\x02\x01"));
     W_TEST(BS("\x81\x01"), unordered_multiset<int>{1});
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // std::valarray;
+    R_TEST(valarray<unsigned char>{}, BS("\x40"));
+    R_TEST(valarray<unsigned char>{}, BS("\x5F\xFF"));
+    R_TEST(valarray<unsigned char>{}, BS("\x7F\xFF"));
+    R_TEST(valarray<unsigned char>{}, BS("\x60"));
+    R_TEST(valarray<int>{}, BS("\x80"));
+    R_TEST(valarray<int>{}, BS("\x9F\xFF"));
+    W_TEST(BS("\x80"), valarray<int>{});
+    R_TEST(valarray<signed char>{1, 2, 3}, BS("\x43\x01\x02\x03"));
+    R_TEST(valarray<signed char>{1, 2, 3}, BS("\x63\x01\x02\x03"));
+    R_TEST(valarray<int>{1, 2, 3}, BS("\x83\x01\x02\x03"));
+    W_TEST(BS("\x83\x01\x02\x03"), valarray<int>{1, 2, 3});
 TEST_END()
 
 
