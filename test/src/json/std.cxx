@@ -266,6 +266,8 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((pair<int, string>{}), "[0]", json::read_error::unexpected, 2);
         R_TEST((pair<int, string>{}), "[0, \"\", 0]", json::read_error::unexpected, 6);
     // std::valarray<int>
+        R_TEST((valarray<int>{}), "[]");
+        W_TEST("[]", (valarray<int>{}));
         R_TEST((valarray<int>{1, 2, 3}), "[1, 2, 3]");
         W_TEST("[1,2,3]", (valarray<int>{1, 2, 3}));
         R_TEST((valarray<int>{1, 2, 3, 4}), "[1, 2, 3, 4]");

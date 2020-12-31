@@ -140,10 +140,19 @@ namespace cxon { namespace test {
     template <typename T>
         struct match<std::valarray<T>> {
             static bool values(const std::valarray<T>& t0, const std::valarray<T>& t1) {
-                return std::equal(
-                    std::begin(t0), std::end(t0), std::begin(t1),
-                    [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); }
-                );
+#               ifdef _MSC_VER // std::begin/std::end broken for empty std::valarray
+                    return  (t0.size() == 0 && t1.size() == 0) ||
+                            (t0.size() && t1.size() && std::equal(
+                                std::begin(t0), std::end(t0), std::begin(t1),
+                                [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); }
+                            ))
+                    ;
+#               else
+                    return std::equal(
+                        std::begin(t0), std::end(t0), std::begin(t1),
+                        [] (const T& t0, const T& t1) { return match<T>::values(t0, t1); }
+                    );
+#               endif
             }
         };
     template <typename T>
