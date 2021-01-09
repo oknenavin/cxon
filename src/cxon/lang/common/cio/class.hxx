@@ -14,39 +14,27 @@
 
 namespace cxon { namespace cio { namespace cls { // structured types reader/writer construction helpers
 
-    template <typename D>
-        struct field;
-    template <typename D = val::skip_t<>>
-        constexpr field<D> make_field(const char* name, D d = {});
+    template <typename F>
+        struct field {
+            using type = F;
+            char const*const name;
+            type const value;
+        };
+    template <typename F = val::skip_t<>>
+        constexpr field<F> make_field(const char* name, F f = {});
+
+    template <typename X, typename S, typename F, typename II, typename Cx>
+        inline bool read_field(S& s, F f, II& i, II e, Cx& cx);
+    template <typename X, typename O, typename S, typename F, typename Cx>
+        inline bool write_field(O& o, const S& s, F f, Cx& cx);
 
     template <typename ...>
         struct fields;
-    template <typename ...T> 
-        constexpr fields<T...> make_fields(T... t);
-
-    template <typename X, typename S, typename F, typename II, typename Cx>
-        inline auto read_field(S& s, F f, II& i, II e, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>;
-    template <typename X, typename S, typename F, typename II, typename Cx>
-        inline auto read_field(S&, F f, II& i, II e, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>;
-    template <typename X, typename O, typename S, typename F, typename Cx>
-        inline auto write_field(O& o, const S& s, F f, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>;
-    template <typename X, typename O, typename S, typename F, typename Cx>
-        inline auto write_field(O& o, const S&, F f, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>;
-
-    template <typename X, typename S, typename F, typename II, typename Cx>
-        inline auto read_field(S&, F, II& i, II e, Cx& cx)
-            -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>;
-    template <typename X, typename O, typename S, typename F, typename Cx>
-        constexpr auto write_field(O&, const S&, F, Cx&)
-            -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>;
+    template <typename ...F> 
+        constexpr fields<F...> make_fields(F... f);
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx);
-
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx);
 
@@ -56,62 +44,61 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
 
 namespace cxon { namespace cio { namespace cls {
 
-    template <typename D>
-        constexpr field<D> make_field(const char* name, D d) { return { name, d }; }
-
-    template <typename ...T> 
-        constexpr fields<T...> make_fields(T... t) { return { t... }; }
-
     // field
 
-    template <typename D>
-        struct field {
-            using type = D;
-            char const*const name;
-            D value;
-        };
-    template <typename X, typename S, typename F, typename II, typename Cx>
-        inline auto read_field(S& s, F f, II& i, II e, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
-        {
-            return read_value<X>(s.*f.value, i, e, cx);
-        }
-    template <typename X, typename S, typename F, typename II, typename Cx>
-        inline auto read_field(S&, F f, II& i, II e, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
-        {
-            return read_value<X>(*f.value, i, e, cx);
-        }
-    template <typename X, typename O, typename S, typename F, typename Cx>
-        inline auto write_field(O& o, const S& s, F f, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
-        {
-            return write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.value, cx);
-        }
-    template <typename X, typename O, typename S, typename F, typename Cx>
-        inline auto write_field(O& o, const S&, F f, Cx& cx)
-            -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
-        {
-            return write_key<X>(o, f.name, cx) && write_value<X>(o, *f.value, cx);
-        }
+    template <typename F>
+        constexpr field<F> make_field(const char* name, F f) { return { name, f }; }
 
-    template <typename O>
-        struct field<val::skip_t<O>> {
-            using type = val::skip_t<O>;
-            char const*const name;
-            type const value;
-        };
+    namespace bits {
+
+        template <typename X, typename S, typename F, typename II, typename Cx>
+            inline auto read_field_(S& s, F f, II& i, II e, Cx& cx)
+                -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return read_value<X>(s.*f.value, i, e, cx);
+            }
+        template <typename X, typename S, typename F, typename II, typename Cx>
+            inline auto read_field_(S&, F f, II& i, II e, Cx& cx)
+                -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return read_value<X>(*f.value, i, e, cx);
+            }
+
+        template <typename X, typename O, typename S, typename F, typename Cx>
+            inline auto write_field_(O& o, const S& s, F f, Cx& cx)
+                -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.value, cx);
+            }
+        template <typename X, typename O, typename S, typename F, typename Cx>
+            inline auto write_field_(O& o, const S&, F f, Cx& cx)
+                -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+            {
+                return write_key<X>(o, f.name, cx) && write_value<X>(o, *f.value, cx);
+            }
+
+        template <typename X, typename S, typename F, typename II, typename Cx>
+            inline auto read_field_(S&, F f, II& i, II e, Cx& cx)
+                -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>
+            {
+                return val::skip<X>(f.value, i, e, cx);
+            }
+
+        template <typename X, typename O, typename S, typename F, typename Cx>
+            constexpr auto write_field_(O&, const S&, F, Cx&)
+                -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>
+            {
+                return true;
+            }
+
+    }
     template <typename X, typename S, typename F, typename II, typename Cx>
-        inline auto read_field(S&, F f, II& i, II e, Cx& cx)
-            -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>
-        {
-            return val::skip<X>(f.value, i, e, cx);
+        inline bool read_field(S& s, F f, II& i, II e, Cx& cx) {
+            return bits::read_field_<X>(s, f, i, e, cx);
         }
     template <typename X, typename O, typename S, typename F, typename Cx>
-        constexpr auto write_field(O&, const S&, F, Cx&)
-            -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>
-        {
-            return true;
+        inline bool write_field(O& o, const S& s, F f, Cx& cx) {
+            return bits::write_field_<X>(o, s, f, cx);
         }
 
     // fields
@@ -131,6 +118,9 @@ namespace cxon { namespace cio { namespace cls {
             fields<> const next;
             constexpr fields(T e) : field(e), next() {}
         };
+
+    template <typename ...F> 
+        constexpr fields<F...> make_fields(F... f) { return { f... }; }
 
     // read
 
