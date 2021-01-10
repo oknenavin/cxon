@@ -275,7 +275,7 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((const char*)"xyz",          BS("\x7F\x61x\x62yz\xFF"));     // indefinite test string (1|2)
         R_TEST((const char*)"xyz",          BS("\x5F\x43xyz\xFF"));         // indefinite byte string (3)
         R_TEST((const char*)"xyz",          BS("\x5F\x42xy\x41z\xFF"));     // indefinite byte string (2|1)
-        W_TEST(BS("\x63xyz"), (const char*)"xyz");                          // always written as definite
+        W_TEST(BS("\x64xyz\x00"), (const char*)"xyz");                          // always written as definite
             R_TEST((const char*)"", BS("\xA3\x03\x02\x01"), cbor::read_error::integer_invalid, 0);      // invalid type
             R_TEST((const char*)"", BS("\x83\x03\xA2\x01"), cbor::read_error::integer_invalid, 2);      // definite array, invalid element
             R_TEST((const char*)"", BS("\x9F\x03\xA2\x01\xFF"), cbor::read_error::integer_invalid, 2);  // indefinite array, invalid element
@@ -299,22 +299,22 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((const char16_t*)u"", BS("\x9F\xFF")); // indefinite
         R_TEST((const char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));     // definite
         R_TEST((const char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF")); // indefinite
-        W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"), (const char16_t*)u"\x00AE\x2708\xD83D\xDE80");
+        W_TEST(BS("\x85\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\x00"), (const char16_t*)u"\x00AE\x2708\xD83D\xDE80");
         R_TEST((const char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // definite
                         BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"));
         R_TEST((const char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // indefinite
                         BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\xFF"));
-        W_TEST(         BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"),
+        W_TEST(         BS("\x98\x1B\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\x00"),
                (const char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A");
     // const char32_t*
         R_TEST((const char32_t*)U"", BS("\x80"));       // definite
         R_TEST((const char32_t*)U"", BS("\x9F\xFF"));   // indefinite
         R_TEST((const char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"));     // definite
         R_TEST((const char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x9F\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\xFF")); // indefinite
-        W_TEST(BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"), (const char32_t*)U"\x000000AE\x00002708\x0001F680");
+        W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\x00"), (const char32_t*)U"\x000000AE\x00002708\x0001F680");
         R_TEST((const char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // definite
                               BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"));
-        W_TEST(               BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"),
+        W_TEST(               BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\x00"),
                (const char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A");
         R_TEST((const char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // indefinite
                               BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
@@ -334,7 +334,7 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((char*)"xyz",          BS("\x7F\x61x\x62yz\xFF"));   // indefinite test string (1|2)
         R_TEST((char*)"xyz",          BS("\x5F\x43xyz\xFF"));       // indefinite byte string (3)
         R_TEST((char*)"xyz",          BS("\x5F\x42xy\x41z\xFF"));   // indefinite byte string (2|1)
-        W_TEST(BS("\x63xyz"), (char*)"xyz");                        // always written as definite
+        W_TEST(BS("\x64xyz\00"), (char*)"xyz");                        // always written as definite
             R_TEST((char*)"", BS("\xA3\x03\x02\x01"), cbor::read_error::integer_invalid, 0);        // invalid type
             R_TEST((char*)"", BS("\x83\x03\xA2\x01"), cbor::read_error::integer_invalid, 2);        // definite array, invalid element
             R_TEST((char*)"", BS("\x9F\x03\xA2\x01\xFF"), cbor::read_error::integer_invalid, 2);    // indefinite array, invalid element
@@ -358,23 +358,215 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((char16_t*)u"", BS("\x9F\xFF")); // indefinite
         R_TEST((char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));     // definite
         R_TEST((char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF")); // indefinite
-        W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"), (char16_t*)u"\x00AE\x2708\xD83D\xDE80");
+        W_TEST(BS("\x85\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\00"), (char16_t*)u"\x00AE\x2708\xD83D\xDE80");
         R_TEST((char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // definite
                         BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"));
         R_TEST((char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A", // indefinite
                         BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\xFF"));
-        W_TEST(         BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"),
+        W_TEST(         BS("\x98\x1B\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\x00"),
                (char16_t*)u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A");
     // char32_t*
         R_TEST((char32_t*)U"", BS("\x80"));     // definite
         R_TEST((char32_t*)U"", BS("\x9F\xFF")); // indefinite
         R_TEST((char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"));       // definite
         R_TEST((char32_t*)U"\x000000AE\x00002708\x0001F680", BS("\x9F\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\xFF"));   // indefinite
-        W_TEST(BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"), (char32_t*)U"\x000000AE\x00002708\x0001F680");
+        W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\x00"), (char32_t*)U"\x000000AE\x00002708\x0001F680");
         R_TEST((char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // definite
                         BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"));
-        W_TEST(         BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"),
+        W_TEST(         BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\x00"),
                (char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A");
         R_TEST((char32_t*)U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // indefinite
                         BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
+TEST_END()
+
+
+struct Struct2 {
+    int x;
+    int y;
+    Struct2(int x = 0, int y = 0) : x(x), y(y) {}
+    bool operator ==(const Struct2& t) const { return x == t.x && y == t.y; }
+};
+
+CXON_CBOR_CLS(Struct2,
+    CXON_CBOR_CLS_FIELD_ASIS(x),
+    CXON_CBOR_CLS_FIELD_NAME("Y", y)
+)
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct2{1, 2}, BS("\xA2\x62x\0\x01\x62Y\0\x02")); // {x: 1, Y: 2}
+    W_TEST(BS("\xA2\x62x\0\x01\x62Y\0\x02"), Struct2{1, 2}); // {x: 1, Y: 2}
+TEST_END()
+
+
+struct Struct3 {
+    int x;
+    Struct3* y;
+    Struct3(int x = 0, Struct3* y = nullptr) : x(x), y(y) {}
+    bool operator ==(const Struct3& t) const { return x == t.x && ((!y && !t.y) || (y && t.y && *y == *t.y)); }
+};
+
+CXON_CBOR_CLS(Struct3,
+    CXON_CBOR_CLS_FIELD_ASIS(x),
+    CXON_CBOR_CLS_FIELD_ASIS(y)
+)
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct3(1, new Struct3(2, nullptr)), BS("\xA2\x62x\0\x01\x62y\0\xA1\x62x\0\x02")); // {x: 1, y: {x: 2}}
+    W_TEST(BS("\xA2\x62x\0\x01\x62y\0\xA2\x62x\0\x02\x62y\0\xF6"), Struct3(1, new Struct3(2, nullptr))); // {x: 1, y: {x: 2, y: nil}}
+    R_TEST(Struct3(1, nullptr), BS("\xA2\x62x\0\x01\x62y\0\xF6")); // {x: 1, y: nil}
+    W_TEST(BS("\xA2\x62x\0\x01\x62y\0\xF6"), Struct3(1, nullptr)); // {x: 1, y: nil}
+TEST_END()
+
+
+struct Struct4 {
+    Struct4(int x = 0) : x(x) {}
+    bool operator ==(const Struct4& t) const { return x == t.x; }
+
+    template <typename X, typename II, typename C>
+        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::CBOR> {
+            return cxon::read_value<X>(t.x, b, e, ctx);
+        }
+    template <typename X, typename OI, typename C>
+        static bool write_value(OI& o, const Struct4& t, C& ctx) {
+            return cxon::write_value<X>(o, t.x, ctx);
+        }
+
+private:
+    int x;
+};
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct4(1), BS("\x01"));
+    W_TEST(BS("\x03"), Struct4(3));
+TEST_END()
+
+
+struct Struct5 {
+    Struct5(int x = 0) : x(x) {}
+    bool operator ==(const Struct5& t) const { return x == t.x; }
+
+    template <typename X, typename II, typename C>
+        bool read_value(II& b, II e, C& ctx) {
+            return cxon::read_value<X>(x, b, e, ctx);
+        }
+    template <typename X, typename OI, typename C>
+        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::CBOR> {
+            return cxon::write_value<X>(o, x, ctx);
+        }
+
+private:
+    int x;
+};
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct5(1), BS("\x01"));
+    W_TEST(BS("\x03"), Struct5(3));
+TEST_END()
+
+
+struct Struct6 {
+    int x;
+    Struct6(int x = 0) : x(x) {}
+    bool operator ==(const Struct6& t) const { return x == t.x; }
+};
+
+namespace cxon {
+    template <typename X, typename II, typename C>
+        inline enable_for_t<X, CBOR> read_value(Struct6& t, II& b, II e, C& ctx) {
+            return read_value<X>(t.x, b, e, ctx);
+        }
+    template <typename X, typename OI, typename C>
+        inline bool write_value(OI& o, const Struct6& t, C& ctx) {
+            return write_value<X>(o, t.x, ctx);
+        }
+}
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct6(1), BS("\x1"));
+    W_TEST(BS("\x03"), Struct6(3));
+TEST_END()
+
+
+struct Struct7 {
+    Struct7(int x = 0, int y = 0) : x(x), y(y) {}
+    bool operator ==(const Struct7& t) const { return x == t.x && y == t.y; }
+
+    CXON_CBOR_CLS_MEMBER(Struct7,
+        CXON_CBOR_CLS_FIELD_ASIS(x),
+        CXON_CBOR_CLS_FIELD_ASIS(y)
+    )
+
+private:
+    int x;
+    int y;
+};
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct7(1, 2), BS("\xA2\x62x\0\x01\x62y\0\x02")); // {x: 1, y: 2}
+    R_TEST(Struct7(3, 0), BS("\xA1\x62x\0\x03")); // {x: 3}
+    R_TEST(Struct7(0, 6), BS("\xA1\x62y\0\x06")); // {y: 6}
+    W_TEST(BS("\xA2\x62x\0\x09\x62y\0\x0A"), Struct7(9, 10)); // {x: 9, y: 10}
+TEST_END()
+
+
+struct Struct8 {
+    Struct8(int x = 0, int y = 0) : x(x), y(y) {}
+    bool operator ==(const Struct8& t) const { return x == t.x && y == t.y; }
+
+    template <typename X, typename II, typename C>
+        static bool read_value(Struct8& t, II& i, II e, C& ctx) {
+            using namespace cxon::cbor::cls;
+            static constexpr auto f = make_fields(
+                make_field("x", &Struct8::x),
+                make_field("y", &Struct8::y)
+            );
+            return read_fields<X>(t, f, i, e, ctx);
+        }
+    template <typename X, typename OI, typename C>
+        static bool write_value(OI& o, const Struct8& t, C& ctx) {
+            using namespace cxon::cbor::cls;
+            static constexpr auto f = make_fields(
+                make_field("x", &Struct8::x),
+                make_field("y", &Struct8::y)
+            );
+            return write_fields<X>(o, t, f, ctx);
+        }
+
+private:
+    int x;
+    int y;
+};
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct8(1, 2), BS("\xA2\x62x\0\x01\x62y\0\x02")); // {x: 1, y: 2}
+    W_TEST(BS("\xA2\x62x\0\x03\x62y\0\x04"), Struct8(3, 4)); // {x: 3, y: 4}
+TEST_END()
+
+
+struct Struct9 {
+    static int x;
+    static int const y;
+
+    bool operator ==(const Struct9&) const { return true; }
+
+    CXON_CBOR_CLS_READ_MEMBER(Struct9,
+        CXON_CBOR_CLS_FIELD_ASIS(x)
+    )
+    CXON_CBOR_CLS_WRITE_MEMBER(Struct9,
+        CXON_CBOR_CLS_FIELD_ASIS(x),
+        CXON_CBOR_CLS_FIELD_ASIS(y)
+    )
+};
+int Struct9::x = 0;
+int const Struct9::y = 3;
+
+TEST_BEG(cxon::CBOR<>) // static field
+    R_TEST(Struct9(), BS("\xA1\x62x\0\x00")); // {x: 0}
+    W_TEST(BS("\xA2\x62x\0\x00\x62y\0\x03"), Struct9()); // {x: 0, y: 3}
+    R_TEST(Struct9(), BS("\xA1\x62x\0\x01")); // {x: 1}
+    W_TEST(BS("\xA2\x62x\0\x01\x62y\0\x03"), Struct9()); // {x: 1, y: 3}
+    R_TEST(Struct9(), BS("\xA0")); // {}
+    W_TEST(BS("\xA2\x62x\0\x01\x62y\0\x03"), Struct9()); // {x: 1, y: 3}
+    R_TEST(Struct9(), BS("\xA1\x62x\0\x03")); // {x: 3}
+    W_TEST(BS("\xA2\x62x\0\x03\x62y\0\x03"), Struct9()); // {x: 3, y: 3}
 TEST_END()

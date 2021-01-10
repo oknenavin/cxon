@@ -328,10 +328,6 @@ struct Struct4 {
     Struct4(int a = 0) : a(a) {}
     bool operator ==(const Struct4& t) const { return a == t.a; }
 
-    /*template <typename X, typename II, typename C>
-        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON> {
-            return cxon::read_value<X>(t.a, b, e, ctx);
-        }*/
     template <typename X, typename II, typename C>
         static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON> {
             return cxon::read_value<X>(t.a, b, e, ctx);

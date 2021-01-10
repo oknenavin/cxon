@@ -15,6 +15,7 @@
 #include "error.hxx"
 #include "fundamental.hxx"
 #include "compound.hxx"
+#include "class.hxx"
 
 // implementation //////////////////////////////////////////////////////////////
 
@@ -62,6 +63,9 @@ namespace cxon { // format selector
 }
 
 namespace cxon { namespace cbor { // named parameters
+
+    using allocator = bio::allocator;           // read: T*
+    using ids_len_max = bio::ids_len_max;       // read: constexpr: object key
 
 }}
 
