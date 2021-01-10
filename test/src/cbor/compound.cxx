@@ -380,6 +380,49 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
+enum Enum1 { one = 1, two, three, four };
+
+CXON_CBOR_ENM(Enum1,
+    CXON_CBOR_ENM_VALUE_ASIS(one),
+    CXON_CBOR_ENM_VALUE_NAME(42ULL, two),
+    CXON_CBOR_ENM_VALUE_ASIS(three)
+)
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Enum1::one, BS("\x01"));
+    W_TEST(BS("\x01"), Enum1::one);
+    R_TEST(Enum1::two, BS("\x18\x2A"));
+    W_TEST(BS("\x18\x2A"), Enum1::two);
+    R_TEST(Enum1::one, BS("\x02"), cbor::read_error::unexpected, 0);
+    W_TEST(BS(""), Enum1::four, cbor::write_error::argument_invalid);
+TEST_END()
+
+
+struct Struct1 {
+    int x;
+    Enum1 y;
+    int z;
+    Struct1(int x = 0, Enum1 y = Enum1::one, int z = 0) : x(x), y(y), z(z) {}
+    bool operator ==(const Struct1& t) const { return x == t.x && y == t.y && z == t.z; }
+};
+
+CXON_CBOR_CLS_READ(Struct1,
+    CXON_CBOR_CLS_FIELD_NAME("X", x),
+    CXON_CBOR_CLS_FIELD_ASIS(y)
+)
+CXON_CBOR_CLS_WRITE(Struct1,
+    CXON_CBOR_CLS_FIELD_NAME("X", x),
+    CXON_CBOR_CLS_FIELD_ASIS(y)
+)
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct1(0, Enum1::one), BS("\xA2\x62X\0\x00\x62y\0\x01")); // {X: 0, y: 'one'}
+    R_TEST(Struct1(0, Enum1::two), BS("\xA2\x62X\0\x00\x62y\0\x18\x2A")); // {y: 'Two (2)', X: 0}
+    R_TEST(Struct1(0, Enum1::three), BS("\xA1\x62y\0\x03")); // {y: 'three'}
+    W_TEST(BS("\xA2\x62X\0\x00\x62y\0\x01"), Struct1(0, Enum1::one)); // {X: 0, y: 'one'}
+TEST_END()
+
+
 struct Struct2 {
     int x;
     int y;

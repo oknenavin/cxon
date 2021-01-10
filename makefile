@@ -101,6 +101,7 @@ cxon-lang-cbor = \
     $(srcdir)/lang/cbor/cbor-fwd.hxx \
     $(srcdir)/lang/cbor/class.hxx \
     $(srcdir)/lang/cbor/compound.hxx \
+    $(srcdir)/lang/cbor/enum.hxx \
     $(srcdir)/lang/cbor/error.hxx \
     $(srcdir)/lang/cbor/fundamental.hxx
 

@@ -19,10 +19,10 @@ namespace cxon { namespace cio { namespace enm { // enum reader/writer construct
         constexpr value<E> make_value(const char* name, E value);
 
     template <typename X, typename E, typename V, typename II, typename Cx>
-        inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx);
+        inline bool read_value(E& t, V f, V l, II& i, II e, Cx& cx);
 
     template <typename X, typename E, typename V, typename O, typename Cx>
-        inline bool write_value(O& o, E t, V vb, V ve, Cx& cx);
+        inline bool write_value(O& o, E t, V f, V l, Cx& cx);
 
 }}}
 
@@ -41,21 +41,26 @@ namespace cxon { namespace cio { namespace enm {
         }
 
     template <typename X, typename E, typename V, typename II, typename Cx>
-        inline bool read_value(E& t, V vb, V ve, II& i, II e, Cx& cx) {
+        inline bool read_value(E& t, V f, V l, II& i, II e, Cx& cx) {
             consume<X>(i, e);
             II const o = i;
-                char id[ids_len_max::constant<napa_type<Cx>>(64)];
-                    if (!cxon::read_value<X>(id, i, e, cx)) return false;
-                for ( ; vb != ve; ++vb) if (std::strcmp(vb->name, id) == 0)
-                    return t = vb->value, true;
-            return rewind(i, o), cx|read_error::unexpected;
+            char id[ids_len_max::constant<napa_type<Cx>>(64)];
+                if (!cxon::read_value<X>(id, i, e, cx))
+                    return false;
+            for ( ; f != l && std::strcmp(f->name, id) != 0; ++f)
+                ;
+            return  (f != l && (t = f->value, true)) ||
+                    (rewind(i, o), cx|read_error::unexpected);
         }
 
     template <typename X, typename E, typename V, typename O, typename Cx>
-        inline bool write_value(O& o, E t, V vb, V ve, Cx& cx) {
-            for ( ; vb != ve; ++vb) if (t == vb->value)
-                return poke<X>(o, X::string::beg, cx) && poke<X>(o, vb->name, cx) && poke<X>(o, X::string::end, cx);
-            return cx|write_error::argument_invalid;
+        inline bool write_value(O& o, E t, V f, V l, Cx& cx) {
+            for ( ; f != l && t != f->value; ++f)
+                ;
+            return f != l ?
+                poke<X>(o, X::string::beg, cx) && poke<X>(o, f->name, cx) && poke<X>(o, X::string::end, cx) :
+                cx|write_error::argument_invalid
+            ;
         }
 
 }}}
