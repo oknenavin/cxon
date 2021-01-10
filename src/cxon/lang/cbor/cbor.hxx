@@ -16,6 +16,7 @@
 #include "fundamental.hxx"
 #include "compound.hxx"
 #include "class.hxx"
+#include "enum.hxx"
 
 // implementation //////////////////////////////////////////////////////////////
 
