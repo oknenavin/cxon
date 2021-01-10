@@ -154,7 +154,7 @@ namespace cxon { // pointer/read
                     switch (m & Y::mjr) {
                         case Y::bstr: case Y::tstr: case Y::arr: {
                                     auto c = cbor::bits::make_pointer_container<X, T>(cx);
-                                    return cbor::cnt::read_array<Y>(c, i, e, cx) && (c.push_back(0), t = c.release());
+                                    return cbor::cnt::read_array<Y>(c, i, e, cx) && (c.push_back({}), t = c.release());
                         }
                         default:    return cbor::bits::read_pointer_<Y>(t, m, i, e, cx);
                     }
@@ -167,7 +167,7 @@ namespace cxon { // pointer/read
                     switch (m & Y::mjr) {
                         case Y::arr: {
                                     auto c = cbor::bits::make_pointer_container<X, T>(cx);
-                                    return cbor::cnt::read_array<Y>(c, i, e, cx) && (c.push_back(0), t = c.release());
+                                    return cbor::cnt::read_array<Y>(c, i, e, cx) && (c.push_back({}), t = c.release());
                         }
                         default:    return cbor::bits::read_pointer_<Y>(t, m, i, e, cx);
                     }
@@ -201,7 +201,7 @@ namespace cxon { // pointer/write
                     -> enable_if_t< is_char<U>::value, bool>
                 {
                     return t ?
-                        cbor::cnt::write_array<Y>(o, t, t + std::char_traits<T>::length(t), cx) :
+                        cbor::cnt::write_array<Y>(o, t, t + std::char_traits<T>::length(t) + 1, cx) :
                         bio::poke<Y>(o, Y::nil, cx)
                     ;
                 }
