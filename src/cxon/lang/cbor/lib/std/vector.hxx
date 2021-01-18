@@ -10,11 +10,11 @@
 
 namespace cxon { namespace cbor { namespace cnt {
 
-    template <typename X, typename T, typename ...R>
-        struct element_range_reader<CBOR<X>, std::vector<T, R...>> {
-            template <typename II, typename Cx>
-                static bool read(std::vector<T, R...>& t, II f, II l, Cx&) {
-                    return t.insert(t.end(), f, l), true;
+    template <typename T, typename ...R>
+        struct container_mutator<std::vector<T, R...>> {
+            template <typename II>
+                static bool append(std::vector<T, R...>& c, II f, II l) {
+                    return c.insert(c.end(), f, l), true;
                 }
         };
 

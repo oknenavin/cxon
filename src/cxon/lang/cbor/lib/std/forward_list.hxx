@@ -10,9 +10,9 @@
 
 namespace cxon { namespace cbor { namespace cnt {
 
-    template <typename X, typename T, typename ...R>
-        struct element_reader<CBOR<X>, std::forward_list<T, R...>> {
-            static auto reference(std::forward_list<T, R...>& c) -> typename std::forward_list<T, R...>::reference {
+    template <typename T, typename ...R>
+        struct container_mutator<std::forward_list<T, R...>> {
+            static auto emplace(std::forward_list<T, R...>& c) -> typename std::forward_list<T, R...>::reference {
 #               if __cplusplus < 201703L
                     return c.emplace_front(), c.front();
 #               else
