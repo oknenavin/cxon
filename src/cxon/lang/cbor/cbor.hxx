@@ -39,7 +39,8 @@ namespace cxon { namespace cbor { // format traits
         static constexpr bio::byte  map     = 0xA0; // 5, map of pairs of data items
         static constexpr bio::byte  tag     = 0xC0; // 6, optional semantic tagging of other major types
 
-                                           // 0xE0  // 7, 0xE0-0xF3 - simple value (unassigned)
+        static constexpr bio::byte  svn     = 0xE0; // 7, floating-point numbers and simple values
+                                                    // 7, 0xE0-0xF3, unassigned
         static constexpr bio::byte  neg     = 0xF4; // 7, false
         static constexpr bio::byte  pos     = 0xF5; // 7, true
         static constexpr bio::byte  nil     = 0xF6; // 7, null

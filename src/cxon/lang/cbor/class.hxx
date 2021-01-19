@@ -12,14 +12,14 @@
 
 namespace cxon { namespace cbor { namespace cls {
 
-    template <typename O = void>    struct sink;
+    template <typename T = void>    struct sink;
     template <typename T>           struct is_sink;
 
     template <typename X, typename S>
         struct sink_reader;
 
-    template <typename X, typename T, typename II, typename Cx>
-        inline bool sink_read(sink<T>& s, II& i, II e, Cx& cx);
+    template <typename X, typename S, typename II, typename Cx>
+        inline bool sink_read(S& s, II& i, II e, Cx& cx);
 
 }}}
 
@@ -44,18 +44,75 @@ namespace cxon { namespace cbor { namespace cls {
 
 // implementation //////////////////////////////////////////////////////////////
 
+namespace cxon { namespace cbor { namespace cls { // sink
+
+    template <typename X, typename S>
+        struct sink_reader<CBOR<X>, S> {
+            template<typename II, typename Cx>
+                static bool read(S& s, II& i, II e, Cx& cx) {
+                    auto t = std::back_inserter(s);
+                    auto const b = bio::peek(i, e);
+                    switch (b & X::mjr) {
+                        case X::pint: case X::nint: case X::tag: case X::svn: {
+                            II const o = i;
+                            switch (b & X::mnr) {
+                                case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
+                                case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+                                case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                                    return  bio::get(t, i, e);
+                                case 0x18: case 0x19: case 0x1A: case 0x1B:
+                                    return  (bio::get(t, i, e, 1 + (1 << (b - 0x18)))) ||
+                                            (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                    ;
+                                case 0x1C: case 0x1D: case 0x1E: case 0x1F:
+                                    return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                default:
+                                    return  CXON_ASSERT(0, "unexpected"), false;
+                            }
+                        }
+                        case X::bstr: case X::tstr:
+                            return CXON_ASSERT(0, "TODO"), false;
+                        case X::arr:
+                            return CXON_ASSERT(0, "TODO"), false;
+                        case X::map:
+                            return CXON_ASSERT(0, "TODO"), false;
+                    }
+                    return false;
+                }
+
+            //private:
+            //    template <typename N, typename II>
+            //        static auto skip(N n, II& i, II e)
+            //            -> enable_if_t<!is_random_access_iterator<II>::value, bool>
+            //        {
+            //            for ( ; n != 0 && i != e; --n, ++i)
+            //                ;
+            //            return n == 0;
+            //        }
+            //    template <typename N, typename II>
+            //        static auto skip(N n, II& i, II e)
+            //            -> enable_if_t< is_random_access_iterator<II>::value, bool>
+            //        {
+            //            using U = typename std::common_type<N, typename std::iterator_traits<II>::difference_type>::type;
+            //            auto const m = std::min((U)n, (U)std::distance(i, e));
+            //            return std::advance(i, m), m == n;
+            //        }
+        };
+
+}}}
+
 namespace cxon { namespace cbor { namespace cls {
 
-    template <typename O>
+    template <typename T>
         struct sink {
-            O value;
-            using value_type = typename O::value_type;
-            void push_back(value_type v) const { value.push_back(v); }
+            using value_type = typename T::value_type;
+            void push_back(value_type v) { sink_.push_back(v); }
+            T sink_;
         };
     template <>
         struct sink<void> {
-            template <typename T>
-                void push_back(T) const {}
+            using value_type = bio::byte;
+            void push_back(value_type) {}
         };
 
     template <typename T>
@@ -63,9 +120,9 @@ namespace cxon { namespace cbor { namespace cls {
     template <typename T>
         struct is_sink<sink<T>> : std::true_type {};
 
-    template <typename X, typename T, typename II, typename Cx>
-        inline bool sink_read(sink<T>& s, II& i, II e, Cx& cx) {
-            return sink_reader<X, T>::read(s, i, e, cx);
+    template <typename X, typename S, typename II, typename Cx>
+        inline bool sink_read(S& s, II& i, II e, Cx& cx) {
+            return sink_reader<X, S>::read(s, i, e, cx);
         }
 
 }}}
@@ -85,7 +142,7 @@ namespace cxon { namespace cbor { namespace cls {
         struct field<sink<O>> {
             using type = sink<O>;
             char const*const name;
-            type const value;
+            type value;
         };
 
     template <typename F>
@@ -197,7 +254,7 @@ namespace cxon { namespace cbor { namespace cls {
             if (cbor::cnt::read_size_le<X>(n, std::tuple_size<fields<F...>>::value, i, e, cx))
                 for ( ; n; --n) {
                     char id[bio::ids_len_max::constant<napa_type<Cx>>(64)];
-                    II const o = i; {
+                    {   II const o = i;
                         if (!read_value<X>(id, i, e, cx))
                             return false;
                         if (!bits::read_<X, 0, std::tuple_size<fields<F...>>::value>::fields(s, id, f, i, e, cx))

@@ -613,3 +613,37 @@ TEST_BEG(cxon::CBOR<>) // static field
     R_TEST(Struct9(), BS("\xA1\x62x\0\x03")); // {x: 3}
     W_TEST(BS("\xA2\x62x\0\x03\x62y\0\x03"), Struct9()); // {x: 3, y: 3}
 TEST_END()
+
+
+struct Struct10 {
+    int x;
+    int y;
+    Struct10(int x = 0, int y = 0) : x(x), y(y) {}
+    bool operator ==(const Struct10& t) const { return x == t.x && y == t.y; }
+};
+
+CXON_CBOR_CLS_READ(Struct10,
+    CXON_CBOR_CLS_FIELD_ASIS(x),
+    CXON_CBOR_CLS_FIELD_SKIP("y"),
+    CXON_CBOR_CLS_FIELD_SKIP("z")
+)
+CXON_CBOR_CLS_WRITE(Struct10,
+    CXON_CBOR_CLS_FIELD_ASIS(x),
+    CXON_CBOR_CLS_FIELD_NAME("z", y)
+)
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x17\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x18\x18\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x19\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x1A\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x1B\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xF4\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xF5\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xF6\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xFB\x00\x00\x00\x00\x00\x00\x00\x00\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xFA\x00\x00\x00\x00\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xF9\x00\x00\x62x\0\x01")); // {y: '3, x: 1}
+    W_TEST(BS("\xA2\x62x\0\x01\x62z\0\x02"), Struct10(1, 2));
+TEST_END()
+

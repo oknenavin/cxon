@@ -36,7 +36,7 @@ namespace cxon { namespace bio {
             -> enable_if_t<std::is_floating_point<T>::value, bool>;
 
     template <typename OI, typename II>
-        inline bool get(OI o, II& i, II e, size_t n);
+        inline bool get(OI o, II& i, II e, size_t n = 1);
 
     // output
 
