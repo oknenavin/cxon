@@ -36,7 +36,9 @@ namespace cxon { namespace bio {
             -> enable_if_t<std::is_floating_point<T>::value, bool>;
 
     template <typename OI, typename II>
-        inline bool get(OI o, II& i, II e, size_t n = 1);
+        inline bool get(OI o, II& i, II e);
+    template <typename OI, typename II>
+        inline bool get(OI o, II& i, II e, size_t n);
 
     // output
 
@@ -108,37 +110,9 @@ namespace cxon { namespace bio {
                 ;
             }
         template <typename II>
-            inline auto get_n_(byte (&bs)[3], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
-                        get<1>(bs[2], i, e)
-                ;
-            }
-        template <typename II>
             inline auto get_n_(byte (&bs)[4], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
                 return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
                         get<1>(bs[2], i, e) && get<1>(bs[3], i, e)
-                ;
-            }
-        template <typename II>
-            inline auto get_n_(byte (&bs)[5], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
-                        get<1>(bs[2], i, e) && get<1>(bs[3], i, e) &&
-                        get<1>(bs[4], i, e)
-                ;
-            }
-        template <typename II>
-            inline auto get_n_(byte (&bs)[6], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
-                        get<1>(bs[2], i, e) && get<1>(bs[3], i, e) &&
-                        get<1>(bs[4], i, e) && get<1>(bs[5], i, e)
-                ;
-            }
-        template <typename II>
-            inline auto get_n_(byte (&bs)[7], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
-                        get<1>(bs[2], i, e) && get<1>(bs[3], i, e) &&
-                        get<1>(bs[4], i, e) && get<1>(bs[5], i, e) &&
-                        get<1>(bs[6], i, e)
                 ;
             }
         template <typename II>
@@ -156,14 +130,6 @@ namespace cxon { namespace bio {
                 CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
                 return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
             }
-        //template <typename T>
-        //    inline T be_to_i_(const byte (&bs)[3]) {
-        //        using R = unsigned long;
-        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-        //        return  (R(bs[2])<< 0) | (R(bs[1])<< 8) |
-        //                (R(bs[0])<<16)
-        //        ;
-        //    }
         template <typename T>
             inline T be_to_i_(const byte (&bs)[4]) {
                 using R = unsigned long;
@@ -172,34 +138,6 @@ namespace cxon { namespace bio {
                         (R(bs[1])<<16) | (R(bs[0])<<24)
                 ;
             }
-        //template <typename T>
-        //    inline T be_to_i_(const byte (&bs)[5]) {
-        //        using R = unsigned long long;
-        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-        //        return  (R(bs[4])<< 0) | (R(bs[3])<< 8) |
-        //                (R(bs[2])<<16) | (R(bs[1])<<24) |
-        //                (R(bs[0])<<32)
-        //        ;
-        //    }
-        //template <typename T>
-        //    inline T be_to_i_(const byte (&bs)[6]) {
-        //        using R = unsigned long long;
-        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-        //        return  (R(bs[5])<< 0) | (R(bs[4])<< 8) |
-        //                (R(bs[3])<<16) | (R(bs[2])<<24) |
-        //                (R(bs[1])<<32) | (R(bs[0])<<40)
-        //        ;
-        //    }
-        //template <typename T>
-        //    inline T be_to_i_(const byte (&bs)[7]) {
-        //        using R = unsigned long long;
-        //        CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
-        //        return  (R(bs[6])<< 0) | (R(bs[5])<< 8) |
-        //                (R(bs[4])<<16) | (R(bs[3])<<24) |
-        //                (R(bs[2])<<32) | (R(bs[1])<<40) |
-        //                (R(bs[0])<<48)
-        //        ;
-        //    }
         template <typename T>
             inline T be_to_i_(const byte (&bs)[8]) {
                 using R = unsigned long long;
@@ -257,11 +195,7 @@ namespace cxon { namespace bio {
             switch (n) {
                 case 1:     return bits::get_<1>(t, i, e);
                 case 2:     return bits::get_<2>(t, i, e);
-                //case 3:     return bits::get_<3>(t, i, e);
                 case 4:     return bits::get_<4>(t, i, e);
-                //case 5:     return bits::get_<5>(t, i, e);
-                //case 6:     return bits::get_<6>(t, i, e);
-                //case 7:     return bits::get_<7>(t, i, e);
                 case 8:     return bits::get_<8>(t, i, e);
                 default:    return CXON_ASSERT(0, "unexpected"), false;
             }
@@ -279,8 +213,8 @@ namespace cxon { namespace bio {
 
         template <typename OI, typename II>
             inline auto get_n_(OI o, II& i, II e, size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                for ( ; n != 0 && i != e; --n, ++i)
-                    poke(o, *i);
+                for ( ; n != 0 && i != e && poke(o, *i); --n, ++i)
+                    ;
                 return n == 0;
             }
         template <typename OI, typename II>
@@ -290,7 +224,11 @@ namespace cxon { namespace bio {
             }
 
     }
-
+    
+    template <typename OI, typename II>
+        inline bool get(OI o, II& i, II) {
+            return poke(o, *i) && (++i, true);
+        }
     template <typename OI, typename II>
         inline bool get(OI o, II& i, II e, size_t n) {
             return bits::get_n_(o, i, e, n);
@@ -348,15 +286,48 @@ namespace cxon { namespace bio {
             {
                 return bits::poke_(o, t);
             }
-        template <typename T, typename O> // TODO: unroll?
+        template <typename T, typename O>
             inline auto put_(O& o, T t, unsigned n)
-                -> enable_if_t<std::is_integral<T>::value && sizeof(T) != 1, bool>
+                -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 2, bool>
             {
                 byte bs[sizeof(T)];
-                    for (unsigned i = 0; i != n; ++i)
-                        bs[i] = byte(t >> (n - i - 1) * 8);
+                    switch (n) {
+                        case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
+                        case 1: bs[n - 1] = byte(t >>  0);
+                    }
                 return bits::poke_(o, bs, n);
             }
+        template <typename T, typename O>
+            inline auto put_(O& o, T t, unsigned n)
+                -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 4, bool>
+            {
+                byte bs[sizeof(T)];
+                    switch (n) {
+                        case 4: bs[n - 4] = byte(t >> 24);
+                                bs[n - 3] = byte(t >> 16); CXON_FALLTHROUGH;
+                        case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
+                        case 1: bs[n - 1] = byte(t >>  0);
+                    }
+                return bits::poke_(o, bs, n);
+            }
+        template <typename T, typename O>
+            inline auto put_(O& o, T t, unsigned n)
+                -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 8, bool>
+            {
+                byte bs[sizeof(T)];
+                    switch (n) {
+                        case 8: bs[n - 8] = byte(t >> 56);
+                                bs[n - 7] = byte(t >> 48);
+                                bs[n - 6] = byte(t >> 40);
+                                bs[n - 5] = byte(t >> 32); CXON_FALLTHROUGH;
+                        case 4: bs[n - 4] = byte(t >> 24);
+                                bs[n - 3] = byte(t >> 16); CXON_FALLTHROUGH;
+                        case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
+                        case 1: bs[n - 1] = byte(t >>  0);
+                    }
+                return bits::poke_(o, bs, n);
+            }
+
         template <typename O, typename FI, typename T = typename std::iterator_traits<FI>::value_type>
             inline auto put_(O& o, FI i, size_t n)
                 -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>

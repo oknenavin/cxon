@@ -52,16 +52,17 @@ namespace cxon { namespace cbor { namespace cls { // sink
                 static bool read(S& s, II& i, II e, Cx& cx) {
                     auto t = std::back_inserter(s);
                     auto const b = bio::peek(i, e);
+                    unsigned const mnr = b & X::mnr;
                     switch (b & X::mjr) {
                         case X::pint: case X::nint: case X::tag: case X::svn: {
                             II const o = i;
-                            switch (b & X::mnr) {
+                            switch (mnr) {
                                 case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
                                 case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
                                 case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
                                     return  bio::get(t, i, e);
                                 case 0x18: case 0x19: case 0x1A: case 0x1B:
-                                    return  (bio::get(t, i, e, 1 + (1 << (b - 0x18)))) ||
+                                    return  (bio::get(t, i, e, 1 + (1 << (mnr - 0x18)))) ||
                                             (bio::rewind(i, o), cx|cbor::read_error::unexpected)
                                     ;
                                 case 0x1C: case 0x1D: case 0x1E: case 0x1F:
@@ -70,8 +71,41 @@ namespace cxon { namespace cbor { namespace cls { // sink
                                     return  CXON_ASSERT(0, "unexpected"), false;
                             }
                         }
-                        case X::bstr: case X::tstr:
+                        case X::bstr: case X::tstr: {
+                            II const o = i;
+                            switch (mnr) {
+                                case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
+                                case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+                                case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                                    return  (bio::get(t, i, e, 1 + mnr)) ||
+                                            (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                    ;
+                                case 0x18: case 0x19: case 0x1A: case 0x1B: {
+                                    size_t n;
+                                    return  (
+                                                bio::get(t, i, e) &&
+                                                bio::get(n, 1U << (mnr - 0x18), i, e) &&
+                                                bio::poke(t, n, 1U << (mnr - 0x18)) &&
+                                                bio::get(t, i, e, n)
+                                            )   ||
+                                            (   bio::rewind(i, o), cx|cbor::read_error::unexpected
+                                            )
+                                    ;
+                                }
+                                case 0x1F: {
+                                    do
+                                        if (!bio::get(t, i, e))
+                                            return bio::rewind(i, o), cx|cbor::read_error::unexpected;
+                                    while (bio::peek(i, e) != X::brk);
+                                    return bio::get(t, i, e) || (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                }
+                                case 0x1C: case 0x1D: case 0x1E:
+                                    return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                default:
+                                    return  CXON_ASSERT(0, "unexpected"), false;
+                            }
                             return CXON_ASSERT(0, "TODO"), false;
+                        }
                         case X::arr:
                             return CXON_ASSERT(0, "TODO"), false;
                         case X::map:
@@ -79,27 +113,29 @@ namespace cxon { namespace cbor { namespace cls { // sink
                     }
                     return false;
                 }
-
-            //private:
-            //    template <typename N, typename II>
-            //        static auto skip(N n, II& i, II e)
-            //            -> enable_if_t<!is_random_access_iterator<II>::value, bool>
-            //        {
-            //            for ( ; n != 0 && i != e; --n, ++i)
-            //                ;
-            //            return n == 0;
-            //        }
-            //    template <typename N, typename II>
-            //        static auto skip(N n, II& i, II e)
-            //            -> enable_if_t< is_random_access_iterator<II>::value, bool>
-            //        {
-            //            using U = typename std::common_type<N, typename std::iterator_traits<II>::difference_type>::type;
-            //            auto const m = std::min((U)n, (U)std::distance(i, e));
-            //            return std::advance(i, m), m == n;
-            //        }
         };
 
 }}}
+
+namespace cxon { // array/read
+
+    template <typename X, typename T>
+        struct read<CBOR<X>, cbor::cls::sink<T>> {
+            template <typename II, typename Cx, typename Y = CBOR<X>>
+                static bool value(cbor::cls::sink<T>& s, II& i, II e, Cx& cx) {
+                    return cbor::cls::sink_read<Y>(s, i, e, cx);
+                }
+        };
+
+    //template <typename X, typename T, size_t N>
+    //    struct write<CBOR<X>, T[N]> {
+    //        template <typename O, typename Cx, typename J = CBOR<X>>
+    //            static bool value(O& o, const T (&t)[N], Cx& cx) {
+    //                return cbor::cnt::write_array<J>(o, std::begin(t), std::end(t), cx);
+    //            }
+    //    };
+
+}
 
 namespace cxon { namespace cbor { namespace cls {
 
@@ -184,13 +220,12 @@ namespace cxon { namespace cbor { namespace cls {
             {
                 return sink_read<X>(f.value, i, e, cx);
             }
-
-        template <typename X, typename O, typename S, typename F, typename Cx>
-            constexpr auto write_field_(O&, const S&, F, Cx&)
-                -> enable_if_t< is_sink<typename F::type>::value, bool>
-            {
-                return true;
-            }
+        //template <typename X, typename O, typename S, typename F, typename Cx>
+        //    constexpr auto write_field_(O&, const S&, F, Cx&)
+        //        -> enable_if_t< is_sink<typename F::type>::value, bool>
+        //    {
+        //        return true;
+        //    }
 
     }
     template <typename X, typename S, typename F, typename II, typename Cx>
