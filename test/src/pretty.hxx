@@ -56,11 +56,6 @@ namespace cxon { namespace test {
                 indent_iterator& operator ++() noexcept { return *this; }
                 indent_iterator& operator *() noexcept { return *this; }
 
-#               if defined(__GNUG__) && !defined(__clang__) && __cplusplus < 201703L
-#                   pragma GCC diagnostic push
-#                   pragma GCC diagnostic ignored "-Wimplicit-fallthrough="
-#               endif
-
                 indent_iterator& operator =(char c) {
                     using cio::poke;
                     switch (stt()) {
@@ -80,9 +75,7 @@ namespace cxon { namespace test {
                                               mut(grn);
                             if (is::end(c)) { poke(o_, c);                                      break; }
                                         if  (!poke(o_, '\n') || !poke(o_, lvl_ += tab_, pad_))  break;
-#                           if __cplusplus >= 201703L
-                                [[fallthrough]];
-#                           endif
+                            CXON_FALLTHROUGH;
                         default:
                             if (is::beg(c)) { mut(con), poke(o_, c);                                                                break; }
                             if (is::end(c)) {           poke(o_, '\n') && poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && poke(o_, c); break; }
@@ -94,10 +87,6 @@ namespace cxon { namespace test {
                     }
                     return *this;
                 }
-
-#               if defined(__GNUG__) && !defined(__clang__) && __cplusplus < 201703L
-#                   pragma GCC diagnostic pop
-#               endif
 
                 template <typename VI>
                     bool indent_value(VI indent_value) {

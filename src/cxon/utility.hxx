@@ -24,6 +24,16 @@
 #   define CXON_ASSERT(e, m) ((void)(e))
 #endif
 
+#if __cplusplus < 201703L
+#   if defined(__GNUG__) && !defined(__clang__)
+#       define CXON_FALLTHROUGH [[gnu::fallthrough]]
+#   else
+#       define CXON_FALLTHROUGH
+#   endif
+#else
+#   define CXON_FALLTHROUGH [[fallthrough]]
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon {

@@ -21,7 +21,7 @@ namespace cxon { namespace cbor { namespace cnt { // container mutation
     template <typename C>
         inline bool container_reserve(C& c, size_t s);
     template <typename C>
-        inline auto container_emplace(C& c) -> typename container_mutator<C>::reference;
+        inline auto container_emplace(C& c) -> typename C::reference;
     template <typename C, typename II>
         inline bool container_append(C& c, II f, II l);
 

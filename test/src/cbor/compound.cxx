@@ -638,12 +638,61 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x19\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x1A\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x1B\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x3B\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x3A\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x39\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x38\x18\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x37\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xD7\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xD8\x18\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xD9\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xDA\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xDB\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xFB\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xFA\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xF9\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xF8\x18\x62x\0\x01")); // {y: '2, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\xF4\x62x\0\x01")); // {y: '1, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\xF5\x62x\0\x01")); // {y: '1, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\xF6\x62x\0\x01")); // {y: '1, x: 1}
-    R_TEST(Struct10(1), BS("\xA2\x62y\0\xFB\x00\x00\x00\x00\x00\x00\x00\x00\x62x\0\x01")); // {y: '9, x: 1}
-    R_TEST(Struct10(1), BS("\xA2\x62y\0\xFA\x00\x00\x00\x00\x62x\0\x01")); // {y: '5, x: 1}
-    R_TEST(Struct10(1), BS("\xA2\x62y\0\xF9\x00\x00\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x42xx\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x58\x02xx\x62x\0\x01")); // {y: '4, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x5Fxxx\xFF\x62x\0\x01")); // {y: '5, x: 1}
     W_TEST(BS("\xA2\x62x\0\x01\x62z\0\x02"), Struct10(1, 2));
+TEST_END()
+
+
+struct Struct11 {
+    int x;
+    using sink = cxon::cbor::cls::sink<cxon::test::bytes>;
+    sink y;
+    Struct11(int x = 0, sink y = sink{}) : x(x), y(y) {}
+    bool operator ==(const Struct11& t) const { return x == t.x && y.sink_ == t.y.sink_; }
+};
+
+CXON_CBOR_CLS_READ(Struct11,
+    CXON_CBOR_CLS_FIELD_ASIS(x),
+    CXON_CBOR_CLS_FIELD_ASIS(y)
+)
+//CXON_CBOR_CLS_WRITE(Struct11,
+//    CXON_CBOR_CLS_FIELD_ASIS(x),
+//    CXON_CBOR_CLS_FIELD_ASIS(y)
+//)
+
+TEST_BEG(cxon::CBOR<>)
+    R_TEST(Struct11(1, {BS("\x17")}), BS("\xA2\x62y\0\x17\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct11(1, {BS("\x18\x18")}), BS("\xA2\x62y\0\x18\x18\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct11(1, {BS("\x19\x01\x01")}), BS("\xA2\x62y\0\x19\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct11(1, {BS("\x1A\x00\x01\x01\x01")}), BS("\xA2\x62y\0\x1A\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct11(1, {BS("\x1B\x00\x00\x00\x01\x01\x01\x01\x01")}), BS("\xA2\x62y\0\x1B\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct11(1, {BS("\x3B\x00\x00\x00\x01\x01\x01\x01\x01")}), BS("\xA2\x62y\0\x3B\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct11(1, {BS("\x3A\x00\x01\x01\x01")}), BS("\xA2\x62y\0\x3A\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct11(1, {BS("\x39\x01\x01")}), BS("\xA2\x62y\0\x39\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct11(1, {BS("\x38\x18")}), BS("\xA2\x62y\0\x38\x18\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct11(1, {BS("\x37")}), BS("\xA2\x62y\0\x37\x62x\0\x01")); // {y: '2, x: 1}
+
+    R_TEST(Struct11(1, {BS("\x42xx")}), BS("\xA2\x62y\0\x42xx\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct11(1, {BS("\x5Fxxx\xFF")}), BS("\xA2\x62y\0\x5Fxxx\xFF\x62x\0\x01")); // {y: '5, x: 1}
+    //W_TEST(BS("\xA2\x62x\0\x01\x62z\0\x02"), Struct11(1));
 TEST_END()
 
