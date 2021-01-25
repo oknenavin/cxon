@@ -121,7 +121,9 @@ TEST_BEG(cxon::JSON<>) // interface/write
 TEST_END()
 
 
-enum Enum11 { one, two, three, four };
+namespace {
+    enum Enum11 { one, two, three, four };
+}
 
 CXON_JSON_ENM(Enum11,
     CXON_JSON_ENM_VALUE_ASIS(one),
@@ -129,14 +131,18 @@ CXON_JSON_ENM(Enum11,
     CXON_JSON_ENM_VALUE_ASIS(three)
 )
 
-struct Struct11 {
-    int field;
-    Struct11(int f = 0) : field(f) {}
-    bool operator ==(const Struct11& t) const { return field == t.field; }
-    CXON_JSON_CLS_READ_MEMBER(Struct11,
-        CXON_JSON_CLS_FIELD_ASIS(field)
-    )
-};
+namespace {
+
+    struct Struct11 {
+        int field;
+        Struct11(int f = 0) : field(f) {}
+        bool operator ==(const Struct11& t) const { return field == t.field; }
+        CXON_JSON_CLS_READ_MEMBER(Struct11,
+            CXON_JSON_CLS_FIELD_ASIS(field)
+        )
+    };
+
+}
 
 TEST_BEG(cxon::JSON<>) // interface/parameters
     {   std::string r; std::string const e = "3.142";
@@ -388,7 +394,7 @@ namespace jsonrpc {
             )
         };
 
-    template <typename R, typename D = cxon::cio::val::skip_t<>>
+    template <typename R, typename D = cxon::cio::val::sink<>>
         struct response {
             char            jsonrpc[8];
             size_t          id;

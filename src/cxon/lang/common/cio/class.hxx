@@ -18,9 +18,9 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
         struct field {
             using type = F;
             char const*const name;
-            type const value;
+            type value;
         };
-    template <typename F = val::skip_t<>>
+    template <typename F = val::sink<>>
         constexpr field<F> make_field(const char* name, F f = {});
 
     template <typename X, typename S, typename F, typename II, typename Cx>
@@ -53,40 +53,40 @@ namespace cxon { namespace cio { namespace cls {
 
         template <typename X, typename S, typename F, typename II, typename Cx>
             inline auto read_field_(S& s, F f, II& i, II e, Cx& cx)
-                -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+                -> enable_if_t<!val::is_sink<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
             {
                 return read_value<X>(s.*f.value, i, e, cx);
             }
         template <typename X, typename S, typename F, typename II, typename Cx>
             inline auto read_field_(S&, F f, II& i, II e, Cx& cx)
-                -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+                -> enable_if_t<!val::is_sink<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
             {
                 return read_value<X>(*f.value, i, e, cx);
             }
 
         template <typename X, typename O, typename S, typename F, typename Cx>
             inline auto write_field_(O& o, const S& s, F f, Cx& cx)
-                -> enable_if_t<!val::is_skip_t<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
+                -> enable_if_t<!val::is_sink<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
             {
                 return write_key<X>(o, f.name, cx) && write_value<X>(o, s.*f.value, cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
             inline auto write_field_(O& o, const S&, F f, Cx& cx)
-                -> enable_if_t<!val::is_skip_t<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
+                -> enable_if_t<!val::is_sink<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
             {
                 return write_key<X>(o, f.name, cx) && write_value<X>(o, *f.value, cx);
             }
 
         template <typename X, typename S, typename F, typename II, typename Cx>
             inline auto read_field_(S&, F f, II& i, II e, Cx& cx)
-                -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>
+                -> enable_if_t< val::is_sink<typename F::type>::value, bool>
             {
-                return val::skip<X>(f.value, i, e, cx);
+                return val::sink_read<X>(f.value, i, e, cx);
             }
 
         template <typename X, typename O, typename S, typename F, typename Cx>
             constexpr auto write_field_(O&, const S&, F, Cx&)
-                -> enable_if_t< val::is_skip_t<typename F::type>::value, bool>
+                -> enable_if_t< val::is_sink<typename F::type>::value, bool>
             {
                 return true;
             }

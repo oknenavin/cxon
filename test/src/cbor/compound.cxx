@@ -380,7 +380,9 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-enum Enum1 { one = 1, two, three, four };
+namespace {
+    enum Enum1 { one = 1, two, three, four };
+}
 
 CXON_CBOR_ENM(Enum1,
     CXON_CBOR_ENM_VALUE_ASIS(one),
@@ -398,13 +400,17 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct1 {
-    int x;
-    Enum1 y;
-    int z;
-    Struct1(int x = 0, Enum1 y = Enum1::one, int z = 0) : x(x), y(y), z(z) {}
-    bool operator ==(const Struct1& t) const { return x == t.x && y == t.y && z == t.z; }
-};
+namespace {
+
+    struct Struct1 {
+        int x;
+        Enum1 y;
+        int z;
+        Struct1(int x = 0, Enum1 y = Enum1::one, int z = 0) : x(x), y(y), z(z) {}
+        bool operator ==(const Struct1& t) const { return x == t.x && y == t.y && z == t.z; }
+    };
+
+}
 
 CXON_CBOR_CLS_READ(Struct1,
     CXON_CBOR_CLS_FIELD_NAME("X", x),
@@ -423,12 +429,16 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct2 {
-    int x;
-    int y;
-    Struct2(int x = 0, int y = 0) : x(x), y(y) {}
-    bool operator ==(const Struct2& t) const { return x == t.x && y == t.y; }
-};
+namespace {
+
+    struct Struct2 {
+        int x;
+        int y;
+        Struct2(int x = 0, int y = 0) : x(x), y(y) {}
+        bool operator ==(const Struct2& t) const { return x == t.x && y == t.y; }
+    };
+
+}
 
 CXON_CBOR_CLS(Struct2,
     CXON_CBOR_CLS_FIELD_ASIS(x),
@@ -441,12 +451,16 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct3 {
-    int x;
-    Struct3* y;
-    Struct3(int x = 0, Struct3* y = nullptr) : x(x), y(y) {}
-    bool operator ==(const Struct3& t) const { return x == t.x && ((!y && !t.y) || (y && t.y && *y == *t.y)); }
-};
+namespace {
+
+    struct Struct3 {
+        int x;
+        Struct3* y;
+        Struct3(int x = 0, Struct3* y = nullptr) : x(x), y(y) {}
+        bool operator ==(const Struct3& t) const { return x == t.x && ((!y && !t.y) || (y && t.y && *y == *t.y)); }
+    };
+
+}
 
 CXON_CBOR_CLS(Struct3,
     CXON_CBOR_CLS_FIELD_ASIS(x),
@@ -461,22 +475,26 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct4 {
-    Struct4(int x = 0) : x(x) {}
-    bool operator ==(const Struct4& t) const { return x == t.x; }
+namespace {
 
-    template <typename X, typename II, typename C>
-        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::CBOR> {
-            return cxon::read_value<X>(t.x, b, e, ctx);
-        }
-    template <typename X, typename OI, typename C>
-        static bool write_value(OI& o, const Struct4& t, C& ctx) {
-            return cxon::write_value<X>(o, t.x, ctx);
-        }
+    struct Struct4 {
+        Struct4(int x = 0) : x(x) {}
+        bool operator ==(const Struct4& t) const { return x == t.x; }
 
-private:
-    int x;
-};
+        template <typename X, typename II, typename C>
+            static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::CBOR> {
+                return cxon::read_value<X>(t.x, b, e, ctx);
+            }
+        template <typename X, typename OI, typename C>
+            static bool write_value(OI& o, const Struct4& t, C& ctx) {
+                return cxon::write_value<X>(o, t.x, ctx);
+            }
+
+    private:
+        int x;
+    };
+
+}
 
 TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct4(1), BS("\x01"));
@@ -484,22 +502,26 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct5 {
-    Struct5(int x = 0) : x(x) {}
-    bool operator ==(const Struct5& t) const { return x == t.x; }
+namespace {
 
-    template <typename X, typename II, typename C>
-        bool read_value(II& b, II e, C& ctx) {
-            return cxon::read_value<X>(x, b, e, ctx);
-        }
-    template <typename X, typename OI, typename C>
-        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::CBOR> {
-            return cxon::write_value<X>(o, x, ctx);
-        }
+    struct Struct5 {
+        Struct5(int x = 0) : x(x) {}
+        bool operator ==(const Struct5& t) const { return x == t.x; }
 
-private:
-    int x;
-};
+        template <typename X, typename II, typename C>
+            bool read_value(II& b, II e, C& ctx) {
+                return cxon::read_value<X>(x, b, e, ctx);
+            }
+        template <typename X, typename OI, typename C>
+            auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::CBOR> {
+                return cxon::write_value<X>(o, x, ctx);
+            }
+
+    private:
+        int x;
+    };
+
+}
 
 TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct5(1), BS("\x01"));
@@ -507,11 +529,15 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct6 {
-    int x;
-    Struct6(int x = 0) : x(x) {}
-    bool operator ==(const Struct6& t) const { return x == t.x; }
-};
+namespace {
+
+    struct Struct6 {
+        int x;
+        Struct6(int x = 0) : x(x) {}
+        bool operator ==(const Struct6& t) const { return x == t.x; }
+    };
+
+}
 
 namespace cxon {
     template <typename X, typename II, typename C>
@@ -530,19 +556,23 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct7 {
-    Struct7(int x = 0, int y = 0) : x(x), y(y) {}
-    bool operator ==(const Struct7& t) const { return x == t.x && y == t.y; }
+namespace {
 
-    CXON_CBOR_CLS_MEMBER(Struct7,
-        CXON_CBOR_CLS_FIELD_ASIS(x),
-        CXON_CBOR_CLS_FIELD_ASIS(y)
-    )
+    struct Struct7 {
+        Struct7(int x = 0, int y = 0) : x(x), y(y) {}
+        bool operator ==(const Struct7& t) const { return x == t.x && y == t.y; }
 
-private:
-    int x;
-    int y;
-};
+        CXON_CBOR_CLS_MEMBER(Struct7,
+            CXON_CBOR_CLS_FIELD_ASIS(x),
+            CXON_CBOR_CLS_FIELD_ASIS(y)
+        )
+
+    private:
+        int x;
+        int y;
+    };
+
+}
 
 TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct7(1, 2), BS("\xA2\x62x\0\x01\x62y\0\x02")); // {x: 1, y: 2}
@@ -552,33 +582,37 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct8 {
-    Struct8(int x = 0, int y = 0) : x(x), y(y) {}
-    bool operator ==(const Struct8& t) const { return x == t.x && y == t.y; }
+namespace {
 
-    template <typename X, typename II, typename C>
-        static bool read_value(Struct8& t, II& i, II e, C& ctx) {
-            using namespace cxon::cbor::cls;
-            static constexpr auto f = make_fields(
-                make_field("x", &Struct8::x),
-                make_field("y", &Struct8::y)
-            );
-            return read_fields<X>(t, f, i, e, ctx);
-        }
-    template <typename X, typename OI, typename C>
-        static bool write_value(OI& o, const Struct8& t, C& ctx) {
-            using namespace cxon::cbor::cls;
-            static constexpr auto f = make_fields(
-                make_field("x", &Struct8::x),
-                make_field("y", &Struct8::y)
-            );
-            return write_fields<X>(o, t, f, ctx);
-        }
+    struct Struct8 {
+        Struct8(int x = 0, int y = 0) : x(x), y(y) {}
+        bool operator ==(const Struct8& t) const { return x == t.x && y == t.y; }
 
-private:
-    int x;
-    int y;
-};
+        template <typename X, typename II, typename C>
+            static bool read_value(Struct8& t, II& i, II e, C& ctx) {
+                using namespace cxon::cbor::cls;
+                static constexpr auto f = make_fields(
+                    make_field("x", &Struct8::x),
+                    make_field("y", &Struct8::y)
+                );
+                return read_fields<X>(t, f, i, e, ctx);
+            }
+        template <typename X, typename OI, typename C>
+            static bool write_value(OI& o, const Struct8& t, C& ctx) {
+                using namespace cxon::cbor::cls;
+                static constexpr auto f = make_fields(
+                    make_field("x", &Struct8::x),
+                    make_field("y", &Struct8::y)
+                );
+                return write_fields<X>(o, t, f, ctx);
+            }
+
+    private:
+        int x;
+        int y;
+    };
+
+}
 
 TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct8(1, 2), BS("\xA2\x62x\0\x01\x62y\0\x02")); // {x: 1, y: 2}
@@ -586,22 +620,26 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-struct Struct9 {
-    static int x;
-    static int const y;
+namespace {
 
-    bool operator ==(const Struct9&) const { return true; }
+    struct Struct9 {
+        static int x;
+        static int const y;
 
-    CXON_CBOR_CLS_READ_MEMBER(Struct9,
-        CXON_CBOR_CLS_FIELD_ASIS(x)
-    )
-    CXON_CBOR_CLS_WRITE_MEMBER(Struct9,
-        CXON_CBOR_CLS_FIELD_ASIS(x),
-        CXON_CBOR_CLS_FIELD_ASIS(y)
-    )
-};
-int Struct9::x = 0;
-int const Struct9::y = 3;
+        bool operator ==(const Struct9&) const { return true; }
+
+        CXON_CBOR_CLS_READ_MEMBER(Struct9,
+            CXON_CBOR_CLS_FIELD_ASIS(x)
+        )
+        CXON_CBOR_CLS_WRITE_MEMBER(Struct9,
+            CXON_CBOR_CLS_FIELD_ASIS(x),
+            CXON_CBOR_CLS_FIELD_ASIS(y)
+        )
+    };
+    int Struct9::x = 0;
+    int const Struct9::y = 3;
+
+}
 
 TEST_BEG(cxon::CBOR<>) // static field
     R_TEST(Struct9(), BS("\xA1\x62x\0\x00")); // {x: 0}
@@ -615,12 +653,16 @@ TEST_BEG(cxon::CBOR<>) // static field
 TEST_END()
 
 
-struct Struct10 {
-    int x;
-    int y;
-    Struct10(int x = 0, int y = 0) : x(x), y(y) {}
-    bool operator ==(const Struct10& t) const { return x == t.x && y == t.y; }
-};
+namespace {
+
+    struct Struct10 {
+        int x;
+        int y;
+        Struct10(int x = 0, int y = 0) : x(x), y(y) {}
+        bool operator ==(const Struct10& t) const { return x == t.x && y == t.y; }
+    };
+
+}
 
 CXON_CBOR_CLS_READ(Struct10,
     CXON_CBOR_CLS_FIELD_ASIS(x),
@@ -642,8 +684,8 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x3A\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x39\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x38\x18\x62x\0\x01")); // {y: '2, x: 1}
-    R_TEST(Struct10(1), BS("\xA2\x62y\0\x37\x62x\0\x01")); // {y: '2, x: 1}
-    R_TEST(Struct10(1), BS("\xA2\x62y\0\xD7\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x37\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xD7\x62x\0\x01")); // {y: '1, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\xD8\x18\x62x\0\x01")); // {y: '2, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\xD9\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\xDA\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
@@ -658,26 +700,37 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x42xx\x62x\0\x01")); // {y: '3, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x58\x02xx\x62x\0\x01")); // {y: '4, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x5Fxxx\xFF\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x82\x01\x02\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x82\x82\x01\x02\x82\x01\x02\x62x\0\x01")); // {y: '7, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x98\x05\x01\x02\x03\x04\x05\x62x\0\x01")); // {y: '4, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\x9F\x01\x02\x03\x04\x05\xFF\x62x\0\x01")); // {y: '4, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xA2\x01\x82\x02\x03\x02\x82\x03\x04\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xB8\x02\x01\x81\x02\x02\x82\x03\x04\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct10(1), BS("\xA2\x62y\0\xBF\x01\x81\x02\x02\x82\x03\x04\xFF\x62x\0\x01")); // {y: '9, x: 1}
     W_TEST(BS("\xA2\x62x\0\x01\x62z\0\x02"), Struct10(1, 2));
 TEST_END()
 
 
-struct Struct11 {
-    int x;
-    using sink = cxon::cbor::cls::sink<cxon::test::bytes>;
-    sink y;
-    Struct11(int x = 0, sink y = sink{}) : x(x), y(y) {}
-    bool operator ==(const Struct11& t) const { return x == t.x && y.sink_ == t.y.sink_; }
-};
+namespace {
+
+    struct Struct11 {
+        int x;
+        using sink = cxon::cbor::sink<cxon::test::bytes>;
+        sink y;
+        Struct11(int x = 0, sink y = sink{}) : x(x), y(y) {}
+        bool operator ==(const Struct11& t) const { return x == t.x && y.value == t.y.value; }
+    };
+
+}
 
 CXON_CBOR_CLS_READ(Struct11,
     CXON_CBOR_CLS_FIELD_ASIS(x),
     CXON_CBOR_CLS_FIELD_ASIS(y)
 )
-//CXON_CBOR_CLS_WRITE(Struct11,
-//    CXON_CBOR_CLS_FIELD_ASIS(x),
-//    CXON_CBOR_CLS_FIELD_ASIS(y)
-//)
+CXON_CBOR_CLS_WRITE(Struct11,
+    CXON_CBOR_CLS_FIELD_ASIS(x),
+    CXON_CBOR_CLS_FIELD_ASIS(y)
+)
 
 TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct11(1, {BS("\x17")}), BS("\xA2\x62y\0\x17\x62x\0\x01")); // {y: '1, x: 1}
@@ -689,10 +742,27 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct11(1, {BS("\x3A\x00\x01\x01\x01")}), BS("\xA2\x62y\0\x3A\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
     R_TEST(Struct11(1, {BS("\x39\x01\x01")}), BS("\xA2\x62y\0\x39\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
     R_TEST(Struct11(1, {BS("\x38\x18")}), BS("\xA2\x62y\0\x38\x18\x62x\0\x01")); // {y: '2, x: 1}
-    R_TEST(Struct11(1, {BS("\x37")}), BS("\xA2\x62y\0\x37\x62x\0\x01")); // {y: '2, x: 1}
-
+    R_TEST(Struct11(1, {BS("\x37")}), BS("\xA2\x62y\0\x37\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct11(1, {BS("\xD7")}), BS("\xA2\x62y\0\xD7\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct11(1, {BS("\xD8\x18")}), BS("\xA2\x62y\0\xD8\x18\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct11(1, {BS("\xD9\x01\x01")}), BS("\xA2\x62y\0\xD9\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct11(1, {BS("\xDA\x00\x01\x01\x01")}), BS("\xA2\x62y\0\xDA\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct11(1, {BS("\xDB\x00\x00\x00\x01\x01\x01\x01\x01")}), BS("\xA2\x62y\0\xDB\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct11(1, {BS("\xFB\x00\x00\x00\x01\x01\x01\x01\x01")}), BS("\xA2\x62y\0\xFB\x00\x00\x00\x01\x01\x01\x01\x01\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct11(1, {BS("\xFA\x00\x01\x01\x01")}), BS("\xA2\x62y\0\xFA\x00\x01\x01\x01\x62x\0\x01")); // {y: '5, x: 1}
+    R_TEST(Struct11(1, {BS("\xF9\x01\x01")}), BS("\xA2\x62y\0\xF9\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct11(1, {BS("\xF8\x18")}), BS("\xA2\x62y\0\xF8\x18\x62x\0\x01")); // {y: '2, x: 1}
+    R_TEST(Struct11(1, {BS("\xF4")}), BS("\xA2\x62y\0\xF4\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct11(1, {BS("\xF5")}), BS("\xA2\x62y\0\xF5\x62x\0\x01")); // {y: '1, x: 1}
+    R_TEST(Struct11(1, {BS("\xF6")}), BS("\xA2\x62y\0\xF6\x62x\0\x01")); // {y: '1, x: 1}
     R_TEST(Struct11(1, {BS("\x42xx")}), BS("\xA2\x62y\0\x42xx\x62x\0\x01")); // {y: '3, x: 1}
     R_TEST(Struct11(1, {BS("\x5Fxxx\xFF")}), BS("\xA2\x62y\0\x5Fxxx\xFF\x62x\0\x01")); // {y: '5, x: 1}
-    //W_TEST(BS("\xA2\x62x\0\x01\x62z\0\x02"), Struct11(1));
+    R_TEST(Struct11(1, {BS("\x82\x01\x02")}), BS("\xA2\x62y\0\x82\x01\x02\x62x\0\x01")); // {y: '3, x: 1}
+    R_TEST(Struct11(1, {BS("\x82\x82\x01\x02\x82\x01\x02")}), BS("\xA2\x62y\0\x82\x82\x01\x02\x82\x01\x02\x62x\0\x01")); // {y: '7, x: 1}
+    R_TEST(Struct11(1, {BS("\x98\x05\x01\x02\x03\x04\x05")}), BS("\xA2\x62y\0\x98\x05\x01\x02\x03\x04\x05\x62x\0\x01")); // {y: '4, x: 1}
+    R_TEST(Struct11(1, {BS("\x9F\x01\x02\x03\x04\x05\xFF")}), BS("\xA2\x62y\0\x9F\x01\x02\x03\x04\x05\xFF\x62x\0\x01")); // {y: '4, x: 1}
+    R_TEST(Struct11(1, {BS("\xA2\x01\x82\x02\x03\x02\x82\x03\x04")}), BS("\xA2\x62y\0\xA2\x01\x82\x02\x03\x02\x82\x03\x04\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct11(1, {BS("\xB8\x02\x01\x81\x02\x02\x82\x03\x04")}), BS("\xA2\x62y\0\xB8\x02\x01\x81\x02\x02\x82\x03\x04\x62x\0\x01")); // {y: '9, x: 1}
+    R_TEST(Struct11(1, {BS("\xBF\x01\x81\x02\x02\x82\x03\x04\xFF")}), BS("\xA2\x62y\0\xBF\x01\x81\x02\x02\x82\x03\x04\xFF\x62x\0\x01")); // {y: '9, x: 1}
+    W_TEST(BS("\xA2\x62x\0\x01\x62y\0\xB8\x02\x01\x81\x02\x02\x82\x03\x04"), Struct11(1, {BS("\xB8\x02\x01\x81\x02\x02\x82\x03\x04")}));
 TEST_END()
-
