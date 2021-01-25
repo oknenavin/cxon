@@ -100,7 +100,7 @@ namespace cxon { namespace cbor { namespace cls {
 
     template <typename ...F> 
         constexpr fields<F...> make_fields(F... f) {
-            return { f... };
+            return std::make_tuple(f...);
         }
 
     namespace bits {
