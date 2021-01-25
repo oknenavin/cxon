@@ -159,15 +159,15 @@ matrix:
     - os: linux
       dist: bionic
       language: cpp
-      compiler: clang-10
+      compiler: clang-11
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main'
+            - sourceline: 'deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
-          packages: clang-10
-      env: CXX=clang++-10 CXXFLAGS=-std=c++20
+          packages: clang-11
+      env: CXX=clang++-11 CXXFLAGS=-std=c++20
 
     # coverage
 
