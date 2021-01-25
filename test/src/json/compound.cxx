@@ -225,8 +225,9 @@ TEST_BEG(cxon::JSON<>)
         W_TEST(QS("test"), (char32_t*)U"test");
 TEST_END()
 
-
-enum Enum1 { one, two, three, four };
+namespace {
+    enum Enum1 { one, two, three, four };
+}
 
 CXON_JSON_ENM(Enum1,
     CXON_JSON_ENM_VALUE_ASIS(one),
@@ -255,20 +256,24 @@ TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>)
 TEST_END()
 
 
-struct Struct1 {
-    int a;
-    Enum1 b;
-    int c;
-    Struct1(int a = 0, Enum1 b = Enum1::one, int c = 0) : a(a), b(b), c(c) {}
-    bool operator ==(const Struct1& t) const { return a == t.a && b == t.b && c == t.c; }
-};
+namespace {
 
-struct Struct2 {
-    int a;
-    int b;
-    Struct2(int a = 0, int b = 0) : a(a), b(b) {}
-    bool operator ==(const Struct2& t) const { return a == t.a && b == t.b; }
-};
+    struct Struct1 {
+        int a;
+        Enum1 b;
+        int c;
+        Struct1(int a = 0, Enum1 b = Enum1::one, int c = 0) : a(a), b(b), c(c) {}
+        bool operator ==(const Struct1& t) const { return a == t.a && b == t.b && c == t.c; }
+    };
+
+    struct Struct2 {
+        int a;
+        int b;
+        Struct2(int a = 0, int b = 0) : a(a), b(b) {}
+        bool operator ==(const Struct2& t) const { return a == t.a && b == t.b; }
+    };
+
+}
 
 CXON_JSON_CLS_READ(Struct1,
     CXON_JSON_CLS_FIELD_NAME("A", a),
@@ -302,12 +307,16 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-struct Struct3 {
-    int a;
-    Struct3* b;
-    Struct3(int a = 0, Struct3* b = nullptr) : a(a), b(b) {}
-    bool operator ==(const Struct3& t) const { return a == t.a && ((!b && !t.b) || (b && t.b && *b == *t.b)); }
-};
+namespace {
+
+    struct Struct3 {
+        int a;
+        Struct3* b;
+        Struct3(int a = 0, Struct3* b = nullptr) : a(a), b(b) {}
+        bool operator ==(const Struct3& t) const { return a == t.a && ((!b && !t.b) || (b && t.b && *b == *t.b)); }
+    };
+
+}
 
 CXON_JSON_CLS(Struct3,
     CXON_JSON_CLS_FIELD_ASIS(a),
@@ -324,22 +333,26 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-struct Struct4 {
-    Struct4(int a = 0) : a(a) {}
-    bool operator ==(const Struct4& t) const { return a == t.a; }
+namespace {
 
-    template <typename X, typename II, typename C>
-        static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON> {
-            return cxon::read_value<X>(t.a, b, e, ctx);
-        }
-    template <typename X, typename OI, typename C>
-        static bool write_value(OI& o, const Struct4& t, C& ctx) {
-            return cxon::write_value<X>(o, t.a, ctx);
-        }
+    struct Struct4 {
+        Struct4(int a = 0) : a(a) {}
+        bool operator ==(const Struct4& t) const { return a == t.a; }
 
-private:
-    int a;
-};
+        template <typename X, typename II, typename C>
+            static auto read_value(Struct4& t, II& b, II e, C& ctx) -> cxon::enable_for_t<X, cxon::JSON> {
+                return cxon::read_value<X>(t.a, b, e, ctx);
+            }
+        template <typename X, typename OI, typename C>
+            static bool write_value(OI& o, const Struct4& t, C& ctx) {
+                return cxon::write_value<X>(o, t.a, ctx);
+            }
+
+    private:
+        int a;
+    };
+
+}
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct4(1), "1");
@@ -347,22 +360,26 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-struct Struct5 {
-    Struct5(int a = 0) : a(a) {}
-    bool operator ==(const Struct5& t) const { return a == t.a; }
+namespace {
 
-    template <typename X, typename II, typename C>
-        bool read_value(II& b, II e, C& ctx) {
-            return cxon::read_value<X>(a, b, e, ctx);
-        }
-    template <typename X, typename OI, typename C>
-        auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::JSON> {
-            return cxon::write_value<X>(o, a, ctx);
-        }
+    struct Struct5 {
+        Struct5(int a = 0) : a(a) {}
+        bool operator ==(const Struct5& t) const { return a == t.a; }
 
-private:
-    int a;
-};
+        template <typename X, typename II, typename C>
+            bool read_value(II& b, II e, C& ctx) {
+                return cxon::read_value<X>(a, b, e, ctx);
+            }
+        template <typename X, typename OI, typename C>
+            auto write_value(OI& o, C& ctx) const -> cxon::enable_for_t<X, cxon::JSON> {
+                return cxon::write_value<X>(o, a, ctx);
+            }
+
+    private:
+        int a;
+    };
+
+}
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct5(1), "1");
@@ -370,11 +387,15 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-struct Struct6 {
-    int a;
-    Struct6(int a = 0) : a(a) {}
-    bool operator ==(const Struct6& t) const { return a == t.a; }
-};
+namespace {
+
+    struct Struct6 {
+        int a;
+        Struct6(int a = 0) : a(a) {}
+        bool operator ==(const Struct6& t) const { return a == t.a; }
+    };
+
+}
 
 namespace cxon {
     template <typename X, typename II, typename C>
@@ -393,19 +414,23 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-struct Struct7 {
-    Struct7(int a = 0, int b = 0) : a(a), b(b) {}
-    bool operator ==(const Struct7& t) const { return a == t.a && b == t.b; }
+namespace {
 
-    CXON_JSON_CLS_MEMBER(Struct7,
-        CXON_JSON_CLS_FIELD_ASIS(a),
-        CXON_JSON_CLS_FIELD_ASIS(b)
-    )
+    struct Struct7 {
+        Struct7(int a = 0, int b = 0) : a(a), b(b) {}
+        bool operator ==(const Struct7& t) const { return a == t.a && b == t.b; }
 
-private:
-    int a;
-    int b;
-};
+        CXON_JSON_CLS_MEMBER(Struct7,
+            CXON_JSON_CLS_FIELD_ASIS(a),
+            CXON_JSON_CLS_FIELD_ASIS(b)
+        )
+
+    private:
+        int a;
+        int b;
+    };
+
+}
 
 TEST_BEG(cxon::JSON<>) // macros inside
     R_TEST(Struct7(1, 2), "{\"a\": 1, \"b\": 2}");
@@ -416,33 +441,37 @@ TEST_BEG(cxon::JSON<>) // macros inside
 TEST_END()
 
 
-struct Struct8 {
-    Struct8(int a = 0, int b = 0) : a(a), b(b) {}
-    bool operator ==(const Struct8& t) const { return a == t.a && b == t.b; }
+namespace {
 
-    template <typename X, typename II, typename C>
-        static bool read_value(Struct8& t, II& i, II e, C& ctx) {
-            using namespace cxon::json::cls;
-            static constexpr auto f = make_fields(
-                make_field("a", &Struct8::a),
-                make_field("b", &Struct8::b)
-            );
-            return read_fields<X>(t, f, i, e, ctx);
-        }
-    template <typename X, typename OI, typename C>
-        static bool write_value(OI& o, const Struct8& t, C& ctx) {
-            using namespace cxon::json::cls;
-            static constexpr auto f = make_fields(
-                make_field("a", &Struct8::a),
-                make_field("b", &Struct8::b)
-            );
-            return write_fields<X>(o, t, f, ctx);
-        }
+    struct Struct8 {
+        Struct8(int a = 0, int b = 0) : a(a), b(b) {}
+        bool operator ==(const Struct8& t) const { return a == t.a && b == t.b; }
 
-private:
-    int a;
-    int b;
-};
+        template <typename X, typename II, typename C>
+            static bool read_value(Struct8& t, II& i, II e, C& ctx) {
+                using namespace cxon::json::cls;
+                static constexpr auto f = make_fields(
+                    make_field("a", &Struct8::a),
+                    make_field("b", &Struct8::b)
+                );
+                return read_fields<X>(t, f, i, e, ctx);
+            }
+        template <typename X, typename OI, typename C>
+            static bool write_value(OI& o, const Struct8& t, C& ctx) {
+                using namespace cxon::json::cls;
+                static constexpr auto f = make_fields(
+                    make_field("a", &Struct8::a),
+                    make_field("b", &Struct8::b)
+                );
+                return write_fields<X>(o, t, f, ctx);
+            }
+
+    private:
+        int a;
+        int b;
+    };
+
+}
 
 TEST_BEG(cxon::JSON<>)
     R_TEST(Struct8(1, 2), "{\"a\": 1, \"b\": 2}");
@@ -451,22 +480,26 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-struct Struct9 {
-    static int a;
-    static int const b;
+namespace {
 
-    bool operator ==(const Struct9&) const { return true; }
+    struct Struct9 {
+        static int a;
+        static int const b;
 
-    CXON_JSON_CLS_READ_MEMBER(Struct9,
-        CXON_JSON_CLS_FIELD_ASIS(a)
-    )
-    CXON_JSON_CLS_WRITE_MEMBER(Struct9,
-        CXON_JSON_CLS_FIELD_ASIS(a),
-        CXON_JSON_CLS_FIELD_ASIS(b)
-    )
-};
-int Struct9::a = 0;
-int const Struct9::b = 3;
+        bool operator ==(const Struct9&) const { return true; }
+
+        CXON_JSON_CLS_READ_MEMBER(Struct9,
+            CXON_JSON_CLS_FIELD_ASIS(a)
+        )
+        CXON_JSON_CLS_WRITE_MEMBER(Struct9,
+            CXON_JSON_CLS_FIELD_ASIS(a),
+            CXON_JSON_CLS_FIELD_ASIS(b)
+        )
+    };
+    int Struct9::a = 0;
+    int const Struct9::b = 3;
+
+}
 
 TEST_BEG(cxon::JSON<>) // static field
     R_TEST(Struct9(), "{\"a\":0}");
@@ -481,12 +514,16 @@ TEST_BEG(cxon::JSON<>) // static field
 TEST_END()
 
 
-struct Struct10 {
-    int a;
-    int b;
-    Struct10(int a = 0, int b = 0) : a(a), b(b) {}
-    bool operator ==(const Struct10& t) const { return a == t.a && b == t.b; }
-};
+namespace {
+
+    struct Struct10 {
+        int a;
+        int b;
+        Struct10(int a = 0, int b = 0) : a(a), b(b) {}
+        bool operator ==(const Struct10& t) const { return a == t.a && b == t.b; }
+    };
+
+}
 
 CXON_JSON_CLS_READ(Struct10,
     CXON_JSON_CLS_FIELD_ASIS(a),
@@ -515,9 +552,39 @@ TEST_BEG(cxon::JSON<>) // skip field
     R_TEST(Struct10(1), "{\"skip6\": {\"]\": 8}, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": [\"]\", 9], \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip6\": [\"}\", 10], \"a\": 1}");
+    R_TEST(Struct10(1), "{\"skip6\": [1, 2, 3], \"a\": 1}");
     R_TEST(Struct10(), "{\"x\": 1}", json::read_error::unexpected, 1);
     R_TEST(Struct10(), "{\"skip1\": {", json::read_error::unexpected, 11);
     R_TEST(Struct10(), "{\"skip1\": [", json::read_error::unexpected, 11);
     R_TEST(Struct10(), "{\"skip1\": \"", json::read_error::unexpected, 11);
     W_TEST("{\"a\":1,\"* \\\"':*\":2}", Struct10(1, 2));
+TEST_END()
+
+
+namespace {
+
+    struct Struct11 {
+        using sink = cxon::cio::val::sink<std::string>;
+        int a;
+        sink b;
+        Struct11(int a = 0, sink b = sink{}) : a(a), b(b) {}
+        bool operator ==(const Struct11& t) const { return a == t.a && b.value == t.b.value; }
+    };
+
+}
+
+CXON_JSON_CLS_READ(Struct11,
+    CXON_JSON_CLS_FIELD_ASIS(a),
+    CXON_JSON_CLS_FIELD_ASIS(b)
+)
+CXON_JSON_CLS_WRITE(Struct11,
+    CXON_JSON_CLS_FIELD_ASIS(a),
+    CXON_JSON_CLS_FIELD_ASIS(b)
+)
+
+TEST_BEG(cxon::JSON<>) // skip field
+    R_TEST(Struct11(1, {" [1, 2, 3]"}), "{\"a\": 1, \"b\": [1, 2, 3]}");
+    R_TEST(Struct11(1, {" \"1, 2, 3\""}), "{\"a\": 1, \"b\": \"1, 2, 3\"}");
+    R_TEST(Struct11(1, {" {\"x\": 1, \"y\": 2}"}), "{\"a\": 1, \"b\": {\"x\": 1, \"y\": 2}}");
+    W_TEST("{\"a\":1,\"b\":[1, 2, 3]}", Struct11(1, {"[1, 2, 3]"}));
 TEST_END()
