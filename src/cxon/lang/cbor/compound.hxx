@@ -15,7 +15,9 @@ namespace cxon { // array/read
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    return cbor::cnt::read_array<Y>(std::begin(t), std::end(t), i, e, cx);
+                    return  cbor::tag::read<Y>(i, e, cx) &&
+                            cbor::cnt::read_array<Y>(std::begin(t), std::end(t), i, e, cx)
+                    ;
                 }
         };
 
@@ -132,8 +134,8 @@ namespace cxon { // pointer/read
     namespace cbor { namespace bits {
 
         template <typename X, typename T, typename II, typename Cx>
-            inline bool read_pointer_(T*& t, bio::byte m, II& i, II e, Cx& cx) {
-                if (m == X::nil)
+            inline bool read_pointer_t_(T*& t, II& i, II e, Cx& cx) {
+                if (bio::peek(i, e) == X::nil)
                     return bio::get(i, e), t = nullptr, true;
                 auto al = bits::make_allocator_<X, T>(cx);
                 T *const v = al.create();
@@ -142,42 +144,51 @@ namespace cxon { // pointer/read
                 return t = v, true;
             }
 
+        template <typename X, typename T, typename II, typename Cx>
+            static auto read_pointer_(T*& t, II& i, II e, Cx& cx)
+                -> enable_if_t< std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
+            {
+                size_t tag;
+                if (!tag::read<X>(tag, i, e, cx))
+                    return false;
+                switch (bio::peek(i, e) & X::mjr) {
+                    case X::bstr: case X::tstr: case X::arr: {
+                                auto c = make_pointer_container<X, T>(cx);
+                                return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
+                    }
+                    default:    return read_pointer_t_<X>(t, i, e, cx);
+                }
+            }
+        template <typename X, typename T, typename II, typename Cx>
+            static auto read_pointer_(T*& t, II& i, II e, Cx& cx)
+                -> enable_if_t<!std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
+            {
+                size_t tag;
+                if (!tag::read<X>(tag, i, e, cx))
+                    return false;
+                switch (bio::peek(i, e) & X::mjr) {
+                    case X::arr: {
+                                auto c = make_pointer_container<X, T>(cx);
+                                return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
+                    }
+                    default:    return read_pointer_t_<X>(t, i, e, cx);
+                }
+            }
+
     }}
 
     template <typename X, typename T>
         struct read<CBOR<X>, T*> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
-                static auto value(T*& t, II& i, II e, Cx& cx)
-                    -> enable_if_t< std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
-                {
-                    auto const m = bio::peek(i, e);
-                    switch (m & Y::mjr) {
-                        case Y::bstr: case Y::tstr: case Y::arr: {
-                                    auto c = cbor::bits::make_pointer_container<X, T>(cx);
-                                    return cbor::cnt::read_array<Y>(c, i, e, cx) && (c.push_back({}), t = c.release());
-                        }
-                        default:    return cbor::bits::read_pointer_<Y>(t, m, i, e, cx);
-                    }
-                }
-            template <typename II, typename Cx, typename Y = CBOR<X>>
-                static auto value(T*& t, II& i, II e, Cx& cx)
-                    -> enable_if_t<!std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
-                {
-                    auto const m = bio::peek(i, e);
-                    switch (m & Y::mjr) {
-                        case Y::arr: {
-                                    auto c = cbor::bits::make_pointer_container<X, T>(cx);
-                                    return cbor::cnt::read_array<Y>(c, i, e, cx) && (c.push_back({}), t = c.release());
-                        }
-                        default:    return cbor::bits::read_pointer_<Y>(t, m, i, e, cx);
-                    }
+                static bool value(T*& t, II& i, II e, Cx& cx) {
+                    return cbor::bits::read_pointer_<Y>(t, i, e, cx);
                 }
         };
     template <typename X, typename T>
         struct read<CBOR<X>, const T*> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(const T*& t, II& i, II e, Cx& cx) {
-                    return read<CBOR<X>, T*>::value((T*&)t, i, e, cx);
+                    return cbor::bits::read_pointer_<Y>((T*&)t, i, e, cx);
                 }
         };
 

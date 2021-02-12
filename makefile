@@ -56,7 +56,8 @@ cxon-lang-json-lib-std = \
 
 cxon-lang-cbor-common = \
     $(srcdir)/lang/cbor/common/container.hxx \
-    $(srcdir)/lang/cbor/common/sink.hxx
+    $(srcdir)/lang/cbor/common/sink.hxx \
+    $(srcdir)/lang/cbor/common/tag.hxx
 
 cxon-lang-cbor-lib-std-bits = \
     $(srcdir)/lang/cbor/lib/std/bits/map.hxx \

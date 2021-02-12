@@ -61,10 +61,19 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename O, typename Cx>
         inline bool write_size(O& o, bio::byte m, size_t s, Cx& cx);
 
+}}}
+
+namespace cxon { namespace cbor { namespace cnt {
+
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_array(T& t, II& i, II e, Cx& cx);
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, II& i, II e, Cx& cx);
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_array(T& t, size_t tag, II& i, II e, Cx& cx);
+    template <typename X, typename FI, typename II, typename Cx>
+        inline bool read_array(FI f, FI l, size_t tag, II& i, II e, Cx& cx);
     
     template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx);
@@ -370,6 +379,14 @@ namespace cxon { namespace cbor { namespace cnt {
     }
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_array(T& t, II& i, II e, Cx& cx) {
+            size_t tag;
+            if (!tag::read<X>(tag, i, e, cx))
+                return false;
+            return read_array<X>(t, tag, i, e, cx);
+        }
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_array(T& t, size_t/* tag*/, II& i, II e, Cx& cx) {
+            // TODO: tags - e.g. typed-arrays (RFC8746)
             return bits::read_array_<X>(t, i, e, cx);
         }
 
@@ -403,6 +420,14 @@ namespace cxon { namespace cbor { namespace cnt {
     }
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, II& i, II e, Cx& cx) {
+            size_t tag;
+            if (!tag::read<X>(tag, i, e, cx))
+                return false;
+            return read_array<X>(f, l, tag, i, e, cx);
+        }
+    template <typename X, typename FI, typename II, typename Cx>
+        inline bool read_array(FI f, FI l, size_t/* tag*/, II& i, II e, Cx& cx) {
+            // TODO: tags - e.g. typed-arrays (RFC8746)
             auto c = bits::make_range_container_(f, l);
             return read_array<X>(c, i, e, cx);
         }

@@ -39,33 +39,35 @@ namespace cxon {
 
     template <typename X, typename II, typename Cx>
         inline auto read_value(std::monostate&, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
-            return  (bio::peek(i, e) == X::nil && (bio::get(i, e), true)) ||
-                    (cx|cbor::read_error::unexpected)
-            ;
+            return cbor::tag::read<X>(i, e, cx) && (
+                (bio::peek(i, e) == X::und && (bio::get(i, e), true)) ||
+                (cx|cbor::read_error::unexpected)
+            );
         }
 
     template <typename X, typename O, typename Cx>
         inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke<X>(o, X::nil, cx);
+            return bio::poke<X>(o, X::und, cx);
         }
 
     template <typename X, typename ...T>
         struct read<CBOR<X>, std::variant<T...>> {
-            template <typename II, typename Cx, typename J = CBOR<X>>
+            template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
-                    return  cbor::cnt::read_size_eq<J>(2, i, e, cx) &&
-                            cbor::bits::variant<J, std::variant<T...>, II, Cx>::read(t, i, e, cx)
+                    return  cbor::tag::read<Y>(i, e, cx) &&
+                            cbor::cnt::read_size_eq<Y>(2, i, e, cx) &&
+                            cbor::bits::variant<Y, std::variant<T...>, II, Cx>::read(t, i, e, cx)
                     ;
                 }
         };
 
     template <typename X, typename ...T>
         struct write<CBOR<X>, std::variant<T...>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
-                    return cbor::cnt::write_size<J>(o, J::arr, 2, cx) &&
-                                write_value<J>(o, t.index(), cx) &&
-                                std::visit([&](auto&& v) { return write_value<J>(o, v, cx); }, t)
+                    return  cbor::cnt::write_size<Y>(o, Y::arr, 2, cx) &&
+                                write_value<Y>(o, t.index(), cx) &&
+                                std::visit([&](auto&& v) { return write_value<Y>(o, v, cx); }, t)
                     ;
                 }
         };

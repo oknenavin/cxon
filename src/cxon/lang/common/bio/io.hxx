@@ -40,6 +40,9 @@ namespace cxon { namespace bio {
     template <typename OI, typename II>
         inline bool get(OI o, II& i, II e, size_t n);
 
+    template <typename II>
+        inline bool advance(II& i, II e, size_t n);
+
     // output
 
     template <typename O>
@@ -208,30 +211,51 @@ namespace cxon { namespace bio {
             byte bs[N];
             return bits::get_n_(bs, i, e) && (t = bits::be_to_fp_<T>(bs), true);
         }
-
-    namespace bits {
-
-        template <typename OI, typename II>
-            inline auto get_n_(OI o, II& i, II e, size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                for ( ; n != 0 && i != e && poke(o, *i); --n, ++i)
-                    ;
-                return n == 0;
-            }
-        template <typename OI, typename II>
-            inline auto get_n_(OI o, II& i, II e, size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
-                auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
-                return std::copy(i, i + m, o), std::advance(i, m), m == n;
-            }
-
-    }
     
     template <typename OI, typename II>
         inline bool get(OI o, II& i, II) {
             return poke(o, *i) && (++i, true);
         }
+
+    namespace bits {
+
+        template <typename OI, typename II>
+            inline auto get_(OI o, II& i, II e, size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+                for ( ; n != 0 && i != e && poke(o, *i); --n, ++i)
+                    ;
+                return n == 0;
+            }
+        template <typename OI, typename II>
+            inline auto get_(OI o, II& i, II e, size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
+                auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
+                return std::copy(i, i + m, o), std::advance(i, m), m == n;
+            }
+
+    }
     template <typename OI, typename II>
         inline bool get(OI o, II& i, II e, size_t n) {
-            return bits::get_n_(o, i, e, n);
+            return bits::get_(o, i, e, n);
+        }
+
+    namespace bits {
+
+        template <typename II>
+            inline auto advance_(II& i, II e, size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+                for ( ; n != 0 && i != e; --n, ++i)
+                    ;
+                return n == 0;
+            }
+        template <typename II>
+            inline auto advance_(II& i, II e, size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
+                return  (static_cast<size_t>(std::distance(i, e)) >= n) &&
+                        (std::advance(i, n), true)
+                ;
+            }
+
+    }
+    template <typename II>
+        inline bool advance(II& i, II e, size_t n) {
+            return bits::advance_(i, e, n);
         }
 
     // output

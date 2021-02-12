@@ -62,36 +62,39 @@ namespace cxon {
 
     template <typename X>
         struct read<CBOR<X>, std::tuple<>> {
-            template <typename II, typename Cx, typename J = CBOR<X>>
+            template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::tuple<>&, II& i, II e, Cx& cx) {
-                    return cbor::cnt::read_size_eq<X>(0, i, e, cx);
+                    return  cbor::tag::read<Y>(i, e, cx) &&
+                            cbor::cnt::read_size_eq<Y>(0, i, e, cx)
+                    ;
                 }
         };
 
     template <typename X, typename ...T>
         struct read<CBOR<X>, std::tuple<T...>> {
-            template <typename II, typename Cx, typename J = CBOR<X>>
+            template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::tuple<T...>& t, II& i, II e, Cx& cx) {
-                    return  cbor::cnt::read_size_eq<X>(std::tuple_size<std::tuple<T...>>::value, i, e, cx) &&
-                            cbor::cnt::read_tuple<J>(t, i, e, cx)
+                    return  cbor::tag::read<Y>(i, e, cx) &&
+                            cbor::cnt::read_size_eq<Y>(std::tuple_size<std::tuple<T...>>::value, i, e, cx) &&
+                            cbor::cnt::read_tuple<Y>(t, i, e, cx)
                     ;
                 }
         };
 
     template <typename X>
         struct write<CBOR<X>, std::tuple<>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::tuple<>&, Cx& cx) {
-                    return cbor::cnt::write_size<X>(o, X::arr, 0, cx);
+                    return cbor::cnt::write_size<Y>(o, Y::arr, 0, cx);
                 }
         };
 
     template <typename X, typename ...T>
         struct write<CBOR<X>, std::tuple<T...>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::tuple<T...>& t, Cx& cx) {
-                    return  cbor::cnt::write_size<X>(o, X::arr, std::tuple_size<std::tuple<T...>>::value, cx) &&
-                            cbor::cnt::write_tuple<J>(o, t, cx)
+                    return  cbor::cnt::write_size<Y>(o, Y::arr, std::tuple_size<std::tuple<T...>>::value, cx) &&
+                            cbor::cnt::write_tuple<Y>(o, t, cx)
                     ;
                 }
         };
