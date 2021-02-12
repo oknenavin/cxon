@@ -334,7 +334,7 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((char*)"xyz",          BS("\x7F\x61x\x62yz\xFF"));   // indefinite test string (1|2)
         R_TEST((char*)"xyz",          BS("\x5F\x43xyz\xFF"));       // indefinite byte string (3)
         R_TEST((char*)"xyz",          BS("\x5F\x42xy\x41z\xFF"));   // indefinite byte string (2|1)
-        W_TEST(BS("\x64xyz\00"), (char*)"xyz");                        // always written as definite
+        W_TEST(BS("\x64xyz\00"), (char*)"xyz");                     // always written as definite
             R_TEST((char*)"", BS("\xA3\x03\x02\x01"), cbor::read_error::integer_invalid, 0);        // invalid type
             R_TEST((char*)"", BS("\x83\x03\xA2\x01"), cbor::read_error::integer_invalid, 2);        // definite array, invalid element
             R_TEST((char*)"", BS("\x9F\x03\xA2\x01\xFF"), cbor::read_error::integer_invalid, 2);    // indefinite array, invalid element
@@ -765,4 +765,127 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct11(1, {BS("\xB8\x02\x01\x81\x02\x02\x82\x03\x04")}), BS("\xA2\x62y\0\xB8\x02\x01\x81\x02\x02\x82\x03\x04\x62x\0\x01")); // {y: '9, x: 1}
     R_TEST(Struct11(1, {BS("\xBF\x01\x81\x02\x02\x82\x03\x04\xFF")}), BS("\xA2\x62y\0\xBF\x01\x81\x02\x02\x82\x03\x04\xFF\x62x\0\x01")); // {y: '9, x: 1}
     W_TEST(BS("\xA2\x62x\0\x01\x62y\0\xB8\x02\x01\x81\x02\x02\x82\x03\x04"), Struct11(1, {BS("\xB8\x02\x01\x81\x02\x02\x82\x03\x04")}));
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // tags
+    using namespace test;
+    // T[]
+    {   unsigned a[] = { 0 };
+        R_TEST(a, BS("\xC1\x40"));
+        R_TEST(a, BS("\xD8\x18\x40"));
+        R_TEST(a, BS("\xD9\x01\x01\x40"));
+        R_TEST(a, BS("\xDA\x01\x01\x01\x01\x40"));
+        R_TEST(a, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x40"));
+        R_TEST(a, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x5F\xFF"));
+        R_TEST(a, BS("\xDA\x01\x01\x01\x01\x5F\xFF"));
+        R_TEST(a, BS("\xD9\x01\x01\x5F\xFF"));
+        R_TEST(a, BS("\xD8\x18\x5F\xFF"));
+        R_TEST(a, BS("\xC1\x5F\xFF"));
+        R_TEST(a, BS("\xC1\x60"));
+        R_TEST(a, BS("\xD8\x18\x60"));
+        R_TEST(a, BS("\xD9\x01\x01\x60"));
+        R_TEST(a, BS("\xDA\x01\x01\x01\x01\x60"));
+        R_TEST(a, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x60"));
+        R_TEST(a, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x7F\xFF"));
+        R_TEST(a, BS("\xDA\x01\x01\x01\x01\x7F\xFF"));
+        R_TEST(a, BS("\xD9\x01\x01\x7F\xFF"));
+        R_TEST(a, BS("\xD8\x18\x7F\xFF"));
+        R_TEST(a, BS("\xC1\x7F\xFF"));
+        R_TEST(a, BS("\xC1\x80"));
+        R_TEST(a, BS("\xD8\x18\x80"));
+        R_TEST(a, BS("\xD9\x01\x01\x80"));
+        R_TEST(a, BS("\xDA\x01\x01\x01\x01\x80"));
+        R_TEST(a, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x80"));
+        R_TEST(a, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x9F\xFF"));
+        R_TEST(a, BS("\xDA\x01\x01\x01\x01\x9F\xFF"));
+        R_TEST(a, BS("\xD9\x01\x01\x9F\xFF"));
+        R_TEST(a, BS("\xD8\x18\x9F\xFF"));
+        R_TEST(a, BS("\xC1\x9F\xFF"));
+    }
+    // T*
+        R_TEST((int*)nullptr, BS("\xC1\xF6"));
+        R_TEST((int*)nullptr, BS("\xD8\x18\xF6"));
+        R_TEST((int*)nullptr, BS("\xD9\x01\x01\xF6"));
+        R_TEST((int*)nullptr, BS("\xDA\x01\x01\x01\x01\xF6"));
+        R_TEST((int*)nullptr, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\xF6"));
+    // const char*
+        R_TEST((const char*)"", BS("\xC1\x40"));
+        R_TEST((const char*)"", BS("\xD8\x18\x40"));
+        R_TEST((const char*)"", BS("\xD9\x01\x01\x40"));
+        R_TEST((const char*)"", BS("\xDA\x01\x01\x01\x01\x40"));
+        R_TEST((const char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x40"));
+        R_TEST((const char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x5F\xFF"));
+        R_TEST((const char*)"", BS("\xDA\x01\x01\x01\x01\x5F\xFF"));
+        R_TEST((const char*)"", BS("\xD9\x01\x01\x5F\xFF"));
+        R_TEST((const char*)"", BS("\xD8\x18\x5F\xFF"));
+        R_TEST((const char*)"", BS("\xC1\x5F\xFF"));
+        R_TEST((const char*)"", BS("\xC1\x60"));
+        R_TEST((const char*)"", BS("\xD8\x18\x60"));
+        R_TEST((const char*)"", BS("\xD9\x01\x01\x60"));
+        R_TEST((const char*)"", BS("\xDA\x01\x01\x01\x01\x60"));
+        R_TEST((const char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x60"));
+        R_TEST((const char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x7F\xFF"));
+        R_TEST((const char*)"", BS("\xDA\x01\x01\x01\x01\x7F\xFF"));
+        R_TEST((const char*)"", BS("\xD9\x01\x01\x7F\xFF"));
+        R_TEST((const char*)"", BS("\xD8\x18\x7F\xFF"));
+        R_TEST((const char*)"", BS("\xC1\x7F\xFF"));
+        R_TEST((const char*)"", BS("\xC1\x80"));
+        R_TEST((const char*)"", BS("\xD8\x18\x80"));
+        R_TEST((const char*)"", BS("\xD9\x01\x01\x80"));
+        R_TEST((const char*)"", BS("\xDA\x01\x01\x01\x01\x80"));
+        R_TEST((const char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x80"));
+        R_TEST((const char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x9F\xFF"));
+        R_TEST((const char*)"", BS("\xDA\x01\x01\x01\x01\x9F\xFF"));
+        R_TEST((const char*)"", BS("\xD9\x01\x01\x9F\xFF"));
+        R_TEST((const char*)"", BS("\xD8\x18\x9F\xFF"));
+        R_TEST((const char*)"", BS("\xC1\x9F\xFF"));
+    // char*
+        R_TEST((char*)"", BS("\xC1\x40"));
+        R_TEST((char*)"", BS("\xD8\x18\x40"));
+        R_TEST((char*)"", BS("\xD9\x01\x01\x40"));
+        R_TEST((char*)"", BS("\xDA\x01\x01\x01\x01\x40"));
+        R_TEST((char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x40"));
+        R_TEST((char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x5F\xFF"));
+        R_TEST((char*)"", BS("\xDA\x01\x01\x01\x01\x5F\xFF"));
+        R_TEST((char*)"", BS("\xD9\x01\x01\x5F\xFF"));
+        R_TEST((char*)"", BS("\xD8\x18\x5F\xFF"));
+        R_TEST((char*)"", BS("\xC1\x5F\xFF"));
+        R_TEST((char*)"", BS("\xC1\x60"));
+        R_TEST((char*)"", BS("\xD8\x18\x60"));
+        R_TEST((char*)"", BS("\xD9\x01\x01\x60"));
+        R_TEST((char*)"", BS("\xDA\x01\x01\x01\x01\x60"));
+        R_TEST((char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x60"));
+        R_TEST((char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x7F\xFF"));
+        R_TEST((char*)"", BS("\xDA\x01\x01\x01\x01\x7F\xFF"));
+        R_TEST((char*)"", BS("\xD9\x01\x01\x7F\xFF"));
+        R_TEST((char*)"", BS("\xD8\x18\x7F\xFF"));
+        R_TEST((char*)"", BS("\xC1\x7F\xFF"));
+        R_TEST((char*)"", BS("\xC1\x80"));
+        R_TEST((char*)"", BS("\xD8\x18\x80"));
+        R_TEST((char*)"", BS("\xD9\x01\x01\x80"));
+        R_TEST((char*)"", BS("\xDA\x01\x01\x01\x01\x80"));
+        R_TEST((char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x80"));
+        R_TEST((char*)"", BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x9F\xFF"));
+        R_TEST((char*)"", BS("\xDA\x01\x01\x01\x01\x9F\xFF"));
+        R_TEST((char*)"", BS("\xD9\x01\x01\x9F\xFF"));
+        R_TEST((char*)"", BS("\xD8\x18\x9F\xFF"));
+        R_TEST((char*)"", BS("\xC1\x9F\xFF"));
+    // enum
+        R_TEST(Enum1::one, BS("\xC1\x01"));
+        R_TEST(Enum1::one, BS("\xD8\x18\x01"));
+        R_TEST(Enum1::one, BS("\xD9\x01\x01\x01"));
+        R_TEST(Enum1::one, BS("\xDA\x01\x01\x01\x01\x01"));
+        R_TEST(Enum1::one, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x01"));
+    // struct
+        R_TEST(Struct2{1, 2}, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\xA2\x62x\0\x01\x62Y\0\x02"));
+        R_TEST(Struct2{1, 2}, BS("\xDA\x01\x01\x01\x01\xA2\x62x\0\x01\x62Y\0\x02"));
+        R_TEST(Struct2{1, 2}, BS("\xD9\x01\x01\xA2\x62x\0\x01\x62Y\0\x02"));
+        R_TEST(Struct2{1, 2}, BS("\xD8\x18\xA2\x62x\0\x01\x62Y\0\x02"));
+        R_TEST(Struct2{1, 2}, BS("\xC1\xA2\x62x\0\x01\x62Y\0\x02"));
+        R_TEST(Struct9(), BS("\xC1\xA1\x62x\0\x00"));
+        R_TEST(Struct9(), BS("\xD8\x18\xA1\x62x\0\x00"));
+        R_TEST(Struct9(), BS("\xD9\x01\x01\xA1\x62x\0\x00"));
+        R_TEST(Struct9(), BS("\xDA\x01\x01\x01\x01\xA1\x62x\0\x00"));
+        R_TEST(Struct9(), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\xA1\x62x\0\x00"));
 TEST_END()

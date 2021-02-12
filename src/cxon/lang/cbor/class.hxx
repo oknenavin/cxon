@@ -178,7 +178,9 @@ namespace cxon { namespace cbor { namespace cls {
             inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {\
                 using T = Type;\
                 static constexpr auto f = cbor::cls::make_fields(__VA_ARGS__);\
-                return cbor::cls::read_fields<X>(t, f, i, e, cx);\
+                return  cbor::tag::read<X>(i, e, cx) &&\
+                        cbor::cls::read_fields<X>(t, f, i, e, cx)\
+                ;\
             }\
     }
 #define CXON_CBOR_CLS_WRITE(Type, ...)\
@@ -199,7 +201,9 @@ namespace cxon { namespace cbor { namespace cls {
         static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
             using T = Type;\
             static constexpr auto f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
-            return cxon::cbor::cls::read_fields<X>(t, f, i, e, cx);\
+            return  cxon::cbor::tag::read<X>(i, e, cx) &&\
+                    cxon::cbor::cls::read_fields<X>(t, f, i, e, cx)\
+            ;\
         }
 #define CXON_CBOR_CLS_WRITE_MEMBER(Type, ...)\
     template <typename X, typename O, typename Cx>\

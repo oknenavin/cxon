@@ -10,30 +10,41 @@
 
 namespace cxon {
 
+    namespace cbor { namespace bits {
+
+        template <typename X, size_t N, typename II, typename Cx>
+            inline bool read_bitset_(std::bitset<N>& t, II& i, II e, Cx& cx) {
+                switch (bio::peek(i, e) & X::mjr) {
+                    case X::bstr: {
+                        if (!cbor::cnt::read_size_eq<X>(N / 8 + size_t(!!(N % 8)), i, e, cx))
+                            return false;
+                        if (i == e)
+                            return cx|cbor::read_error::unexpected;
+
+                        if (N % 8)
+                            t |= std::bitset<N> {*i++};
+                        size_t n = N / 8;
+                            for ( ; n != 0 && i != e; --n, ++i) {
+                                bio::byte const b = *i; t <<= 8;
+                                t.set(7, b & 0x80); t.set(6, b & 0x40); t.set(5, b & 0x20); t.set(4, b & 0x10);
+                                t.set(3, b & 0x08); t.set(2, b & 0x04); t.set(1, b & 0x02); t.set(0, b & 0x01);
+                            }
+                        return n == 0 || cx|cbor::read_error::unexpected;
+                    }
+                    default:
+                        return cx|cbor::read_error::unexpected;
+                }
+            }
+
+    }}
+
     template <typename X, size_t N>
         struct read<CBOR<X>, std::bitset<N>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
-                    switch (bio::peek(i, e) & X::mjr) {
-                        case Y::bstr: {
-                            if (!cbor::cnt::read_size_eq<Y>(N / 8 + size_t(!!(N % 8)), i, e, cx))
-                                return false;
-                            if (i == e)
-                                return cx|cbor::read_error::unexpected;
-
-                            if (N % 8)
-                                t |= std::bitset<N> {*i++};
-                            size_t n = N / 8;
-                                for ( ; n != 0 && i != e; --n, ++i) {
-                                    bio::byte const b = *i; t <<= 8;
-                                    t.set(7, b & 0x80); t.set(6, b & 0x40); t.set(5, b & 0x20); t.set(4, b & 0x10);
-                                    t.set(3, b & 0x08); t.set(2, b & 0x04); t.set(1, b & 0x02); t.set(0, b & 0x01);
-                                }
-                            return n == 0 || cx|cbor::read_error::unexpected;
-                        }
-                        default:
-                            return cx|cbor::read_error::unexpected;
-                    }
+                    return  cbor::tag::read<Y>(i, e, cx) &&
+                            cbor::bits::read_bitset_<Y>(t, i, e, cx)
+                    ;
                 }
         };
 

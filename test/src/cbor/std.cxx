@@ -316,8 +316,8 @@ TEST_END()
     TEST_BEG(cxon::CBOR<>) // std::optional
         R_TEST(optional<int>(42), BS("\x18\x2A"));
         W_TEST(BS("\x18\x2A"), optional<int>(42));
-        R_TEST(optional<int>(), BS("\xF6"));
-        W_TEST(BS("\xF6"), optional<int>());
+        R_TEST(optional<int>(), BS("\xF7"));
+        W_TEST(BS("\xF7"), optional<int>());
     TEST_END()
 #endif
 
@@ -455,9 +455,9 @@ TEST_END()
         R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x02\x00"), cbor::read_error::unexpected, 1);
         W_TEST(BS("\x82\x00\x01"), variant<int, double>(1));
         W_TEST(BS("\x82\x01\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), variant<int, double>(in_place_index_t<1>(), 0));
-        R_TEST(variant<monostate, int>(), BS("\x82\x00\xF6"));
+        R_TEST(variant<monostate, int>(), BS("\x82\x00\xF7"));
         R_TEST(variant<monostate, int>(), BS("\x82\x00\x00"), cbor::read_error::unexpected, 2);
-        W_TEST(BS("\x82\x00\xF6"), variant<monostate, int>());
+        W_TEST(BS("\x82\x00\xF7"), variant<monostate, int>());
     TEST_END()
 #endif
 
@@ -477,4 +477,78 @@ TEST_BEG(cxon::CBOR<>) // std::vector
     W_TEST(BS("\x83\x02\x01\x00"), vector<int>{2, 1, 0});
     W_TEST(BS("\x43\x02\x01\x00"), vector<unsigned char>{2, 1, 0});
     W_TEST(BS("\x63\x02\x01\x00"), vector<char>{2, 1, 0});
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // tags
+    using namespace std::chrono;
+    R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xC1\x44\xAA\xAA\xAA\xAA"));
+    R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xD8\x18\x44\xAA\xAA\xAA\xAA"));
+    R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xD9\x01\x01\x44\xAA\xAA\xAA\xAA"));
+    R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xDA\x01\x01\x01\x01\x44\xAA\xAA\xAA\xAA"));
+    R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x44\xAA\xAA\xAA\xAA"));
+    R_TEST(complex<float>(1, 2), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
+    R_TEST(complex<float>(1, 2), BS("\xDA\x01\x01\x01\x01\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
+    R_TEST(complex<float>(1, 2), BS("\xD9\x01\x01\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
+    R_TEST(complex<float>(1, 2), BS("\xD8\x18\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
+    R_TEST(complex<float>(1, 2), BS("\xC1\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
+    R_TEST(duration<unsigned>(42), BS("\xC1\x18\x2A"));
+    R_TEST(duration<unsigned>(42), BS("\xD8\x18\x18\x2A"));
+    R_TEST(duration<unsigned>(42), BS("\xD9\x01\x01\x18\x2A"));
+    R_TEST(duration<unsigned>(42), BS("\xDA\x01\x01\x01\x01\x18\x2A"));
+    R_TEST(duration<unsigned>(42), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x18\x2A"));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x18\x2A"));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), BS("\xDA\x01\x01\x01\x01\x18\x2A"));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), BS("\xD9\x01\x01\x18\x2A"));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), BS("\xD8\x18\x18\x2A"));
+    R_TEST(time_point<system_clock>(system_clock::duration(42)), BS("\xC1\x18\x2A"));
+    R_TEST(map<int, int>{}, BS("\xC1\xA0"));
+    R_TEST(map<int, int>{}, BS("\xD8\x18\xA0"));
+    R_TEST(map<int, int>{}, BS("\xD9\x01\x01\xA0"));
+    R_TEST(map<int, int>{}, BS("\xDA\x01\x01\x01\x01\xA0"));
+    R_TEST(map<int, int>{}, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\xA0"));
+#   ifdef CXON_HAS_LIB_STD_OPTIONAL
+        R_TEST(optional<int>(42), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x18\x2A"));
+        R_TEST(optional<int>(42), BS("\xDA\x01\x01\x01\x01\x18\x2A"));
+        R_TEST(optional<int>(42), BS("\xD9\x01\x01\x18\x2A"));
+        R_TEST(optional<int>(42), BS("\xD8\x18\x18\x2A"));
+        R_TEST(optional<int>(42), BS("\xC1\x18\x2A"));
+        R_TEST(optional<int>(), BS("\xC1\xF7"));
+        R_TEST(optional<int>(), BS("\xD8\x18\xF7"));
+        R_TEST(optional<int>(), BS("\xD9\x01\x01\xF7"));
+        R_TEST(optional<int>(), BS("\xDA\x01\x01\x01\x01\xF7"));
+        R_TEST(optional<int>(), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\xF7"));
+#   endif
+    R_TEST(pair<int, float>(1, 2.f), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x82\x01\x02"));
+    R_TEST(pair<int, float>(1, 2.f), BS("\xDA\x01\x01\x01\x01\x82\x01\x02"));
+    R_TEST(pair<int, float>(1, 2.f), BS("\xD9\x01\x01\x82\x01\x02"));
+    R_TEST(pair<int, float>(1, 2.f), BS("\xD8\x18\x82\x01\x02"));
+    R_TEST(pair<int, float>(1, 2.f), BS("\xC1\x82\x01\x02"));
+    R_TEST(tuple<int, float>(1, 2.f), BS("\xC1\x82\x01\x02"));
+    R_TEST(tuple<int, float>(1, 2.f), BS("\xD8\x18\x82\x01\x02"));
+    R_TEST(tuple<int, float>(1, 2.f), BS("\xD9\x01\x01\x82\x01\x02"));
+    R_TEST(tuple<int, float>(1, 2.f), BS("\xDA\x01\x01\x01\x01\x82\x01\x02"));
+    R_TEST(tuple<int, float>(1, 2.f), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x82\x01\x02"));
+    R_TEST(tuple<>{}, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x80"));
+    R_TEST(tuple<>{}, BS("\xDA\x01\x01\x01\x01\x80"));
+    R_TEST(tuple<>{}, BS("\xD9\x01\x01\x80"));
+    R_TEST(tuple<>{}, BS("\xD8\x18\x80"));
+    R_TEST(tuple<>{}, BS("\xC1\x80"));
+#   ifdef CXON_HAS_LIB_STD_VARIANT
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\xC1\x82\x00\x01"));
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\xD8\x18\x82\x00\x01"));
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\xD9\x01\x01\x82\x00\x01"));
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\xDA\x01\x01\x01\x01\x82\x00\x01"));
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x82\x00\x01"));
+        R_TEST(variant<monostate, int>(), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x82\x00\xF7"));
+        R_TEST(variant<monostate, int>(), BS("\xDA\x01\x01\x01\x01\x82\x00\xF7"));
+        R_TEST(variant<monostate, int>(), BS("\xD9\x01\x01\x82\x00\xF7"));
+        R_TEST(variant<monostate, int>(), BS("\xD8\x18\x82\x00\xF7"));
+        R_TEST(variant<monostate, int>(), BS("\xC1\x82\x00\xF7"));
+#   endif
+    R_TEST(vector<int>{}, BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\x80"));
+    R_TEST(vector<int>{}, BS("\xDA\x01\x01\x01\x01\x60"));
+    R_TEST(vector<int>{}, BS("\xD9\x01\x01\x40"));
+    R_TEST(vector<int>{}, BS("\xD8\x18\x60"));
+    R_TEST(vector<int>{}, BS("\xC1\x80"));
 TEST_END()

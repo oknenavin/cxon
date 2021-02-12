@@ -12,12 +12,13 @@ namespace cxon {
 
     template <typename X, typename T>
         struct read<CBOR<X>, std::complex<T>> {
-            template <typename II, typename Cx, typename J = CBOR<X>>
+            template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::complex<T>& t, II& i, II e, Cx& cx) {
                     T rl, mg;
-                    return  cbor::cnt::read_size_eq<J>(2, i, e, cx) &&
-                                read_value<J>(rl, i, e, cx) &&
-                                read_value<J>(mg, i, e, cx) &&
+                    return  cbor::tag::read<Y>(i, e, cx) &&
+                            cbor::cnt::read_size_eq<Y>(2, i, e, cx) &&
+                                read_value<Y>(rl, i, e, cx) &&
+                                read_value<Y>(mg, i, e, cx) &&
                             (t.real(rl), t.imag(mg), true)
                     ;
                 }
@@ -25,11 +26,11 @@ namespace cxon {
 
     template <typename X, typename T>
         struct write<CBOR<X>, std::complex<T>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::complex<T>& t, Cx& cx) {
-                    return  cbor::cnt::write_size<J>(o, J::arr, 2, cx) &&
-                                write_value<J>(o, t.real(), cx) &&
-                                write_value<J>(o, t.imag(), cx)
+                    return  cbor::cnt::write_size<Y>(o, Y::arr, 2, cx) &&
+                                write_value<Y>(o, t.real(), cx) &&
+                                write_value<Y>(o, t.imag(), cx)
                     ;
                 }
         };

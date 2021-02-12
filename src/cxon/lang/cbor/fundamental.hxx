@@ -7,6 +7,7 @@
 #define CXON_CBOR_FUNDAMENTAL_HXX_
 
 #include "cxon/lang/common/bio/bio.hxx"
+#include "cxon/lang/cbor/common/tag.hxx"
 
 namespace cxon { // nullptr_t
 
@@ -71,17 +72,24 @@ namespace cxon { // numeric|character/read
                 return read_unsigned_<X>(t, i, e, cx) && (t = -1 - t, true);
             }
 
+        template <typename X, typename T, typename II, typename Cx>
+            inline bool read_integral_(T& t, II& i, II e, Cx& cx) {
+                switch (bio::peek(i, e) & X::mjr) {
+                    case 0x00:  return read_unsigned_<X>(t, i, e, cx);
+                    case 0x20:  return read_signed_<X>(t, i, e, cx);
+                    default:    return cx|cbor::read_error::integer_invalid;
+                }
+            }
+
     }}
 
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            switch (bio::peek(i, e) & X::mjr) {
-                case 0x00:  return cbor::bits::read_unsigned_<X>(t, i, e, cx);
-                case 0x20:  return cbor::bits::read_signed_<X>(t, i, e, cx);
-                default:    return cx|cbor::read_error::integer_invalid;
-            }
+            return  cbor::tag::read<X>(i, e, cx) &&
+                    cbor::bits::read_integral_<X>(t, i, e, cx)
+            ;
         }
 
     namespace cbor { namespace bits {
@@ -98,46 +106,53 @@ namespace cxon { // numeric|character/read
         template <typename T>
             using signed_type_ = typename signed_<T>::type;
 
+        template <typename X, typename T, typename II, typename Cx>
+            inline bool read_floating_point_(T& t, II& i, II e, Cx& cx) {
+                switch (bio::peek(i, e) & X::mjr) {
+                    case 0xE0: {
+                        II const o = i;
+                        switch (bio::get(i, e)) {
+                            case X::fp16:
+                                /*return  (bio ::get<2>(t, i, e)) ||
+                                        (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                                ;*/
+                                return  CXON_ASSERT(0, "not implemented"), false;
+                            case X::fp32:
+                                return  (bio ::get<4>(t, i, e)) ||
+                                        (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                                ;
+                            case X::fp64:
+                                return  (bio ::get<8>(t, i, e)) ||
+                                        (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                                ;
+                            default:
+                                return  (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid);
+                        }
+                        break;
+                    }
+                    // from integral
+                    case 0x00: {
+                        unsigned_type_<T> u;
+                        return read_unsigned_<X>(u, i, e, cx) && (t = T(u), true);
+                    }
+                    case 0x20: {
+                        signed_type_<T> u;
+                        return read_signed_<X>(u, i, e, cx) && (t = T(u), true);
+                    }
+                    default:
+                        return cx|cbor::read_error::floating_point_invalid;
+                }
+            }
+
     }}
 
     template <typename X, typename T, typename II, typename Cx>
         inline auto read_value(T& t, II& i, II e, Cx& cx)
             -> enable_if_t<std::is_floating_point<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            switch (bio::peek(i, e) & X::mjr) {
-                case 0xE0: {
-                    II const o = i;
-                    switch (bio::get(i, e)) {
-                        case X::fp16:
-                            /*return  (bio ::get<2>(t, i, e)) ||
-                                    (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
-                            ;*/
-                            return  CXON_ASSERT(0, "not implemented"), false;
-                        case X::fp32:
-                            return  (bio ::get<4>(t, i, e)) ||
-                                    (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
-                            ;
-                        case X::fp64:
-                            return  (bio ::get<8>(t, i, e)) ||
-                                    (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
-                            ;
-                        default:
-                            return  (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid);
-                    }
-                    break;
-                }
-                // from integral
-                case 0x00: {
-                    cbor::bits::unsigned_type_<T> u;
-                    return cbor::bits::read_unsigned_<X>(u, i, e, cx) && (t = T(u), true);
-                }
-                case 0x20: {
-                    cbor::bits::signed_type_<T> u;
-                    return cbor::bits::read_signed_<X>(u, i, e, cx) && (t = T(u), true);
-                }
-                default:
-                    return cx|cbor::read_error::floating_point_invalid;
-            }
+            return  cbor::tag::read<X>(i, e, cx) &&
+                    cbor::bits::read_floating_point_<X>(t, i, e, cx)
+            ;
         }
 
 }
