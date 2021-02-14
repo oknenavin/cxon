@@ -777,6 +777,7 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct11(0), BS("\xA2\x62y\0\x5C"), cbor::read_error::unexpected, 4);
     R_TEST(Struct11(0), BS("\xA2\x62y\0\x7D"), cbor::read_error::unexpected, 4);
     R_TEST(Struct11(0), BS("\xA2\x62y\0\x5E"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x5F"), cbor::read_error::unexpected, 4);
     R_TEST(Struct11(0), BS("\xA2\x62y\0\x81"), cbor::read_error::unexpected, 4);
     R_TEST(Struct11(0), BS("\xA2\x62y\0\xA1"), cbor::read_error::unexpected, 4);
     R_TEST(Struct11(0), BS("\xA2\x62y\0\xA1\01"), cbor::read_error::unexpected, 4);
