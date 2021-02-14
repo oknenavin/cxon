@@ -114,8 +114,8 @@ namespace cxon { namespace cbor { namespace bits {
                                     ;
                                 case 0x1C: case 0x1D: case 0x1E: case 0x1F:
                                     return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
-                                default:
-                                    return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
+                                default:                                            // LCOV_EXCL_LINE
+                                    return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                             }
                         }
                         case Y::bstr: case Y::tstr: {
@@ -140,15 +140,13 @@ namespace cxon { namespace cbor { namespace bits {
                                     ;
                                 }
                                 case 0x1F:
-                                    do
-                                        if (!bio::get(t, i, e))
-                                            return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                    do      (bio::get(t, i, e)); // should not fail
                                     while   (bio::peek(i, e) != Y::brk);
                                     return  (bio::get(t, i, e) || (bio::rewind(i, o), cx|cbor::read_error::unexpected));
                                 case 0x1C: case 0x1D: case 0x1E:
                                     return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
-                                default:
-                                    return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
+                                default:                                            // LCOV_EXCL_LINE
+                                    return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                             }
                         }
                         case Y::arr: case Y::map: {
@@ -179,12 +177,13 @@ namespace cxon { namespace cbor { namespace bits {
                                     return  (bio::get(t, i, e) || (bio::rewind(i, o), cx|cbor::read_error::unexpected));
                                 case 0x1C: case 0x1D: case 0x1E:
                                     return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
-                                default:
-                                    return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
+                                default:                                            // LCOV_EXCL_LINE
+                                    return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                             }
                         }
+                        default:                                        // LCOV_EXCL_LINE
+                            return CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
                     }
-                    return false;
                 }
             template<typename II, typename Cx, typename Y = CBOR<X>>
                 static bool read_element(S& s, bio::byte m, II& i, II e, Cx& cx) {
