@@ -213,8 +213,8 @@ namespace cxon { namespace bio {
         }
     
     template <typename OI, typename II>
-        inline bool get(OI o, II& i, II) {
-            return poke(o, *i) && (++i, true);
+        inline bool get(OI o, II& i, II e) {
+            return i != e && poke(o, *i) && (++i, true);
         }
 
     namespace bits {

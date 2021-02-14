@@ -109,7 +109,7 @@ namespace cxon { // numeric|character/read
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_floating_point_(T& t, II& i, II e, Cx& cx) {
                 switch (bio::peek(i, e) & X::mjr) {
-                    case 0xE0: {
+                    case X::svn: {
                         II const o = i;
                         switch (bio::get(i, e)) {
                             case X::fp16:
@@ -131,11 +131,11 @@ namespace cxon { // numeric|character/read
                         break;
                     }
                     // from integral
-                    case 0x00: {
+                    case X::pint: {
                         unsigned_type_<T> u;
                         return read_unsigned_<X>(u, i, e, cx) && (t = T(u), true);
                     }
-                    case 0x20: {
+                    case X::nint: {
                         signed_type_<T> u;
                         return read_signed_<X>(u, i, e, cx) && (t = T(u), true);
                     }
