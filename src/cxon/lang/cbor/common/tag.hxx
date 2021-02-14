@@ -40,8 +40,8 @@ namespace cxon { namespace cbor { namespace tag {
                             ;
                         case 0x1C: case 0x1D: case 0x1E: case 0x1F:
                             return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
-                        default:
-                            return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
+                        default:                                            // LCOV_EXCL_LINE
+                            return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                     }
                 }
                 default:
@@ -66,8 +66,8 @@ namespace cxon { namespace cbor { namespace tag {
                                 ;
                             case 0x1C: case 0x1D: case 0x1E: case 0x1F:
                                 return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
-                            default:
-                                return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
+                            default:                                            // LCOV_EXCL_LINE
+                                return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                         }
                     }
                     default:
