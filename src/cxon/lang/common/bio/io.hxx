@@ -200,7 +200,7 @@ namespace cxon { namespace bio {
                 case 2:     return bits::get_<2>(t, i, e);
                 case 4:     return bits::get_<4>(t, i, e);
                 case 8:     return bits::get_<8>(t, i, e);
-                default:    return CXON_ASSERT(0, "unexpected"), false;
+                default:    return CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
             }
         }
 
