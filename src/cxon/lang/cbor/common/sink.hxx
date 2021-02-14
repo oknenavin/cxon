@@ -115,7 +115,7 @@ namespace cxon { namespace cbor { namespace bits {
                                 case 0x1C: case 0x1D: case 0x1E: case 0x1F:
                                     return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
                                 default:
-                                    return  CXON_ASSERT(0, "unexpected"), false;
+                                    return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
                             }
                         }
                         case Y::bstr: case Y::tstr: {
@@ -148,7 +148,7 @@ namespace cxon { namespace cbor { namespace bits {
                                 case 0x1C: case 0x1D: case 0x1E:
                                     return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
                                 default:
-                                    return  CXON_ASSERT(0, "unexpected"), false;
+                                    return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
                             }
                         }
                         case Y::arr: case Y::map: {
@@ -157,8 +157,7 @@ namespace cxon { namespace cbor { namespace bits {
                                 case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
                                 case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
                                 case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-                                    if(!bio::get(t, i, e))
-                                        return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                    bio::get(t, i, e); // should not fail
                                     for (unsigned j = 0; j != mnr; ++j)
                                         if (!read_element(s, mjr, i, e, cx))
                                             return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
@@ -173,8 +172,7 @@ namespace cxon { namespace cbor { namespace bits {
                                     return  true;
                                 }
                                 case 0x1F:
-                                    if(!bio::get(t, i, e))
-                                        return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                    bio::get(t, i, e); // should not fail
                                     while (bio::peek(i, e) != Y::brk)
                                         if (!read_element(s, mjr, i, e, cx))
                                             return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
@@ -182,7 +180,7 @@ namespace cxon { namespace cbor { namespace bits {
                                 case 0x1C: case 0x1D: case 0x1E:
                                     return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
                                 default:
-                                    return  CXON_ASSERT(0, "unexpected"), false;
+                                    return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
                             }
                         }
                     }
@@ -194,7 +192,7 @@ namespace cxon { namespace cbor { namespace bits {
                         case Y::map:    return  sink_read<Y>(s, i, e, cx) &&
                                                 sink_read<Y>(s, i, e, cx);
                         case Y::arr:    return  sink_read<Y>(s, i, e, cx);
-                        default:        return  CXON_ASSERT(0, "unexpected"), false;
+                        default:        return  CXON_ASSERT(0, "unexpected"), false; // LCOV_EXCL_LINE
                     }
                 }
         };

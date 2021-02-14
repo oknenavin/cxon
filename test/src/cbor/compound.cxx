@@ -765,6 +765,39 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct11(1, {BS("\xB8\x02\x01\x81\x02\x02\x82\x03\x04")}), BS("\xA2\x62y\0\xB8\x02\x01\x81\x02\x02\x82\x03\x04\x62x\0\x01")); // {y: '9, x: 1}
     R_TEST(Struct11(1, {BS("\xBF\x01\x81\x02\x02\x82\x03\x04\xFF")}), BS("\xA2\x62y\0\xBF\x01\x81\x02\x02\x82\x03\x04\xFF\x62x\0\x01")); // {y: '9, x: 1}
     W_TEST(BS("\xA2\x62x\0\x01\x62y\0\xB8\x02\x01\x81\x02\x02\x82\x03\x04"), Struct11(1, {BS("\xB8\x02\x01\x81\x02\x02\x82\x03\x04")}));
+    // errors
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x1C"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x1D"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x1E"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x1F"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x58"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x79"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x5A"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x7B"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x5C"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x7D"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x5E"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x81"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xA1"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xA1\01"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x98"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x98\x01"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xB8"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xB8\x01"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xB8\x01\01"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xBF"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xBF\x01\xFF"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x9C"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\xBC"), cbor::read_error::unexpected, 4);
+    R_TEST(Struct11(0), BS("\xA2\x62y\0\x9E"), cbor::read_error::unexpected, 4);
+TEST_END()
+
+
+TEST_BEG(cxon::CBOR<>) // sink
+    {   bio::byte o[2];
+        auto const r = to_bytes(std::begin(o), std::end(o), cbor::sink<test::bytes>{BS("\01\02\03")});
+        TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
+    }
 TEST_END()
 
 
@@ -888,4 +921,9 @@ TEST_BEG(cxon::CBOR<>) // tags
         R_TEST(Struct9(), BS("\xD9\x01\x01\xA1\x62x\0\x00"));
         R_TEST(Struct9(), BS("\xDA\x01\x01\x01\x01\xA1\x62x\0\x00"));
         R_TEST(Struct9(), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\xA1\x62x\0\x00"));
+    // errors
+        R_TEST((int*)nullptr, BS("\xDC"), cbor::read_error::unexpected, 0);
+        R_TEST((char*)"", BS("\xDD"), cbor::read_error::unexpected, 0);
+        R_TEST(Enum1::one, BS("\xDE"), cbor::read_error::unexpected, 0);
+        R_TEST(Struct9(), BS("\xDF"), cbor::read_error::unexpected, 0);
 TEST_END()
