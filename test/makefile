@@ -6,19 +6,19 @@ srcdir = src
 datdir = ../data
 
 check-json-src = \
-    $(srcdir)/json/json.cxx \
-    $(srcdir)/json/fundamental.cxx \
-    $(srcdir)/json/compound.cxx \
-    $(srcdir)/json/std.cxx
+    $(srcdir)/json/json.json.cxx \
+    $(srcdir)/json/json.fundamental.cxx \
+    $(srcdir)/json/json.compound.cxx \
+    $(srcdir)/json/json.std.cxx
 
 check-json-node-src = \
-    $(srcdir)/json/node.cxx
+    $(srcdir)/json/json.node.cxx
 
 check-cbor-src = \
-    $(srcdir)/cbor/cbor.cxx \
-    $(srcdir)/cbor/fundamental.cxx \
-    $(srcdir)/cbor/compound.cxx \
-    $(srcdir)/cbor/std.cxx
+    $(srcdir)/cbor/cbor.cbor.cxx \
+    $(srcdir)/cbor/cbor.fundamental.cxx \
+    $(srcdir)/cbor/cbor.compound.cxx \
+    $(srcdir)/cbor/cbor.std.cxx
 
 check: check-json check-json-node check-cbor
 
