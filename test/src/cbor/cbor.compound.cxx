@@ -64,6 +64,8 @@ TEST_BEG(cxon::CBOR<>)
                 R_TEST(a, BS("\x82\x83\x01\x02\x03\x9F\x01\x02\x03\xFF"));          // indefinite array
                 R_TEST(a, BS("\x9F\x9F\x01\x02\x03\xFF\x9F\x01\x02\x03\xFF\xFF"));  // indefinite array
                 W_TEST(BS("\x82\x43\x01\x02\x03\x43\x01\x02\x03"), a);              // always written as definite
+                // errors
+                R_TEST(a, BS("\x00"), cbor::read_error::array_invalid, 0);
             }
         }
         {   // unsigned char
@@ -426,6 +428,8 @@ TEST_BEG(cxon::CBOR<>)
     R_TEST(Struct1(0, Enum1::two), BS("\xA2\x62X\0\x00\x62y\0\x18\x2A")); // {y: 'Two (2)', X: 0}
     R_TEST(Struct1(0, Enum1::three), BS("\xA1\x62y\0\x03")); // {y: 'three'}
     W_TEST(BS("\xA2\x62X\0\x00\x62y\0\x01"), Struct1(0, Enum1::one)); // {X: 0, y: 'one'}
+    // errors
+    R_TEST(Struct1(), BS("\xA1\x62z\0\x03"), cbor::read_error::unexpected, 1);
 TEST_END()
 
 
@@ -923,8 +927,8 @@ TEST_BEG(cxon::CBOR<>) // tags
         R_TEST(Struct9(), BS("\xDA\x01\x01\x01\x01\xA1\x62x\0\x00"));
         R_TEST(Struct9(), BS("\xDB\x01\x01\x01\x01\x01\x01\x01\x01\xA1\x62x\0\x00"));
     // errors
-        R_TEST((int*)nullptr, BS("\xDC"), cbor::read_error::unexpected, 0);
-        R_TEST((char*)"", BS("\xDD"), cbor::read_error::unexpected, 0);
-        R_TEST(Enum1::one, BS("\xDE"), cbor::read_error::unexpected, 0);
-        R_TEST(Struct9(), BS("\xDF"), cbor::read_error::unexpected, 0);
+        R_TEST((int*)nullptr, BS("\xDC"), cbor::read_error::tag_invalid, 0);
+        R_TEST((char*)"", BS("\xDD"), cbor::read_error::tag_invalid, 0);
+        R_TEST(Enum1::one, BS("\xDE"), cbor::read_error::tag_invalid, 0);
+        R_TEST(Struct9(), BS("\xDF"), cbor::read_error::tag_invalid, 0);
 TEST_END()

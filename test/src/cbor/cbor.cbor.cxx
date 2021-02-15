@@ -113,6 +113,8 @@ TEST_BEG(cxon::CBOR<>) // errors
                 CXON_ASSERT(ec.message() == "invalid size", "check failed");
             ec = cbor::read_error::array_invalid;
                 CXON_ASSERT(ec.message() == "invalid array", "check failed");
+            ec = cbor::read_error::tag_invalid;
+                CXON_ASSERT(ec.message() == "invalid tag", "check failed");
             ec = cbor::read_error(255);
                 CXON_ASSERT(ec.message() == "unknown error", "check failed");
     }

@@ -39,7 +39,7 @@ namespace cxon { namespace cbor { namespace tag {
                                     (bio::rewind(i, o), cx|cbor::read_error::unexpected)
                             ;
                         case 0x1C: case 0x1D: case 0x1E: case 0x1F:
-                            return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                            return  (bio::rewind(i, o), cx|cbor::read_error::tag_invalid);
                         default:                                            // LCOV_EXCL_LINE
                             return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                     }
@@ -65,7 +65,7 @@ namespace cxon { namespace cbor { namespace tag {
                                         (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
                                 ;
                             case 0x1C: case 0x1D: case 0x1E: case 0x1F:
-                                return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                return  (bio::rewind(i, o), cx|cbor::read_error::tag_invalid);
                             default:                                            // LCOV_EXCL_LINE
                                 return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                         }
