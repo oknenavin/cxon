@@ -289,6 +289,8 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((double)-0x0102, BS("\x39\x01\x01"));
         R_TEST((double)-0x19, BS("\x38\x18"));
         R_TEST((double)-0x18, BS("\x37"));
+    // errors
+        R_TEST((double)0, BS("\x80"), cbor::read_error::floating_point_invalid, 0);
 TEST_END()
 
 TEST_BEG(cxon::CBOR<>) // tags
@@ -304,8 +306,8 @@ TEST_BEG(cxon::CBOR<>) // tags
     R_TEST((double)0, BS("\xD8\x01\xFB\x00\x00\x00\x00\x00\x00\x00\x00"));
     R_TEST((double)0, BS("\xC1\xFB\x00\x00\x00\x00\x00\x00\x00\x00"));
     // errors
-    R_TEST((double)0, BS("\xDC"), cbor::read_error::unexpected, 0);
-    R_TEST((double)0, BS("\xDD"), cbor::read_error::unexpected, 0);
-    R_TEST((double)0, BS("\xDE"), cbor::read_error::unexpected, 0);
-    R_TEST((double)0, BS("\xDF"), cbor::read_error::unexpected, 0);
+    R_TEST((double)0, BS("\xDC"), cbor::read_error::tag_invalid, 0);
+    R_TEST((double)0, BS("\xDD"), cbor::read_error::tag_invalid, 0);
+    R_TEST((double)0, BS("\xDE"), cbor::read_error::tag_invalid, 0);
+    R_TEST((double)0, BS("\xDF"), cbor::read_error::tag_invalid, 0);
 TEST_END()

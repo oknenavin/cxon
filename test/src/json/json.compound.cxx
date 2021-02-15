@@ -588,3 +588,11 @@ TEST_BEG(cxon::JSON<>) // skip field
     R_TEST(Struct11(1, {" {\"x\": 1, \"y\": 2}"}), "{\"a\": 1, \"b\": {\"x\": 1, \"y\": 2}}");
     W_TEST("{\"a\":1,\"b\":[1, 2, 3]}", Struct11(1, {"[1, 2, 3]"}));
 TEST_END()
+
+
+TEST_BEG(cxon::JSON<>) // sink
+    {   char o[2];
+        auto const r = to_bytes(std::begin(o), std::end(o), cio::val::sink<std::string>{"\01\02\03"});
+        TEST_CHECK(!r && r.ec == json::write_error::output_failure);
+    }
+TEST_END()

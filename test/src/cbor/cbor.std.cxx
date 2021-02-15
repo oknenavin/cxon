@@ -132,6 +132,8 @@ TEST_BEG(cxon::CBOR<>) // std::basic_string
                u32string(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"));
         R_TEST(u32string(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"), // indefinite
                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
+        // errors
+        R_TEST(new string(), BS("\xF7"), cbor::read_error::array_invalid, 0);
 TEST_END()
 
 
@@ -201,6 +203,18 @@ TEST_BEG(cxon::CBOR<>) // std::bitset
     W_TEST(BS("\x41\x15"), bitset< 5>{0x00000015});             //                           010101
     W_TEST(BS("\x41\x05"), bitset< 3>{0x00000005});             //                             0101
     W_TEST(BS("\x41\x01"), bitset< 1>{0x00000001});             //                               01
+    // errors
+    R_TEST(bitset<32>(), BS("\x5C"), cbor::read_error::size_invalid, 0);
+    R_TEST(bitset<32>(), BS("\x44"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset<32>(), BS("\x64"), cbor::read_error::unexpected, 0);
+    {   bio::byte o[1];
+        auto const r = to_bytes(std::begin(o), std::end(o), bitset<8 * 32>());
+        TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
+    }
+    {   bio::byte o[1];
+        auto const r = to_bytes(std::begin(o), std::end(o), bitset<32>());
+        TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
+    }
 TEST_END()
 
 
@@ -551,4 +565,7 @@ TEST_BEG(cxon::CBOR<>) // tags
     R_TEST(vector<int>{}, BS("\xD9\x01\x01\x40"));
     R_TEST(vector<int>{}, BS("\xD8\x18\x60"));
     R_TEST(vector<int>{}, BS("\xC1\x80"));
+    // errors
+    R_TEST((array<int, 0>{}), BS("\xDC\x80"), cbor::read_error::tag_invalid, 0);
+    R_TEST(string(""), BS("\xDC\x40"), cbor::read_error::tag_invalid, 0);
 TEST_END()

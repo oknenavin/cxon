@@ -15,8 +15,9 @@ namespace cxon { // array/read
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    return  cbor::tag::read<Y>(i, e, cx) &&
-                            cbor::cnt::read_array<Y>(std::begin(t), std::end(t), i, e, cx)
+                    size_t tag;
+                    return  cbor::tag::read<Y>(tag, i, e, cx) &&
+                            cbor::cnt::read_array<Y>(std::begin(t), std::end(t), tag, i, e, cx)
                     ;
                 }
         };

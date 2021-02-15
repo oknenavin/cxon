@@ -19,6 +19,7 @@ namespace cxon { namespace cbor {
         floating_point_invalid, // integer invalid
         size_invalid,           // size invalid
         array_invalid,          // array invalid
+        tag_invalid             // tag invalid
     };
 
     enum class write_error : int {
@@ -41,6 +42,7 @@ namespace cxon { namespace cbor {
                 case read_error::floating_point_invalid:    return "invalid floating-point";
                 case read_error::size_invalid:              return "invalid size";
                 case read_error::array_invalid:             return "invalid array";
+                case read_error::tag_invalid:               return "invalid tag";
                 default:                                    return "unknown error";
             }
         }

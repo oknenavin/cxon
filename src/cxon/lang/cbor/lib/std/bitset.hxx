@@ -59,7 +59,9 @@ namespace cxon {
                     for (size_t i = t.size(); i != 0; --i) {
                         b |= t[i - 1] << ((i - 1) % 8);
                         if ((i - 1) % 8 == 0) {
-                            bio::poke(o, b), b = 0;
+                            if (!bio::poke<Y>(o, b, cx))
+                                return false;
+                            b = 0;
                         }
                     }
                     return true;
