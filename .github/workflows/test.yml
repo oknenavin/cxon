@@ -20,9 +20,9 @@ jobs:
     #  run: make distcheck
   
   ##############################################################################
-  # g++
+  # gcc
 
-  g++-8:
+  gcc-8:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -36,7 +36,7 @@ jobs:
         CXXFLAGS: -std=c++17
       run: make -j check
 
-  g++-9:
+  gcc-9:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -50,7 +50,7 @@ jobs:
         CXXFLAGS: -std=c++17
       run: make -j check
 
-  g++-10:
+  gcc-10:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -65,9 +65,9 @@ jobs:
       run: make -j check
   
   ##############################################################################
-  # clang++
+  # clang
 
-  clang++-9:
+  clang-9:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -81,7 +81,7 @@ jobs:
         CXXFLAGS: -std=c++11
       run: make -j check
 
-  clang++-10:
+  clang-10:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -95,7 +95,7 @@ jobs:
         CXXFLAGS: -std=c++17
       run: make -j check
 
-  clang++-11:
+  clang-11:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
