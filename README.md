@@ -8,7 +8,7 @@
 
 [![Linux][img-bld-lnx]](https://github.com/oknenavin/cxon/actions?query=workflow%3ALinux)
 [![macOS][img-bld-mac]](https://github.com/oknenavin/cxon/actions?query=workflow%3AmacOS)
-[![Windows][img-bld-win]](https://github.com/oknenavin/cxon/actions?query=workflow%3AWindows)
+[![Windows][img-bld-win]](https://github.com/oknenavin/cxon/actions?query=workflow%3AWindows)  
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 [![Quality][img-cod]](https://www.codacy.com/app/oknenavin/cxon?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
 [![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
