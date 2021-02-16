@@ -9,8 +9,8 @@ on:
     branches: [ features/cbor ]
 
 jobs:
-  build:
 
+  default:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -18,3 +18,16 @@ jobs:
       run: make -j check
     #- name: make distcheck
     #  run: make distcheck
+
+  clang-10:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install clang-10
+      run: |
+        sudo apt update
+        sudo apt install clang-10
+    - name: make check
+      env:
+        CXX: clang++-10
+      run: make -j check
