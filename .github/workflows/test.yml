@@ -122,7 +122,7 @@ jobs:
     - name: Check
       env:
         CXX: g++-8
-        CXXFLAGS: -std=c++17
+        CXXFLAGS: --coverage -std=c++17
       run: make -j check
     - name: Coverage
       run: |
