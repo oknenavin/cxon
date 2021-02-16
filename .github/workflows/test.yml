@@ -18,65 +18,91 @@ jobs:
       run: curl --version
     #- name: make distcheck
     #  run: make distcheck
+  
+  ##############################################################################
+  # g++
 
-  gcc-9:
+  g++-8:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install gcc-9
+    - name: Install g++-8
+      run: |
+        sudo apt update
+        sudo apt install gcc-8 g++-8
+    - name: Check
+      env:
+        CXX: g++-8
+        CXXFLAGS: -std=c++17
+      run: make -j check
+
+  g++-9:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install g++-9
       run: |
         sudo apt update
         sudo apt install gcc-9 g++-9
-    - name: Check gcc-9
-      run: g++-9 --version
     - name: Check
       env:
         CXX: g++-9
         CXXFLAGS: -std=c++17
       run: make -j check
 
-  gcc-10:
+  g++-10:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install gcc-10
+    - name: Install g++-10
       run: |
         sudo apt update
         sudo apt install gcc-10 g++-10
-    - name: Check gcc-10
-      run: g++-10 --version
     - name: Check
       env:
         CXX: g++-10
         CXXFLAGS: -std=c++20
       run: make -j check
+  
+  ##############################################################################
+  # clang++
 
-  clang-10:
+  clang++-9:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install clang-10
+    - name: Install clang++-9
+      run: |
+        sudo apt update
+        sudo apt install clang-9
+    - name: Check
+      env:
+        CXX: clang++-9
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang++-10:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install clang++-10
       run: |
         sudo apt update
         sudo apt install clang-10
-    - name: Check clang-10
-      run: clang++-10 --version
     - name: Check
       env:
         CXX: clang++-10
         CXXFLAGS: -std=c++17
       run: make -j check
 
-  clang-11:
+  clang++-11:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install clang-11
+    - name: Install clang++-11
       run: |
         sudo apt update
         sudo apt install clang-11
-    - name: Check clang-11
-      run: clang++-11 --version
     - name: Check
       env:
         CXX: clang++-11
