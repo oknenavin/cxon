@@ -28,7 +28,7 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.json.node src/json/node.cxx
+    cxon.json.node src/json/json.node.cxx
 )
 set_target_properties (
     cxon.json.node PROPERTIES
