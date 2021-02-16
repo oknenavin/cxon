@@ -11,9 +11,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: cmake
-      run: cd test ; cmake -S . -B build -G "Visual Studio 16 2019" -D CMAKE_BUILD_TYPE=Debug
-    - name: build
-      run: cmake --build build --parallel
-    - name: test
-      run: cd build ; ctest -j -V -C Debug --output-on-failure
+    - name: Check
+      run: |
+        cd test
+        cmake -S . -B build -G "Visual Studio 16 2019" -D CMAKE_BUILD_TYPE=Debug
+        cmake --build build --parallel
+        cd build ; ctest -j -V -C Debug --output-on-failure
