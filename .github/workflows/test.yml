@@ -5,6 +5,8 @@ on:
     branches: [ features/cbor ]
   pull_request:
     branches: [ features/cbor ]
+  workflow_dispatch:
+    branches: [ features/cbor ]
 
 jobs:
   build:
