@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: cmake
-      run: cmake -S . -B build -G "Visual Studio 16 2019" -D CMAKE_BUILD_TYPE=Debug
+      run: cd test ; cmake -S . -B build -G "Visual Studio 16 2019" -D CMAKE_BUILD_TYPE=Debug
     - name: build
       run: cmake --build build --parallel
     - name: test
