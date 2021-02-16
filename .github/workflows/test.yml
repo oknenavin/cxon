@@ -15,7 +15,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Check
-      run: curl --version
+      run: |
+        curl --version
+        lcov --version
     #- name: make distcheck
     #  run: make distcheck
   
