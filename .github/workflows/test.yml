@@ -21,6 +21,48 @@ jobs:
   ##############################################################################
   # gcc
 
+  gcc-5:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-5 g++-5
+    - name: Check
+      env:
+        CXX: g++-5
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  gcc-6:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-6 g++-6
+    - name: Check
+      env:
+        CXX: g++-6
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  gcc-7:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-7 g++-7
+    - name: Check
+      env:
+        CXX: g++-7
+        CXXFLAGS: -std=c++17
+      run: make -j check
+
   gcc-8:
     runs-on: ubuntu-latest
     steps:
@@ -65,6 +107,34 @@ jobs:
   
   ##############################################################################
   # clang
+
+  clang-7:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-7
+    - name: Check
+      env:
+        CXX: clang++-7
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-8:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-8
+    - name: Check
+      env:
+        CXX: clang++-8
+        CXXFLAGS: -std=c++11
+      run: make -j check
 
   clang-9:
     runs-on: ubuntu-latest
