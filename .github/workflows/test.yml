@@ -108,6 +108,62 @@ jobs:
   ##############################################################################
   # clang
 
+  clang-3-5:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-3.5
+    - name: Check
+      env:
+        CXX: clang++-3.5
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-4:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-4.0
+    - name: Check
+      env:
+        CXX: clang++-4.0
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-5:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-5.0
+    - name: Check
+      env:
+        CXX: clang++-5.0
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-6:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-6.0
+    - name: Check
+      env:
+        CXX: clang++-6.0
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
   clang-7:
     runs-on: ubuntu-latest
     steps:
