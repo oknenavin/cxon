@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install g++-8
+    - name: Setup
       run: |
         sudo apt update
         sudo apt install gcc-8 g++-8
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install g++-9
+    - name: Setup
       run: |
         sudo apt update
         sudo apt install gcc-9 g++-9
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install g++-10
+    - name: Setup
       run: |
         sudo apt update
         sudo apt install gcc-10 g++-10
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install clang++-9
+    - name: Setup
       run: |
         sudo apt update
         sudo apt install clang-9
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install clang++-10
+    - name: Setup
       run: |
         sudo apt update
         sudo apt install clang-10
@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install clang++-11
+    - name: Setup
       run: |
         sudo apt update
         sudo apt install clang-11
