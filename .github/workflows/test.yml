@@ -14,10 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Check
+    - name: Check curl
+      run: curl --version
+    - name: Check lcov
       run: |
-        curl --version
-        lcov --version
+        wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+        tar xvfz lcov-1.14.tar.gz
+        make -C lcov-1.14
+        lcov-1.14/bin/lcov --version
     #- name: make distcheck
     #  run: make distcheck
   
