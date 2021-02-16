@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ cbor ]
+    branches: [ features/cbor ]
   pull_request:
-    branches: [ cbor ]
+    branches: [ features/cbor ]
 
 jobs:
   build:
