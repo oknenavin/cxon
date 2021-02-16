@@ -36,6 +36,16 @@ set_target_properties (
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
+
+add_executable (
+    cxon.cbor src/cbor/cbor.cbor.cxx src/cbor/cbor.fundamental.cxx src/cbor/cbor.compound.cxx src/cbor/cbor.std.cxx
+)
+set_target_properties (
+    cxon.cbor PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
+)
  
 
 enable_testing()
@@ -70,3 +80,8 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
         COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon.json.node diff @../data/set.3-diff.in @../data/set.4-diff.in @../data/set.5-diff.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
+
+add_test (
+    NAME cxon/cbor/self
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor
+)
