@@ -1,24 +1,14 @@
-name: C/C++ CI
+name: Linux
 
 on:
   push:
-    branches: [ features/cbor ]
+    branches: [ main, develop, features/cbor ]
   pull_request:
-    branches: [ features/cbor ]
+    branches: [ main, develop, features/cbor ]
   workflow_dispatch:
-    branches: [ features/cbor ]
+    branches: [ main, develop, features/cbor ]
 
 jobs:
-
-  default:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Test
-      run: echo Test
-    - name: apt
-      run: cat /etc/apt/sources.list
-    #- name: make distcheck
-    #  run: make distcheck
   
   ##############################################################################
   # gcc
