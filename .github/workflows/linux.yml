@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install gcc-5 g++-5
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install gcc-6 g++-6
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install gcc-7 g++-7
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install gcc-8 g++-8
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install gcc-9 g++-9
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install gcc-10 g++-10
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-16.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-3.5
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-4.0
@@ -124,7 +124,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-5.0
@@ -138,7 +138,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-6.0
@@ -152,7 +152,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-7
@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-8
@@ -180,7 +180,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-9
@@ -194,7 +194,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-10
@@ -208,9 +208,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
-    - name: Info
-      run: cat /etc/os-release
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install clang-11
@@ -226,7 +224,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup
+    - name: Setup compiler
       run: |
         sudo apt-get update
         sudo apt-get install gcc-8 g++-8
@@ -235,11 +233,13 @@ jobs:
         CXX: g++-8
         CXXFLAGS: --coverage -std=c++17
       run: make -j check
-    - name: Coverage
+    - name: Setup lcov
       run: |
         wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
         tar xvfz lcov-1.14.tar.gz
         make -C lcov-1.14
+    - name: Coverage
+      run: |
         lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
         lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
         lcov-1.14/bin/lcov -l cxon.info

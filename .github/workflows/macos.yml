@@ -11,9 +11,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Configure
+      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cd test ; cmake --build build --parallel
     - name: Check
-      run: |
-        cd test
-        cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
-        cmake --build build --parallel
-        cd build ; ctest -j -V -C Release
+      run: cd test/build ; ctest -j -V -C Release
