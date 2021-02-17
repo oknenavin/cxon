@@ -1,0 +1,19 @@
+name: macOS
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  
+  # xcode ######################################################################
+    
+  xcode:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Check
+      run: |
+        cd test
+        cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
+        cmake --build build --parallel
+        cd build ; ctest -j -V -C Release
