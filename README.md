@@ -269,9 +269,9 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-lng]: https://img.shields.io/badge/language-C++11/17-608060.svg?style=plastic&logo=C%2B%2B
 [img-fmt]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
-[img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg
-[img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg
-[img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg
+[img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg?branch=features%2Fcbor
+[img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg?branch=features%2Fcbor
+[img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg?branch=features%2Fcbor
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
 [img-cod]: https://api.codacy.com/project/badge/Grade/503ff2e908b745ba9dfeba2b50ec2201
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
