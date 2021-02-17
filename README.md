@@ -20,6 +20,7 @@
 `CXON` is a C++ serialization interface  
 `CXON` is a `C++11` compliant, self contained, header-only library  
 `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format  
+`CXON` implements [`CBOR`](https://cbor.io) as a serialization format  
 `CXON` is easy to extend for different formats and types imposing minimal overhead  
 
 
@@ -211,6 +212,10 @@ implement a kind of polymorphic type to represent arbitrary `JSON` - many call i
 [`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON/JSON`, is an implementation 
 of such a polymorphic type (and also an example of how `CXON` can be used).
 
+##### [`CBOR`](https://cbor.io)
+
+The implementation strictly complies with [`RFC7049`][RFC7049].
+
 
 --------------------------------------------------------------------------------
 
@@ -278,6 +283,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+[RFC7049]: https://tools.ietf.org/rfc/rfc7049.txt
 [GitHub]: https://github.com/oknenavin/cxon
 [std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
