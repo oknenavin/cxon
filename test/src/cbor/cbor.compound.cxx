@@ -595,7 +595,7 @@ namespace {
         template <typename X, typename II, typename C>
             static bool read_value(Struct8& t, II& i, II e, C& ctx) {
                 using namespace cxon::cbor::cls;
-                static constexpr auto f = make_fields(
+                static CXON_CBOR_CLS_CONSTEXPR auto f = make_fields(
                     make_field("x", &Struct8::x),
                     make_field("y", &Struct8::y)
                 );
@@ -604,7 +604,7 @@ namespace {
         template <typename X, typename OI, typename C>
             static bool write_value(OI& o, const Struct8& t, C& ctx) {
                 using namespace cxon::cbor::cls;
-                static constexpr auto f = make_fields(
+                static CXON_CBOR_CLS_CONSTEXPR auto f = make_fields(
                     make_field("x", &Struct8::x),
                     make_field("y", &Struct8::y)
                 );
