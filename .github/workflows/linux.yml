@@ -1,0 +1,251 @@
+name: Linux
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  
+  # gcc ########################################################################
+
+  gcc-5:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install gcc-5 g++-5
+    - name: Check
+      env:
+        CXX: g++-5
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  gcc-6:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install gcc-6 g++-6
+    - name: Check
+      env:
+        CXX: g++-6
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  gcc-7:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-7 g++-7
+    - name: Check
+      env:
+        CXX: g++-7
+        CXXFLAGS: -std=c++17
+      run: make -j check
+
+  gcc-8:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-8 g++-8
+    - name: Check
+      env:
+        CXX: g++-8
+        CXXFLAGS: -std=c++17
+      run: make -j check
+
+  gcc-9:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-9 g++-9
+    - name: Check
+      env:
+        CXX: g++-9
+        CXXFLAGS: -std=c++17
+      run: make -j check
+
+  gcc-10:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-10 g++-10
+    - name: Check
+      env:
+        CXX: g++-10
+        CXXFLAGS: -std=c++20
+      run: make -j check
+  
+  # clang ######################################################################
+
+  clang-3-5:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ xenial main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install clang-3.5
+    - name: Check
+      env:
+        CXX: clang++-3.5
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-4:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install clang-4.0
+    - name: Check
+      env:
+        CXX: clang++-4.0
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-5:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install clang-5.0
+    - name: Check
+      env:
+        CXX: clang++-5.0
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-6:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-6.0
+    - name: Check
+      env:
+        CXX: clang++-6.0
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-7:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-7
+    - name: Check
+      env:
+        CXX: clang++-7
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-8:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-8
+    - name: Check
+      env:
+        CXX: clang++-8
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-9:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-9
+    - name: Check
+      env:
+        CXX: clang++-9
+        CXXFLAGS: -std=c++11
+      run: make -j check
+
+  clang-10:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-10
+    - name: Check
+      env:
+        CXX: clang++-10
+        CXXFLAGS: -std=c++17
+      run: make -j check
+
+  clang-11:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Info
+      run: cat /etc/os-release
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-11
+    - name: Check
+      env:
+        CXX: clang++-11
+        CXXFLAGS: -std=c++20
+      run: make -j check
+  
+  # codecov ####################################################################
+
+  codecov:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-8 g++-8
+    - name: Check
+      env:
+        CXX: g++-8
+        CXXFLAGS: --coverage -std=c++17
+      run: make -j check
+    - name: Coverage
+      run: |
+        wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+        tar xvfz lcov-1.14.tar.gz
+        make -C lcov-1.14
+        lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
+        lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
+        lcov-1.14/bin/lcov -l cxon.info
+        bash <(curl -s https://codecov.io/bash) -f cxon.info || echo "upload failed"
