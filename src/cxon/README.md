@@ -10,6 +10,7 @@
   - [Introduction](#introduction)
     - Formats
       - [`JSON`](lang/json/README.md)
+      - [`CBOR`](lang/cbor/README.md)
   - [Interface](#interface)
   - [Implementation bridge](#implementation-bridge)
   - [Parametrization](#parametrization)
