@@ -1,14 +1,14 @@
 ## `CXON` library
 
-[![Library][img-lib]](https://github.com/oknenavin/cxon)
-[![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
+[![Library][img-lib]](https://github.com/oknenavin/libcxon)
+[![Version][img-ver]](https://github.com/oknenavin/libcxon/releases)  
 [![Language][img-lng]](https://isocpp.org/wiki/faq/cpp11)
 [![Format][img-fmt]](http://json.org)  
 [![License][img-lic]](LICENSE)
 
-[![Linux][img-bld-lnx]](https://github.com/oknenavin/cxon/actions?query=workflow%3ALinux)
-[![macOS][img-bld-mac]](https://github.com/oknenavin/cxon/actions?query=workflow%3AmacOS)
-[![Windows][img-bld-win]](https://github.com/oknenavin/cxon/actions?query=workflow%3AWindows)  
+[![Linux][img-bld-lnx]](https://github.com/oknenavin/libcxon/actions?query=workflow%3ALinux)
+[![macOS][img-bld-mac]](https://github.com/oknenavin/libcxon/actions?query=workflow%3AmacOS)
+[![Windows][img-bld-win]](https://github.com/oknenavin/libcxon/actions?query=workflow%3AWindows)  
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 [![Quality][img-cod]](https://www.codacy.com/app/oknenavin/cxon?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
 [![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
@@ -265,20 +265,20 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
-[img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
+[img-ver]: https://img.shields.io/github/release/oknenavin/libcxon.svg?style=plastic&color=608060
 [img-lng]: https://img.shields.io/badge/language-C++11/17-608060.svg?style=plastic&logo=C%2B%2B
 [img-fmt]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
-[img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg
-[img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg
-[img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg
+[img-bld-lnx]: https://github.com/oknenavin/libcxon/workflows/Linux/badge.svg
+[img-bld-mac]: https://github.com/oknenavin/libcxon/workflows/macOS/badge.svg
+[img-bld-win]: https://github.com/oknenavin/libcxon/workflows/Windows/badge.svg
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
 [img-cod]: https://api.codacy.com/project/badge/Grade/503ff2e908b745ba9dfeba2b50ec2201
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
-[GitHub]: https://github.com/oknenavin/cxon
+[GitHub]: https://github.com/oknenavin/libcxon
 [std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
