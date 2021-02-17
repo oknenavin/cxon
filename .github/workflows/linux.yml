@@ -3,16 +3,15 @@ name: Linux
 on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
-  
+
   # gcc ########################################################################
 
   gcc-5:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
       run: |
-        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
         sudo apt-get update
         sudo apt-get install gcc-5 g++-5
     - name: Check
@@ -22,12 +21,11 @@ jobs:
       run: make -j check
 
   gcc-6:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
       run: |
-        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
         sudo apt-get update
         sudo apt-get install gcc-6 g++-6
     - name: Check
@@ -37,7 +35,7 @@ jobs:
       run: make -j check
 
   gcc-7:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -51,7 +49,7 @@ jobs:
       run: make -j check
 
   gcc-8:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -65,7 +63,7 @@ jobs:
       run: make -j check
 
   gcc-9:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -79,7 +77,7 @@ jobs:
       run: make -j check
 
   gcc-10:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -95,12 +93,11 @@ jobs:
   # clang ######################################################################
 
   clang-3-5:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
       run: |
-        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ xenial main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
         sudo apt-get update
         sudo apt-get install clang-3.5
     - name: Check
@@ -110,12 +107,11 @@ jobs:
       run: make -j check
 
   clang-4:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
       run: |
-        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
         sudo apt-get update
         sudo apt-get install clang-4.0
     - name: Check
@@ -125,12 +121,11 @@ jobs:
       run: make -j check
 
   clang-5:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
       run: |
-        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ bionic main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
         sudo apt-get update
         sudo apt-get install clang-5.0
     - name: Check
@@ -140,7 +135,7 @@ jobs:
       run: make -j check
 
   clang-6:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -154,7 +149,7 @@ jobs:
       run: make -j check
 
   clang-7:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -168,7 +163,7 @@ jobs:
       run: make -j check
 
   clang-8:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -182,7 +177,7 @@ jobs:
       run: make -j check
 
   clang-9:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -196,7 +191,7 @@ jobs:
       run: make -j check
 
   clang-10:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
@@ -228,7 +223,7 @@ jobs:
   # codecov ####################################################################
 
   codecov:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Setup
