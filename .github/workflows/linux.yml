@@ -215,6 +215,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Setup
       run: |
+        echo 'deb http://azure.archive.ubuntu.com/ubuntu/ focal main universe' | sudo tee -a /etc/apt/sources.list > /dev/null
         sudo apt-get update
         sudo apt-get install clang-11
     - name: Check
