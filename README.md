@@ -3,7 +3,8 @@
 [![Library][img-lib]](https://github.com/oknenavin/cxon)
 [![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
 [![Language][img-lng]](https://isocpp.org/wiki/faq/cpp11)
-[![Format][img-fmt]](http://json.org)  
+[![Format][img-fmt-json]](http://json.org)
+[![Format][img-fmt-cbor]](https://cbor.io)  
 [![License][img-lic]](LICENSE)
 
 [![Linux][img-bld-lnx]](https://github.com/oknenavin/cxon/actions?query=workflow%3ALinux)
@@ -272,7 +273,8 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
 [img-lng]: https://img.shields.io/badge/language-C++11/17-608060.svg?style=plastic&logo=C%2B%2B
-[img-fmt]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
+[img-fmt-json]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
+[img-fmt-cbor]: https://img.shields.io/badge/language-CBOR-608060.svg?style=plastic&logo=JSON
 [img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
 [img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg?branch=features%2Fcbor
 [img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg?branch=features%2Fcbor
