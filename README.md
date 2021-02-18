@@ -96,7 +96,7 @@ namespace cxon {
 
 // in = "[1, 5, 7]"; // JSON in UTF-8
 std::vector<int> value;
-auto fbr = cxon::from_bytes(value, std::begin(in), std:end(in), ...); // read from iterator (default format `JSON`)
+auto fbr = cxon::from_bytes(value, std::begin(in), std::end(in), ...); // read from iterator (default format `JSON`)
 assert(fbr); // the result: error and serialization status
 ...
 std::vector<unsigned char> cbor;
