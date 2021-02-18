@@ -274,7 +274,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
 [img-lng]: https://img.shields.io/badge/language-C++11/17-608060.svg?style=plastic&logo=C%2B%2B
 [img-fmt-json]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
-[img-fmt-cbor]: https://img.shields.io/badge/language-CBOR-608060.svg?style=plastic&logo=JSON
+[img-fmt-cbor]: https://img.shields.io/badge/language-CBOR-608060.svg?style=plastic
 [img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
 [img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg?branch=features%2Fcbor
 [img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg?branch=features%2Fcbor
