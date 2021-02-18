@@ -128,9 +128,10 @@ namespace cxon { namespace charconv { namespace bits {
             }
         template <typename T>
             inline auto itoa(char* b, T t, int base) -> typename std::enable_if<std::is_signed<T>::value, unsigned>::type {
+                using U = typename std::make_unsigned<T>::type;
                 return t < 0 ?
-                    *b = '-', itoa<typename std::make_unsigned<T>::type>(++b, -t, base) + 1 :
-                    itoa<typename std::make_unsigned<T>::type>(b, t, base)
+                    *b = '-', itoa<U>(++b, static_cast<U>(t), base) + 1 :
+                    itoa<U>(b, static_cast<U>(t), base)
                 ;
             }
 
