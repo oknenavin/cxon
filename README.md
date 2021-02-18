@@ -41,8 +41,47 @@
 
 #### Introduction
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] 
-interface with these differences:
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] interface.
+
+###### Example
+
+``` c++
+#include "cxon/json.hxx" /* included first, JSON will be the default format */
+#include "cxon/cbor.hxx" /* not the first, CBOR format must be explicitly specified */
+
+// use for all formats, the relevant code will be included depending of the formats included above
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/vector.hxx"
+
+#include <cassert>
+
+int main() {
+    using CBOR = cxon::CBOR<>;
+
+    char const  json_in[] = "[1,5,7]";
+    std::string json_out;
+
+    std::vector<unsigned char> cbor;
+    {
+        std::vector<int> cxx;
+        auto fbr = cxon::from_bytes(cxx, json_in);      // JSON to C++
+            assert(fbr);
+        auto tbr = cxon::to_bytes<CBOR>(cbor, cxx);     // C++ to CBOR
+            assert(tbr);
+    }
+    {
+        std::vector<int> cxx;
+        auto fbr = cxon::from_bytes<CBOR>(cxx, cbor);   // CBOR to C++
+            assert(fbr);
+        auto tbr = cxon::to_bytes(json_out, cxx);       // C++ to JSON
+            assert(tbr);
+    }
+
+    assert(json_out == json_in);
+}
+```
+
+ `CXON` extends `C++17`'s [`<charconv>`][std-charconv] interface with:
 
   - traits template parameter (support for different serialization formats, 
     see [`Format traits`](src/cxon/README.md#format-traits))
@@ -50,6 +89,8 @@ interface with these differences:
     type serializers, see [Named parameters](src/cxon/README.md#named-parameters)
   - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](src/cxon/README.md#interface))
+
+###### Interface
 
 ```c++
 namespace cxon {
@@ -61,10 +102,10 @@ namespace cxon {
         };
 
     // from input iterator
-    template <typename Traits, typename T, typename InIt, typename ...Parameters>
+    template <typename Format, typename T, typename InIt, typename ...Parameters>
         auto from_bytes(T& t, InIt b, InIt e, Parameters... ps)     -> from_bytes_result<InIt>;
     // from iterable (e.g. std::string)
-    template <typename Traits, typename T, typename Iterable, typename ...Parameters>
+    template <typename Format, typename T, typename Iterable, typename ...Parameters>
         auto from_bytes(T& t, const Iterable& i, Parameters... ps)  -> from_bytes_result<decltype(std::begin(i))>;
 
 
@@ -75,33 +116,16 @@ namespace cxon {
         };
 
     // to output iterator
-    template <typename Traits, typename T, typename OutIt, typename ...Parameters>
+    template <typename Format, typename T, typename OutIt, typename ...Parameters>
         auto to_bytes(OutIt o, const T& t, Parameters... ps)        -> to_bytes_result<OutIt>;
     // to back insertable (e.g. std::string)
-    template <typename Traits, typename T, typename Insertable, typename ...Parameters>
+    template <typename Format, typename T, typename Insertable, typename ...Parameters>
         auto to_bytes(Insertable& i, const T& t, Parameters... ps)  -> to_bytes_result<decltype(std::begin(i))>;
     // to range
-    template <typename Traits, typename T, typename FwIt, typename ...Parameters>
+    template <typename Format, typename T, typename FwIt, typename ...Parameters>
         auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps) -> to_bytes_result<FwIt>;
 
 }
-```
-
-###### Example
-
-``` c++
-#include "cxon/json.hxx" // first include - JSON will be the default format
-#include "cxon/cbor.hxx" // following format includes - require format specification
-...
-
-// in = "[1, 5, 7]"; // JSON in UTF-8
-std::vector<int> value;
-auto fbr = cxon::from_bytes(value, std::begin(in), std::end(in), ...); // read from iterator (default format `JSON`)
-assert(fbr); // the result: error and serialization status
-...
-std::vector<unsigned char> cbor;
-auto tbr = cxon::to_bytes<CBOR<>>(cbor, value, ...); // write to std::vector<unsigned char> (format `CBOR`)
-assert(tbr); // the result: error and serialization status
 ```
 
 `CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box, including:
@@ -216,7 +240,11 @@ of such a polymorphic type (and also an example of how `CXON` can be used).
 
 ##### [`CBOR`](https://cbor.io)
 
-The implementation strictly complies with [`RFC7049`][RFC7049].
+The implementation strictly complies with [`RFC7049`][RFC7049].  
+`CBOR` format is a work in progress and currently supports all fundamental, compound and std types
+supported by `JSON`. Pending are:
+- `cxon::cbor::node` (see [`cxon::json::node`](src/cxon/lang/json/node/README.md))
+- typed arrays ([`RFC8746`][RFC8746])
 
 
 --------------------------------------------------------------------------------
@@ -288,6 +316,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 [RFC7049]: https://tools.ietf.org/rfc/rfc7049.txt
+[RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt
 [GitHub]: https://github.com/oknenavin/cxon
 [std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
