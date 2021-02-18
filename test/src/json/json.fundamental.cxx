@@ -3,19 +3,38 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "../test.hxx"
+#include "test.hxx"
 
+#include <limits>
 #include <string>
+#include <cstdio>
 
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace test {
 
-    template <typename T>   inline std::string to_string(T t)           { return std::to_string(t); }
-    // TODO: using cxon -> nok, use std lib
-    template <>             inline std::string to_string(float t)       { return test::to_string<JSON<>>(t); }
-    template <>             inline std::string to_string(double t)      { return test::to_string<JSON<>>(t); }
-    template <>             inline std::string to_string(long double t) { return test::to_string<JSON<>>(t); }
+    template <typename T>
+        inline auto to_string(T t)
+            -> enable_if_t<std::is_integral<T>::value, std::string>
+        {
+            return std::to_string(t);
+        }
+
+    template <typename> struct fmt;
+    template <> struct fmt<float>       { static constexpr char const*const str = "%.*g";   };
+    template <> struct fmt<double>      { static constexpr char const*const str = "%.*g";   };
+    template <> struct fmt<long double> { static constexpr char const*const str = "%.*Lg";  };
+
+    template <typename T>
+        inline auto to_string(T t)
+            -> enable_if_t<std::is_floating_point<T>::value, std::string>
+        {
+            char s[std::numeric_limits<T>::max_digits10 * 2] = { 0 };
+            size_t const l = sizeof(s) / sizeof(char);
+            int const w = std::snprintf(s, l, fmt<T>::str, std::numeric_limits<T>::max_digits10, t);
+                CXON_ASSERT(w > 0 && (size_t)w < l, "conversion failed");
+            return s;
+        }
 
     template <typename T>   constexpr T tmin() { return std::numeric_limits<T>::lowest(); }
     template <typename T>   inline std::string smin() { return to_string(tmin<T>()); }
@@ -54,6 +73,29 @@ TEST_BEG(cxon::JSON<>)
         R_TEST('\0', QS("\xff"), json::read_error::character_invalid, 1); // invalid utf-8
         R_TEST('\0', QS("\\z"), json::read_error::escape_invalid, 1);
         R_TEST('\0', QS("\\u1111"), json::read_error::character_invalid, 1);
+    // wchar_t
+        R_TEST(L'a', QS("a"));
+        W_TEST(QS("a"), L'a');
+    // char8_t
+#       if __cplusplus > 201703L /* C++20 */
+            R_TEST(u8'\0', QS("\\u0000"));
+            W_TEST(QS("\\u0000"), u8'\0');
+            R_TEST(u8'\x1f', QS("\\u001f"));
+            W_TEST(QS("\\u001f"), u8'\x1f');
+            R_TEST(u8'"', QS("\\\""));
+            W_TEST(QS("\\\""), u8'"');
+            R_TEST(u8'\'', QS("'"));
+            W_TEST(QS("'"), u8'\'');
+            R_TEST(u8'\x7f', QS("\\u007f"));
+            W_TEST(QS("\x7f"), u8'\x7f');
+            R_TEST(u8'\x8f', QS("\\u008f"));
+            W_TEST(QS("\x8f"), u8'\x8f');
+            R_TEST(u8'\xff', QS("\\u00ff")); // invalid utf-8
+            W_TEST(QS("\xff"), u8'\xff'); // invalid utf-8
+            R_TEST(u8'\0', QS("\xff"), json::read_error::character_invalid, 1); // invalid utf-8
+            R_TEST(u8'\0', QS("\\z"), json::read_error::escape_invalid, 1);
+            R_TEST(u8'\0', QS("\\u1111"), json::read_error::character_invalid, 1);
+#       endif
     // char16_t
         R_TEST(u'a', QS("a"));
         W_TEST(QS("a"), u'a');
@@ -82,9 +124,6 @@ TEST_BEG(cxon::JSON<>)
         R_TEST(U'\0', QS("\xF0"), json::read_error::character_invalid, 1);
         W_TEST(QS("\xF0\xA8\x91\x80"), U'\x28440');
         W_TEST(QS(""), U'\x200000');
-    // wchar_t
-        R_TEST(L'a', QS("a"));
-        W_TEST(QS("a"), L'a');
     // signed char
         R_TEST(tmin<signed char>(), smin<signed char>());
         W_TEST(smin<signed char>(), tmin<signed char>());
@@ -469,6 +508,9 @@ namespace cxon { namespace test {
 }}
 
 TEST_BEG(cxon::JSON<cxon::test::strict_js_traits>)
+    W_TEST(QS("x"), "x");
+    W_TEST(QS("\\u2028"), "\xE2\x80\xA8");
+    W_TEST(QS("\\u2029"), "\xE2\x80\xA9");
     W_TEST(QS("x"), u8"x");
     W_TEST(QS("\\u2028"), u8"\u2028");
     W_TEST(QS("\\u2029"), u8"\u2029");

@@ -11,21 +11,17 @@ namespace cxon { namespace cio {
 #   define CXON_QUOTED(T)\
         template <typename ...R> struct is_quoted<std::basic_string_view<T, R...>> : std::true_type  {};
         CXON_QUOTED(char)
+        CXON_QUOTED(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_QUOTED(char8_t)
+#       endif
         CXON_QUOTED(char16_t)
         CXON_QUOTED(char32_t)
-        CXON_QUOTED(wchar_t)
 #   undef CXON_QUOTED
 
 }}
 
 namespace cxon {
-
-    template <typename T, typename ...R>
-        struct continuous<std::basic_string_view<T, R...>> {
-            static auto range(const std::basic_string_view<T, R...>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
-                return std::make_pair(&i[0], &i[0] + i.size());
-            }
-        };
 
     template <typename X, typename T, typename ...R>
         struct read<JSON<X>, std::basic_string_view<T, R...>> {

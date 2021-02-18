@@ -77,9 +77,12 @@ namespace cxon { // character pointer & array
                     static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return cio::str::array<JSON<X>>::read(t, t + N, i, e, cx); }\
             };
         CXON_ARRAY(char)
+        CXON_ARRAY(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_ARRAY(char8_t)
+#       endif
         CXON_ARRAY(char16_t)
         CXON_ARRAY(char32_t)
-        CXON_ARRAY(wchar_t)
 #   undef CXON_ARRAY
 
 #   define CXON_POINTER(T)\
@@ -89,9 +92,12 @@ namespace cxon { // character pointer & array
                     static bool value(const T*& t, II& i, II e, Cx& cx) { return read_value<JSON<X>>((T*&)t, i, e, cx); }\
             };
         CXON_POINTER(char)
+        CXON_POINTER(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_POINTER(char8_t)
+#       endif
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
-        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
 
 #   define CXON_POINTER(T)\
@@ -101,9 +107,12 @@ namespace cxon { // character pointer & array
                     static bool value(T*& t, II& i, II e, Cx& cx)       { return cio::str::pointer_read<JSON<X>>(t, i, e, cx); }\
             };
         CXON_POINTER(char)
+        CXON_POINTER(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_POINTER(char8_t)
+#       endif
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
-        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
 
 #   define CXON_ARRAY(T)\
@@ -113,9 +122,12 @@ namespace cxon { // character pointer & array
                     static bool value(O& o, const T (&t)[N], Cx& cx)    { return cio::str::array_write<JSON<X>>(o, t, t + N, cx); }\
             };
         CXON_ARRAY(char)
+        CXON_ARRAY(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_ARRAY(char8_t)
+#       endif
         CXON_ARRAY(char16_t)
         CXON_ARRAY(char32_t)
-        CXON_ARRAY(wchar_t)
 #   undef CXON_ARRAY
 
 #   define CXON_POINTER(T)\
@@ -125,9 +137,12 @@ namespace cxon { // character pointer & array
                     static bool value(O& o, const T* t, Cx& cx)         { return cio::str::pointer<JSON<X>>::write(o, t, cx); }\
             };
         CXON_POINTER(char)
+        CXON_POINTER(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_POINTER(char8_t)
+#       endif
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
-        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
 
 #   define CXON_POINTER(T)\
@@ -137,9 +152,12 @@ namespace cxon { // character pointer & array
                     static bool value(O& o, T* t, Cx& cx)               { return write_value<JSON<X>, const T*>(o, t, cx); }\
             };
         CXON_POINTER(char)
+        CXON_POINTER(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_POINTER(char8_t)
+#       endif
         CXON_POINTER(char16_t)
         CXON_POINTER(char32_t)
-        CXON_POINTER(wchar_t)
 #   undef CXON_POINTER
 
 }
