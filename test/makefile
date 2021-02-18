@@ -6,15 +6,21 @@ srcdir = src
 datdir = ../data
 
 check-json-src = \
-    $(srcdir)/json/json.cxx \
-    $(srcdir)/json/fundamental.cxx \
-    $(srcdir)/json/compound.cxx \
-    $(srcdir)/json/std.cxx
+    $(srcdir)/json/json.json.cxx \
+    $(srcdir)/json/json.fundamental.cxx \
+    $(srcdir)/json/json.compound.cxx \
+    $(srcdir)/json/json.std.cxx
 
 check-json-node-src = \
-    $(srcdir)/json/node.cxx
+    $(srcdir)/json/json.node.cxx
 
-check: check-json check-json-node
+check-cbor-src = \
+    $(srcdir)/cbor/cbor.cbor.cxx \
+    $(srcdir)/cbor/cbor.fundamental.cxx \
+    $(srcdir)/cbor/cbor.compound.cxx \
+    $(srcdir)/cbor/cbor.std.cxx
+
+check: check-json check-json-node check-cbor
 
 check-json: $(outdir)/check-json
 	@(cd $(outdir) && ../$<)
@@ -32,6 +38,9 @@ check-json-node: $(outdir)/check-json-node
                                     @$(datdir)/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
+check-cbor: $(outdir)/check-cbor
+	@(cd $(outdir) && ../$<)
+
 $(outdir)/check-json: $(check-json-src)
 	@mkdir -p $(outdir)
 	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
@@ -40,7 +49,11 @@ $(outdir)/check-json-node: $(check-json-node-src)
 	@mkdir -p $(outdir)
 	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
 
+$(outdir)/check-cbor: $(check-cbor-src)
+	@mkdir -p $(outdir)
+	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-cbor-src) -o $@
+
 clean:
 	@rm -fr $(outdir)
 
-.PHONY: check check-json check-json-node clean
+.PHONY: check check-json check-json-node check-cbor clean

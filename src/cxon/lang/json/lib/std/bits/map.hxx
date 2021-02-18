@@ -18,7 +18,8 @@ namespace cxon { namespace json { namespace bits {
                         typename M::key_type k{}; typename M::mapped_type v{};
                         return  cio::read_key<X>(k, i, e, cx) &&
                                 read_value<X>(v, i, e, cx) &&
-                                (t.emplace(std::move(k), std::move(v)), true);
+                                (t.emplace(std::move(k), std::move(v)), true)
+                        ;
                     });
                 }
         };

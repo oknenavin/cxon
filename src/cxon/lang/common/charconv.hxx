@@ -128,9 +128,10 @@ namespace cxon { namespace charconv { namespace bits {
             }
         template <typename T>
             inline auto itoa(char* b, T t, int base) -> typename std::enable_if<std::is_signed<T>::value, unsigned>::type {
+                using U = typename std::make_unsigned<T>::type;
                 return t < 0 ?
-                    *b = '-', itoa<typename std::make_unsigned<T>::type>(++b, -t, base) + 1 :
-                    itoa<typename std::make_unsigned<T>::type>(b, t, base)
+                    *b = '-', itoa<U>(++b, static_cast<U>(t), base) + 1 :
+                    itoa<U>(b, static_cast<U>(t), base)
                 ;
             }
 
@@ -252,7 +253,7 @@ namespace cxon { namespace charconv { // <charconv>
                 return { r.ptr, r.ec };
             }
         template <typename T>
-            inline auto to_chars(char* f, char* l, T& t, int base = 10)
+            inline auto to_chars(char* f, char* l, T t, int base = 10)
                     noexcept(noexcept(to_chars_i_(option<1>(), f, l, t, base)))
                 ->  enable_if_t<std::is_integral<T>::value, std::to_chars_result>
             {
@@ -297,7 +298,7 @@ namespace cxon { namespace charconv { // <charconv>
                 return { r.ptr, r.ec };
             }
         template <typename T>
-            inline auto to_chars(char* f, char* l, T& t, int precision)
+            inline auto to_chars(char* f, char* l, T t, int precision)
                     noexcept(noexcept(to_chars_f_(option<1>(), f, l, t, precision)))
                 ->  enable_if_t<std::is_floating_point<T>::value, std::to_chars_result>
             {

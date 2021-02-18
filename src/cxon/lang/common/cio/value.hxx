@@ -12,11 +12,14 @@
 
 namespace cxon { namespace cio { namespace val { // value parsing
 
-    template <typename O = void>    struct skip_t; // expecting valid poke<O, char>(...)
-    template <typename T>           struct is_skip_t;
+    template <typename C = void>    struct sink; // expecting valid poke<O, char>(...)
+    template <typename T>           struct is_sink;
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool skip(T& t, II& i, II e, Cx& cx);
+        inline bool sink_read(T& t, II& i, II e, Cx& cx);
+
+    template <typename X, typename O, typename S, typename Cx>
+        inline bool sink_write(O& o, const S& s, Cx& cx);
 
 }}}
 
@@ -40,7 +43,7 @@ namespace cxon { namespace cio { namespace val {
                             else if (c == X::list::end)                                                         break;
                             else                            { if (!poke(o, *i))                                 return false; }
                         }
-                        return poke(o, *i);
+                        return true;
                     }
             private:
                 template <typename O, typename II>
@@ -52,6 +55,7 @@ namespace cxon { namespace cio { namespace val {
                                                         if (++i == e)       return false;
                                                         break;
                                 case X::string::end:    return poke(o, *i);
+                                default:                if (!poke(o, *i))   return false;
                             }
                         }
                         return false;
@@ -68,6 +72,8 @@ namespace cxon { namespace cio { namespace val {
                                                         if (r == 0)             return true;
                                                         --r; break;
                                 case X::string::beg:    if (!skip_(o, i, e))    return false;
+                                                        break;
+                                default:                if (!poke(o, *i))       return false;
                             }
                         }
                         return false;
@@ -76,24 +82,34 @@ namespace cxon { namespace cio { namespace val {
 
     }
 
-    template <typename O>
-        struct skip_t {
-            O value;
-            void push_back(char c) const { poke(value, c); }
+    template <typename C>
+        struct sink {
+            using value_type = typename C::value_type; // for is_back_insertable
+            void push_back(value_type c) { poke(value, c); }
+            C value;
         };
     template <>
-        struct skip_t<void> {
-            void push_back(char) const {}
+        struct sink<void> {
+            using value_type = char; // for is_back_insertable
+            void push_back(value_type) {}
         };
 
     template <typename T>
-        struct is_skip_t : std::false_type {};
+        struct is_sink : std::false_type {};
     template <typename T>
-        struct is_skip_t<skip_t<T>> : std::true_type {};
+        struct is_sink<sink<T>> : std::true_type {};
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool skip(T& t, II& i, II e, Cx& cx) {
+        inline bool sink_read(T& t, II& i, II e, Cx& cx) {
             return bits::value<X>::skip(t, i, e) || (cx|read_error::unexpected);
+        }
+
+    template <typename X, typename O, typename S, typename Cx>
+        inline bool sink_write(O& o, const S& s, Cx& cx) {
+            for (auto e : s.value) 
+                if (!cio::poke<X>(o, e, cx))
+                    return false;
+            return true;
         }
 
 }}}

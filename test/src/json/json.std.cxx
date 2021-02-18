@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "../test.hxx"
+#include "test.hxx"
 
 #include "cxon/lib/std/utility.hxx" // std::pair
 #include "cxon/lib/std/complex.hxx"
@@ -39,6 +39,24 @@ TEST_BEG(cxon::JSON<>) // string
         R_TEST(string(), "a", json::read_error::unexpected, 0);
         R_TEST(string(), "\"", json::read_error::unexpected, 1);
         R_TEST(string(), QS("\\u001"), json::read_error::escape_invalid, 1);
+    // std::basic_string<wchar_t> / std::wstring
+        R_TEST(wstring({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
+        W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), wstring({0x0442, 0x0435, 0x0441, 0x0442}));
+        R_TEST(wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
+        W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), wstring({0x6D4B, 0x8BD5}));
+        R_TEST(wstring(), "a", json::read_error::unexpected, 0);
+        R_TEST(wstring(), "\"", json::read_error::unexpected, 1);
+        R_TEST(wstring(), QS("\\u001"), json::read_error::escape_invalid, 1);
+    // std::basic_string<char8_t> / std::u8string
+#       if __cplusplus > 201703L /* C++20 */
+            R_TEST(u8string(u8"test"), QS("test"));
+            W_TEST(QS("test"), u8string(u8"test"));
+            R_TEST(u8string(u8"te\nst"), QS("te\\nst"));
+            W_TEST(QS("te\\nst"), u8string(u8"te\nst"));
+            R_TEST(u8string(), "a", json::read_error::unexpected, 0);
+            R_TEST(u8string(), "\"", json::read_error::unexpected, 1);
+            R_TEST(u8string(), QS("\\u001"), json::read_error::escape_invalid, 1);
+#       endif
     // std::basic_string<char16_t> / std::u16string
         R_TEST(u16string({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), u16string({0x0442, 0x0435, 0x0441, 0x0442}));
@@ -61,14 +79,6 @@ TEST_BEG(cxon::JSON<>) // string
         R_TEST(u32string(), "a", json::read_error::unexpected, 0);
         R_TEST(u32string(), "\"", json::read_error::unexpected, 1);
         R_TEST(u32string(), QS("\\u001"), json::read_error::escape_invalid, 1);
-    // std::basic_string<wchar_t> / std::wstring
-        R_TEST(wstring({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
-        W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), wstring({0x0442, 0x0435, 0x0441, 0x0442}));
-        R_TEST(wstring({0x6D4B, 0x8BD5}), QS("\xE6\xB5\x8B\xE8\xAF\x95"));
-        W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), wstring({0x6D4B, 0x8BD5}));
-        R_TEST(wstring(), "a", json::read_error::unexpected, 0);
-        R_TEST(wstring(), "\"", json::read_error::unexpected, 1);
-        R_TEST(wstring(), QS("\\u001"), json::read_error::escape_invalid, 1);
 TEST_END()
 
 
@@ -228,6 +238,13 @@ TEST_END()
 
 TEST_BEG(cxon::JSON<>)
     using namespace std;
+    // std::tuple<>
+        R_TEST((tuple<>{}), "[]");
+        R_TEST((tuple<>{}), "[ ]");
+        W_TEST("[]", (tuple<>{}));
+        R_TEST((tuple<>{}), "", json::read_error::unexpected, 0);
+        R_TEST((tuple<>{}), " ", json::read_error::unexpected, 1);
+        R_TEST((tuple<>{}), "[", json::read_error::unexpected, 1);
     // std::tuple<int, double, std::string>
         R_TEST((tuple<int, double, string>{0, 0, "0"}), "[0, 0, \"0\"]");
         W_TEST("[0,0,\"0\"]", (tuple<int, double, string>{0, 0, "0"}));
@@ -249,6 +266,8 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((pair<int, string>{}), "[0]", json::read_error::unexpected, 2);
         R_TEST((pair<int, string>{}), "[0, \"\", 0]", json::read_error::unexpected, 6);
     // std::valarray<int>
+        R_TEST((valarray<int>{}), "[]");
+        W_TEST("[]", (valarray<int>{}));
         R_TEST((valarray<int>{1, 2, 3}), "[1, 2, 3]");
         W_TEST("[1,2,3]", (valarray<int>{1, 2, 3}));
         R_TEST((valarray<int>{1, 2, 3, 4}), "[1, 2, 3, 4]");

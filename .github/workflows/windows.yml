@@ -1,0 +1,19 @@
+name: Windows
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  
+  # msvc #######################################################################
+    
+  msvc-2019:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure
+      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cd test ; cmake --build build --parallel
+    - name: Check
+      run: cd test/build ; ctest -j -V -C Release

@@ -26,6 +26,15 @@ namespace cxon {
         };
 
     template <typename X, typename T, typename ...R>
+        struct write<JSON<X>, std::queue<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::queue<T, R...>& t, Cx& cx) {
+                    auto const& c = cio::con::bits::adaptor<std::queue<T, R...>>::container(t);
+                    return cio::con::write_list<J>(o, c.begin(), c.end(), cx);
+                }
+        };
+
+    template <typename X, typename T, typename ...R>
         struct read<JSON<X>, std::priority_queue<T, R...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::priority_queue<T, R...>& t, II& i, II e, Cx& cx) {
@@ -33,15 +42,6 @@ namespace cxon {
                         T o{};
                         return read_value<J>(o, i, e, cx) && (t.emplace(std::move(o)), true);
                     });
-                }
-        };
-
-    template <typename X, typename T, typename ...R>
-        struct write<JSON<X>, std::queue<T, R...>> {
-            template <typename O, typename Cx, typename J = JSON<X>>
-                static bool value(O& o, const std::queue<T, R...>& t, Cx& cx) {
-                    auto const& c = cio::con::bits::adaptor<std::queue<T, R...>>::container(t);
-                    return cio::con::write_list<J>(o, c.begin(), c.end(), cx);
                 }
         };
 

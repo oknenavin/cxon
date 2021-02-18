@@ -10,13 +10,6 @@
 
 namespace cxon {
 
-    template <typename T, typename ...R>
-        struct continuous<std::vector<T, R...>> {
-            static auto range(const std::vector<T, R...>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
-                return std::make_pair(&i[0], &i[0] + i.size());
-            }
-        };
-
     template <typename X, typename T, typename ...R>
         struct read<JSON<X>, std::vector<T, R...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
