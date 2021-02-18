@@ -1,0 +1,487 @@
+// Copyright (c) 2017-2020 oknenavin.
+// Licensed under the MIT license. See LICENSE file in the library root for full license information.
+//
+// SPDX-License-Identifier: MIT
+
+#include "test.hxx"
+
+#include "cxon/lib/std/array.hxx"
+#include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/string_view.hxx"
+#include "cxon/lib/std/list.hxx"
+#include "cxon/lib/std/map.hxx"
+#include "cxon/lib/std/tuple.hxx"
+
+#include "../pretty.hxx"
+
+#include <cstdio>
+
+////////////////////////////////////////////////////////////////////////////////
+
+TEST_BEG(cxon::JSON<>) // interface/read
+    // iterator
+    {   int r; char const i[] = "1";
+        TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
+    }
+    {   int r; std::string const i = "1";
+        TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
+    }
+    {   int r; std::vector<char> const i = {'1', '\0'};
+        TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
+    }
+    // container
+    {   int r; char const i[] = "1";
+        TEST_CHECK(from_bytes(r, i) && r == 1);
+    }
+    {   int r; std::string const i = "1";
+        TEST_CHECK(from_bytes(r, i) && r == 1);
+    }
+#   ifdef CXON_HAS_LIB_STD_STRING_VIEW
+    {   int r; std::string_view const i("1", 1);
+        TEST_CHECK(from_bytes(r, i) && r == 1);
+    }
+#   endif
+    {   int r; std::vector<char> const i = {'1', '\0'};
+        TEST_CHECK(from_bytes(r, i) && r == 1);
+    }
+    {   int r; std::array<char, 2> const i = {'1', '\0'};
+        TEST_CHECK(from_bytes(r, i) && r == 1);
+    }
+TEST_END()
+
+TEST_BEG(cxon::JSON<>) // interface/write
+    // output iterator
+    {   std::string r; std::string const e = QS("1");
+        TEST_CHECK(to_bytes(std::back_inserter(r), "1") && r == e);
+    }
+    {   std::string r; std::string const e = "1";
+        TEST_CHECK(to_bytes(std::back_inserter(r), 1) && r == e);
+    }
+    {   std::string r; std::string const e = "true";
+        TEST_CHECK(to_bytes(std::back_inserter(r), true) && r == e);
+    }
+    // range
+    {   char o[16]; char const e[] = QS("1");
+        auto const r = to_bytes(std::begin(o), std::end(o), "1");
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+    {   char o[3]; char const e[] = QS("1");
+        auto const r = to_bytes(std::begin(o), std::end(o), "1");
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+        {   char o[1];
+            auto const r = to_bytes(std::begin(o), std::end(o), "42");
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+    {   char o[16]; char const e[] = "1";
+        auto const r = to_bytes(std::begin(o), std::end(o), 1);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+    {   char o[2]; char const e[] = "42";
+        auto const r = to_bytes(std::begin(o), std::end(o), 42);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+        {   char o[1];
+            auto const r = to_bytes(std::begin(o), std::end(o), 42);
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+    {   char o[16]; char const e[] = "true";
+        auto const r = to_bytes(std::begin(o), std::end(o), true);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+    {   char o[4]; char const e[] = "true";
+        auto const r = to_bytes(std::begin(o), std::end(o), true);
+        TEST_CHECK(r && std::memcmp(o, e, std::strlen(e)) == 0);
+    }
+        {   char o[1];
+            auto const r = to_bytes(std::begin(o), std::end(o), true);
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+    // container/std::string (push_back, append)
+    {   std::string r; std::string const e = QS("1");
+        TEST_CHECK(to_bytes(r, "1") && r == e);
+    }
+    {   std::string r; std::string const e = "1";
+        TEST_CHECK(to_bytes(r, 1) && r == e);
+    }
+    {   std::string r; std::string const e = "true";
+        TEST_CHECK(to_bytes(r, true) && r == e);
+    }
+    // container/std::vector (push_back)
+    {   std::vector<char> r; std::vector<char> const e = {'"', '1', '"'};
+        TEST_CHECK(to_bytes(r, "1") && r == e);
+    }
+    {   std::vector<char> r; std::vector<char> const e = {'1'};
+        TEST_CHECK(to_bytes(r, 1) && r == e);
+    }
+    {   std::vector<char> r; std::vector<char> const e = {'t', 'r', 'u', 'e'};
+        TEST_CHECK(to_bytes(r, true) && r == e);
+    }
+TEST_END()
+
+
+namespace {
+    enum Enum11 { one, two, three, four };
+}
+
+CXON_JSON_ENM(Enum11,
+    CXON_JSON_ENM_VALUE_ASIS(one),
+    CXON_JSON_ENM_VALUE_NAME("Two (2)", two),
+    CXON_JSON_ENM_VALUE_ASIS(three)
+)
+
+namespace {
+
+    struct Struct11 {
+        int field;
+        Struct11(int f = 0) : field(f) {}
+        bool operator ==(const Struct11& t) const { return field == t.field; }
+        CXON_JSON_CLS_READ_MEMBER(Struct11,
+            CXON_JSON_CLS_FIELD_ASIS(field)
+        )
+    };
+
+}
+
+TEST_BEG(cxon::JSON<>) // interface/parameters
+    {   std::string r; std::string const e = "3.142";
+        TEST_CHECK(to_bytes(r, 3.1415926, json::fp_precision::set<4>()) && r == e);
+    }
+    {   int *r = nullptr;
+        TEST_CHECK(from_bytes(r, "42", json::allocator::set(std::allocator<char>())) && *r == 42);
+    }
+    {   size_t r = 0;
+        TEST_CHECK(from_bytes(r, std::string("123"), json::num_len_max::set<4>()) && r == 123);
+    }
+    {   unsigned r = 0; std::string const i = "123";
+        auto ib = test::make_force_input_iterator(i.begin()), ie = test::make_force_input_iterator(i.end());
+        auto const e = from_bytes(r, ib, ie, json::num_len_max::set<2>());
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '3');
+    }
+    {   double r = 0; std::list<char> const i = {'1', '2', '3'};
+        TEST_CHECK(from_bytes(r, i, json::num_len_max::set<4>()) && r == 123);
+    }
+    {   float r = 0; std::list<char> const i = {'1', '2', '3'};
+        auto const e = from_bytes(r, i, json::num_len_max::set<2>());
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '1');
+    }
+    {   Enum11 r = Enum11::one;
+        TEST_CHECK(from_bytes(r, QS("three"), json::ids_len_max::set<8>()) && r == Enum11::three);
+    }
+    {   Enum11 r = Enum11::one; std::string const i = QS("three");
+        auto const e = from_bytes(r, i, json::ids_len_max::set<2>());
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '"');
+    }
+    {   Struct11 r(42);
+        TEST_CHECK(from_bytes(r, "{ \"field\": 42 }", json::ids_len_max::set<8>()) && r == Struct11(42));
+    }
+    {   Struct11 r(42);
+        auto const e = from_bytes(r, "{ \"field\": 42 }", json::ids_len_max::set<2>());
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '"');
+    }
+TEST_END()
+
+TEST_BEG(cxon::JSON<>) // errors
+    using namespace cxon;
+    {   std::error_condition ec;
+            ec = json::read_error::ok;
+                CXON_ASSERT(ec.category() == json::read_error_category::value(), "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cio/read") == 0, "check failed");
+                CXON_ASSERT(ec.message() == "no error", "check failed");
+            ec = json::read_error::unexpected;
+                CXON_ASSERT(ec.message() == "unexpected input", "check failed");
+            ec = json::read_error::character_invalid;
+                CXON_ASSERT(ec.message() == "invalid character", "check failed");
+            ec = json::read_error::integral_invalid;
+                CXON_ASSERT(ec.message() == "invalid integral or value out of range", "check failed");
+            ec = json::read_error::floating_point_invalid;
+                CXON_ASSERT(ec.message() == "invalid floating point", "check failed");
+            ec = json::read_error::boolean_invalid;
+                CXON_ASSERT(ec.message() == "invalid boolean", "check failed");
+            ec = json::read_error::escape_invalid;
+                CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
+            ec = json::read_error::surrogate_invalid;
+                CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
+            ec = json::read_error::overflow;
+                CXON_ASSERT(ec.message() == "buffer overflow", "check failed");
+            ec = json::read_error(255);
+                CXON_ASSERT(ec.message() == "unknown error", "check failed");
+    }
+    {   std::error_condition ec;
+            ec = json::write_error::ok;
+                CXON_ASSERT(ec.category() == json::write_error_category::value(), "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cio/write") == 0, "check failed");
+                CXON_ASSERT(ec.message() == "no error", "check failed");
+            ec = json::write_error::output_failure;
+                CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
+            ec = json::write_error::argument_invalid;
+                CXON_ASSERT(ec.message() == "invalid argument", "check failed");
+            ec = json::write_error(255);
+                CXON_ASSERT(ec.message() == "unknown error", "check failed");
+    }
+TEST_END()
+
+TEST_BEG(cxon::JSON<>) // pretty
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        char const s0[] =
+            "{\n"
+            "  \"even\": [\n"
+            "    2,\n"
+            "    4,\n"
+            "    6\n"
+            "  ],\n"
+            "  \"odd\": [\n"
+            "    1,\n"
+            "    3,\n"
+            "    5\n"
+            "  ]\n"
+            "}"
+        ;
+        std::string s1;
+            to_bytes(test::make_indenter(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        std::string s1;
+            to_bytes(test::make_indenter(s1), m);
+        std::string const s0 =
+            test::pretty(s1);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
+        char const s0[] =
+            "{\n"
+            "  \"ala\": \"ba\\\"la\",\n"
+            "  \"bl\\nah\": \"blah\",\n"
+            "  \"bl ah\": \"blah\"\n"
+            "}"
+        ;
+        std::string s1;
+            to_bytes(test::make_indenter(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
+        std::string s1;
+            to_bytes(test::make_indenter(s1), m);
+        std::string const s0 =
+            test::pretty(s1);
+        TEST_CHECK(s1 == s0);
+    }
+TEST_END()
+
+namespace key {
+    template <typename X, bool Q> struct unquoted : X::traits {
+        struct map : X::traits::map {
+            static constexpr bool unquoted_keys = Q;
+        };
+    };
+    struct less_cstr {
+        bool operator ()(const char* k0, const char* k1) const { return (!k0 && k1) || (k0 && k1 && std::strcmp(k0, k1) < 0); }
+    };
+}
+
+TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>) // pretty
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        char const s0[] =
+            "{\n"
+            "  even: [\n"
+            "    2,\n"
+            "    4,\n"
+            "    6\n"
+            "  ],\n"
+            "  odd: [\n"
+            "    1,\n"
+            "    3,\n"
+            "    5\n"
+            "  ]\n"
+            "}"
+        ;
+        std::string s1;
+            to_bytes<XXON>(test::make_indenter(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
+        std::string s1;
+            to_bytes(test::make_indenter(s1), m);
+        std::string const s0 =
+            test::pretty(s1);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
+        char const s0[] =
+            "{\n"
+            "  ala: \"ba\\\"la\",\n"
+            "  bl\\nah: \"blah\",\n"
+            "  bl\\ ah: \"blah\"\n"
+            "}"
+        ;
+        std::string s1;
+            to_bytes<XXON>(test::make_indenter(s1, 2, ' '), m);
+        TEST_CHECK(s1 == s0);
+    }
+    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
+        std::string s1;
+            to_bytes(test::make_indenter(s1), m);
+        std::string const s0 =
+            test::pretty(s1);
+        TEST_CHECK(s1 == s0);
+    }
+TEST_END()
+
+
+namespace jsonrpc {
+
+    // request
+
+    template <typename T>
+        struct napa { // named parameter
+            char const*const key;
+            T const value;
+
+            template <typename X, typename O, typename Cx, typename J = X>
+                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON> {
+                    return cxon::cio::write_key<J>(o, key, cx) && cxon::write_value<J>(o, value, cx);
+                }
+        };
+
+    template <typename T>
+        constexpr napa<T> make_napa(const char* k, T&& v) {
+            return {k, v};
+        }
+
+    template <typename ...P>
+        struct request {
+            static char const*const jsonrpc;
+            size_t const            id;
+            char const*const        method;
+            std::tuple<P...> const  params;
+
+            constexpr request(size_t id, const char* method, P... params) noexcept
+            :   id(id), method(method), params(params...) { }
+
+            CXON_JSON_CLS_WRITE_MEMBER(request,
+                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
+                CXON_JSON_CLS_FIELD_ASIS(id),
+                CXON_JSON_CLS_FIELD_ASIS(method),
+                CXON_JSON_CLS_FIELD_ASIS(params)
+            )
+        };
+    template <typename ...P>
+        char const*const request<P...>::jsonrpc = "2.0";
+
+    template <typename ...P>
+        constexpr request<P...> make_request(size_t id, const char* method, P... params) {
+            return request<P...>(id, method, params...);
+        }
+    template <typename ...P>
+        constexpr request<napa<P>...> make_request(size_t id, const char* method, napa<P>... params) {
+            return request<napa<P>...>(id, method, params...);
+        }
+
+    // response
+
+    template <typename D>
+        struct error {
+            int         code;
+            std::string message;
+            D           data;
+
+            CXON_JSON_CLS_READ_MEMBER(error,
+                CXON_JSON_CLS_FIELD_ASIS(code),
+                CXON_JSON_CLS_FIELD_ASIS(message),
+                CXON_JSON_CLS_FIELD_ASIS(data)
+            )
+        };
+
+    template <typename R, typename D = cxon::cio::val::sink<>>
+        struct response {
+            char            jsonrpc[8];
+            size_t          id;
+            R               result;
+            struct error<D> error;
+
+            constexpr response() noexcept
+            :   jsonrpc{0}, id(), result(), error() { }
+
+            CXON_JSON_CLS_READ_MEMBER(response,
+                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
+                CXON_JSON_CLS_FIELD_ASIS(id),
+                CXON_JSON_CLS_FIELD_ASIS(result),
+                CXON_JSON_CLS_FIELD_ASIS(error)
+            )
+        };
+
+}
+
+namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON object instead of an array
+
+    template <typename X, typename ...T>
+        struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
+            template <typename O, typename Cx, typename J = JSON<X>>
+                static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
+                    return  cio::poke<J>(o, J::map::beg, cx) &&
+                                cio::con::write_tuple<J>(o, t, cx) &&
+                            cio::poke<J>(o, J::map::end, cx)
+                    ;
+                }
+        };
+
+}
+
+TEST_BEG(cxon::JSON<>) // json-rpc
+    {   // params array
+        auto const call = jsonrpc::make_request(1, "sub", 42, 23);
+        std::string req; // serialize call to req
+            auto const w = to_bytes(req, call);
+        TEST_CHECK(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":[42,23]}");
+    }
+    {   // params object
+        auto const call = jsonrpc::make_request(1, "sub", jsonrpc::make_napa("x", 42), jsonrpc::make_napa("y", 23));
+        std::string req; // serialize call to req
+            auto const w = to_bytes(req, call);
+        TEST_CHECK(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":{\"x\":42,\"y\":23}}");
+    }
+    {   // round-trip: req -> res ok
+        char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
+        jsonrpc::response<int> ret; // serialize res to ret
+            auto const r = from_bytes(ret, res);
+        TEST_CHECK(r && ret.id == 1 && ret.result == 19);
+    }
+    {   // round-trip: req -> res ko
+        char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
+                            "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
+        {   // serialize res to ret, error's data will be skipped
+            jsonrpc::response<int> ret;
+                auto const r = from_bytes(ret, res);
+            TEST_CHECK( r &&
+                        ret.id == 1 &&
+                        ret.error.code == 42 &&
+                        ret.error.message == "divide by zero"
+            );
+        }
+        {   // serialize res to ret, error's data is bound to std::string
+            jsonrpc::response<int, std::string> ret;
+                auto const r = from_bytes(ret, res);
+            TEST_CHECK( r &&
+                        ret.id == 1 &&
+                        ret.error.code == 42 &&
+                        ret.error.message == "divide by zero" &&
+                        ret.error.data == "a black hole has been created somewhere"
+            );
+        }
+    }
+TEST_END()
+
+////////////////////////////////////////////////////////////////////////////////
+
+int main() {
+    using cxon::test::suite;
+    for (auto t : suite::get())
+        t->test();
+    suite::err() ?
+        fprintf(stdout, "cxon/json: %u of %u failed\n", suite::err(), suite::all()) :
+        fprintf(stdout, "cxon/json: %u of %u passed\n", suite::all(), suite::all())
+    ;
+    return suite::err();
+}

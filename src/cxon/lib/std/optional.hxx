@@ -17,6 +17,9 @@
 #       ifdef CXON_JSON_DEFINED
 #           include "cxon/lang/json/lib/std/optional.hxx"
 #       endif
+#       ifdef CXON_CBOR_DEFINED
+#           include "cxon/lang/cbor/lib/std/optional.hxx"
+#       endif
 #   endif // CXON_HAS_LIB_STD_OPTIONAL
 
 #endif // CXON_LIB_STD_OPTIONAL_HXX_

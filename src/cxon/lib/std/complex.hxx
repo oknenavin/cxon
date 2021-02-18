@@ -11,5 +11,8 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/std/complex.hxx"
 #   endif
+#   ifdef CXON_CBOR_DEFINED
+#       include "cxon/lang/cbor/lib/std/complex.hxx"
+#   endif
 
 #endif // CXON_LIB_STD_COMPLEX_

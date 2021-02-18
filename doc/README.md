@@ -20,6 +20,7 @@
     - [Introduction](../src/cxon/lang/json/node/README.md#introduction)
     - [`cxon:json::basic_node`](../src/cxon/lang/json/node/README.md#basic_node)
     - [`CXON` Integration](../src/cxon/lang/json/node/README.md#cxon-integration)
+  - [`CXON/CBOR`](../src/cxon/lang/cbor/README.md)
 
 
 --------------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_JSON_FWD_HXX_
 #define CXON_JSON_JSON_FWD_HXX_
 
-#include "cxon/lang/common/chio/error-fwd.hxx"
+#include "cxon/lang/common/cio/error-fwd.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -25,11 +25,11 @@ namespace cxon { // format selector
 
 namespace cxon { namespace json { // errors
 
-    using chio::read_error;
-    using chio::write_error;
+    using cio::read_error;
+    using cio::write_error;
 
-    using chio::read_error_category;
-    using chio::write_error_category;
+    using cio::read_error_category;
+    using cio::write_error_category;
 
     // node
 

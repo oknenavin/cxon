@@ -6,18 +6,29 @@
 #ifndef CXON_JSON_CLASS_HXX_
 #define CXON_JSON_CLASS_HXX_
 
-#include "cxon/lang/common/chio/class.hxx"
+#include "cxon/lang/common/cio/class.hxx"
 
 namespace cxon { namespace json {
-    namespace cls = chio::cls;
+    namespace cls = cio::cls;
 }}
 
-namespace cxon { // chio::val::skip_t read
+namespace cxon { // cio::val::sink read
 
-    template <typename X, typename T, typename II, typename Cx>
-        inline auto read_value(chio::val::skip_t<T>& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
-            return chio::val::skip<X>(t, i, e, cx);
-        }
+    template <typename X, typename T>
+        struct read<JSON<X>, cio::val::sink<T>> {
+            template <typename II, typename Cx, typename Y = JSON<X>>
+                static bool value(cio::val::sink<T>& s, II& i, II e, Cx& cx) {
+                    return cio::val::sink_read<Y>(s, i, e, cx);
+                }
+        };
+
+    template <typename X, typename T>
+        struct write<JSON<X>, cio::val::sink<T>> {
+            template <typename O, typename Cx, typename Y = JSON<X>>
+                static bool value(O& o, const cio::val::sink<T>& s, Cx& cx) {
+                    return cio::val::sink_write<Y>(o, s, cx);
+                }
+        };
 
 }
 

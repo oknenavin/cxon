@@ -12,9 +12,9 @@ namespace cxon {
         struct read<JSON<X>, std::optional<T>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
-                    if (chio::peek(i, e) == *J::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
+                    if (cio::peek(i, e) == *J::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
                         II const o = i;
-                        return chio::consume<J>(J::id::nil, i, e) || (chio::rewind(i, o), cx|chio::read_error::unexpected);
+                        return cio::consume<J>(J::id::nil, i, e) || (cio::rewind(i, o), cx|cio::read_error::unexpected);
                     }
                     return read_value<J>(t.emplace(), i, e, cx);
                 }
@@ -26,7 +26,7 @@ namespace cxon {
                 static bool value(O& o, const std::optional<T>& t, Cx& cx) {
                     return t.has_value() ?
                         write_value<J>(o, t.value(), cx) :
-                        chio::poke<J>(o, J::id::nil, cx)
+                        cio::poke<J>(o, J::id::nil, cx)
                     ;
                 }
         };

@@ -6,26 +6,22 @@
 #ifndef CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 #define CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 
-namespace cxon { namespace chio {
+namespace cxon { namespace cio {
 
 #   define CXON_QUOTED(T)\
         template <typename ...R> struct is_quoted<std::basic_string_view<T, R...>> : std::true_type  {};
         CXON_QUOTED(char)
+        CXON_QUOTED(wchar_t)
+#       if __cplusplus > 201703L /* C++20 */
+            CXON_QUOTED(char8_t)
+#       endif
         CXON_QUOTED(char16_t)
         CXON_QUOTED(char32_t)
-        CXON_QUOTED(wchar_t)
 #   undef CXON_QUOTED
 
 }}
 
 namespace cxon {
-
-    template <typename T, typename ...R>
-        struct continuous<std::basic_string_view<T, R...>> {
-            static auto range(const std::basic_string_view<T, R...>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
-                return std::make_pair(&i[0], &i[0] + i.size());
-            }
-        };
 
     template <typename X, typename T, typename ...R>
         struct read<JSON<X>, std::basic_string_view<T, R...>> {
@@ -40,14 +36,14 @@ namespace cxon {
         struct write<JSON<X>, std::basic_string_view<T, R...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return chio::str::pointer_write<J>(o, t.data(), t.size(), cx);
+                    return cio::str::pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
     template <typename X, typename T, typename ...R>
-        struct write<JSON<chio::UQKEY<X>>, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx, typename J = JSON<chio::UQKEY<X>>>
+        struct write<JSON<cio::UQKEY<X>>, std::basic_string_view<T, R...>> {
+            template <typename O, typename Cx, typename J = JSON<cio::UQKEY<X>>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return chio::str::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
+                    return cio::str::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
 

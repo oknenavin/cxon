@@ -6,26 +6,28 @@
 #ifndef CXON_JSON_LIB_STD_BITS_STRING_HXX_
 #define CXON_JSON_LIB_STD_BITS_STRING_HXX_
 
-#include "cxon/lang/common/chio/char.hxx"
-#include "cxon/lang/common/chio/string.hxx"
+#include "cxon/lang/common/cio/char.hxx"
+#include "cxon/lang/common/cio/string.hxx"
 
 namespace cxon { namespace json { namespace bits { // std::basic_string read
 
-    template <typename X, typename ...R, typename II, typename Cx> // TODO: common with arrays?
-        inline bool basic_string_char_read(std::basic_string<char, R...>& t, II& i, II e, Cx& cx) {
+    template <typename X, typename T, typename ...R, typename II, typename Cx> // TODO: common with arrays?
+        inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
+            -> enable_if_t<cio::chr::is_char_8<T>::value, bool>
+        {
             II const o = i;
-                char32_t const c32 = chio::str::consume_str<X>::chr(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
-                char b[4]; t.append(b, chio::chr::utf32_to_utf8(b, c32));
+                char32_t const c32 = cio::str::consume_str<X>::chr(i, e, cx);
+                    if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
+                T b[4]; t.append(b, cio::chr::utf32_to_utf8(b, c32));
             return true;
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<chio::chr::is_char16_t<T>::value, bool>
+            -> enable_if_t<cio::chr::is_char_16<T>::value, bool>
         {
             II const o = i;
-                char32_t c32 = chio::str::consume_str<X>::chr(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
+                char32_t c32 = cio::str::consume_str<X>::chr(i, e, cx);
+                    if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
                     t.push_back(char16_t(0xD800 | (c32 >> 10)));
@@ -38,26 +40,26 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<chio::chr::is_char32_t<T>::value, bool>
+            -> enable_if_t<cio::chr::is_char_32<T>::value, bool>
         {
             II const o = i;
-                char32_t const c32 = chio::str::consume_str<X>::chr(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return chio::rewind(i, o), false;
+                char32_t const c32 = cio::str::consume_str<X>::chr(i, e, cx);
+                    if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
             return t.push_back(T(c32)), true;
         }
 
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline bool basic_string_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-            if (!chio::str::consume_str<X>::beg(i, e, cx)) return false;
-                for (char c = chio::peek(i, e); chio::chr::is<X>::real(c); c = chio::peek(i, e)) {
-                    if (chio::str::is_str<X>::end(c))              return chio::str::consume_str<X>::end(i, e, cx);
+            if (!cio::str::consume_str<X>::beg(i, e, cx)) return false;
+                for (char c = cio::peek(i, e); cio::chr::is<X>::real(c); c = cio::peek(i, e)) {
+                    if (cio::str::is_str<X>::end(c))              return cio::str::consume_str<X>::end(i, e, cx);
                     if (!basic_string_char_read<X>(t, i, e, cx))    return false;
                 }
-            return cx|chio::read_error::unexpected;
+            return cx|cio::read_error::unexpected;
         }
 
-        using chio::str::pointer_write;
-        using chio::str::uqkey_pointer_write;
+        using cio::str::pointer_write;
+        using cio::str::uqkey_pointer_write;
 
 }}}
 

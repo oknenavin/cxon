@@ -24,6 +24,16 @@
 #   define CXON_ASSERT(e, m) ((void)(e))
 #endif
 
+#if __cplusplus < 201703L
+#   if defined(__GNUC__)  && __GNUC__ >= 7 && !defined(__clang__)
+#       define CXON_FALLTHROUGH [[gnu::fallthrough]]
+#   else
+#       define CXON_FALLTHROUGH
+#   endif
+#else
+#   define CXON_FALLTHROUGH [[fallthrough]]
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon {
@@ -38,19 +48,39 @@ namespace cxon {
 
     // type traits
 
+    template <typename T> struct is_bool;
     template <typename T> struct is_char;
+    template <typename T> struct is_numeric;
+
+    // container
+
+    template <typename C>
+        using has_emplace_back      = std::is_same<decltype(std::declval<C>().emplace_back()), typename C::reference>;
+    template <typename C>
+        using has_emplace_back_void = std::is_same<decltype(std::declval<C>().emplace_back()), void>;
+    template <typename C>
+        using has_back              = std::is_same<decltype(std::declval<C>().back()), typename C::reference>;
+    template <typename C>
+        using has_push_back         = std::is_same<decltype(std::declval<C>().push_back(std::declval<typename C::value_type>())), void>;
+
+    template <typename C>
+        using is_back_insertable    = has_push_back<C>;
+
+    template <typename C>
+        struct continuous;
+            //std::pair<auto, auto> range(const C& c);
 
     // iterators
 
     template <typename I>
-        using iterator_category_t = typename std::iterator_traits<I>::iterator_category;
-
-    template <typename, typename = void> struct is_output_iterator;
-    template <typename, typename = void> struct is_forward_iterator;
-    template <typename, typename = void> struct is_back_insertable;
+        using   iterator_category_t = typename std::iterator_traits<I>::iterator_category;
 
     template <typename I>
-        struct continuous;
+        using   is_output_iterator = std::is_same<iterator_category_t<I>, std::output_iterator_tag>;
+    template <typename, typename = void>
+        struct  is_forward_iterator;
+    template <typename I>
+        using   is_random_access_iterator = std::is_same<iterator_category_t<I>, std::random_access_iterator_tag>;
 
     template <typename FwIt>
         struct range_output_iterator;
@@ -86,41 +116,51 @@ namespace cxon {
 
     // type traits
 
-    template <typename T>   struct is_char : std::false_type {};
-    template <>             struct is_char<char> : std::true_type {};
-    template <>             struct is_char<wchar_t> : std::true_type {};
-#   if __cplusplus >= 202002L
-        template <>             struct is_char<char8_t> : std::true_type {};
-#   endif
-    template <>             struct is_char<char16_t> : std::true_type {};
-    template <>             struct is_char<char32_t> : std::true_type {};
+    namespace bits {
+
+        template <typename T>   struct is_bool_ : std::false_type {};
+        template <>             struct is_bool_<bool> : std::true_type {};
+
+        template <typename T>   struct is_char_ : std::false_type {};
+        template <>             struct is_char_<char> : std::true_type {};
+        template <>             struct is_char_<wchar_t> : std::true_type {};
+#       if __cplusplus > 201703L /* C++20 */
+            template <>             struct is_char_<char8_t> : std::true_type {};
+#       endif
+        template <>             struct is_char_<char16_t> : std::true_type {};
+        template <>             struct is_char_<char32_t> : std::true_type {};
+    }
+
+    template <typename T>
+        struct is_bool {
+            static constexpr bool value = bits::is_bool_<typename std::remove_cv<T>::type>::value;
+        };
+
+    template <typename T>
+        struct is_char {
+            static constexpr bool value = bits::is_char_<typename std::remove_cv<T>::type>::value;
+        };
+
+    template <typename T>
+        struct is_numeric {
+            static constexpr bool value = std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value;
+        };
+
+    // container
+
+    template <typename C>
+        struct continuous {
+            static constexpr auto range(const C& c) -> decltype(std::make_pair(std::begin(c), std::end(c))) {
+                return std::make_pair(std::begin(c), std::end(c));
+            }
+        };
 
     // iterators
-
-    template <typename I>
-        using iterator_category_t = typename std::iterator_traits<I>::iterator_category;
-
-    template <typename, typename/* = void*/>
-        struct is_output_iterator : std::false_type {};
-    template <typename I>
-        struct is_output_iterator<I, enable_if_t<std::is_same<iterator_category_t<I>, std::output_iterator_tag>::value>> : std::true_type {};
 
     template <typename, typename/* = void*/>
         struct is_forward_iterator : std::false_type {};
     template <typename I>
         struct is_forward_iterator<I, enable_if_t<!std::is_same<iterator_category_t<I>, std::input_iterator_tag>::value>> : std::true_type {};
-
-    template <typename, typename/* = void*/>
-        struct is_back_insertable : std::false_type {};
-    template <typename C>
-        struct is_back_insertable<C, decltype(C().push_back(' '))> : std::true_type {};
-
-    template <typename I>
-        struct continuous {
-            static constexpr auto range(const I& i) -> decltype(std::make_pair(std::begin(i), std::end(i))) {
-                return std::make_pair(std::begin(i), std::end(i));
-            }
-        };
 
     template <typename FwIt>
         struct range_output_iterator {
@@ -139,9 +179,9 @@ namespace cxon {
             :   b_(b), e_(e)
             { CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range"); }
 
-            range_output_iterator& operator =(const value_type& c) {
+            range_output_iterator& operator =(const value_type& b) {
                 CXON_ASSERT(*this, "unexpected state");
-                return b_ != e_ ? (*b_ = c, ++b_, *this) : (g_ = false, *this);
+                return b_ != e_ ? (*b_ = b, ++b_, *this) : (g_ = false, *this);
             }
 
             template <typename T = value_type>
@@ -169,9 +209,9 @@ namespace cxon {
             operator FwIt() const noexcept { return b_; }
 
             private:
-                FwIt        b_;
-                FwIt const  e_;
-                bool        g_ = true;
+                FwIt b_;
+                FwIt e_;
+                bool g_ = true;
         };
 
     template <typename FwIt>

@@ -10,6 +10,7 @@
   - [Introduction](#introduction)
     - Formats
       - [`JSON`](lang/json/README.md)
+      - [`CBOR`](lang/cbor/README.md)
   - [Interface](#interface)
   - [Implementation bridge](#implementation-bridge)
   - [Parametrization](#parametrization)
@@ -560,7 +561,7 @@ namespace jsonrpc {
 
             template <typename X, typename O, typename Cx, typename J = X>
                 auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON> {
-                    return  cxon::chio::write_key<J>(o, key, cx) &&
+                    return  cxon::cio::write_key<J>(o, key, cx) &&
                             cxon::write_value<J>(o, value, cx)
                     ;
                 }
@@ -615,7 +616,7 @@ namespace jsonrpc {
             )
         };
 
-    template <typename R, typename D = cxon::chio::val::skip_t<>>
+    template <typename R, typename D = cxon::cio::val::skip_t<>>
         struct response {
             char            jsonrpc[8];
             size_t          id;
@@ -641,9 +642,9 @@ namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON obj
         struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
-                    return  chio::poke<J>(o, J::map::beg, cx) &&
-                                chio::con::write_tuple<J>(o, t, cx) &&
-                            chio::poke<J>(o, J::map::end, cx)
+                    return  cio::poke<J>(o, J::map::beg, cx) &&
+                                cio::con::write_tuple<J>(o, t, cx) &&
+                            cio::poke<J>(o, J::map::end, cx)
                     ;
                 }
         };
