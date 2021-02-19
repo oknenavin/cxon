@@ -305,9 +305,9 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-fmt-json]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [img-fmt-cbor]: https://img.shields.io/badge/language-CBOR-608060.svg?style=plastic
 [img-lic]: https://img.shields.io/badge/license-MIT-608060.svg?style=plastic
-[img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg?branch=features%2Fcbor
-[img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg?branch=features%2Fcbor
-[img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg?branch=features%2Fcbor
+[img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg
+[img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg
+[img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
 [img-cod]: https://api.codacy.com/project/badge/Grade/503ff2e908b745ba9dfeba2b50ec2201
 [img-cql]: https://github.com/oknenavin/cxon/workflows/CodeQL/badge.svg
