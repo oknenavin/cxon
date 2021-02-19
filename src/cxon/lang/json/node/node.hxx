@@ -91,12 +91,12 @@ namespace cxon { namespace json { // node
 
         template <typename N, typename T>
             struct node_kind_t;
-        template <typename N> struct node_kind_t<N, typename N::null>     { static constexpr node_kind value = node_kind::null; };
-        template <typename N> struct node_kind_t<N, typename N::boolean>  { static constexpr node_kind value = node_kind::boolean; };
-        template <typename N> struct node_kind_t<N, typename N::number>   { static constexpr node_kind value = node_kind::number; };
-        template <typename N> struct node_kind_t<N, typename N::string>   { static constexpr node_kind value = node_kind::string; };
-        template <typename N> struct node_kind_t<N, typename N::array>    { static constexpr node_kind value = node_kind::array; };
-        template <typename N> struct node_kind_t<N, typename N::object>   { static constexpr node_kind value = node_kind::object; };
+        template <typename N> struct node_kind_t<N, typename N::null>       { static constexpr node_kind value = node_kind::null; };
+        template <typename N> struct node_kind_t<N, typename N::boolean>    { static constexpr node_kind value = node_kind::boolean; };
+        template <typename N> struct node_kind_t<N, typename N::number>     { static constexpr node_kind value = node_kind::number; };
+        template <typename N> struct node_kind_t<N, typename N::string>     { static constexpr node_kind value = node_kind::string; };
+        template <typename N> struct node_kind_t<N, typename N::array>      { static constexpr node_kind value = node_kind::array; };
+        template <typename N> struct node_kind_t<N, typename N::object>     { static constexpr node_kind value = node_kind::object; };
 
         template <typename N, typename T>
             constexpr node_kind node_kind_from() noexcept { return node_kind_t<N, T>::value; }
@@ -249,7 +249,7 @@ namespace cxon { namespace json { // node
 
             bool operator == (const basic_node& n) const {
                 if (kind() != n.kind()) return false;
-                switch (n.kind_) {
+                switch (kind_) {
 #                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return get<T>() == n.get<T>()
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
@@ -272,20 +272,20 @@ namespace cxon { namespace json { // node
         };
 
     template <typename T, typename N>
-        inline bool is(const N& n) { return n.template is<T>(); }
+        inline bool is(const N& n)          { return n.template is<T>(); }
 
     template <typename T, typename N>
-        inline T& imbue(N& n) { return n.template imbue<T>(); }
+        inline T& imbue(N& n)               { return n.template imbue<T>(); }
 
     template <typename T, typename N>
-        inline T& get(N& n) { return n.template get<T>(); }
+        inline T& get(N& n)                 { return n.template get<T>(); }
     template <typename T, typename N>
-        inline const T& get(const N& n) { return n.template get<T>(); }
+        inline const T& get(const N& n)     { return n.template get<T>(); }
 
     template <typename T, typename N>
-        inline T* get_if(N& n) { return n.template get_if<T>(); }
+        inline T* get_if(N& n)              { return n.template get_if<T>(); }
     template <typename T, typename N>
-        inline const T* get_if(const N& n) { return n.template get_if<T>(); }
+        inline const T* get_if(const N& n)  { return n.template get_if<T>(); }
 
 }}
 
