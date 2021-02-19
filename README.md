@@ -252,7 +252,7 @@ supported by `JSON`. Pending are:
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`, 
-`clang++-3.5` and `msvc++ 14.1` (see [builds](https://travis-ci.com/oknenavin/cxon)).
+`clang++-3.5` and `msvc++ 14.1` (see [builds](https://github.com/oknenavin/cxon/tree/develop/.github/workflows)).
 
 
 --------------------------------------------------------------------------------
@@ -269,10 +269,7 @@ $ sudo make install
 or run the test suites with:
 
 ``` bash
-# g++
 $ make check
-# clang++
-$ make CXX=clang++ check
 ```
 
 
