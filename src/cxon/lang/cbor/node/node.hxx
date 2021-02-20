@@ -189,6 +189,8 @@ namespace cxon { namespace cbor { // node
                 basic_node& operator =(unsigned n)                  { imbue<unsigned_integer>() = n; return *this; }
                 basic_node(const char* s) : kind_(node_kind::null)  { imbue<text_string>() = s; }
                 basic_node& operator =(const char* s)               { imbue<text_string>() = s; return *this; }
+                basic_node(const unsigned char* s) : kind_(node_kind::null)  { imbue<byte_string>() = s; }
+                basic_node& operator =(const unsigned char* s)               { imbue<byte_string>() = s; return *this; }
 
             void reset() {
                 switch (kind_) {
