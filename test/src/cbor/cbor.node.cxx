@@ -28,57 +28,57 @@ static unsigned self() {
 
     {   // ex4
         // build using initializer lists
-        node n1 = node::map {
-            { "object", node::map { {"object", 0} } },
-            { "array", node::array {
-                    node::map { {"object", 0} },    // objects and
-                    node::array { 1, 2, 3 },        // arrays must be explicit
-                    (unsigned char*)"4",            // byte_string
-                    "4",                            // text_string
-                    3,                              // signed_integer
-                    14U,                            // unsigned_integer
-                    3.14,                           // floating_point
-                    true,                           // boolean
-                    nullptr                         // null
-                }
+        node n1 = node::array {
+            1,                          // sint
+            node::uint(1),              // uint
+            (unsigned char*)"bytes",    // bytes
+            "text",                     // text
+            node::array {1, 2, 3},      // array
+            node::map {                 // map
+                { 1, 1 }, // { key, value }
+                { node::uint(1), 1 },
+                { (unsigned char*)"bytes", 1 },
+                { "text", 1 },
+                { node::array {1, 2, 3}, 1 },
+                { node::map {{1, 2}, {3, 4}}, 1 },
+                { true, 1 },
+                { nullptr, 1 },
+                { 1.0, 1 }
             },
-            { "byte_string", (unsigned char*)"string" }, // "key": value
-            { "text_string", "string" }, // "key": value
-            { "signed_integer", 3 },
-            { "unsigned_integer", 14U },
-            { "floating_point", 3.14 },
-            { "boolean", false },
-            { "null", nullptr }
+            true,                       // bool
+            nullptr,                    // null
+            1.0                         // real
         };
 
         // build using node's methods
         node n2;
             CHECK(n2.is<node::null>()); // default node type is node_kind::null
-            auto& o = n2.imbue<node::map>(); // change the type and return its value
-                CHECK(n2.is<node::map>());
-                o["object"] = node::map {};                     CHECK(o["object"].is<node::map>());
-                o["array"] = node::array {};                    CHECK(o["array"].is<node::array>());
-                o["byte_string"] = (unsigned char*)"string";    CHECK(o["byte_string"].is<node::byte_string>());
-                o["text_string"] = "string";                    CHECK(o["text_string"].is<node::text_string>());
-                o["signed_integer"] = 3;                        CHECK(o["signed_integer"].is<node::signed_integer>());
-                o["unsigned_integer"] = 14U;                    CHECK(o["unsigned_integer"].is<node::unsigned_integer>());
-                o["floating_point"] = 3.14;                     CHECK(o["floating_point"].is<node::floating_point>());
-                o["boolean"] = false;                           CHECK(o["boolean"].is<node::boolean>());
-                o["null"] = nullptr;                            CHECK(o["null"].is<node::null>());
-            auto& o1 = o["object"].get<node::map>();    // get value reference, the type is known
-                o1["object"] = 0;
-            auto& a = o["array"].get<node::array>();    // get value reference, the type is known
-                a.push_back(node::map {});                      CHECK(a.back().is<node::map>());
-                a.push_back(node::array {1, 2, 3});             CHECK(a.back().is<node::array>());
-                a.push_back((unsigned char*)"4");               CHECK(a.back().is<node::byte_string>());
-                a.push_back("4");                               CHECK(a.back().is<node::text_string>());
-                a.push_back(3);                                 CHECK(a.back().is<node::signed_integer>());
-                a.push_back(14U);                               CHECK(a.back().is<node::unsigned_integer>());
-                a.push_back(3.14);                              CHECK(a.back().is<node::floating_point>());
-                a.push_back(true);                              CHECK(a.back().is<node::boolean>());
-                a.push_back(nullptr);                           CHECK(a.back().is<node::null>());
-            auto* o2 = a[0].get_if<node::map>(); // get value pointer if the type match
-                (*o2)["object"] = 0;
+            auto& a = n2.imbue<node::array>(); // change the type and return its value
+                CHECK(n2.is<node::array>());
+                a.push_back(1);                         CHECK(a.back().is<node::sint>());
+                a.push_back(node::uint(1));             CHECK(a.back().is<node::uint>());
+                a.push_back((unsigned char*)"bytes");   CHECK(a.back().is<node::bytes>());
+                a.push_back("text");                    CHECK(a.back().is<node::text>());
+                a.push_back(node:: array {});           CHECK(a.back().is<node::array>());
+                auto* a1 = a.back().get_if<node::array>();
+                    a1->push_back(1);                   CHECK(a1->back().is<node::sint>());
+                    a1->push_back(2);                   CHECK(a1->back().is<node::sint>());
+                    a1->push_back(3);                   CHECK(a1->back().is<node::sint>());
+                a.push_back(node:: map {});             CHECK(a.back().is<node::map>());
+                auto& m = a.back().get<node::map>();
+                    m[1] = 1;                           CHECK(m.find(node::sint(1)) != m.end());
+                    m[node::uint(1)] = 1;               CHECK(m.find(node::uint(1)) != m.end());
+                    m[(unsigned char*)"bytes"] = 1;     CHECK(m.find(node::bytes((unsigned char*)"bytes")) != m.end());
+                    m["text"] = 1;                      CHECK(m.find(node::text("text")) != m.end());
+                    m[node::array {1, 2, 3}] = 1;       CHECK(m.find(node::array({1, 2, 3})) != m.end());
+                    m[node::map {{1, 2}, {3, 4}}] = 1;  CHECK(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
+                    m[true] = 1;                        CHECK(m.find(node::boolean(true)) != m.end());
+                    m[nullptr] = 1;                     CHECK(m.find(node::null(nullptr)) != m.end());
+                    m[1.0] = 1;                         CHECK(m.find(node::real(1.0)) != m.end());
+                a.push_back(true);                      CHECK(a.back().is<node::boolean>());
+                a.push_back(nullptr);                   CHECK(a.back().is<node::null>());
+                a.push_back(1.0);                       CHECK(a.back().is<node::real>());
+
         CHECK(n1 == n2);
 
         /*std::string s1;
@@ -87,18 +87,38 @@ static unsigned self() {
             cxon::to_bytes(s2, n2);
         CHECK(s1 == s2);*/
     }
+    {
+        node n1(1);     CHECK(n1.is<node::sint>() && n1.get<node::sint>() == 1);
+        node n2(1L);    CHECK(n2.is<node::sint>() && n2.get<node::sint>() == 1);
+        node n3(1LL);   CHECK(n3.is<node::sint>() && n3.get<node::sint>() == 1);
+        node n4(1U);    CHECK(n4.is<node::uint>() && n4.get<node::uint>() == 1);
+        node n5(1UL);   CHECK(n5.is<node::uint>() && n5.get<node::uint>() == 1);
+        node n6(1ULL);  CHECK(n6.is<node::uint>() && n6.get<node::uint>() == 1);
+        node n7(1.);    CHECK(n7.is<node::real>() && n7.get<node::real>() == 1.);
+        node n8(1.F);   CHECK(n8.is<node::real>() && n8.get<node::real>() == 1.F);
+    }
+    {
+        node n1; n1 = 1;    CHECK(n1.is<node::sint>() && n1.get<node::sint>() == 1);
+        node n2; n2 = 1L;   CHECK(n2.is<node::sint>() && n2.get<node::sint>() == 1);
+        node n3; n3 = 1LL;  CHECK(n3.is<node::sint>() && n3.get<node::sint>() == 1);
+        node n4; n4 = 1U;   CHECK(n4.is<node::uint>() && n4.get<node::uint>() == 1);
+        node n5; n5 = 1UL;  CHECK(n5.is<node::uint>() && n5.get<node::uint>() == 1);
+        node n6; n6 = 1ULL; CHECK(n6.is<node::uint>() && n6.get<node::uint>() == 1);
+        node n7; n7 = 1.;   CHECK(n7.is<node::real>() && n7.get<node::real>() == 1.);
+        node n8; n8 = 1.F;  CHECK(n8.is<node::real>() && n8.get<node::real>() == 1.F);
+    }
     {   // ex5
         {
-            node n(42); CHECK(n.is<node::signed_integer>() && n.get<node::signed_integer>() == 42);
+            node n(42); CHECK(n.is<node::sint>() && n.get<node::sint>() == 42);
         }
         {
-            node n(42U); CHECK(n.is<node::unsigned_integer>() && n.get<node::unsigned_integer>() == 42U);
+            node n(42U); CHECK(n.is<node::uint>() && n.get<node::uint>() == 42U);
         }
         {
-            node n((unsigned char*)"string"); CHECK(n.is<node::byte_string>() && n.get<node::byte_string>() == (unsigned char*)"string");
+            node n((unsigned char*)"string"); CHECK(n.is<node::bytes>() && n.get<node::bytes>() == (unsigned char*)"string");
         }
         {
-            node n("string"); CHECK(n.is<node::text_string>() && n.get<node::text_string>() == "string");
+            node n("string"); CHECK(n.is<node::text>() && n.get<node::text>() == "string");
         }
         {
             node::array const a = { 1, "string" };
@@ -133,7 +153,7 @@ static unsigned self() {
             node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
         }
         {
-            node n(42.0); CHECK(n.is<node::floating_point>() && n.get<node::floating_point>() == 42.0);
+            node n(42.0); CHECK(n.is<node::real>() && n.get<node::real>() == 42.0);
         }
         {
             node o = true; CHECK(o.is<node::boolean>());
@@ -146,21 +166,21 @@ static unsigned self() {
     {   // ex6
         {   // T is the same
             node n = "string";
-            node::text_string& v = n.imbue<node::text_string>(); CHECK(v == "string");
+            node::text& v = n.imbue<node::text>(); CHECK(v == "string");
         }
         {   // T is not the same
             node n = "string";
-            node::floating_point& v = n.imbue<node::floating_point>(); CHECK(v == 0.0);
+            node::real& v = n.imbue<node::real>(); CHECK(v == 0.0);
         }
     }
     {   // ex7
         node n = "one";
-            n.get<node::text_string>() = "another";
-        CHECK(n.get<node::text_string>() == "another");
+            n.get<node::text>() = "another";
+        CHECK(n.get<node::text>() == "another");
     }
     {   // ex8
         node n = "one";
-            auto *v = n.get_if<node::text_string>(); CHECK(v != nullptr);
+            auto *v = n.get_if<node::text>(); CHECK(v != nullptr);
         CHECK(n.get_if<node::array>() == nullptr);
     }
     {   // ex9
@@ -183,6 +203,9 @@ static unsigned self() {
             b = a; CHECK(a == b);
         }
         {   node a = node::map {{"q", "?"}, {"a", 42}}, b;
+            b = a; CHECK(a == b);
+        }
+        {   node a = 42., b;
             b = a; CHECK(a == b);
         }
         {   node a = true, b;
