@@ -36,7 +36,7 @@ namespace cxon { namespace cbor { // node traits
     struct node_traits {
         using                                       sint_type       = long long;
         using                                       uint_type       = unsigned long long;
-        using                                       bytes_type      = std::basic_string<unsigned char>;
+        using                                       bytes_type      = std::vector<unsigned char>;
         using                                       text_type       = std::basic_string<char>;
         template <typename T> using                 array_type      = std::vector<T>;
         template <typename K, typename V> using     map_type        = std::map<K, V>;
@@ -89,17 +89,19 @@ namespace cxon { namespace cbor { // node
             using null      = typename Tr::null_type;
             using real      = typename Tr::real_type;
 
-#           ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
-                template <template <typename C> class X, bool = false>
-                    struct msvc_map_override            : bits::is_nothrow_x<X, sint, uint, bytes, text, array, map, boolean, null, real> {};
-                template <template <typename C> class X>
-                    struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, sint, uint, bytes, text, array, /*map, */boolean, null, real> {};
-                using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<map, std::map<basic_node, basic_node>>::value>;
-                using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<map, std::map<basic_node, basic_node>>::value>;
-#           else
-                using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, boolean, null, real>;
-                using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, boolean, null, real>;
-#           endif
+            private:
+#               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
+                    template <template <typename C> class X, bool = false>
+                        struct msvc_map_override            : bits::is_nothrow_x<X, sint, uint, bytes, text, array, map, boolean, null, real> {};
+                    template <template <typename C> class X>
+                        struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, sint, uint, bytes, text, array, /*map, */boolean, null, real> {};
+                    using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<map, std::map<basic_node, basic_node>>::value>;
+                    using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<map, std::map<basic_node, basic_node>>::value>;
+#               else
+                    using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, boolean, null, real>;
+                    using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, boolean, null, real>;
+#               endif
+            public:
 
             basic_node() noexcept : kind_(node_kind::null)  {}
             ~basic_node()                                   { reset(); }
@@ -184,17 +186,19 @@ namespace cxon { namespace cbor { // node
                 CXON_CBOR_TYPE_DEF(real);
 #           undef CXON_CBOR_TYPE_DEF
 
-                // handle literals
-                template <typename T>
-                    struct is_int_unique {
-                        static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, uint>::value;
-                    };
-
+            // handle literals
+            private:
                 template <typename T, bool E = std::is_signed<T>::value>
                     struct int_type             { using type = sint; };
                 template <typename T>
                     struct int_type<T, false>   { using type = uint; };
 
+                template <typename T>
+                    struct is_int_unique {
+                        static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, typename int_type<T>::type>::value;
+                    };
+            public:
+                // numeric
                 template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
                     basic_node(T t) : kind_(node_kind::null) {
                         imbue<typename int_type<T>::type>() = t;
@@ -203,11 +207,9 @@ namespace cxon { namespace cbor { // node
                     basic_node& operator =(T t) {
                         imbue<typename int_type<T>::type>() = t; return *this;
                     }
-
+                // string
                 basic_node(const char* s) : kind_(node_kind::null)          { imbue<text>() = s; }
                 basic_node& operator =(const char* s)                       { imbue<text>() = s; return *this; }
-                basic_node(const unsigned char* s) : kind_(node_kind::null) { imbue<bytes>() = s; }
-                basic_node& operator =(const unsigned char* s)              { imbue<bytes>() = s; return *this; }
 
             void reset() {
                 switch (kind_) {
