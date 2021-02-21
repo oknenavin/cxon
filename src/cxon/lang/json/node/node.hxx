@@ -198,8 +198,24 @@ namespace cxon { namespace json { // node
                 CXON_JSON_TYPE_DEF(boolean)
                 CXON_JSON_TYPE_DEF(null)
 #           undef CXON_JSON_TYPE_DEF
-                basic_node(int n) : kind_(node_kind::null)          { imbue<number>() = n; }
-                basic_node& operator =(int n)                       { imbue<number>() = n; return *this; }
+
+            // handle literals
+            private:
+                template <typename T>
+                    struct is_number_unique {
+                        static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, number>::value;
+                    };
+            public:
+                // numeric
+                template <typename T, typename = enable_if_t<is_number_unique<T>::value>>
+                    basic_node(T t) : kind_(node_kind::null) {
+                        imbue<number>() = t;
+                    }
+                template <typename T, typename = enable_if_t<is_number_unique<T>::value>>
+                    basic_node& operator =(T t) {
+                        imbue<number>() = t; return *this;
+                    }
+                // string
                 basic_node(const char* s) : kind_(node_kind::null)  { imbue<string>() = s; }
                 basic_node& operator =(const char* s)               { imbue<string>() = s; return *this; }
 

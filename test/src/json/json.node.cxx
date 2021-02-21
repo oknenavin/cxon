@@ -392,6 +392,34 @@ static unsigned self() {
 
         std::string const pretty_json = cxon::test::pretty(s1);
     }
+    {
+        node n1(1);     CHECK(n1.is<node::number>() && n1.get<node::number>() == 1);
+        node n2(1L);    CHECK(n2.is<node::number>() && n2.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n3(1LL);   CHECK(n3.is<node::number>() && n3.get<node::number>() == 1);
+#       endif
+        node n4(1U);    CHECK(n4.is<node::number>() && n4.get<node::number>() == 1);
+        node n5(1UL);   CHECK(n5.is<node::number>() && n5.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n6(1ULL);  CHECK(n6.is<node::number>() && n6.get<node::number>() == 1);
+#       endif
+        node n7(1.);    CHECK(n7.is<node::number>() && n7.get<node::number>() == 1.);
+        node n8(1.F);   CHECK(n8.is<node::number>() && n8.get<node::number>() == 1.F);
+    }
+    {
+        node n1; n1 = 1;    CHECK(n1.is<node::number>() && n1.get<node::number>() == 1);
+        node n2; n2 = 1L;   CHECK(n2.is<node::number>() && n2.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n3; n3 = 1LL;  CHECK(n3.is<node::number>() && n3.get<node::number>() == 1);
+#       endif
+        node n4; n4 = 1U;   CHECK(n4.is<node::number>() && n4.get<node::number>() == 1);
+        node n5; n5 = 1UL;  CHECK(n5.is<node::number>() && n5.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n6; n6 = 1ULL; CHECK(n6.is<node::number>() && n6.get<node::number>() == 1);
+#       endif
+        node n7; n7 = 1.;   CHECK(n7.is<node::number>() && n7.get<node::number>() == 1.);
+        node n8; n8 = 1.F;  CHECK(n8.is<node::number>() && n8.get<node::number>() == 1.F);
+    }
     {   // ex5
         using node = cxon::json::node;
         {   // (1)

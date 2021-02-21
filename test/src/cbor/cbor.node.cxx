@@ -31,13 +31,13 @@ static unsigned self() {
         node n1 = node::array {
             1,                          // sint
             node::uint(1),              // uint
-            (unsigned char*)"bytes",    // bytes
+            node::bytes {0x01, 0x02},   // bytes
             "text",                     // text
             node::array {1, 2, 3},      // array
             node::map {                 // map
                 { 1, 1 }, // { key, value }
                 { node::uint(1), 1 },
-                { (unsigned char*)"bytes", 1 },
+                { node::bytes {0x01, 0x02}, 1 },
                 { "text", 1 },
                 { node::array {1, 2, 3}, 1 },
                 { node::map {{1, 2}, {3, 4}}, 1 },
@@ -57,7 +57,7 @@ static unsigned self() {
                 CHECK(n2.is<node::array>());
                 a.push_back(1);                         CHECK(a.back().is<node::sint>());
                 a.push_back(node::uint(1));             CHECK(a.back().is<node::uint>());
-                a.push_back((unsigned char*)"bytes");   CHECK(a.back().is<node::bytes>());
+                a.push_back(node::bytes {0x01, 0x02});  CHECK(a.back().is<node::bytes>());
                 a.push_back("text");                    CHECK(a.back().is<node::text>());
                 a.push_back(node:: array {});           CHECK(a.back().is<node::array>());
                 auto* a1 = a.back().get_if<node::array>();
@@ -68,7 +68,7 @@ static unsigned self() {
                 auto& m = a.back().get<node::map>();
                     m[1] = 1;                           CHECK(m.find(node::sint(1)) != m.end());
                     m[node::uint(1)] = 1;               CHECK(m.find(node::uint(1)) != m.end());
-                    m[(unsigned char*)"bytes"] = 1;     CHECK(m.find(node::bytes((unsigned char*)"bytes")) != m.end());
+                    m[node::bytes {0x01, 0x02}] = 1;    CHECK(m.find(node::bytes {0x01, 0x02}) != m.end());
                     m["text"] = 1;                      CHECK(m.find(node::text("text")) != m.end());
                     m[node::array {1, 2, 3}] = 1;       CHECK(m.find(node::array({1, 2, 3})) != m.end());
                     m[node::map {{1, 2}, {3, 4}}] = 1;  CHECK(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
@@ -115,7 +115,7 @@ static unsigned self() {
             node n(42U); CHECK(n.is<node::uint>() && n.get<node::uint>() == 42U);
         }
         {
-            node n((unsigned char*)"string"); CHECK(n.is<node::bytes>() && n.get<node::bytes>() == (unsigned char*)"string");
+            node n(node::bytes {0x01, 0x02}); CHECK(n.is<node::bytes>() && n.get<node::bytes>() == (node::bytes {0x01, 0x02}));
         }
         {
             node n("string"); CHECK(n.is<node::text>() && n.get<node::text>() == "string");
@@ -133,7 +133,7 @@ static unsigned self() {
             node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
         }
         {
-            node::map const o = { {(unsigned char*)"key", "value"} };
+            node::map const o = { {node::bytes {'k','e','y'}, "value"} };
             node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
         }
         {
@@ -193,10 +193,10 @@ static unsigned self() {
         {   node a = 42U, b;
             b = a; CHECK(a == b);
         }
-        {   node a = (unsigned char*)"blah", b;
+        {   node a = node::bytes {'b','y','t','e','s'}, b;
             b = a; CHECK(a == b);
         }
-        {   node a = "blah", b;
+        {   node a = "text", b;
             b = a; CHECK(a == b);
         }
         {   node a = node::array {4, 2}, b;
