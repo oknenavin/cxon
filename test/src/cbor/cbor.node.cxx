@@ -26,10 +26,65 @@ static unsigned self() {
 
     using node = cxon::cbor::node;
 
+    {
+        {   node n; // default 64
+            auto const r = cxon::from_bytes(n,  "\x81\x81\x81\x81\x81\x81\x81\x81"
+                                                "\x81\x81\x81\x81\x81\x81\x81\x81"
+                                                "\x81\x81\x81\x81\x81\x81\x81\x81"
+                                                "\x81\x81\x81\x81\x81\x81\x81\x81"
+                                                "\x81\x81\x81\x81\x81\x81\x81\x81"
+                                                "\x81\x81\x81\x81\x81\x81\x81\x81"
+                                                "\x81\x81\x81\x81\x81\x81\x81\x81"
+                                                "\x81\x81\x81\x81\x81\x81\x81\x81"
+            );
+            CHECK(!r && r.ec == cxon::cbor::node_error::recursion_depth_exceeded);
+        }
+        {   node n;
+#           if !defined(__GNUG__) || defined(__clang__)
+                auto const r = cxon::from_bytes(n, "\x81\x81\x81\x81", cxon::cbor::recursion_depth::set<4>());
+#           else
+                auto const r = cxon::from_bytes<cxon::CBOR<>, cxon::cbor::node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                                    (n, "\x81\x81\x81\x81", cxon::cbor::recursion_depth::set<4>());
+#           endif
+            CHECK(!r && r.ec == cxon::cbor::node_error::recursion_depth_exceeded);
+        }
+        {   node n;
+            auto const r = cxon::from_bytes(n, "\xFF");
+            CHECK(!r && r.ec == cxon::cbor::node_error::invalid);
+        }
+        {   using namespace cxon::cbor;
+            std::error_condition ec;
+            ec = node_error::ok;
+                CXON_ASSERT(ec.category() == node_error_category::value(), "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cbor/node") == 0, "check failed");
+                CXON_ASSERT(ec.message() == "no error", "check failed");
+            ec = node_error::invalid;
+                CXON_ASSERT(ec.message() == "invalid cbor", "check failed");
+            ec = node_error::recursion_depth_exceeded;
+                CXON_ASSERT(ec.message() == "recursion depth limit exceeded", "check failed");
+            ec = node_error(255);
+                CXON_ASSERT(ec.message() == "unknown error", "check failed");
+        }
+    }
+    {   // ex3
+        unsigned char const b0[] = "\xA2\144even\x82\x02\x04\x63odd\x82\x01\x03"; //"{\"even\":[2,4,6],\"odd\":[1,3,5]}";
+        node const n0 = node::map {
+            { "even", node::array { 2U, 4U } },
+            { "odd", node::array { 1U, 3U } }
+        };
+
+        node n1; // read
+            cxon::from_bytes(n1, b0);
+        CHECK(n1 == n0);
+
+        std::basic_string<unsigned char> b1; // write
+            cxon::to_bytes(b1, n0);
+        CHECK(b1 == b0);
+    }
     {   // ex4
         // build using initializer lists
         node n1 = node::array {
-            1,                          // sint
+            -1,                         // sint
             node::uint(1),              // uint
             node::bytes {0x01, 0x02},   // bytes
             "text",                     // text
@@ -41,11 +96,12 @@ static unsigned self() {
                 { "text", 1 },
                 { node::array {1, 2, 3}, 1 },
                 { node::map {{1, 2}, {3, 4}}, 1 },
-                { true, 1 },
+                { false, 1 },
                 { nullptr, 1 },
                 { 1.0, 1 }
             },
             true,                       // bool
+            false,                      // bool
             nullptr,                    // null
             1.0                         // real
         };
@@ -55,7 +111,7 @@ static unsigned self() {
             CHECK(n2.is<node::null>()); // default node type is node_kind::null
             auto& a = n2.imbue<node::array>(); // change the type and return its value
                 CHECK(n2.is<node::array>());
-                a.push_back(1);                         CHECK(a.back().is<node::sint>());
+                a.push_back(-1);                        CHECK(a.back().is<node::sint>());
                 a.push_back(node::uint(1));             CHECK(a.back().is<node::uint>());
                 a.push_back(node::bytes {0x01, 0x02});  CHECK(a.back().is<node::bytes>());
                 a.push_back("text");                    CHECK(a.back().is<node::text>());
@@ -72,20 +128,27 @@ static unsigned self() {
                     m["text"] = 1;                      CHECK(m.find(node::text("text")) != m.end());
                     m[node::array {1, 2, 3}] = 1;       CHECK(m.find(node::array({1, 2, 3})) != m.end());
                     m[node::map {{1, 2}, {3, 4}}] = 1;  CHECK(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
-                    m[true] = 1;                        CHECK(m.find(node::boolean(true)) != m.end());
+                    m[false] = 1;                       CHECK(m.find(node::boolean(false)) != m.end());
                     m[nullptr] = 1;                     CHECK(m.find(node::null(nullptr)) != m.end());
                     m[1.0] = 1;                         CHECK(m.find(node::real(1.0)) != m.end());
                 a.push_back(true);                      CHECK(a.back().is<node::boolean>());
+                a.push_back(false);                     CHECK(a.back().is<node::boolean>());
                 a.push_back(nullptr);                   CHECK(a.back().is<node::null>());
                 a.push_back(1.0);                       CHECK(a.back().is<node::real>());
 
         CHECK(n1 == n2);
 
-        /*std::string s1;
-            cxon::to_bytes(s1, n1);
-        std::string s2;
-            cxon::to_bytes(s2, n2);
-        CHECK(s1 == s2);*/
+        std::vector<unsigned char> b1;
+            cxon::to_bytes(b1, n1);
+        std::vector<unsigned char> b2;
+            cxon::to_bytes(b2, n2);
+        CHECK(b1 == b2);
+
+        node n3;
+            cxon::from_bytes(n3, b2);
+        node n4;
+            cxon::from_bytes(n4, b1);
+        CHECK(n4 == n3);
     }
     {
         node n1(1);     CHECK(n1.is<node::sint>() && n1.get<node::sint>() == 1);
@@ -213,6 +276,35 @@ static unsigned self() {
         }
         {   node a = nullptr, b;
             b = a; CHECK(a == b);
+        }
+    }
+    {   // move assignment
+        {   node a;
+            a = node(1); CHECK(a.is<node::sint>() && a.get<node::sint>() == 1);
+        }
+        {   node a;
+            a = node(1U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 1);
+        }
+        {   node a;
+            a = node(node::bytes {0x01}); CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x01}));
+        }
+        {   node a;
+            a = node("x"); CHECK(a.is<node::text>() && a.get<node::text>() == "x");
+        }
+        {   node a;
+            a = node(node::array {1}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1}));
+        }
+        {   node a;
+            a = node(node::map {{1, 2}}); CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{1, 2}}));
+        }
+        {   node a;
+            a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+        }
+        {   node a;
+            a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+        }
+        {   node a;
+            a = node(1.0); CHECK(a.is<node::real>() && a.get<node::real>() == 1.0);
         }
     }
 #   undef CHECK

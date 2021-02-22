@@ -10,13 +10,13 @@ namespace cxon {
 
 #   define CXON_JSON_NODE_RG()\
         cxon::json::bits::scinc<Cx> RG__(cx);\
-        if (!RG__.check()) return cx|node_error::recursion_depth_exceeded, false
+        if (!RG__.check()) return cx|json::node_error::recursion_depth_exceeded, false
 #   define CXON_JSON_NODE_CHECK(e) if (!(e)) return false
 
     template <typename X, typename Tr, typename O, typename Cx> // pretty write
-        static bool write_value(test::indent_iterator<X, O>& o, const basic_node<Tr>& t, Cx& cx) {
+        static bool write_value(test::indent_iterator<X, O>& o, const json::basic_node<Tr>& t, Cx& cx) {
             return o.indent_value([&](typename test::indent_iterator<X, O>::out_type out, unsigned& lvl, unsigned tab, char pad) {
-                using node = basic_node<Tr>;
+                using node = json::basic_node<Tr>;
                 switch (t.kind()) {
                 case json::node_kind::object: {
                         CXON_JSON_NODE_RG();

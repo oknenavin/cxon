@@ -511,6 +511,26 @@ static unsigned self() {
             b = a; CHECK(a == b);
         }
     }
+    {   // move assignment
+        {   node a;
+            a = node(42); CHECK(a.is<node::number>() && a.get<node::number>() == 42);
+        }
+        {   node a;
+            a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+        }
+        {   node a;
+            a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+        }
+        {   node a;
+            a = node(""); CHECK(a.is<node::string>() && a.get<node::string>() == "");
+        }
+        {   node a;
+            a = node(node::array {1}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1}));
+        }
+        {   node a;
+            a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
+        }
+    }
 #   undef CHECK
     f_ ?
         fprintf(stdout, "cxon/json/node/self: %u of %u failed\n", f_, a_) :
