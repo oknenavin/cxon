@@ -12,7 +12,7 @@
 [![Windows][img-bld-win]](https://github.com/oknenavin/cxon/actions?query=workflow%3AWindows)  
 [![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 [![CodeQL][img-cql]](https://github.com/oknenavin/cxon/actions?query=workflow%3ACodeQL)
-[![Quality][img-cod]](https://www.codacy.com/app/oknenavin/cxon?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
+[![Quality][img-cod]](https://www.codacy.com/gh/oknenavin/cxon/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
 [![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
 [![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)
 
@@ -309,7 +309,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg
 [img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
-[img-cod]: https://api.codacy.com/project/badge/Grade/503ff2e908b745ba9dfeba2b50ec2201
+[img-cod]: https://app.codacy.com/project/badge/Grade/a4b8981f7ce34dd5963f10723f8188bf
 [img-cql]: https://github.com/oknenavin/cxon/workflows/CodeQL/badge.svg
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
