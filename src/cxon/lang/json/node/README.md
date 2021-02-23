@@ -19,7 +19,7 @@
 `CXON/JSON/NODE` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
 
-type         | default binding
+Type         | Default binding
 -------------|------------------------------
 `object`     | [`std::map`][cpp-map]
 `array`      | [`std::vector`][cpp-vect]
@@ -172,7 +172,7 @@ enum class node_kind { object, array, string, number, boolean, null };
 
 ###### Member types
 
-Member type |Definition
+Member type | Definition
 ------------|------------------------------------------
 `null`      | `Traits::null_type`
 `boolean`   | `Traits::boolean_type`
@@ -247,7 +247,7 @@ basic_node(const boolean& v);
 basic_node(null&& v);
 basic_node(const null& v);
 
-basic_node(int v);                  (4)
+basic_node(<integral> v);           (4)
 basic_node(const char* v);
 ```
 
