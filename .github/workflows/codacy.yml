@@ -26,6 +26,6 @@ jobs:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
         lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
-        lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
+        lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o lcov.info
         lcov-1.14/bin/lcov -l lcov.info
         bash <(curl -Ls https://coverage.codacy.com/get.sh) report || echo "upload failed"
