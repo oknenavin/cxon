@@ -458,6 +458,7 @@ namespace cxon {
                                         case X::nil                                 :                           return CXON_READ(null);
                                         case X::fp16: case X::fp32: case X::fp64    :                           return CXON_READ(real);
                                     }
+#                           undef CXON_READ_ARR
 #                           undef CXON_READ
                         }
                         return cx|cbor::node_error::invalid, false;
