@@ -1,0 +1,31 @@
+name: Codacy
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  codecov:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-8 g++-8
+    - name: Check
+      env:
+        CXX: g++-8
+        CXXFLAGS: --coverage -std=c++17
+      run: make -j check
+    - name: Setup lcov
+      run: |
+        wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+        tar xvfz lcov-1.14.tar.gz
+        make -C lcov-1.14
+    - name: Coverage
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      run: |
+        lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
+        lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info 
+        lcov-1.14/bin/lcov -l cxon.info
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) cxon.info || echo "upload failed"
