@@ -438,16 +438,20 @@ namespace cxon {
             struct read<X, cbor::basic_node<Tr>> {
                 template <typename II, typename Cx>
                     static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
+                        size_t tag;
+                        if (!cbor::tag::read<X>(tag, i, e, cx))
+                            return false;
                         bio::byte const b = bio::peek(i, e);
                         switch (b & X::mjr) {
-                            case X::tag                                     : CXON_ASSERT(0, "TODO");   return false;
-#                           define CXON_READ(T) read_value<X>(t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
+#                           define CXON_READ(T)             read_value<X>(t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
+#                           define CXON_READ_ARR(T, tag)    cbor::cnt::read_array<X>(t.template imbue<typename cbor::basic_node<Tr>::T>(), tag, i, e, cx)
                                 case X::pint                                        :                           return CXON_READ(uint);
                                 case X::nint                                        :                           return CXON_READ(sint);
                                 case X::bstr                                        :                           return CXON_READ(bytes);
                                 case X::tstr                                        :                           return CXON_READ(text);
-                                case X::arr                                         : { CXON_CBOR_NODE_RG();    return CXON_READ(array); }
-                                case X::map                                         : { CXON_CBOR_NODE_RG();    return CXON_READ(map); }
+                                case X::arr                                         : { CXON_CBOR_NODE_RG();    return CXON_READ_ARR(array, tag); }
+                                case X::map                                         : { CXON_CBOR_NODE_RG();    return CXON_READ_ARR(map, tag); }
+                                case X::tag                                         : { CXON_CBOR_NODE_RG();    return value(t, i, e, cx); }
                                 case X::svn:
                                     switch (b) {
                                         case X::neg: case X::pos                    :                           return CXON_READ(boolean);
