@@ -67,7 +67,7 @@ static unsigned self() {
         }
     }
     {   // ex3
-        unsigned char const b0[] = "\xA2\144even\x82\x02\x04\x63odd\x82\x01\x03"; //"{\"even\":[2,4,6],\"odd\":[1,3,5]}";
+        unsigned char const b0[] = "\xA2\144even\x82\x02\x04\x63odd\x82\x01\x03";
         node const n0 = node::map {
             { "even", node::array { 2U, 4U } },
             { "odd", node::array { 1U, 3U } }
@@ -80,6 +80,19 @@ static unsigned self() {
         std::basic_string<unsigned char> b1; // write
             cxon::to_bytes(b1, n0);
         CHECK(b1 == b0);
+    }
+    {   // tags
+        node n1;
+            auto const r1 = cxon::from_bytes(n1, "\xC1\x83\x01\x02\x03");
+        CHECK(r1 && n1.is<node::array>() && n1.get<node::array>() == (node::array {1U, 2U, 3U}));
+
+        node n2;
+            auto const r2 = cxon::from_bytes(n2, "\xC1\xC2\x83\x01\x02\x03");
+        CHECK(r2 && n2.is<node::array>() && n2.get<node::array>() == (node::array {1U, 2U, 3U}));
+
+        node n3;
+            auto const r3 = cxon::from_bytes(n3, "\xDC\x83\x01\x02\x03");
+        CHECK(!r3 && r3.ec == cxon::cbor::read_error::tag_invalid);
     }
     {   // ex4
         // build using initializer lists
