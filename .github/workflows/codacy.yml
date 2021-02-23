@@ -28,4 +28,4 @@ jobs:
         lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
         lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info
         lcov-1.14/bin/lcov -l cxon.info
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r cxon.info || echo "upload failed"
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l CPP -r cxon.info || echo "upload failed"
