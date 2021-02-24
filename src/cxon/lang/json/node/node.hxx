@@ -30,19 +30,6 @@ namespace cxon { namespace json { // node
 
 }}
 
-namespace cxon { namespace json { // errors
-
-    enum class node_error : int {
-        ok,                         // no error
-        invalid,                    // invalid json value
-        recursion_depth_exceeded    // recursion depth exceeded
-    };
-
-    struct node_error_category;
-    std::error_condition make_error_condition(node_error e) noexcept;
-
-}}
-
 namespace cxon { namespace json { // node traits
 
     enum class node_kind { object, array, string, number, boolean, null };
@@ -57,29 +44,6 @@ namespace cxon { namespace json { // node traits
     };
 
 }}
-
-namespace cxon { namespace json { // context parameters
-
-    CXON_PARAMETER(recursion_guard, unsigned);    // read/write
-    CXON_PARAMETER(recursion_depth, unsigned);    // read/write: constexpr
-        
-}}  // cxon::json contexts
-
-namespace cxon {
-
-    template <typename X = JSON<>, typename Tr, typename InIt, typename ...CxPs>
-        inline auto     from_bytes(json::basic_node<Tr>& t, InIt b, InIt e, CxPs... p)      -> from_bytes_result<InIt>;
-    template <typename X = JSON<>, typename Tr, typename Iterable, typename ...CxPs>
-        inline auto     from_bytes(json::basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_bytes_result<decltype(std::begin(i))>;
-
-    template <typename X = JSON<>, typename Tr, typename OutIt, typename ...CxPs>
-        inline auto     to_bytes(OutIt o, const json::basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
-    template <typename X = JSON<>, typename Tr, typename Insertable, typename ...CxPs>
-        inline auto     to_bytes(Insertable& i, const json::basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
-    template <typename X = JSON<>, typename Tr, typename FwIt, typename ...CxPs>
-        inline auto     to_bytes(FwIt b, FwIt e, const json::basic_node<Tr>& t, CxPs... p)  -> to_bytes_result<FwIt>;
-
-}
 
 // implementation //////////////////////////////////////////////////////////////
 
@@ -302,124 +266,5 @@ namespace cxon { namespace json { // node
         inline const T* get_if(const N& n)  { return n.template get_if<T>(); }
 
 }}
-
-namespace cxon { namespace json { // errors
-
-    struct node_error_category : std::error_category {
-        const char* name() const noexcept override {
-            return "cxon/json/node";
-        }
-        std::string message(int ev) const override {
-            switch (static_cast<node_error>(ev)) {
-                case node_error::ok:                        return "no error";
-                case node_error::invalid:                   return "invalid json";
-                case node_error::recursion_depth_exceeded:  return "recursion depth limit exceeded";
-                default:                                    return "unknown error";
-            }
-        }
-        static const node_error_category& value() {
-            static node_error_category const v{};
-            return v;
-        }
-    };
-
-    std::error_condition make_error_condition(node_error e) noexcept {
-        return { static_cast<int>(e), node_error_category::value() };
-    }
-
-}}
-
-namespace std { // cxon/json errors
-    template <> struct is_error_condition_enum<cxon::json::node_error> : true_type {};
-}
-
-namespace cxon { namespace json { namespace bits {
-
-    template <typename Cx, bool G = recursion_guard::in<napa_type<Cx>>::value>
-        struct scinc {
-            Cx& cx;
-            scinc(Cx& cx) : cx(cx)  { ++recursion_guard::reference(cx.px); }
-            ~scinc()                { --recursion_guard::reference(cx.px); }
-            bool check() const      { return recursion_guard::value(cx.px) < recursion_depth::constant<napa_type<Cx>>(64); }
-        };
-    template <typename Cx>
-        struct scinc<Cx, false> {
-            scinc(Cx&)              {}
-            ~scinc()                {}
-            bool check() const      { return true; }
-        };
-
-}}}
-
-namespace cxon {
-
-    template <typename X, typename Tr, typename II, typename ...CxPs>
-        inline auto from_bytes(json::basic_node<Tr>& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
-            return interface::from_bytes<X>(t, b, e, json::recursion_guard::set(0), std::forward<CxPs>(p)...);
-        }
-    template <typename X, typename Tr, typename I, typename ...CxPs>
-        inline auto from_bytes(json::basic_node<Tr>& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
-            return interface::from_bytes<X>(t, i, json::recursion_guard::set(0), std::forward<CxPs>(p)...);
-        }
-
-    template <typename X, typename Tr, typename OI, typename ...CxPs>
-        inline auto to_bytes(OI o, const json::basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
-            return interface::to_bytes<X>(o, t, json::recursion_guard::set(0), std::forward<CxPs>(p)...);
-        }
-    template <typename X, typename Tr, typename I, typename ...CxPs>
-        inline auto to_bytes(I& i, const json::basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
-            return interface::to_bytes<X>(i, t, json::recursion_guard::set(0), std::forward<CxPs>(p)...);
-        }
-    template <typename X, typename Tr, typename FI, typename ...CxPs>
-        inline auto to_bytes(FI b, FI e, const json::basic_node<Tr>& t, CxPs... p) -> to_bytes_result<FI> {
-            return interface::to_bytes<X>(b, e, t, json::recursion_guard::set(0), std::forward<CxPs>(p)...);
-        }
-
-#   define CXON_JSON_NODE_RG()\
-        json::bits::scinc<Cx> RG__(cx);\
-        if (!RG__.check()) return cx|json::node_error::recursion_depth_exceeded, false
-
-        template <typename X, typename Tr>
-            struct read<X, json::basic_node<Tr>> {
-                template <typename II, typename Cx>
-                    static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                        cio::consume<X>(i, e);
-                        switch (cio::peek(i, e)) {
-#                           define CXON_READ(T) read_value<X>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
-                                case '{'                : { CXON_JSON_NODE_RG();    return CXON_READ(object); }
-                                case '['                : { CXON_JSON_NODE_RG();    return CXON_READ(array);  }
-                                case '\"'               :                           return CXON_READ(string);
-                                case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
-                                                        :                           return CXON_READ(number);
-                                case 't': case 'f'      :                           return CXON_READ(boolean);
-                                case 'n'                :                           return CXON_READ(null);
-#                           undef CXON_READ
-                        }
-                        return cx|json::node_error::invalid, false;
-                    }
-            };
-
-        template <typename X, typename Tr>
-            struct write<X, json::basic_node<Tr>> {
-                template <typename O, typename Cx>
-                    static bool value(O& o, const json::basic_node<Tr>& t, Cx& cx) {
-                        using json::node_kind;
-                        switch (t.kind()) {
-#                           define CXON_WRITE(T) write_value<X>(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
-                                case node_kind::object  : { CXON_JSON_NODE_RG();    return CXON_WRITE(object); }
-                                case node_kind::array   : { CXON_JSON_NODE_RG();    return CXON_WRITE(array);  }
-                                case node_kind::string  :                           return CXON_WRITE(string);
-                                case node_kind::number  :                           return CXON_WRITE(number);
-                                case node_kind::boolean :                           return CXON_WRITE(boolean);
-                                case node_kind::null    :                           return CXON_WRITE(null);
-#                           undef CXON_WRITE
-                        }
-                        return false; // LCOV_EXCL_LINE
-                    }
-            };
-
-#   undef CXON_JSON_NODE_RG
-
-}
 
 #endif // CXON_JSON_NODE_HXX_

@@ -41,7 +41,7 @@ Build, write and read:
 
 ``` c++
 #include "cxon/cbor.hxx"
-#include "cxon/lang/cbor/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
@@ -69,7 +69,7 @@ Build using node's methods:
 
 ``` c++
 #include "cxon/cbor.hxx"
-#include "cxon/lang/cbor/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
@@ -151,7 +151,7 @@ int main() {
 #### `basic_node`
 
 *Defined in header [`cxon/lang/cbor/node/node.hxx`](node.hxx)*  
-*Include [`cxon/lang/cbor/node.hxx`](../node.hxx)*
+*Include [`cxon/lib/node.hxx`](../../../lib/node.hxx)*
 
 ``` c++
 namespace cxon::cbor {
@@ -529,7 +529,7 @@ bool operator  < (const basic_node& n) const; (3)
 
 ``` c++
 #include "cxon/cbor.hxx"
-#include "cxon/lang/cbor/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
