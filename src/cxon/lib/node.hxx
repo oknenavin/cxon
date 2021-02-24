@@ -38,16 +38,16 @@
 
     namespace cxon {
 
-        template <typename X = JSON<>, typename Tr, typename InIt, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename InIt, typename ...CxPs>
             inline auto     from_bytes(json::basic_node<Tr>& t, InIt b, InIt e, CxPs... p)      -> from_bytes_result<InIt>;
-        template <typename X = JSON<>, typename Tr, typename Iterable, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename Iterable, typename ...CxPs>
             inline auto     from_bytes(json::basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_bytes_result<decltype(std::begin(i))>;
 
-        template <typename X = JSON<>, typename Tr, typename OutIt, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename OutIt, typename ...CxPs>
             inline auto     to_bytes(OutIt o, const json::basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
-        template <typename X = JSON<>, typename Tr, typename Insertable, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename Insertable, typename ...CxPs>
             inline auto     to_bytes(Insertable& i, const json::basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
-        template <typename X = JSON<>, typename Tr, typename FwIt, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename FwIt, typename ...CxPs>
             inline auto     to_bytes(FwIt b, FwIt e, const json::basic_node<Tr>& t, CxPs... p)  -> to_bytes_result<FwIt>;
 
     }
@@ -60,16 +60,16 @@
 
     namespace cxon {
 
-        template <typename X = CBOR<>, typename Tr, typename InIt, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename InIt, typename ...CxPs>
             inline auto     from_bytes(cbor::basic_node<Tr>& t, InIt b, InIt e, CxPs... p)      -> from_bytes_result<InIt>;
-        template <typename X = CBOR<>, typename Tr, typename Iterable, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename Iterable, typename ...CxPs>
             inline auto     from_bytes(cbor::basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_bytes_result<decltype(std::begin(i))>;
 
-        template <typename X = CBOR<>, typename Tr, typename OutIt, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename OutIt, typename ...CxPs>
             inline auto     to_bytes(OutIt o, const cbor::basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
-        template <typename X = CBOR<>, typename Tr, typename Insertable, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename Insertable, typename ...CxPs>
             inline auto     to_bytes(Insertable& i, const cbor::basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
-        template <typename X = CBOR<>, typename Tr, typename FwIt, typename ...CxPs>
+        template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename FwIt, typename ...CxPs>
             inline auto     to_bytes(FwIt b, FwIt e, const cbor::basic_node<Tr>& t, CxPs... p)  -> to_bytes_result<FwIt>;
 
     }
@@ -203,6 +203,56 @@
                     }
             };
 
+#       ifdef CXON_CBOR_DEFINED
+
+            namespace cio { // keys
+                template <typename Tr> struct is_quoted<cbor::basic_node<Tr>> : std::true_type {};
+            }
+
+            template <typename X, typename Tr>
+                struct read<JSON<X>, cbor::basic_node<Tr>> {
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
+                            cio::consume<X>(i, e);
+                            switch (cio::peek(i, e)) {
+    #                           define CXON_READ(T) read_value<Y>(t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
+                                    case '{'                : { CXON_NODE_RG();     return CXON_READ(map); }
+                                    case '['                : { CXON_NODE_RG();     return CXON_READ(array);  }
+                                    case '\"'               :                       return CXON_READ(text);
+                                    case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
+                                                            :                       return CXON_READ(real);
+                                    case 't': case 'f'      :                       return CXON_READ(boolean);
+                                    case 'n'                :                       return CXON_READ(null);
+    #                           undef CXON_READ
+                            }
+                            return cx|node::error::invalid, false;
+                        }
+                };
+
+            template <typename X, typename Tr>
+                struct write<JSON<X>, cbor::basic_node<Tr>> {
+                    template <typename O, typename Cx, typename Y = JSON<X>>
+                        static bool value(O& o, const cbor::basic_node<Tr>& t, Cx& cx) {
+                            using cbor::node_kind;
+                            switch (t.kind()) {
+    #                           define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
+                                    case node_kind::uint    :                       return CXON_WRITE(uint);
+                                    case node_kind::sint    :                       return CXON_WRITE(sint);
+                                    case node_kind::bytes   :                       return CXON_WRITE(bytes);
+                                    case node_kind::text    :                       return CXON_WRITE(text);
+                                    case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array); }
+                                    case node_kind::map     : { CXON_NODE_RG();     return CXON_WRITE(map);   }
+                                    case node_kind::boolean :                       return CXON_WRITE(boolean);
+                                    case node_kind::null    :                       return CXON_WRITE(null);
+                                    case node_kind::real    :                       return CXON_WRITE(real);
+    #                           undef CXON_WRITE
+                            }
+                            return false; // LCOV_EXCL_LINE
+                        }
+                };
+
+#       endif
+
     }
 
 #endif
@@ -291,6 +341,59 @@
                         return false; // LCOV_EXCL_LINE
                     }
             };
+
+#       ifdef CXON_JSON_DEFINED
+
+            template <typename X, typename Tr>
+                struct read<CBOR<X>, json::basic_node<Tr>> {
+                    template <typename II, typename Cx, typename Y = CBOR<X>>
+                        static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
+                            if (!cbor::tag::read<X>(i, e, cx))
+                                return false;
+                            bio::byte const b = bio::peek(i, e);
+                            switch (b & X::mjr) {
+    #                           define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
+                                    case X::pint            :                       return CXON_READ(number);
+                                    case X::nint            :                       return CXON_READ(number);
+                                    case X::bstr            :                       return CXON_READ(array);
+                                    case X::tstr            :                       return CXON_READ(string);
+                                    case X::arr             : { CXON_NODE_RG();     return CXON_READ(array); }
+                                    case X::map             : { CXON_NODE_RG();     return CXON_READ(object); }
+                                    case X::tag             : { CXON_NODE_RG();     return value(t, i, e, cx); }
+                                    case X::svn:
+                                        switch (b) {
+                                            case X::neg: case X::pos
+                                                            :                       return CXON_READ(boolean);
+                                            case X::nil     :                       return CXON_READ(null);
+                                            case X::fp16: case X::fp32: case X::fp64
+                                                            :                       return CXON_READ(number);
+                                        }
+    #                           undef CXON_READ
+                            }
+                            return cx|node::error::invalid, false;
+                        }
+                };
+
+            template <typename X, typename Tr>
+                struct write<CBOR<X>, json::basic_node<Tr>> {
+                    template <typename O, typename Cx, typename Y = CBOR<X>>
+                        static bool value(O& o, const json::basic_node<Tr>& t, Cx& cx) {
+                            using json::node_kind;
+                            switch (t.kind()) {
+    #                           define CXON_WRITE(T) write_value<Y>(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
+                                    case node_kind::object  : { CXON_NODE_RG();     return CXON_WRITE(object); }
+                                    case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array);  }
+                                    case node_kind::string  :                       return CXON_WRITE(string);
+                                    case node_kind::number  :                       return CXON_WRITE(number);
+                                    case node_kind::boolean :                       return CXON_WRITE(boolean);
+                                    case node_kind::null    :                       return CXON_WRITE(null);
+    #                           undef CXON_WRITE
+                            }
+                            return false; // LCOV_EXCL_LINE
+                        }
+                };
+
+#       endif
 
     }
 
