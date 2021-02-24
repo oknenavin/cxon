@@ -103,7 +103,7 @@ namespace cxon { namespace cbor { // node
 #               endif
             public:
 
-            basic_node() noexcept : kind_(node_kind::null)  {}
+            basic_node() noexcept : kind_(node_kind::null)  { get<null>() = nullptr; }
             ~basic_node()                                   { reset(); }
 
             basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : kind_(o.kind_) {
