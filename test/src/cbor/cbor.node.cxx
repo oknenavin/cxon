@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon/cbor.hxx"
+#include "cxon/json.hxx"
 #include "cxon/lib/node.hxx"
 
 #include "cxon/lib/std/list.hxx"
@@ -319,6 +320,13 @@ static unsigned self() {
         {   node a;
             a = node(1.0); CHECK(a.is<node::real>() && a.get<node::real>() == 1.0);
         }
+    }
+    {
+        cxon::json::node n;
+            cxon::from_bytes(n, "\x82\xF5\x66string");
+        std::string s;
+            cxon::to_bytes(s, n);
+        CHECK(s == "\x82\xF5\x66string");
     }
 #   undef CHECK
     f_ ?
