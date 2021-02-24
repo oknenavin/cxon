@@ -35,7 +35,7 @@ Build, write and read:
 
 ``` c++
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
@@ -63,7 +63,7 @@ Build using node's methods:
 
 ``` c++
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
@@ -145,7 +145,7 @@ The resulting `JSON` is (*note, that the default number type is `double`*):
 #### `basic_node`
 
 *Defined in header [`cxon/lang/json/node/node.hxx`](node.hxx)*  
-*Include [`cxon/lang/json/node.hxx`](../node.hxx)*
+*Include [`cxon/lib/node.hxx`](../../../lib/node.hxx)*
 
 ``` c++
 namespace cxon::json {
@@ -501,7 +501,7 @@ bool operator != (const basic_node& n) const; (2)
 
 ``` c++
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
