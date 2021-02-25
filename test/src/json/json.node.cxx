@@ -219,7 +219,7 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
-#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10 && __GNUG_MINOR__ >=2)
                 cxon::to_bytes(cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
@@ -267,7 +267,7 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
-#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10 && __GNUG_MINOR__ >=2)
                 auto const r = cxon::to_bytes(cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
                 CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           else
@@ -284,7 +284,7 @@ static unsigned self() {
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
         }
         {   node jn;
-#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10 && __GNUG_MINOR__ >=2)
                 auto const r = cxon::from_bytes(jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           else
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters

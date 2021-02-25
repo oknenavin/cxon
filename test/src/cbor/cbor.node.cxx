@@ -41,7 +41,7 @@ static unsigned self() {
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
         }
         {   node n;
-#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10 && __GNUG_MINOR__ >=2)
                 auto const r = cxon::from_bytes(n, "\x81\x81\x81\x81", cxon::node::recursion_depth::set<4>());
 #           else
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
