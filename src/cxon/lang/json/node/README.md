@@ -486,16 +486,19 @@ bool operator != (const basic_node& n) const; (2)
       `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
       `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
   
-      *Note: the interface is overloaded for `cxon::json::basic_node` and the overload
+      *Note: The interface is overloaded for `cxon::json::basic_node` and the overload
        passes `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
        (e.g. `std::vector<basic_node>`) and guarding against recursion is needed, then
        `recursion_guard` parameter must be passed explicitly.*
 
-      *Note: currently calling of the overloads with parameter(s), e.g.
+      *Note: Currently calling of the overloads with parameter(s), e.g.
       `from_bytes(..., recursion_depth::set<unsigned, 4U>())`,
       fail to compile with g++ due to a bug in the compiler ([Bug 90642](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90642)).
       As a workaround, they may be called by passing the traits parameters explicitly - e.g.
       `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
+
+      *Note: The bug mentioned above, seems to be resolved somewhere after 9.1,
+       at least it's not reproducible with 10.2, but still, the 90642 is not yet closed.*
 
 ###### Example
 

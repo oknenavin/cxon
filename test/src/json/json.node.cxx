@@ -219,10 +219,13 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
-#           if !defined(__GNUG__) || defined(__clang__)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
                 cxon::to_bytes(cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
-                //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, but after the inclusion of cbor.hxx,
+                // this workaround does not work for to_bytes anymore
+                //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
                 //    (cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           endif
             std::string const s0 =
@@ -264,11 +267,14 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
-#           if !defined(__GNUG__) || defined(__clang__)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
                 auto const r = cxon::to_bytes(cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
                 CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           else
-                //auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, but after the inclusion of cbor.hxx,
+                // this workaround does not work for to_bytes anymore
+                //auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
                 //                    (cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
                 //CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           endif
@@ -278,10 +284,13 @@ static unsigned self() {
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
         }
         {   node jn;
-#           if !defined(__GNUG__) || defined(__clang__)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
                 auto const r = cxon::from_bytes(jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           else
-                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, after the inclusion of cbor.hxx,
+                // funnily enough, this workaround continues to work for from_chars (unlike to_chars)
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
                                     (jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           endif
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
