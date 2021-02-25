@@ -41,10 +41,13 @@ static unsigned self() {
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
         }
         {   node n;
-#           if !defined(__GNUG__) || defined(__clang__)
+#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10)
                 auto const r = cxon::from_bytes(n, "\x81\x81\x81\x81", cxon::node::recursion_depth::set<4>());
 #           else
-                auto const r = cxon::from_bytes<cxon::CBOR<>, cxon::cbor::node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, after the inclusion of cbor.hxx,
+                // funnily enough, this workaround continues to work for from_chars (unlike to_chars)
+                auto const r = cxon::from_bytes<cxon::CBOR<>, cxon::cbor::node_traits>
                                     (n, "\x81\x81\x81\x81", cxon::node::recursion_depth::set<4>());
 #           endif
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
