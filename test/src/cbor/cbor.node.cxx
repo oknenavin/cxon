@@ -9,6 +9,8 @@
 
 #include "cxon/lib/std/list.hxx"
 
+#include <cstring>
+
 ////////////////////////////////////////////////////////////////////////////////
 
 //struct my_traits : cxon::cbor::node_traits {
@@ -325,11 +327,35 @@ static unsigned self() {
         }
     }
     {
-        cxon::json::node n;
-            cxon::from_bytes(n, "\x82\xF5\x66string");
-        std::string s;
-            cxon::to_bytes(s, n);
-        CHECK(s == "\x82\xF5\x66string");
+        {   cxon::json::node n;
+                cxon::from_bytes(n, "\x82\xF5\x66string");
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == "\x82\xF5\x66string");
+        }
+        {   using node = cxon::json::node;
+            node n1;
+                cxon::from_bytes(n1, "\x9F\x01\x21\x41\x03\x61\x34\x81\x05\xA1\x61\x36\x07\xF5\xF6\xFA\x00\x00\x00\x00\xC1\xC2\x08\xFF");
+            node n2 = node::array {1, -2, node::array {3}, "4", node::array {5}, node::object{{"6", 7}}, true, nullptr, 0, 8 };
+            CHECK(n2 == n1);
+        }
+        {   using node = cxon::json::node;
+            node n;
+                auto r = cxon::from_bytes(n, "\xDC");
+            CHECK(!r && r.ec == cxon::cbor::read_error::tag_invalid);
+        }
+        {   using node = cxon::json::node;
+            node n;
+                auto r = cxon::from_bytes(n, "\xFF");
+            CHECK(!r && r.ec == cxon::node::error::invalid);
+        }
+        {   using node = cxon::json::node;
+            node n = node::array { node::object {{"1", 2}}, node::array {3}, "4", 5, true, nullptr };
+            std::string s1;
+                cxon::to_bytes(s1, n);
+            char const s2[] = "\x86\xA1\x61\x31\xFB\x40\x00\x00\x00\x00\x00\x00\x00\x81\xFB\x40\x08\x00\x00\x00\x00\x00\x00\x61\x34\xFB\x40\x14\x00\x00\x00\x00\x00\x00\xF5\xF6";
+            CHECK(std::memcmp(s1.c_str(), s2, sizeof(s2)) == 0);
+        }
     }
 #   undef CHECK
     f_ ?
