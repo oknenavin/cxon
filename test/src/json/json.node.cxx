@@ -543,12 +543,25 @@ static unsigned self() {
         }
     }
     {
-        char const in[] = "{\"a\":[{\"f\":2},[3,4],\"string\",5,false,null],\"b\":\"string\",\"c\":1,\"d\":true,\"e\":null}";
-        cxon::cbor::node n;
-            cxon::from_bytes(n, in);
-        std::string s;
-            cxon::to_bytes(s, n);
-        CHECK(s == in);
+        {   char const in[] = "{\"a\":[{\"f\":2},[3,4],\"string\",5,false,null],\"b\":\"string\",\"c\":1,\"d\":true,\"e\":null}";
+            cxon::cbor::node n;
+                cxon::from_bytes(n, in);
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == in);
+        }
+        {   char const in[] = "#[1]";
+            cxon::cbor::node n;
+                auto r = cxon::from_bytes(n, in);
+            CHECK(!r && r.ec == cxon::node::error::invalid);
+        }
+        {   using node = cxon::cbor::node;
+            //node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{5, 6}}, true, nullptr, 7.0 }; // [&1] - key quotes
+            node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{"5", 6}}, true, nullptr, 7.0 };
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == "[1,2,[3],\"text\",[4],{\"5\":6},true,null,7]");
+        }
     }
 #   undef CHECK
     f_ ?
