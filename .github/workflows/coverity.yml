@@ -4,13 +4,13 @@ on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
   coverity:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup compiler
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-8 g++-8
+#    - name: Setup compiler
+#      run: |
+#        sudo apt-get update
+#        sudo apt-get install gcc-8 g++-8
     - name: Setup Coverity
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
@@ -20,7 +20,7 @@ jobs:
         tar xzf coverity-tool.tgz --strip 1 -C coverity-tool
     - name: Build
       env:
-        CXX: g++-8
+#        CXX: g++-8
         CXXFLAGS: --coverage -std=c++17
       run: |
         export PATH=`pwd`/coverity-tool/bin:$PATH
