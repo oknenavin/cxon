@@ -7,10 +7,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
-#    - name: Setup compiler
-#      run: |
-#        sudo apt-get update
-#        sudo apt-get install gcc-8 g++-8
     - name: Setup Coverity
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
@@ -20,22 +16,21 @@ jobs:
         tar xzf coverity-tool.tgz --strip 1 -C coverity-tool
     - name: Build
       env:
-#        CXX: g++-8
         CXXFLAGS: --coverage -std=c++17
       run: |
         export PATH=`pwd`/coverity-tool/bin:$PATH
         cov-build --dir cov-int make -j
         cat cov-int/build-log.txt
-#    - name: Submit
-#      env:
-#        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-#        MAIL: ${{ secrets.CXON_MAIL }}
-#      run: |
-#        tar czvf cxon.tgz cov-int
-#        curl \
-#          --form token=$TOKEN \
-#          --form email=$MAIL \
-#          --form file=@cxon.tgz \
-#          --form version=master \
-#          --form description="`./ruby -v`" \
-#          https://scan.coverity.com/builds?project=oknenavin%2Fcxon
+    - name: Submit
+      env:
+        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+        MAIL: ${{ secrets.CXON_MAIL }}
+      run: |
+        tar czvf cxon.tgz cov-int
+        curl \
+          --form token=$TOKEN \
+          --form email=$MAIL \
+          --form file=@cxon.tgz \
+          --form version=master \
+          --form description="cxon library" \
+          https://scan.coverity.com/builds?project=oknenavin%2Fcxon
