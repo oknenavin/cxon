@@ -1,9 +1,8 @@
 name: Coverity
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '58 23 * * 5'
+on: [ workflow_dispatch ]
+#  schedule:
+#    - cron: '58 23 * * 5'
 
 jobs:
   coverity:
