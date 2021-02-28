@@ -7,14 +7,15 @@
 [![Format][img-fmt-cbor]](https://cbor.io)  
 [![License][img-lic]](LICENSE)
 
-[![Linux][img-bld-lnx]](https://github.com/oknenavin/cxon/actions?query=workflow%3ALinux)
-[![macOS][img-bld-mac]](https://github.com/oknenavin/cxon/actions?query=workflow%3AmacOS)
-[![Windows][img-bld-win]](https://github.com/oknenavin/cxon/actions?query=workflow%3AWindows)  
-[![Coverage][img-cov]](https://codecov.io/gh/oknenavin/cxon)
+[![Build][img-bld-lnx]](https://github.com/oknenavin/cxon/actions?query=workflow%3ALinux)
+[![Build][img-bld-mac]](https://github.com/oknenavin/cxon/actions?query=workflow%3AmacOS)
+[![Build][img-bld-win]](https://github.com/oknenavin/cxon/actions?query=workflow%3AWindows)  
+[![Codecov][img-cov]](https://codecov.io/gh/oknenavin/cxon)
+[![Coverity][img-cvr]](https://scan.coverity.com/projects/oknenavin-cxon)
+[![Codacy][img-cod]](https://www.codacy.com/gh/oknenavin/cxon/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
 [![CodeQL][img-cql]](https://github.com/oknenavin/cxon/actions?query=workflow%3ACodeQL)
-[![Quality][img-cod]](https://www.codacy.com/gh/oknenavin/cxon/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
-[![Quality][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
-[![Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)
+[![LGTM][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
+[![LGTM/Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)
 
 
 --------------------------------------------------------------------------------
@@ -310,6 +311,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-cql]: https://github.com/oknenavin/cxon/workflows/CodeQL/badge.svg
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
+[img-cvr]: https://scan.coverity.com/projects/18083/badge.svg
 [RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 [RFC7049]: https://tools.ietf.org/rfc/rfc7049.txt
