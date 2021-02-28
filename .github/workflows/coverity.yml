@@ -1,10 +1,13 @@
 name: Coverity
 
-on: [ push, pull_request, workflow_dispatch ]
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '58 23 * * 5'
 
 jobs:
   coverity:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - name: Setup Coverity
@@ -16,11 +19,10 @@ jobs:
         tar xzf coverity-tool.tgz --strip 1 -C coverity-tool
     - name: Build
       env:
-        CXXFLAGS: --coverage -std=c++17
+        CXXFLAGS: -std=c++17
       run: |
         export PATH=`pwd`/coverity-tool/bin:$PATH
         cov-build --dir cov-int make -j
-        cat cov-int/build-log.txt
     - name: Submit
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
@@ -31,6 +33,6 @@ jobs:
           --form token=$TOKEN \
           --form email=$MAIL \
           --form file=@cxon.tgz \
-          --form version=master \
-          --form description="cxon library" \
+          --form version="Current" \
+          --form description="Current Branch" \
           https://scan.coverity.com/builds?project=oknenavin%2Fcxon
