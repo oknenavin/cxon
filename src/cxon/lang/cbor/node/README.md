@@ -23,9 +23,9 @@ Major type (MT)             | Default binding
 ----------------------------|-----------------------------------------
 `unsigned integer / MT0`    | [`long long`][cpp-typ]
 `negative integer / MT1`    | [`unsigned long long`][cpp-typ]
-`byte string / MT2`         | [`std::vector<unsigned char>`][cpp-vect]
+`byte string / MT2`         | [`std::vector<unsigned char>`][cpp-vec]
 `text string / MT3`         | [`std::string`][cpp-str]
-`array / MT4`               | [`std::vector`][cpp-vect]
+`array / MT4`               | [`std::vector`][cpp-vec]
 `map / MT5`                 | [`std::map`][cpp-map]
 `boolean / MT7 (1)`         | [`bool`][cpp-typ]
 `null / MT7 (2)`            | [`std::nullptr_t`][cpp-typ]
@@ -502,10 +502,10 @@ bool operator  < (const basic_node& n) const; (3)
 `CXON/CBOR` defines the following in addition:
   - own error conditions
 
-      Error code                           | Message
-      -------------------------------------|-------------------------------
-      node_error::invalid                  | invalid `CBOR`
-      node_error::recursion_depth_exceeded | recursion depth limit exceeded
+      Error code                             | Message
+      ---------------------------------------|-------------------------------
+      `node_error::invalid`                  | invalid `CBOR`
+      `node_error::recursion_depth_exceeded` | recursion depth limit exceeded
 
   - own context parameters
 
@@ -526,7 +526,7 @@ bool operator  < (const basic_node& n) const; (3)
       `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
 
       *Note: The bug mentioned above, seems to be resolved somewhere after 9.1,
-       at least it's not reproducible with 10.2, but still, the 90642 is not yet closed.*
+       at least it's not reproducible with 10.2, but still, 90642 is not yet closed.*
 
 ###### Example
 

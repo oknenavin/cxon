@@ -474,10 +474,10 @@ bool operator != (const basic_node& n) const; (2)
 `CXON/JSON` defines the following in addition:
   - own error conditions
 
-      Error code                           | Message
-      -------------------------------------|-------------------------------
-      node_error::invalid                  | invalid `JSON`
-      node_error::recursion_depth_exceeded | recursion depth limit exceeded
+      Error code                             | Message
+      ---------------------------------------|-------------------------------
+      `node_error::invalid`                  | invalid `JSON`
+      `node_error::recursion_depth_exceeded` | recursion depth limit exceeded
 
   - own context parameters
 
@@ -498,7 +498,7 @@ bool operator != (const basic_node& n) const; (2)
       `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
 
       *Note: The bug mentioned above, seems to be resolved somewhere after 9.1,
-       at least it's not reproducible with 10.2, but still, the 90642 is not yet closed.*
+       at least it's not reproducible with 10.2, but still, 90642 is not yet closed.*
 
 ###### Example
 
