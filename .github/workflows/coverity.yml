@@ -1,0 +1,40 @@
+name: Coverity
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  coverity:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-8 g++-8
+    - name: Setup Coverity
+      env:
+        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+      run: |
+        wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=oknenavin%2Fcxon" -O coverity-tool.tgz
+        mkdir coverity-tool
+        tar xzf coverity-tool.tar.gz --strip 1 -C coverity-tool
+    - name: Build
+      env:
+        CXX: g++-8
+        CXXFLAGS: --coverage -std=c++17
+      run: |
+        export PATH=`pwd`/coverity-tool/bin:$PATH
+        cov-build --dir cov-int make
+#    - name: Submit
+#      env:
+#        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+#        MAIL: ${{ secrets.CXON_MAIL }}
+#      run: |
+#        tar czvf cxon.tgz cov-int
+#        curl \
+#          --form token=$TOKEN \
+#          --form email=$MAIL \
+#          --form file=@cxon.tgz \
+#          --form version=master \
+#          --form description="`./ruby -v`" \
+#          https://scan.coverity.com/builds?project=oknenavin%2Fcxon
