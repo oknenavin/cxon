@@ -15,9 +15,9 @@ jobs:
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
       run: |
-        wget https://scan.coverity.com/download/linux64 --post-data "token=$TOKEN&project=oknenavin%2Fcxon" -O coverity-tool.tgz
+        wget -q https://scan.coverity.com/download/linux64 --post-data "token=$TOKEN&project=oknenavin%2Fcxon" -O coverity-tool.tgz
         mkdir coverity-tool
-        tar xzf coverity-tool.tar.gz --strip 1 -C coverity-tool
+        tar xzf coverity-tool.tgz --strip 1 -C coverity-tool
     - name: Build
       env:
         CXX: g++-8
