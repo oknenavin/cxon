@@ -107,7 +107,7 @@ namespace cxon { namespace test {
     template <typename T>
         struct match<T> {
             template <typename U = T>
-                static auto values(U t0, U t1) -> enable_if_t<!std::is_floating_point<U>::value, bool> {
+                static auto values(const U& t0, const U& t1) -> enable_if_t<!std::is_floating_point<U>::value, bool> {
                     return t0 == t1;
                 }
             template <typename U = T>
