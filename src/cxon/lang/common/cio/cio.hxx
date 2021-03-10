@@ -25,7 +25,6 @@ namespace cxon { namespace cio { // format traits
             static constexpr char           end             = '}';
             static constexpr char           div             = ':';
             static constexpr char           sep             = ',';
-            static constexpr bool           unquoted_keys   = false;
         };
         struct list {
             static constexpr char           beg             = '[';

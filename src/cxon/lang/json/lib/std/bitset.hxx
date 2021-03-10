@@ -38,9 +38,9 @@ namespace cxon {
         struct read<JSON<X>, std::bitset<N>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
-                    return  cio::str::consume_str<J>::beg(i, e, cx) &&
+                    return  cio::consume<X>(X::string::beg, i, e, cx) &&
                                 json::bits::read_bits<J>(t, i, e, cx) &&
-                            cio::str::consume_str<J>::end(i, e, cx)
+                            cio::consume<X>(X::string::end, i, e, cx)
                     ;
                 }
         };
@@ -49,9 +49,9 @@ namespace cxon {
         struct write<JSON<X>, std::bitset<N>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
-                    return  cio::poke<J>(o, cio::str::str<J>::beg, cx) &&
+                    return  cio::poke<J>(o, J::string::beg, cx) &&
                                 json::bits::write_bits<J>(o, t, cx) &&
-                            cio::poke<J>(o, cio::str::str<J>::end, cx)
+                            cio::poke<J>(o, J::string::end, cx)
                     ;
                 }
         };
