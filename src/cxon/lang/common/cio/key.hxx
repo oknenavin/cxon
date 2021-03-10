@@ -23,7 +23,6 @@ namespace cxon { namespace cio { // key read/write helpers
 namespace cxon { namespace cio { // key quoting
 
     template <typename T> struct is_quoted;
-    template <typename S> struct UQKEY;
 
 }}
 
@@ -46,8 +45,6 @@ namespace cxon { namespace cio {
         CXON_QUOTED(char32_t)
 #   undef CXON_QUOTED
 
-    template <typename S> struct UQKEY : S { using X = S; };
-
 }}
 
 namespace cxon { namespace cio {
@@ -56,70 +53,42 @@ namespace cxon { namespace cio {
 
         // read
 
-        template <typename X> struct key_read;
-
-        template <typename X, template <typename> class S>
-            struct key_read<S<X>> {
-                template <typename T, typename II, typename Cx, typename E = S<X>>
+        template <typename X>
+            struct key_read {
+                template <typename T, typename II, typename Cx>
                     static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value, bool>
                     {
-                        return read_value<S<UQKEY<X>>>(t, i, e, cx);
+                        return read_value<X>(t, i, e, cx);
                     }
-                template <typename T, typename II, typename Cx, typename E = S<X>>
+                template <typename T, typename II, typename Cx>
                     static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
+                        -> enable_if_t<!is_quoted<T>::value, bool>
                     {
-                        return read_value<E>(t, i, e, cx);
-                    }
-                template <typename T, typename II, typename Cx, typename E = S<X>>
-                    static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                    {
-                        return read_value<E>(t, i, e, cx);
-                    }
-                template <typename T, typename II, typename Cx, typename E = S<X>>
-                    static auto value(T& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
-                    {
-                        return  cio::consume<E>(E::string::beg, i, e, cx) &&
-                                    read_value<E>(t, i, e, cx) &&
-                                cio::consume<E>(E::string::end, i, e, cx)
+                        return  cio::consume<X>(X::string::beg, i, e, cx) &&
+                                    read_value<X>(t, i, e, cx) &&
+                                cio::consume<X>(X::string::end, i, e, cx)
                         ;
                     }
             };
 
         // write
 
-        template <typename X> struct key_write;
-
-        template <typename X, template <typename> class S>
-            struct key_write<S<X>> {
-                template <typename T, typename O, typename Cx, typename E = S<X>>
+        template <typename X>
+            struct key_write {
+                template <typename T, typename O, typename Cx>
                     static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t< is_quoted<T>::value &&  E::map::unquoted_keys, bool>
+                        -> enable_if_t< is_quoted<T>::value, bool>
                     {
-                        return write_value<S<UQKEY<X>>>(o, t, cx);
+                        return write_value<X>(o, t, cx);
                     }
-                template <typename T, typename O, typename Cx, typename E = S<X>>
+                template <typename T, typename O, typename Cx>
                     static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t< is_quoted<T>::value && !E::map::unquoted_keys, bool>
+                        -> enable_if_t<!is_quoted<T>::value, bool>
                     {
-                        return write_value<E>(o, t, cx);
-                    }
-                template <typename T, typename O, typename Cx, typename E = S<X>>
-                    static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<!is_quoted<T>::value &&  E::map::unquoted_keys, bool>
-                    {
-                        return write_value<E>(o, t, cx);
-                    }
-                template <typename T, typename O, typename Cx, typename E = S<X>>
-                    static auto value(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<!is_quoted<T>::value && !E::map::unquoted_keys, bool>
-                    {
-                        return  cio::poke<E>(o, E::string::beg, cx) &&
-                                    write_value<E>(o, t, cx) &&
-                                cio::poke<E>(o, E::string::end, cx)
+                        return  cio::poke<X>(o, X::string::beg, cx) &&
+                                    write_value<X>(o, t, cx) &&
+                                cio::poke<X>(o, X::string::end, cx)
                         ;
                     }
             };

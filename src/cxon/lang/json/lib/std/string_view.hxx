@@ -39,13 +39,6 @@ namespace cxon {
                     return cio::str::pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
-    template <typename X, typename T, typename ...R>
-        struct write<JSON<cio::UQKEY<X>>, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx, typename J = JSON<cio::UQKEY<X>>>
-                static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return cio::str::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
-                }
-        };
 
 }
 
