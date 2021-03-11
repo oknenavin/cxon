@@ -8,7 +8,7 @@
 
 #include "bits/string.hxx"
 
-namespace cxon { namespace cio {
+namespace cxon { namespace cio { namespace key {
 
 #   define CXON_QUOTED(T)\
         template <typename ...R> struct is_quoted<std::basic_string<T, R...>> : std::true_type  {};
@@ -21,7 +21,7 @@ namespace cxon { namespace cio {
         CXON_QUOTED(char32_t)
 #   undef CXON_QUOTED
 
-}}
+}}}
 
 namespace cxon {
 

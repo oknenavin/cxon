@@ -205,9 +205,35 @@
 
 #       ifdef CXON_CBOR_DEFINED
 
-            namespace cio { // keys
+            namespace cio { namespace key { // keys
                 template <typename Tr> struct is_quoted<cbor::basic_node<Tr>> : std::true_type {};
-            }
+            }}
+
+            namespace cio { namespace key {
+
+                template <typename X, typename Tr>
+                    struct write<X, cbor::basic_node<Tr>> {
+                        template <typename O, typename Cx>
+                            static bool key(O& o, const cbor::basic_node<Tr>& t, Cx& cx) {
+                                using cbor::node_kind;
+                                switch (t.kind()) {
+#                                   define CXON_WRITE(T) cio::key::write_key<X>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
+                                        case node_kind::uint    :                       return CXON_WRITE(uint);
+                                        case node_kind::sint    :                       return CXON_WRITE(sint);
+                                        case node_kind::bytes   :                       return CXON_WRITE(bytes);
+                                        case node_kind::text    :                       return CXON_WRITE(text);
+                                        case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array); }
+                                        case node_kind::map     : { CXON_NODE_RG();     return CXON_WRITE(map);   }
+                                        case node_kind::boolean :                       return CXON_WRITE(boolean);
+                                        case node_kind::null    :                       return CXON_WRITE(null);
+                                        case node_kind::real    :                       return CXON_WRITE(real);
+#                                   undef CXON_WRITE
+                                }
+                                return false;
+                            }
+                    };
+
+            }}
 
             template <typename X, typename Tr>
                 struct read<JSON<X>, cbor::basic_node<Tr>> {

@@ -556,11 +556,16 @@ static unsigned self() {
             CHECK(!r && r.ec == cxon::node::error::invalid);
         }
         {   using node = cxon::cbor::node;
-            //node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{5, 6}}, true, nullptr, 7.0 }; // [&1] - key quotes
             node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{"5", 6}}, true, nullptr, 7.0 };
             std::string s;
                 cxon::to_bytes(s, n);
             CHECK(s == "[1,2,[3],\"text\",[4],{\"5\":6},true,null,7]");
+        }
+        {   using node = cxon::cbor::node;
+            node n = node::map {{1, 0}, {2U, 0}, {node::bytes{3}, 0}, {"4", 0}, {node::array{5}, 0}, {node::map{{6, 0}}, 0}, {true, 0}, {nullptr, 0}, {7.0, 0}}; // [&1] - key quotes
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == "{\"1\":0,\"2\":0,\"[3]\":0,\"4\":0,\"[5]\":0,\"{\"6\":0}\":0,\"true\":0,\"null\":0,\"7\":0}"); // quotes of 6 must be escaped (quotes in unquoted key)
         }
     }
 #   undef CHECK
