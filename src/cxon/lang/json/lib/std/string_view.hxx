@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 #define CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 
-namespace cxon { namespace cio {
+namespace cxon { namespace cio { namespace key {
 
 #   define CXON_QUOTED(T)\
         template <typename ...R> struct is_quoted<std::basic_string_view<T, R...>> : std::true_type  {};
@@ -19,7 +19,7 @@ namespace cxon { namespace cio {
         CXON_QUOTED(char32_t)
 #   undef CXON_QUOTED
 
-}}
+}}}
 
 namespace cxon {
 
