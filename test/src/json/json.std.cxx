@@ -218,6 +218,14 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[[]]", (list<vector<int>>{{}}));
         R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
         W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
+    // std::map
+        R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, "{\"1\": 2, \"3\": 4}");
+        W_TEST("{\"1\":2,\"3\":4}", map<int, int>{{1, 2}, {3, 4}});
+        R_TEST(map<string, int>{{"{\"1\":2}", 3}, {"{\"4\":5}", 6}}, "{\"{\\\"1\\\":2}\": 3, \"{\\\"4\\\":5}\": 6}");
+        W_TEST("{\"{\\\"1\\\":2}\":3,\"{\\\"4\\\":5}\":6}", map<map<string, int>, int>{{map<string, int>{{"1", 2}}, 3}, {map<string, int>{{"4", 5}}, 6}});
+    // std::unordered_map
+        R_TEST(unordered_map<string, int>{{"1", 2}}, "{\"1\": 2}");
+        W_TEST("{\"1\":2}", unordered_map<int, int>{{1, 2}});
 TEST_END()
 
 

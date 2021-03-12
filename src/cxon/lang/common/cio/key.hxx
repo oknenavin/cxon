@@ -106,10 +106,59 @@ namespace cxon { namespace cio { namespace key {
 
     namespace bits {
 
+        template <typename X, typename O>
+            struct escape_iterator {
+                using iterator_category = std::output_iterator_tag;
+                using value_type        = char;
+                using difference_type   = void;
+                using pointer           = void;
+                using reference         = void;
+
+                constexpr escape_iterator(O& o) : o_(o) {}
+
+                escape_iterator& operator ++() noexcept { return *this; }
+                escape_iterator& operator  *() noexcept { return *this; }
+
+                escape_iterator& operator =(value_type c) {
+                    p_ != '\\' && c == '\"' ? poke(o_, "\\\"") : poke(o_, c);
+                    return p_ = c, *this;
+                }
+
+                constexpr bool good(option<0>) const {
+                    return good_(option<1>());
+                }
+
+                private:
+                    template <typename U = O> auto good_(option<1>) const
+                        -> enable_if_t<std::is_same<decltype(std::declval<U>().good()), bool>::value, bool>
+                    { return o_.good(); }
+                    constexpr bool good_(option<0>) const
+                    { return true; }
+
+                private:
+                    O& o_;
+                    value_type p_ = '\xFF';
+            };
+
+        template <typename X, typename O>
+            struct is_escape_iterator                           : std::false_type {};
+        template <typename X, typename O>
+            struct is_escape_iterator<X, escape_iterator<X, O>> : std::true_type {};
+
+        template <typename X, typename O>
+            constexpr auto make_escaper(O& o) -> enable_if_t<!is_escape_iterator<X, O>::value, escape_iterator<X, O>> {
+                return escape_iterator<X, O>{o};
+            }
+        template <typename X, typename O>
+            constexpr auto make_escaper(O& o) -> enable_if_t< is_escape_iterator<X, O>::value, O&> {
+                return o;
+            }
+
         template <typename X, typename T, typename O, typename Cx>
             static auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!is_quoted<T>::value, bool> {
+                auto e = make_escaper<X>(o);
                 return  poke<X>(o, X::string::beg, cx) &&
-                            write_value<X>(o, t, cx) &&
+                            write_value<X>(e, t, cx) &&
                         poke<X>(o, X::string::end, cx)
                 ;
             }

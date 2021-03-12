@@ -229,7 +229,7 @@
                                         case node_kind::real    :                       return CXON_WRITE(real);
 #                                   undef CXON_WRITE
                                 }
-                                return false;
+                                return false; // LCOV_EXCL_LINE
                             }
                     };
 
