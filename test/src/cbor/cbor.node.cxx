@@ -356,6 +356,12 @@ static unsigned self() {
             char const s2[] = "\x86\xA1\x61\x31\xFB\x40\x00\x00\x00\x00\x00\x00\x00\x81\xFB\x40\x08\x00\x00\x00\x00\x00\x00\x61\x34\xFB\x40\x14\x00\x00\x00\x00\x00\x00\xF5\xF6";
             CHECK(std::memcmp(s1.c_str(), s2, sizeof(s2)) == 0);
         }
+        {   using node = cxon::json::node;
+            node n1;
+                cxon::from_bytes(n1, "\xA1\x01\x02");
+            node n2 = node::object{{1, 2}};
+            CHECK(n2 == n1);
+        }
     }
 #   undef CHECK
     f_ ?

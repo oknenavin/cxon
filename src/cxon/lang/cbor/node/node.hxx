@@ -208,8 +208,8 @@ namespace cxon { namespace cbor { // node
                         imbue<typename int_type<T>::type>() = t; return *this;
                     }
                 // string
-                basic_node(const char* s) : kind_(node_kind::null)          { imbue<text>() = s; }
-                basic_node& operator =(const char* s)                       { imbue<text>() = s; return *this; }
+                basic_node(const typename text::value_type* s) : kind_(node_kind::null) { imbue<text>() = s; }
+                basic_node& operator =(const typename text::value_type* s)              { imbue<text>() = s; return *this; }
 
             void reset() {
                 switch (kind_) {

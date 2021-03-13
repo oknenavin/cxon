@@ -164,6 +164,49 @@
 
     namespace cxon {
 
+        namespace cio { namespace key { // keys
+
+            template <typename X, typename Tr>
+                struct read<JSON<X>, json::basic_node<Tr>> {
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static bool key(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
+                            cio::consume<X>(i, e);
+                            switch (cio::peek(i, e)) {
+    #                           define CXON_READ(T) cio::key::read_key<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
+                                    //case '{'                : { CXON_NODE_RG();     return CXON_READ(object); }
+                                    //case '['                : { CXON_NODE_RG();     return CXON_READ(array);  }
+                                    case '\"'               :                       return CXON_READ(string);
+                                    //case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
+                                    //                        :                       return CXON_READ(number);
+                                    //case 't': case 'f'      :                       return CXON_READ(boolean);
+                                    //case 'n'                :                       return CXON_READ(null);
+    #                           undef CXON_READ
+                            }
+                            return cx|node::error::invalid, false;
+                        }
+                };
+
+            template <typename X, typename Tr>
+                struct write<JSON<X>, json::basic_node<Tr>> {
+                    template <typename O, typename Cx, typename Y = JSON<X>>
+                        static bool key(O& o, const json::basic_node<Tr>& t, Cx& cx) {
+                            using json::node_kind;
+                            switch (t.kind()) {
+#                               define CXON_WRITE(T) cio::key::write_key<Y>(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
+                                    case node_kind::object  :                       return CXON_WRITE(object);
+                                    case node_kind::array   :                       return CXON_WRITE(array);
+                                    case node_kind::string  :                       return CXON_WRITE(string);
+                                    case node_kind::number  :                       return CXON_WRITE(number);
+                                    case node_kind::boolean : { CXON_NODE_RG();     return CXON_WRITE(boolean); }
+                                    case node_kind::null    : { CXON_NODE_RG();     return CXON_WRITE(null);   }
+#                               undef CXON_WRITE
+                            }
+                            return false; // LCOV_EXCL_LINE
+                        }
+                };
+
+        }}
+
         template <typename X, typename Tr>
             struct read<JSON<X>, json::basic_node<Tr>> {
                 template <typename II, typename Cx, typename Y = JSON<X>>
@@ -206,18 +249,16 @@
 #       ifdef CXON_CBOR_DEFINED
 
             namespace cio { namespace key { // keys
-                template <typename Tr> struct is_quoted<cbor::basic_node<Tr>> : std::true_type {};
-            }}
 
-            namespace cio { namespace key {
+                template <typename Tr> struct is_quoted<cbor::basic_node<Tr>> : std::true_type {};
 
                 template <typename X, typename Tr>
-                    struct write<X, cbor::basic_node<Tr>> {
-                        template <typename O, typename Cx>
+                    struct write<JSON<X>, cbor::basic_node<Tr>> {
+                        template <typename O, typename Cx, typename Y = JSON<X>>
                             static bool key(O& o, const cbor::basic_node<Tr>& t, Cx& cx) {
                                 using cbor::node_kind;
                                 switch (t.kind()) {
-#                                   define CXON_WRITE(T) cio::key::write_key<X>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
+#                                   define CXON_WRITE(T) cio::key::write_key<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
                                         case node_kind::uint    :                       return CXON_WRITE(uint);
                                         case node_kind::sint    :                       return CXON_WRITE(sint);
                                         case node_kind::bytes   :                       return CXON_WRITE(bytes);

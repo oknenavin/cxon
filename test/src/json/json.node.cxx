@@ -542,6 +542,11 @@ static unsigned self() {
             a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
         }
     }
+    {   node n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+        std::string s;
+            cxon::to_bytes(s, n);
+        CHECK(s == "{\"{\\\"1\\\":2}\":3,\"[4]\":5,\"6\":7,\"8\":9,\"true\":10,\"null\":11}");
+    }
     {
         {   char const in[] = "{\"a\":[{\"f\":2},[3,4],\"string\",5,false,null],\"b\":\"string\",\"c\":1,\"d\":true,\"e\":null}";
             cxon::cbor::node n;

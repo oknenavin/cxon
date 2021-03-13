@@ -79,15 +79,15 @@ namespace cxon { namespace json { // node
             using number    = typename Tr::number_type;
             using string    = typename Tr::string_type;
             using array     = typename Tr::template array_type<basic_node>;
-            using object    = typename Tr::template object_type<string, basic_node>;
+            using object    = typename Tr::template object_type<basic_node, basic_node>;
 
 #           ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
                 template <template <typename C> class X, bool = false>
                     struct msvc_map_override            : bits::is_nothrow_x<X, object, array, string, number, boolean, null> {};
                 template <template <typename C> class X>
                     struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, /*object, */array, string, number, boolean, null> {};
-                using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<string, basic_node>>::value>;
-                using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<string, basic_node>>::value>;
+                using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<basic_node, basic_node>>::value>;
+                using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<basic_node, basic_node>>::value>;
 #           else
                 using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
                 using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
@@ -178,8 +178,8 @@ namespace cxon { namespace json { // node
                         imbue<number>() = t; return *this;
                     }
                 // string
-                basic_node(const char* s) : kind_(node_kind::null)  { imbue<string>() = s; }
-                basic_node& operator =(const char* s)               { imbue<string>() = s; return *this; }
+                basic_node(const typename string::value_type* s) : kind_(node_kind::null)   { imbue<string>() = s; }
+                basic_node& operator =(const typename string::value_type* s)                { imbue<string>() = s; return *this; }
 
             void reset() {
                 switch (kind_) {
@@ -241,6 +241,22 @@ namespace cxon { namespace json { // node
             }
             bool operator != (const basic_node& n) const {
                 return !operator ==(n);
+            }
+
+            bool operator < (const basic_node& n) const {
+                if (kind() != n.kind())
+                    return kind() < n.kind();
+                switch (kind_) {
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return get<T>() < n.get<T>()
+                        CXON_CBOR_TYPE_DEF(object);
+                        CXON_CBOR_TYPE_DEF(array);
+                        CXON_CBOR_TYPE_DEF(string);
+                        CXON_CBOR_TYPE_DEF(number);
+                        CXON_CBOR_TYPE_DEF(boolean);
+                        case node_kind::null: return false;
+#                   undef CXON_CBOR_TYPE_DEF
+                }
+                return false; // LCOV_EXCL_LINE
             }
 
         private:
