@@ -207,6 +207,9 @@ TEST_BEG(cxon::CBOR<>) // std::bitset
     R_TEST(bitset<32>(), BS("\x5C"), cbor::read_error::size_invalid, 0);
     R_TEST(bitset<32>(), BS("\x44"), cbor::read_error::unexpected, 1);
     R_TEST(bitset<32>(), BS("\x64"), cbor::read_error::unexpected, 0);
+    R_TEST(bitset<7>(), BS("\x5C"), cbor::read_error::size_invalid, 0);
+    R_TEST(bitset<5>(), BS("\x41"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset<3>(), BS("\x64"), cbor::read_error::unexpected, 0);
     {   bio::byte o[1];
         auto const r = to_bytes(std::begin(o), std::end(o), bitset<8 * 32>());
         TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
