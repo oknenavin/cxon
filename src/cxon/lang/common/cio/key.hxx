@@ -114,7 +114,7 @@ namespace cxon { namespace cio { namespace key {
                 using pointer           = void;
                 using reference         = void;
 
-                constexpr escape_iterator(O& o) : o_(o) {}
+                constexpr explicit escape_iterator(O& o) : o_(o) {}
 
                 escape_iterator& operator ++() noexcept { return *this; }
                 escape_iterator& operator  *() noexcept { return *this; }
