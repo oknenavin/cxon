@@ -542,6 +542,17 @@ static unsigned self() {
             a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
         }
     }
+    {   // less than
+        CHECK(node(node::object{}) < node(node::array{}));
+        CHECK(node(node::object{{1, 0}}) < node(node::object{{2, 0}}));
+        CHECK(node(node::array{1}) < node(node::array{2}));
+        CHECK(node(node::array{1}) < node(node::array{2, 3}));
+        CHECK(node("A") < node("a"));
+        CHECK(node("a") < node("aa"));
+        CHECK(node(1) < node(2));
+        CHECK(node(false) < node(true));
+        CHECK(!(node(nullptr) < node(nullptr)));
+    }
     {   node n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
         std::string s;
             cxon::to_bytes(s, n);
