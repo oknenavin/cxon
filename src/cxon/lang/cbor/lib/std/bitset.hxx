@@ -13,14 +13,13 @@ namespace cxon {
     namespace cbor { namespace bits {
 
         template <typename X, size_t N, typename II, typename Cx>
-            inline bool read_bitset_(std::bitset<N>& t, II& i, II e, Cx& cx) {
+            inline auto read_bitset_(std::bitset<N>& t, II& i, II e, Cx& cx) -> enable_if_t<N >= 8, bool> {
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::bstr: {
                         if (!cbor::cnt::read_size_eq<X>(N / 8 + size_t(!!(N % 8)), i, e, cx))
                             return false;
                         if (i == e)
                             return cx|cbor::read_error::unexpected;
-
                         if (N % 8)
                             t |= std::bitset<N> {*i++};
                         size_t n = N / 8;
@@ -30,6 +29,20 @@ namespace cxon {
                                 t.set(3, b & 0x08); t.set(2, b & 0x04); t.set(1, b & 0x02); t.set(0, b & 0x01);
                             }
                         return n == 0 || cx|cbor::read_error::unexpected;
+                    }
+                    default:
+                        return cx|cbor::read_error::unexpected;
+                }
+            }
+        template <typename X, size_t N, typename II, typename Cx>
+            inline auto read_bitset_(std::bitset<N>& t, II& i, II e, Cx& cx) -> enable_if_t<N  < 8, bool> {
+                switch (bio::peek(i, e) & X::mjr) {
+                    case X::bstr: {
+                        if (!cbor::cnt::read_size_eq<X>(N / 8 + size_t(!!(N % 8)), i, e, cx))
+                            return false;
+                        if (i == e)
+                            return cx|cbor::read_error::unexpected;
+                        return t |= std::bitset<N> {*i++}, true;
                     }
                     default:
                         return cx|cbor::read_error::unexpected;
