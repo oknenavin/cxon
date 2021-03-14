@@ -326,41 +326,64 @@ static unsigned self() {
             a = node(1.0); CHECK(a.is<node::real>() && a.get<node::real>() == 1.0);
         }
     }
-    {
-        {   cxon::json::node n;
+    {   // json::node
+        using node = cxon::json::node;
+        {   node n;
                 cxon::from_bytes(n, "\x82\xF5\x66string");
             std::string s;
                 cxon::to_bytes(s, n);
             CHECK(s == "\x82\xF5\x66string");
         }
-        {   using node = cxon::json::node;
-            node n1;
+        {   node n1;
                 cxon::from_bytes(n1, "\x9F\x01\x21\x41\x03\x61\x34\x81\x05\xA1\x61\x36\x07\xF5\xF6\xFA\x00\x00\x00\x00\xC1\xC2\x08\xFF");
             node n2 = node::array {1, -2, node::array {3}, "4", node::array {5}, node::object{{"6", 7}}, true, nullptr, 0, 8 };
             CHECK(n2 == n1);
         }
-        {   using node = cxon::json::node;
-            node n;
+        {   node n;
                 auto r = cxon::from_bytes(n, "\xDC");
             CHECK(!r && r.ec == cxon::cbor::read_error::tag_invalid);
         }
-        {   using node = cxon::json::node;
-            node n;
+        {   node n;
                 auto r = cxon::from_bytes(n, "\xFF");
             CHECK(!r && r.ec == cxon::node::error::invalid);
         }
-        {   using node = cxon::json::node;
-            node n = node::array { node::object {{"1", 2}}, node::array {3}, "4", 5, true, nullptr };
+        {   node n = node::array { node::object {{"1", 2}}, node::array {3}, "4", 5, true, nullptr };
             std::string s1;
                 cxon::to_bytes(s1, n);
             char const s2[] = "\x86\xA1\x61\x31\xFB\x40\x00\x00\x00\x00\x00\x00\x00\x81\xFB\x40\x08\x00\x00\x00\x00\x00\x00\x61\x34\xFB\x40\x14\x00\x00\x00\x00\x00\x00\xF5\xF6";
             CHECK(std::memcmp(s1.c_str(), s2, sizeof(s2)) == 0);
         }
-        {   using node = cxon::json::node;
-            node n1;
+        {   node n1;
                 cxon::from_bytes(n1, "\xA1\x01\x02");
             node n2 = node::object{{1, 2}};
             CHECK(n2 == n1);
+        }
+    }
+    {   // round-trip
+        using node = cxon::json::node;
+        {   // json::node => cbor => json::node
+            node const fr = node::array { node::object {{"1", 2}, {3, 4}}, node::array {5, 6}, "7, 8", 9, true, nullptr };
+            node const to = node::array { node::object {{"1", 2}, {3, 4}}, node::array {5, 6}, "7, 8", 9, true, nullptr };
+            std::vector<unsigned char> s;
+                cxon::to_bytes(s, fr);
+            node n;
+                cxon::from_bytes(n, s);
+            CHECK(n == to);
+        }
+        {   // cbor => json::node => cbor
+            // node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, true, nullptr, 13.0 };
+            char const fr[] =   "\x89\x20\x02\x42\x03\x04\x64\x35\x2C\x20\x36\x82\x07\x08\xA2\x09\x0A\x62\x31\x31\x0C\xF5\xF6\xFB\x40\x2A\x00\x00\x00\x00\x00\x00";
+            char const to[] =   "\x89\xFB\xBF\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"
+                                "\x82\xFB\x40\x08\x00\x00\x00\x00\x00\x00\xFB\x40\x10\x00\x00\x00\x00\x00\x00"
+                                "\x64\x35\x2C\x20\x36"
+                                "\x82\xFB\x40\x1C\x00\x00\x00\x00\x00\x00\xFB\x40\x20\x00\x00\x00\x00\x00\x00"
+                                "\xA2\x62\x31\x31\xFB\x40\x28\x00\x00\x00\x00\x00\x00\xFB\x40\x22\x00\x00\x00\x00\x00\x00\xFB\x40\x24\x00\x00\x00\x00\x00\x00"
+                                "\xF5\xF6\xFB\x40\x2A\x00\x00\x00\x00\x00\x00";
+            node n;
+                cxon::from_bytes(n, fr);
+            std::vector<unsigned char> s;
+                cxon::to_bytes(s, n);
+            CHECK(std::memcmp(s.data(), to, sizeof(to) - 1) == 0);
         }
     }
 #   undef CHECK
