@@ -122,16 +122,16 @@ namespace cxon { namespace charconv { namespace bits {
         template <typename T>
             inline auto itoa(char* b, T t, int base) -> typename std::enable_if<std::is_unsigned<T>::value, unsigned>::type {
                 char    *p = b;
-                do      *p = "0123456789abcdefghijklmnopqrstuvwxyz"[t % base], ++p;
-                while   (t /= base);
+                do      *p = "0123456789abcdefghijklmnopqrstuvwxyz"[t % (T)base], ++p;
+                while   (t /= (T)base);
                 return  std::reverse(b, p), unsigned(p - b);
             }
         template <typename T>
             inline auto itoa(char* b, T t, int base) -> typename std::enable_if<std::is_signed<T>::value, unsigned>::type {
                 using U = typename std::make_unsigned<T>::type;
                 return t < 0 ?
-                    *b = '-', itoa<U>(++b, static_cast<U>(t), base) + 1 :
-                    itoa<U>(b, static_cast<U>(t), base)
+                    *b = '-', itoa<U>(++b, -t, base) + 1 :
+                              itoa<U>(  b,  t, base)
                 ;
             }
 
