@@ -259,8 +259,8 @@
                                 using cbor::node_kind;
                                 switch (t.kind()) {
 #                                   define CXON_WRITE(T) cio::key::write_key<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
-                                        case node_kind::uint    :                       return CXON_WRITE(uint);
                                         case node_kind::sint    :                       return CXON_WRITE(sint);
+                                        case node_kind::uint    :                       return CXON_WRITE(uint);
                                         case node_kind::bytes   :                       return CXON_WRITE(bytes);
                                         case node_kind::text    :                       return CXON_WRITE(text);
                                         case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array); }
@@ -303,8 +303,8 @@
                             using cbor::node_kind;
                             switch (t.kind()) {
 #                               define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
-                                    case node_kind::uint    :                       return CXON_WRITE(uint);
                                     case node_kind::sint    :                       return CXON_WRITE(sint);
+                                    case node_kind::uint    :                       return CXON_WRITE(uint);
                                     case node_kind::bytes   :                       return CXON_WRITE(bytes);
                                     case node_kind::text    :                       return CXON_WRITE(text);
                                     case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array); }
@@ -394,8 +394,8 @@
                         using cbor::node_kind;
                         switch (t.kind()) {
 #                           define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
-                                case node_kind::uint    :                       return CXON_WRITE(uint);
                                 case node_kind::sint    :                       return CXON_WRITE(sint);
+                                case node_kind::uint    :                       return CXON_WRITE(uint);
                                 case node_kind::bytes   :                       return CXON_WRITE(bytes);
                                 case node_kind::text    :                       return CXON_WRITE(text);
                                 case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array); }
