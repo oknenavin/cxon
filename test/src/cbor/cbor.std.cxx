@@ -133,7 +133,7 @@ TEST_BEG(cxon::CBOR<>) // std::basic_string
         R_TEST(u32string(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"), // indefinite
                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
         // errors
-        R_TEST(new string(), BS("\xF7"), cbor::read_error::array_invalid, 0);
+        R_TEST((string*)nullptr, BS("\xF7"), cbor::read_error::array_invalid, 0);
 TEST_END()
 
 

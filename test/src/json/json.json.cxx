@@ -149,7 +149,9 @@ TEST_BEG(cxon::JSON<>) // interface/parameters
         TEST_CHECK(to_bytes(r, 3.1415926, json::fp_precision::set<4>()) && r == e);
     }
     {   int *r = nullptr;
-        TEST_CHECK(from_bytes(r, "42", json::allocator::set(std::allocator<char>())) && *r == 42);
+        std::allocator<int> a;
+        TEST_CHECK(from_bytes(r, "42", json::allocator::set(a)) && *r == 42);
+        std::allocator_traits<std::allocator<int>>::deallocate(a, r, 4);
     }
     {   size_t r = 0;
         TEST_CHECK(from_bytes(r, std::string("123"), json::num_len_max::set<4>()) && r == 123);
