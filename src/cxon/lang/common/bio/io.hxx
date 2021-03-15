@@ -129,14 +129,14 @@ namespace cxon { namespace bio {
 
         template <typename T>
             inline T be_to_i_(const byte (&bs)[2]) {
-                using R = unsigned short;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+                using R = unsigned long;
+                CXON_ASSERT(sizeof(T) >= 2, "narrowing");
                 return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
             }
         template <typename T>
             inline T be_to_i_(const byte (&bs)[4]) {
                 using R = unsigned long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+                CXON_ASSERT(sizeof(T) >= 4, "narrowing");
                 return  (R(bs[3])<< 0) | (R(bs[2])<< 8) |
                         (R(bs[1])<<16) | (R(bs[0])<<24)
                 ;
@@ -144,7 +144,7 @@ namespace cxon { namespace bio {
         template <typename T>
             inline T be_to_i_(const byte (&bs)[8]) {
                 using R = unsigned long long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+                CXON_ASSERT(sizeof(T) >= 8, "narrowing");
                 return  (R(bs[7])<< 0) | (R(bs[6])<< 8) |
                         (R(bs[5])<<16) | (R(bs[4])<<24) |
                         (R(bs[3])<<32) | (R(bs[2])<<40) |
