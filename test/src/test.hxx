@@ -210,19 +210,19 @@ namespace cxon { namespace test {
             return from_bytes<X>(t, s);
         }
 
-    template <typename T>           struct clean        { clean(T) {} };
+    template <typename T>           struct clean        { clean(T&) {} };
     template <typename T, size_t N> struct clean<T[N]>  { clean(T (&)[N]) {} };
     template <typename T>           struct clean<T*>    { clean(T* t) : t_(t) {} ~clean() { delete [] t_; } T* t_; }; // std::allocator
 
     template <typename X, typename T, typename C>
         static bool verify_read_(const T& ref, const C& sbj) {
-            T res{}; clean<T> clean_(res);
+            T res{}; clean<T> clean__(res);
                 auto const r = from_string<X>(res, sbj);
             return r && r.end == std::end(sbj) && match<T>::values(res, ref);
         }
     template <typename X, typename T, typename C, typename E>
         static bool verify_read_(const T&, const C& sbj, E err, int pos) {
-            T res{};
+            T res{}; clean<T> clean__(res);
                 auto const r = from_string<X>(res, sbj);
             return r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
         }
