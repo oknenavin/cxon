@@ -127,6 +127,8 @@ namespace cxon { namespace bio {
                 ;
             }
 
+        // coverity[ -tainted_data_return ]
+        // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T>
             inline T be_to_i_(const byte (&bs)[2]) {
                 using R = unsigned long;
