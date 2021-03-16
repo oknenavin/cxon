@@ -112,11 +112,10 @@ namespace cxon { // numeric|character/read
                     case X::svn: {
                         II const o = i;
                         switch (bio::get(i, e)) {
-                            case X::fp16:                                           // LCOV_EXCL_LINE
-                                /*return  (bio ::get<2>(t, i, e)) ||
+                            case X::fp16:
+                                return  (bio ::get<2>(t, i, e)) ||
                                         (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
-                                ;*/
-                                return  CXON_ASSERT(0, "not implemented"), false;   // LCOV_EXCL_LINE
+                                ;
                             case X::fp32:
                                 return  (bio ::get<4>(t, i, e)) ||
                                         (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
