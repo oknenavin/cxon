@@ -423,6 +423,7 @@ int main() {
     for (auto t : suite::get())
         t->test();
     suite::err() ?
+        // coverity[ -copy_paste_error: all ]
         fprintf(stdout, "cxon/json: %u of %u failed\n", suite::err(), suite::all()) :
         fprintf(stdout, "cxon/json: %u of %u passed\n", suite::all(), suite::all())
     ;
