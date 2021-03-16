@@ -135,6 +135,8 @@ namespace cxon { namespace bio {
                 CXON_ASSERT(sizeof(T) >= 2, "narrowing");
                 return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
             }
+        // coverity[ -tainted_data_return ]
+        // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T>
             inline T be_to_i_(const byte (&bs)[4]) {
                 using R = unsigned long;
@@ -143,6 +145,8 @@ namespace cxon { namespace bio {
                         (R(bs[1])<<16) | (R(bs[0])<<24)
                 ;
             }
+        // coverity[ -tainted_data_return ]
+        // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T>
             inline T be_to_i_(const byte (&bs)[8]) {
                 using R = unsigned long long;
