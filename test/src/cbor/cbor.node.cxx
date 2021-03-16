@@ -388,7 +388,7 @@ static unsigned self() {
     }
 #   undef CHECK
     f_ ?
-        // coverity[ -copy_paste_error: a_ ]
+        // coverity[ copy_paste_error ]
         fprintf(stdout, "cxon/cbor/node/self: %u of %u failed\n", f_, a_) :
         fprintf(stdout, "cxon/cbor/node/self: %u of %u passed\n", a_, a_)
     ;
