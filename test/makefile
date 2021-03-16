@@ -31,14 +31,14 @@ check-json: $(outdir)/check-json
 check-json-node: $(outdir)/check-json-node
 	@(cd $(outdir) && ../$<)
 	@(cd $(outdir) && ../$< \
-                            pass    @$(datdir)/set.1-pass.in \
-                                    @$(datdir)/set.2-pass.in \
-                            fail    @$(datdir)/set.1-fail.in \
-                                    @$(datdir)/set.2-fail.in)
+                            pass    @$(datdir)/json/set.1-pass.in \
+                                    @$(datdir)/json/set.2-pass.in \
+                            fail    @$(datdir)/json/set.1-fail.in \
+                                    @$(datdir)/json/set.2-fail.in)
 	@(cd $(outdir) && ../$< \
-                            diff    @$(datdir)/set.3-diff.in \
-                                    @$(datdir)/set.4-diff.in \
-                                    @$(datdir)/set.5-diff.in \
+                            diff    @$(datdir)/json/set.3-diff.in \
+                                    @$(datdir)/json/set.4-diff.in \
+                                    @$(datdir)/json/set.5-diff.in \
                                     | xargs -n2 diff -q)
 
 check-cbor: $(outdir)/check-cbor
