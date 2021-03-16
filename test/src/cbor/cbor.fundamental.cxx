@@ -298,6 +298,9 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((float)5.960464477539063e-08, BS("\xF9\x00\x01"));
         R_TEST((float)6.103515625e-05, BS("\xF9\x04\x00"));
         R_TEST((float)-4, BS("\xF9\xC4\x00"));
+        R_TEST((float)std::numeric_limits<float>::infinity(), BS("\xF9\x7C\x00"));
+        R_TEST((float)std::numeric_limits<float>::quiet_NaN(), BS("\xF9\x7E\x00"));
+        R_TEST((float)-std::numeric_limits<float>::infinity(), BS("\xF9\xFC\x00"));
         R_TEST((double)0, BS("\xF9\x00\x00"));
         R_TEST((double)-0, BS("\xF9\x80\x00"));
         R_TEST((double)1, BS("\xF9\x3C\x00"));
@@ -306,6 +309,9 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((double)5.960464477539063e-08, BS("\xF9\x00\x01"));
         R_TEST((double)6.103515625e-05, BS("\xF9\x04\x00"));
         R_TEST((double)-4, BS("\xF9\xC4\x00"));
+        R_TEST((double)std::numeric_limits<double>::infinity(), BS("\xF9\x7C\x00"));
+        R_TEST((double)std::numeric_limits<double>::quiet_NaN(), BS("\xF9\x7E\x00"));
+        R_TEST((double)-std::numeric_limits<double>::infinity(), BS("\xF9\xFC\x00"));
     // errors
         R_TEST((double)0, BS("\x80"), cbor::read_error::floating_point_invalid, 0);
 TEST_END()
