@@ -7,6 +7,7 @@
 #define CXON_BIO_IO_HXX_
 
 #include "cxon/utility.hxx"
+#include <cmath> // std::ldexp
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -159,8 +160,16 @@ namespace cxon { namespace bio {
             }
 
         template <typename T>
-            inline T be_to_fp_(const byte (&/*bs*/)[2]) {
-                return CXON_ASSERT(0, "not implemented"), 0;
+            inline T be_to_fp_(const byte (&bs)[2]) {
+                // TODO: not correct, but as in RFC7049 Appendix D
+                const unsigned half = (bs[0] << 8) + bs[1];
+                const unsigned exp = (half >> 10) & 0x1f;
+                const unsigned mant = half & 0x3ff;
+                double val;
+                     if (exp == 0)  val = std::ldexp(mant, -24);
+                else if (exp != 31) val = std::ldexp(mant + 1024, exp - 25);
+                else                val = mant == 0 ? INFINITY : NAN;
+                return (T)(half & 0x8000 ? -val : val);
             }
         template <typename T>
             inline T be_to_fp_(const byte (&bs)[4]) {
