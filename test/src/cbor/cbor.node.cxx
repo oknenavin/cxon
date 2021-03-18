@@ -10,6 +10,8 @@
 #include "cxon/lib/std/list.hxx"
 
 #include <cstring>
+#include <fstream>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -395,9 +397,108 @@ static unsigned self() {
     return f_;
 }
 
-int main(int argc, char *[]) {
+struct test {
+    std::string hex;
+    bool roundtrip;
+    cxon::json::node decoded;
+    std::string diagnostic;
+
+    using suite = std::vector<test>;
+
+    CXON_JSON_CLS_READ_MEMBER(test,
+        CXON_JSON_CLS_FIELD_SKIP("cbor"),
+        CXON_JSON_CLS_FIELD_ASIS(hex),
+        CXON_JSON_CLS_FIELD_ASIS(roundtrip),
+        CXON_JSON_CLS_FIELD_ASIS(decoded),
+        CXON_JSON_CLS_FIELD_ASIS(diagnostic)
+    )
+
+    std::string bin() const {
+        return hex.length() % 2 == 0 ?
+            hex2bin(hex) :
+            std::string {}
+        ;
+    }
+
+    static std::string hex2bin(const std::string& hex) {
+        static constexpr unsigned char hex_[256] = {
+            /*  0*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* 16*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* 32*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* 48*/ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+            /* 64*/ 0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* 80*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* 96*/ 0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        };
+        CXON_ASSERT(hex.length() % 2 == 0, "invalid input");
+        std::string bin;
+            for (size_t i = 0, is = hex.length(); i != is; i += 2) {
+                char const b = char((hex_[(unsigned)hex[i]] << 4) + hex_[(unsigned)hex[i + 1]]);
+                bin += b;
+            }
+        return bin;
+    }
+};
+
+struct fixture {
+    struct fix {
+        std::string justification;
+        bool skip;
+
+        CXON_JSON_CLS_READ_MEMBER(fix,
+            CXON_JSON_CLS_FIELD_ASIS(justification),
+            CXON_JSON_CLS_FIELD_ASIS(skip)
+        )
+    };
+    std::string in;
+    std::map<std::string, fix> fix;
+
+    CXON_JSON_CLS_READ_MEMBER(fixture,
+        CXON_JSON_CLS_FIELD_ASIS(in),
+        CXON_JSON_CLS_FIELD_ASIS(fix)
+    )
+};
+
+int main(int argc, char *argv[]) {
     if (argc == 1) {
         return self();
     }
+    {
+        std::ifstream is(argv[1]);
+            if (!is) return -1;
+
+        fixture fixture;
+            auto const r = cxon::from_bytes<cxon::JSON<>>(fixture, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+            CXON_ASSERT(r, "TODO");
+        {
+            std::ifstream is(fixture.in);
+                if (!is) return -1;
+
+            test::suite suite;
+                auto const r = cxon::from_bytes<cxon::JSON<>>(suite, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+                CXON_ASSERT(r, "TODO");
+
+            for (auto& test : suite) {
+                auto const fix = fixture.fix.find(test.hex);
+                if (fix == fixture.fix.end()) {
+                    auto const cbor = test.bin();
+                    cxon::json::node json;
+                        auto const r = cxon::from_bytes(json, cbor);
+                    if (r) {
+                        if (json != test.decoded) {
+                            fprintf(stdout, "fail: cbor: %s\n", test.hex.c_str());
+                        }
+                    }
+                    else {
+                        fprintf(stdout, "error: cbor: %s\n", test.hex.c_str());
+                    }
+                }
+                else {
+                    fprintf(stdout, "skip: cbor: %s (%s)\n", test.hex.c_str(), fix->second.justification.c_str());
+                }
+            }
+        }
+    }
+
     return 0;
 }
