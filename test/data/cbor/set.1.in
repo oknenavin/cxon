@@ -1,0 +1,31 @@
+{
+    "in": "../data/cbor/set.1/appendix_a.json",
+    "fix": {
+        "3bffffffffffffffff":                                 { "skip": true, "justification": "invalid 64-bit signed integer" },
+        "c249010000000000000000":                             { "skip": true, "justification": "TODO: positive bignum as array" },
+        "c349010000000000000000":                             { "skip": true, "justification": "TODO: negative bignum as array" },
+        "f97c00":                                             { "skip": true, "justification": "TODO: inf/nan" },
+        "f97e00":                                             { "skip": true, "justification": "TODO: inf/nan" },
+        "f9fc00":                                             { "skip": true, "justification": "TODO: inf/nan" },
+        "fa7f800000":                                         { "skip": true, "justification": "TODO: inf/nan" },
+        "fa7fc00000":                                         { "skip": true, "justification": "TODO: inf/nan" },
+        "faff800000":                                         { "skip": true, "justification": "TODO: inf/nan" },
+        "fb7ff0000000000000":                                 { "skip": true, "justification": "TODO: inf/nan" },
+        "fb7ff8000000000000":                                 { "skip": true, "justification": "TODO: inf/nan" },
+        "fbfff0000000000000":                                 { "skip": true, "justification": "TODO: inf/nan" },
+        "f7":                                                 { "skip": true, "justification": "TODO: undefined" },
+        "f0":                                                 { "skip": true, "justification": "TODO: simple" },
+        "f818":                                               { "skip": true, "justification": "TODO: simple" },
+        "f8ff":                                               { "skip": true, "justification": "TODO: simple" },
+        "c074323031332d30332d32315432303a30343a30305a":       { "skip": true, "justification": "TODO: Standard date/time string as string" },
+        "c11a514b67b0":                                       { "skip": true, "justification": "TODO: Epoch-based date/time as integer or float" },
+        "c1fb41d452d9ec200000":                               { "skip": true, "justification": "TODO: Standard date/time string as string" },
+        "d74401020304":                                       { "skip": true, "justification": "TODO: Expected conversion to base16 encoding as ?" },
+        "d818456449455446":                                   { "skip": true, "justification": "TODO: Encoded CBOR data item as array" },
+        "d82076687474703a2f2f7777772e6578616d706c652e636f6d": { "skip": true, "justification": "TODO: URI as string" },
+        "40":                                                 { "skip": true, "justification": "TODO: empty byte string as array" },
+        "4401020304":                                         { "skip": true, "justification": "TODO: byte string as array" },
+        "a201020304":                                         { "skip": true, "justification": "TODO: map as map" },
+        "5f42010243030405ff":                                 { "skip": true, "justification": "TODO: byte string as array" }
+    }
+}
