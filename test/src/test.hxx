@@ -218,14 +218,14 @@ namespace cxon { namespace test {
         static bool verify_read_(const T& ref, const C& sbj) {
             T res{}; clean<T> clean__(res);
                 auto const r = from_string<X>(res, sbj);
-            /* coverity[leaked_storage] */
+            // coverity[leaked_storage]
             return r && r.end == std::end(sbj) && match<T>::values(res, ref);
         }
     template <typename X, typename T, typename C, typename E>
         static bool verify_read_(const T&, const C& sbj, E err, int pos) {
             T res{}; clean<T> clean__(res);
                 auto const r = from_string<X>(res, sbj);
-            /* coverity[leaked_storage] */
+            // coverity[leaked_storage]
             return r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
         }
 
