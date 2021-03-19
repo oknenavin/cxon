@@ -442,12 +442,12 @@ struct test {
 
 struct fixture {
     struct fix {
-        std::string justification;
-        bool skip;
+        std::string act;
+        std::string data;
 
         CXON_JSON_CLS_READ_MEMBER(fix,
-            CXON_JSON_CLS_FIELD_ASIS(justification),
-            CXON_JSON_CLS_FIELD_ASIS(skip)
+            CXON_JSON_CLS_FIELD_ASIS(act),
+            CXON_JSON_CLS_FIELD_ASIS(data)
         )
     };
     std::string in;
@@ -459,19 +459,23 @@ struct fixture {
     )
 };
 
+
 int main(int argc, char *argv[]) {
     if (argc == 1) {
         return self();
     }
-    {
-        std::ifstream is(argv[1]);
+
+    static std::string const data_root = std::string(argv[0]) + "/../../../../../cxon/test/data/";
+
+    for (int i = 1; i != argc; ++i) {
+        std::ifstream is(data_root + argv[i]);
             if (!is) return -1;
 
         fixture fixture;
             auto const r = cxon::from_bytes<cxon::JSON<>>(fixture, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
             CXON_ASSERT(r, "TODO");
         {
-            std::ifstream is(fixture.in);
+            std::ifstream is(data_root + fixture.in);
                 if (!is) return -1;
 
             test::suite suite;
@@ -479,22 +483,30 @@ int main(int argc, char *argv[]) {
                 CXON_ASSERT(r, "TODO");
 
             for (auto& test : suite) {
-                auto const fix = fixture.fix.find(test.hex);
-                if (fix == fixture.fix.end()) {
-                    auto const cbor = test.bin();
-                    cxon::json::node json;
-                        auto const r = cxon::from_bytes(json, cbor);
+                cxon::json::node decoded;
+                {   auto const fix = fixture.fix.find(test.hex);
+                    if (fix == fixture.fix.end()) {
+                        decoded = test.decoded;
+                    }
+                    else if (fix->second.act == "json") {
+                        auto const r = cxon::from_bytes<cxon::JSON<>>(decoded, fix->second.data);
+                        CXON_ASSERT(r, "TODO");
+                    }
+                    else if (fix->second.act == "skip") {
+                        fprintf(stdout, "skip: cbor: %s (%s)\n", test.hex.c_str(), fix->second.data.c_str());
+                        continue;
+                    }
+                }
+                {   cxon::json::node json;
+                        auto const r = cxon::from_bytes(json, test.bin());
                     if (r) {
-                        if (json != test.decoded) {
+                        if (json != decoded) {
                             fprintf(stdout, "fail: cbor: %s\n", test.hex.c_str());
                         }
                     }
                     else {
                         fprintf(stdout, "error: cbor: %s\n", test.hex.c_str());
                     }
-                }
-                else {
-                    fprintf(stdout, "skip: cbor: %s (%s)\n", test.hex.c_str(), fix->second.justification.c_str());
                 }
             }
         }
