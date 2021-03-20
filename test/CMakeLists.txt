@@ -85,3 +85,8 @@ add_test (
     NAME cxon/cbor/self
     COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor
 )
+
+add_test (
+    NAME cxon/cbor/suite
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor ../data/json/set.1.in
+)
