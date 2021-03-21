@@ -196,7 +196,7 @@ namespace cxon { namespace bio {
 
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N == 1, bool> {
-                return i != e && (t = T(*i), ++i, true);
+                return i != e && (t = T(static_cast<byte>(*i)), ++i, true);
             }
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {

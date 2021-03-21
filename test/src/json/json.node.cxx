@@ -572,22 +572,22 @@ static unsigned self() {
                 auto r = cxon::from_bytes(n, in);
             CHECK(!r && r.ec == cxon::node::error::invalid);
         }
-        {   node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{"5", 6}}, true, nullptr, node::undefined(), 7.0 };
+        {   node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{"5", 6}}, true, nullptr, node::undefined(), 7.0, node::simple(8) };
             std::string s;
                 cxon::to_bytes(s, n);
-            CHECK(s == "[1,2,[3],\"text\",[4],{\"5\":6},true,null,null,7]");
+            CHECK(s == "[1,2,[3],\"text\",[4],{\"5\":6},true,null,null,7,8]");
         }
-        {   node n = node::map {{1, 0}, {2U, 0}, {node::bytes{3}, 0}, {"4", 0}, {node::array{5}, 0}, {node::map{{6, 0}}, 0}, {true, 0}, {nullptr, 0}, {node::undefined(), 0}, {7.0, 0}};
+        {   node n = node::map {{1, 0}, {2U, 0}, {node::bytes{3}, 0}, {"4", 0}, {node::array{5}, 0}, {node::map{{6, 0}}, 0}, {true, 0}, {nullptr, 0}, {node::undefined(), 0}, {7.0, 0}, {node::simple(8), 0}};
             std::string s;
                 cxon::to_bytes(s, n);
-            CHECK(s == "{\"1\":0,\"2\":0,\"[3]\":0,\"4\":0,\"[5]\":0,\"{\\\"6\\\":0}\":0,\"true\":0,\"null\":0,\"null\":0,\"7\":0}");
+            CHECK(s == "{\"1\":0,\"2\":0,\"[3]\":0,\"4\":0,\"[5]\":0,\"{\\\"6\\\":0}\":0,\"true\":0,\"null\":0,\"null\":0,\"7\":0,\"8\":0}");
         }
     }
     {   // round-trip
         using node = cxon::cbor::node;
         {   // cbor::node => json => cbor::node
-            node const fr = node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, true, nullptr, node::undefined(), 13.0 };
-            node const to = node::array { -1.0, 2.0, node::array {3.0, 4.0}, "5, 6", node::array {7.0, 8.0}, node::map {{"9", 10.0}, {"11", 12.0}}, true, nullptr, nullptr, 13.0 };
+            node const fr = node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, true, nullptr, node::undefined(), 13.0, node::simple(14) };
+            node const to = node::array { -1.0, 2.0, node::array {3.0, 4.0}, "5, 6", node::array {7.0, 8.0}, node::map {{"9", 10.0}, {"11", 12.0}}, true, nullptr, nullptr, 13.0, 14.0 };
             std::string s;
                 cxon::to_bytes(s, fr);
             node n;

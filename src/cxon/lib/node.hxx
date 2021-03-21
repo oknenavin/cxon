@@ -170,7 +170,7 @@
                 struct read<JSON<X>, json::basic_node<Tr>> {
                     template <typename II, typename Cx, typename Y = JSON<X>>
                         static bool key(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                            cio::consume<X>(i, e);
+                            cio::consume<Y>(i, e);
                             switch (cio::peek(i, e)) {
     #                           define CXON_READ(T) cio::key::read_key<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
                                     //case '{'                : { CXON_NODE_RG();     return CXON_READ(object); }
@@ -211,7 +211,7 @@
             struct read<JSON<X>, json::basic_node<Tr>> {
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                        cio::consume<X>(i, e);
+                        cio::consume<Y>(i, e);
                         switch (cio::peek(i, e)) {
 #                           define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
                                 case '{'                : { CXON_NODE_RG();     return CXON_READ(object); }
@@ -269,6 +269,7 @@
                                         case node_kind::null        :                       return CXON_WRITE(null);
                                         case node_kind::undefined   :                       return CXON_WRITE(undefined);
                                         case node_kind::real        :                       return CXON_WRITE(real);
+                                        case node_kind::simple      :                       return cio::key::write_key<Y>(o, t.template get<typename cbor::basic_node<Tr>::simple>().value, cx);
 #                                   undef CXON_WRITE
                                 }
                                 return false; // LCOV_EXCL_LINE
@@ -281,7 +282,7 @@
                 struct read<JSON<X>, cbor::basic_node<Tr>> {
                     template <typename II, typename Cx, typename Y = JSON<X>>
                         static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                            cio::consume<X>(i, e);
+                            cio::consume<Y>(i, e);
                             switch (cio::peek(i, e)) {
 #                               define CXON_READ(T) read_value<Y>(t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
                                     case '{'                    : { CXON_NODE_RG();     return CXON_READ(map); }
@@ -314,6 +315,7 @@
                                     case node_kind::null        :                       return CXON_WRITE(null);
                                     case node_kind::undefined   :                       return CXON_WRITE(undefined);
                                     case node_kind::real        :                       return CXON_WRITE(real);
+                                    case node_kind::simple      :                       return CXON_WRITE(simple);
 #                               undef CXON_WRITE
                             }
                             return false; // LCOV_EXCL_LINE
@@ -325,8 +327,8 @@
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(cbor::undefined&, II& i, II e, Cx& cx) {
                         II const o = i;
-                        cio::consume<X>(i, e);
-                        return  (cio::consume<X>(X::id::nil, i, e) ||
+                        cio::consume<Y>(i, e);
+                        return  (cio::consume<Y>(Y::id::nil, i, e) ||
                                 (cio::rewind(i, o), cx|cio::read_error::unexpected))
                         ;
                     }
@@ -336,7 +338,26 @@
             struct write<JSON<X>, cbor::undefined> {
                 template <typename O, typename Cx, typename Y = JSON<X>>
                     static bool value(O& o, const cbor::undefined&, Cx& cx) {
-                        return cio::poke<X>(o, X::id::nil, cx);
+                        return cio::poke<Y>(o, Y::id::nil, cx);
+                    }
+            };
+
+        template <typename X, typename T>
+            struct read<JSON<X>, cbor::simple<T>> {
+                template <typename II, typename Cx, typename Y = JSON<X>>
+                    static bool value(cbor::simple<T>& t, II& i, II e, Cx& cx) {
+                        II const o = i;
+                        return  (read_value<Y>(t.value, i, e) || // TODO: check simple-value values
+                                (cio::rewind(i, o), cx|cio::read_error::unexpected))
+                        ;
+                    }
+            };
+
+        template <typename X, typename T>
+            struct write<JSON<X>, cbor::simple<T>> {
+                template <typename O, typename Cx, typename Y = JSON<X>>
+                    static bool value(O& o, const cbor::simple<T>& t, Cx& cx) {
+                        return write_value<Y>(o, t.value, cx); // TODO: check simple-value values
                     }
             };
 
@@ -381,7 +402,7 @@
                 template <typename II, typename Cx, typename Y = CBOR<X>>
                     static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
                         size_t tag;
-                        if (!cbor::tag::read<X>(tag, i, e, cx))
+                        if (!cbor::tag::read<Y>(tag, i, e, cx))
                             return false;
                         bio::byte const b = bio::peek(i, e);
                         switch (b & X::mjr) {
@@ -402,11 +423,12 @@
                                         case X::und     :                           return CXON_READ(undefined);
                                         case X::fp16: case X::fp32: case X::fp64
                                                         :                           return CXON_READ(real);
+                                        default         :                           return CXON_READ(simple);
                                     }
 #                           undef CXON_READ_ARR
 #                           undef CXON_READ
                         }
-                        return cx|node::error::invalid, false;
+                        return false; // LCOV_EXCL_LINE
                     }
             };
 
@@ -427,6 +449,7 @@
                                 case node_kind::null        :                       return CXON_WRITE(null);
                                 case node_kind::undefined   :                       return CXON_WRITE(undefined);
                                 case node_kind::real        :                       return CXON_WRITE(real);
+                                case node_kind::simple      :                       return CXON_WRITE(simple);
 #                           undef CXON_WRITE
                         }
                         return false; // LCOV_EXCL_LINE
@@ -438,7 +461,7 @@
                 template <typename II, typename Cx, typename Y = CBOR<X>>
                     static bool value(cbor::undefined&, II& i, II e, Cx& cx) {
                         II const o = i;
-                        return  (bio::get(i, e) == X::und) ||
+                        return  (bio::get(i, e) == Y::und) ||
                                 (bio::rewind(i, o), cx|cbor::read_error::unexpected)
                         ;
                     }
@@ -448,7 +471,50 @@
             struct write<CBOR<X>, cbor::undefined> {
                 template <typename O, typename Cx, typename Y = CBOR<X>>
                     static bool value(O& o, const cbor::undefined&, Cx& cx) {
-                        return bio::poke<X>(o, X::und, cx);
+                        return bio::poke<Y>(o, Y::und, cx);
+                    }
+            };
+
+        template <typename X, typename T>
+            struct read<CBOR<X>, cbor::simple<T>> {
+                template <typename II, typename Cx, typename Y = CBOR<X>>
+                    static bool value(cbor::simple<T>& t, II& i, II e, Cx& cx) {
+                        II const o = i;
+                        auto const b = bio::get(i, e);
+                        switch (b & X::mjr) {
+                            case X::svn:
+                                switch (b & X::mnr) {
+                                    case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07: case 0x08: case 0x09:
+                                    case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F: case 0x10: case 0x11: case 0x12: case 0x13:
+                                        return  (t = T(b & X::mnr), true);
+                                    case 0x18:
+                                        return  (bio::get(t.value, 1, i, e)) ||
+                                                (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                        ;
+                                    case 0x14: case 0x15: case 0x16: case 0x17:
+                                    case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: case 0x1E: case 0x1F:
+                                        break;
+                                }
+                        }
+                        return bio::rewind(i, o), cx|cbor::read_error::unexpected;
+                    }
+            };
+
+        template <typename X, typename T>
+            struct write<CBOR<X>, cbor::simple<T>> {
+                template <typename O, typename Cx, typename Y = CBOR<X>>
+                    static bool value(O& o, const cbor::simple<T>& t, Cx& cx) {
+                        switch (t) {
+                            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07: case 0x08: case 0x09:
+                            case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F: case 0x10: case 0x11: case 0x12: case 0x13:
+                                return  bio::poke<Y>(o, bio::byte(X::svn + t), cx);
+                            default:
+                                CXON_ASSERT(t <= 255, "invalid simple value");
+                                return  bio::poke<Y>(o, bio::byte(X::svn + 0x18), cx) && bio::poke<Y>(o, t.value, 1, cx);
+                            case 0x14: case 0x15: case 0x16: case 0x17:
+                            case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: case 0x1E: case 0x1F:
+                                return  cx|cbor::write_error::argument_invalid;
+                        }
                     }
             };
 
@@ -458,7 +524,7 @@
                 struct read<CBOR<X>, json::basic_node<Tr>> {
                     template <typename II, typename Cx, typename Y = CBOR<X>>
                         static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                            if (!cbor::tag::read<X>(i, e, cx))
+                            if (!cbor::tag::read<Y>(i, e, cx))
                                 return false;
                             bio::byte const b = bio::peek(i, e);
                             switch (b & X::mjr) {
@@ -483,10 +549,16 @@
                                             }
                                             case X::fp16: case X::fp32: case X::fp64
                                                             :                       return CXON_READ(number);
+                                            default         : {
+                                                typename cbor::node::simple s;
+                                                                                    return  (read_value<Y>(s, i, e, cx)) &&
+                                                                                            (t.template imbue<typename json::basic_node<Tr>::number>() = s, true)
+                                                                                    ;
+                                            }
                                         }
 #                               undef CXON_READ
                             }
-                            return cx|node::error::invalid, false;
+                            return false; // LCOV_EXCL_LINE
                         }
                 };
 
