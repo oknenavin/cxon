@@ -13,7 +13,7 @@
         "fb7ff0000000000000":                                 { "act": "skip", "data": "TODO: inf" },
         "fb7ff8000000000000":                                 { "act": "skip", "data": "TODO: nan" },
         "fbfff0000000000000":                                 { "act": "skip", "data": "TODO: -inf" },
-        "f7":                                                 { "act": "skip", "data": "TODO: undefined" },
+        "f7":                                                 { "act": "json", "data": "null" },
         "f0":                                                 { "act": "skip", "data": "TODO: simple(16)" },
         "f818":                                               { "act": "skip", "data": "TODO: simple(24)" },
         "f8ff":                                               { "act": "skip", "data": "TODO: simple(255)" },
