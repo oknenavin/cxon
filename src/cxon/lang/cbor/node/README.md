@@ -9,6 +9,8 @@
 #### Contents
 - [Introduction](#introduction)
 - [`cxon::cbor::basic_node`](#basic_node)
+- [Helper classes](#helper-classes)
+  - [`cxon::cbor::undefined`](#undefined)
 - [`CXON` integration](#cxon-integration)
 
 
@@ -29,11 +31,13 @@ Major type (MT)             | Default binding
 `map / MT5`                 | [`std::map`][cpp-map]
 `boolean / MT7 (1)`         | [`bool`][cpp-typ]
 `null / MT7 (2)`            | [`std::nullptr_t`][cpp-typ]
+`undefined / MT7 (3)`       | [`cbor::undefined`](#undefined)
 `floating point / MT7 (3)`  | [`double`][cpp-typ]
 
 *`(1)` `0xF4` / `0xF5`*  
 *`(2)` `0xF6`*  
-*`(3)` `0xFA` (single-precision), `0xFA` (double-precision) - `0xF9` (half-precision) is not yet supported*
+*`(2)` `0xF7`*  
+*`(3)` `0xFA` (single-precision), `0xFB` (double-precision) - `0xF9` (half-precision) is not fully supported*
 
 ###### Example 1
 
@@ -91,11 +95,13 @@ int main() {
             { node::map {{1, 2}, {3, 4}}, 1 },
             { false, 1 },
             { nullptr, 1 },
+            { node::undefined(), 1 },
             { 1.0, 1 }
         },
         true,                       // bool
         false,                      // bool
         nullptr,                    // null
+        node::undefined(),          // undefined
         1.0                         // real
     };
 
@@ -188,6 +194,7 @@ Member type | Definition
 `map`       | `Traits::map_type<basic_node, basic_node>`
 `boolean`   | `Traits::boolean_type`
 `null`      | `Traits::null_type`
+`undefined` | `Traits::undefined_type`
 `real`      | `Traits::real_type`
 
 ###### Member functions
@@ -269,7 +276,7 @@ basic_node(const char* v);
 ```
 
 Construct new node from a variety of data sources.
-  - `(1)` Default constructor. Constructs node with `null` value type.
+  - `(1)` Default constructor. Constructs node with `undefined` value type.
   - `(2)` Move and copy constructors
   - `(3)` Move and copy constructors for each value type
   - `(4)` Constructors for `string` and `real` value types
@@ -279,7 +286,7 @@ Construct new node from a variety of data sources.
 ``` c++
 using namespace cxon::cbor;
 {   // (1)
-    node n; assert(n.is<node::null>());
+    node n; assert(n.is<node::undefined>());
 }
 {   // (2)
     node o = true; assert(o.is<node::boolean>());
@@ -357,7 +364,7 @@ Replaces the content of the node:
 void reset();
 ```
 
-Resets the content of the node, the value type is `null`.
+Resets the content of the node, the value type is `undefined`.
 
 
 --------------------------------------------------------------------------------
@@ -376,7 +383,7 @@ node_kind kind() const noexcept;
 
 ``` c++
 using namespace cxon::cbor;
-node const n; assert(n.kind() == node_kind::null);
+node const n; assert(n.kind() == node_kind::undefined);
 ```
 
 
@@ -495,6 +502,20 @@ bool operator  < (const basic_node& n) const; (3)
 
 
 --------------------------------------------------------------------------------
+
+#### Helper classes
+
+##### `undefined`
+
+``` c++
+struct undefined {
+    bool operator ==(const undefined&) const { return true; }
+};
+```
+
+
+--------------------------------------------------------------------------------
+
 
 #### `CXON` integration
 
