@@ -11,6 +11,7 @@
 - [`cxon::cbor::basic_node`](#basic_node)
 - [Helper classes](#helper-classes)
   - [`cxon::cbor::undefined`](#undefined)
+  - [`cxon::cbor::simple`](#simple)
 - [`CXON` integration](#cxon-integration)
 
 
@@ -33,11 +34,13 @@ Major type (MT)             | Default binding
 `null / MT7 (2)`            | [`std::nullptr_t`][cpp-typ]
 `undefined / MT7 (3)`       | [`cbor::undefined`](#undefined)
 `floating point / MT7 (3)`  | [`double`][cpp-typ]
+`simple / MT7 (4)`          | [`cbor::simple`](#simple)
 
 *`(1)` `0xF4` / `0xF5`*  
 *`(2)` `0xF6`*  
 *`(2)` `0xF7`*  
-*`(3)` `0xFA` (single-precision), `0xFB` (double-precision) - `0xF9` (half-precision) is not fully supported*
+*`(3)` `0xFA` (single-precision), `0xFB` (double-precision) - `0xF9` (half-precision) is not fully supported*  
+*`(4)` only unassigned values*
 
 ###### Example 1
 
@@ -96,13 +99,15 @@ int main() {
             { false, 1 },
             { nullptr, 1 },
             { node::undefined(), 1 },
-            { 1.0, 1 }
+            { 1.0, 1 },
+            { node::simple(16), 1 }
         },
         true,                       // bool
         false,                      // bool
         nullptr,                    // null
         node::undefined(),          // undefined
-        1.0                         // real
+        1.0,                        // real
+        node::simple(24)            // simple
     };
 
     // build using node's methods
@@ -129,11 +134,15 @@ int main() {
                 m[node::map {{1, 2}, {3, 4}}] = 1;  assert(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
                 m[false] = 1;                       assert(m.find(node::boolean(false)) != m.end());
                 m[nullptr] = 1;                     assert(m.find(node::null(nullptr)) != m.end());
+                m[node::undefined {}] = 1;          CHECK(m.find(node::undefined {}) != m.end());
                 m[1.0] = 1;                         assert(m.find(node::real(1.0)) != m.end());
+                m[node::simple {16}] = 1;           CHECK(m.find(node::simple {16}) != m.end());
             a.push_back(true);                      assert(a.back().is<node::boolean>());
             a.push_back(false);                     assert(a.back().is<node::boolean>());
             a.push_back(nullptr);                   assert(a.back().is<node::null>());
+            a.push_back(node::undefined {});        CHECK(a.back().is<node::undefined>());
             a.push_back(1.0);                       assert(a.back().is<node::real>());
+            a.push_back(node::simple {24});         CHECK(a.back().is<node::simple>());
 
     assert(n1 == n2);
 
@@ -196,6 +205,7 @@ Member type | Definition
 `null`      | `Traits::null_type`
 `undefined` | `Traits::undefined_type`
 `real`      | `Traits::real_type`
+`simple`    | `Traits::simple_type`
 
 ###### Member functions
 
@@ -511,6 +521,18 @@ bool operator  < (const basic_node& n) const; (3)
 struct undefined {
     bool operator ==(const undefined&) const { return true; }
 };
+```
+
+##### `simple`
+
+``` c++
+template <typename T>
+    struct simple {
+        T value;
+
+        simple(T t = {}) : value(t) {}
+        operator T() const { return value; }
+    };
 ```
 
 

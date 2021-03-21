@@ -58,7 +58,11 @@ static unsigned self() {
         }
         {   node n;
             auto const r = cxon::from_bytes(n, "\xFF");
-            CHECK(!r && r.ec == cxon::node::error::invalid);
+            CHECK(!r && r.ec == cxon::cbor::read_error::unexpected);
+        }
+        {   node n = node::simple {0x14}; std::string s;
+            auto r = cxon::to_bytes(s, n);
+            CHECK(!r && r.ec == cxon::cbor::write_error::argument_invalid);
         }
         {   using namespace cxon::node;
             std::error_condition ec;
@@ -120,13 +124,15 @@ static unsigned self() {
                 { false, 1 },
                 { nullptr, 1 },
                 { node::undefined {}, 1 },
-                { 1.0, 1 }
+                { 1.0, 1 },
+                { node::simple {16}, 1 }
             },
             true,                       // bool
             false,                      // bool
             nullptr,                    // null
             node::undefined {},         // undefined
-            1.0                         // real
+            1.0,                        // real
+            node::simple {24}           // simple
         };
 
         // build using node's methods
@@ -155,11 +161,13 @@ static unsigned self() {
                     m[nullptr] = 1;                     CHECK(m.find(node::null(nullptr)) != m.end());
                     m[node::undefined {}] = 1;          CHECK(m.find(node::undefined {}) != m.end());
                     m[1.0] = 1;                         CHECK(m.find(node::real(1.0)) != m.end());
+                    m[node::simple {16}] = 1;           CHECK(m.find(node::simple {16}) != m.end());
                 a.push_back(true);                      CHECK(a.back().is<node::boolean>());
                 a.push_back(false);                     CHECK(a.back().is<node::boolean>());
                 a.push_back(nullptr);                   CHECK(a.back().is<node::null>());
                 a.push_back(node::undefined {});        CHECK(a.back().is<node::undefined>());
                 a.push_back(1.0);                       CHECK(a.back().is<node::real>());
+                a.push_back(node::simple {24});         CHECK(a.back().is<node::simple>());
 
         CHECK(n1 == n2);
 
@@ -248,6 +256,10 @@ static unsigned self() {
             node n(42.0); CHECK(n.is<node::real>() && n.get<node::real>() == 42.0);
         }
         {
+            node::map const o = { {node::simple {255}, "value"} };
+            node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+        }
+        {
             node o = true; CHECK(o.is<node::boolean>());
             node n(o); CHECK(n.is<node::boolean>() && n.get<node::boolean>());
         }
@@ -297,9 +309,6 @@ static unsigned self() {
         {   node a = node::map {{"q", "?"}, {"a", 42}}, b;
             b = a; CHECK(a == b);
         }
-        {   node a = 42., b;
-            b = a; CHECK(a == b);
-        }
         {   node a = true, b;
             b = a; CHECK(a == b);
         }
@@ -307,6 +316,12 @@ static unsigned self() {
             b = a; CHECK(a == b);
         }
         {   node a = node::undefined {}, b;
+            b = a; CHECK(a == b);
+        }
+        {   node a = 42., b;
+            b = a; CHECK(a == b);
+        }
+        {   node a = node::simple {}, b;
             b = a; CHECK(a == b);
         }
     }
@@ -341,6 +356,9 @@ static unsigned self() {
         {   node a;
             a = node(1.0); CHECK(a.is<node::real>() && a.get<node::real>() == 1.0);
         }
+        {   node a;
+            a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
+        }
     }
     {   // json::node
         using node = cxon::json::node;
@@ -361,7 +379,7 @@ static unsigned self() {
         }
         {   node n;
                 auto r = cxon::from_bytes(n, "\xFF");
-            CHECK(!r && r.ec == cxon::node::error::invalid);
+            CHECK(!r && r.ec == cxon::cbor::read_error::unexpected);
         }
         {   node n = node::array { node::object {{"1", 2}}, node::array {3}, "4", 5, true, nullptr };
             std::string s1;
@@ -387,14 +405,14 @@ static unsigned self() {
             CHECK(n == to);
         }
         {   // cbor => json::node => cbor
-            // node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, true, nullptr, node::undefined {}, 13.0 };
-            char const fr[] =   "\x8A\x20\x02\x42\x03\x04\x64\x35\x2C\x20\x36\x82\x07\x08\xA2\x09\x0A\x62\x31\x31\x0C\xF5\xF6\xF7\xFB\x40\x2A\x00\x00\x00\x00\x00\x00";
-            char const to[] =   "\x8A\xFB\xBF\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"
+            // node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, true, nullptr, node::undefined {}, 13.0, node::simple {} };
+            char const fr[] =   "\x8B\x20\x02\x42\x03\x04\x64\x35\x2C\x20\x36\x82\x07\x08\xA2\x09\x0A\x62\x31\x31\x0C\xF5\xF6\xF7\xFB\x40\x2A\x00\x00\x00\x00\x00\x00\xE0";
+            char const to[] =   "\x8B\xFB\xBF\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"
                                 "\x82\xFB\x40\x08\x00\x00\x00\x00\x00\x00\xFB\x40\x10\x00\x00\x00\x00\x00\x00"
                                 "\x64\x35\x2C\x20\x36"
                                 "\x82\xFB\x40\x1C\x00\x00\x00\x00\x00\x00\xFB\x40\x20\x00\x00\x00\x00\x00\x00"
                                 "\xA2\x62\x31\x31\xFB\x40\x28\x00\x00\x00\x00\x00\x00\xFB\x40\x22\x00\x00\x00\x00\x00\x00\xFB\x40\x24\x00\x00\x00\x00\x00\x00"
-                                "\xF5\xF6\xF6\xFB\x40\x2A\x00\x00\x00\x00\x00\x00";
+                                "\xF5\xF6\xF6\xFB\x40\x2A\x00\x00\x00\x00\x00\x00\xFB\x00\x00\x00\x00\x00\x00\x00\x00";
             node n;
                 cxon::from_bytes(n, fr);
             std::vector<unsigned char> s;
