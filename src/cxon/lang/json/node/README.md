@@ -179,7 +179,7 @@ Member type | Definition
 `number`    | `Traits::number_type`
 `string`    | `Traits::string_type`
 `array`     | `Traits::array_type<basic_node>`
-`object`    | `Traits::object_type<string, basic_node>`
+`object`    | `Traits::object_type<basic_node, basic_node>`
 
 ###### Member functions
 
@@ -474,17 +474,18 @@ bool operator != (const basic_node& n) const; (2)
 `CXON/JSON` defines the following in addition:
   - own error conditions
 
-      Error code                             | Message
-      ---------------------------------------|-------------------------------
-      `node_error::invalid`                  | invalid `JSON`
-      `node_error::recursion_depth_exceeded` | recursion depth limit exceeded
+      Error code                              | Message
+      ----------------------------------------|-------------------------------
+      `node::error::invalid`                  | invalid `JSON`
+      `node::error::recursion_depth_exceeded` | recursion depth limit exceeded
 
   - own context parameters
 
-      Parameter         | Context    | Type       | Default | Description
-      ------------------|------------|------------|---------|-------------------------
-      `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
-      `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
+      Parameter                    | Context    | Type       | Default | Description
+      -----------------------------|------------|------------|---------|---------------------------
+      `node::recursion_guard`      | read/write | `unsigned` | 0 (N/A) | recursion guard state
+      `node::recursion_depth`      | read/write | `unsigned` | 64      | max recursion depth
+      `node::json::arbitrary_keys` | read/write | `bool`     | false   | allow `node` as object key
   
       *Note: The interface is overloaded for `cxon::json::basic_node` and the overload
        passes `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type

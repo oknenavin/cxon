@@ -219,7 +219,7 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
-#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10 && __GNUG_MINOR__ >=2)
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
                 cxon::to_bytes(cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
@@ -267,7 +267,7 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
-#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10 && __GNUG_MINOR__ >=2)
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
                 auto const r = cxon::to_bytes(cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
                 CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           else
@@ -284,7 +284,7 @@ static unsigned self() {
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
         }
         {   node jn;
-#           if !defined(__GNUG__) || defined(__clang__) || (__GNUG__ >= 10 && __GNUG_MINOR__ >=2)
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
                 auto const r = cxon::from_bytes(jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           else
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
@@ -557,6 +557,34 @@ static unsigned self() {
         std::string s;
             cxon::to_bytes(s, n);
         CHECK(s == "{\"{\\\"1\\\":2}\":3,\"[4]\":5,\"6\":7,\"8\":9,\"true\":10,\"null\":11}");
+    }
+    {   // node::json::arbitrary_keys
+        using node = cxon::json::node;
+        {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, 8: 9, true: 10, null: 11}";
+            node const out = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+            node n;
+                cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, in, cxon::node::json::arbitrary_keys::set<true>());
+            CHECK(n == out);
+        }
+        {   node n;
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, "{x: 0}", cxon::node::json::arbitrary_keys::set<true>());
+            CHECK(!r && r.ec == cxon::node::error::invalid);
+        }
+        {
+            node const n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+            std::string s;
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
+                cxon::to_bytes(s, n, cxon::node::json::arbitrary_keys::set<true>());
+                CHECK(s == "{{1:2}:3,[4]:5,\"6\":7,8:9,true:10,null:11}");
+#           else
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, but after the inclusion of cbor.hxx,
+                // this workaround does not work for to_bytes anymore
+                //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                //    (s, n, cxon::node::json::arbitrary_keys::set<true>());
+                //CHECK(s == "{{1:2}:3,[4]:5,\"6\":7,8:9,true:10,null:11}");
+#           endif
+        }
     }
     {   // cbor::node
         using node = cxon::cbor::node;
