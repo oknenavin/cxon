@@ -36,6 +36,12 @@
 
 #   include "cxon/lang/json/node/node.hxx"
 
+    namespace cxon { namespace node { namespace json { // context parameters
+
+        CXON_PARAMETER(arbitrary_keys, bool);   // read/write: constexpr
+        
+    }}}
+
     namespace cxon {
 
         template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename InIt, typename ...CxPs>
@@ -169,30 +175,50 @@
             template <typename X, typename Tr>
                 struct read<JSON<X>, json::basic_node<Tr>> {
                     template <typename II, typename Cx, typename Y = JSON<X>>
-                        static bool key(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
+                        static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
+                            -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                        {
                             cio::consume<Y>(i, e);
                             switch (cio::peek(i, e)) {
-    #                           define CXON_READ(T) cio::key::read_key<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
-                                    //case '{'                : { CXON_NODE_RG();     return CXON_READ(object); }
-                                    //case '['                : { CXON_NODE_RG();     return CXON_READ(array);  }
+#                               define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
+                                    case '{'                : { CXON_NODE_RG();     return CXON_READ(object); }
+                                    case '['                : { CXON_NODE_RG();     return CXON_READ(array);  }
                                     case '\"'               :                       return CXON_READ(string);
-                                    //case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
-                                    //                        :                       return CXON_READ(number);
-                                    //case 't': case 'f'      :                       return CXON_READ(boolean);
-                                    //case 'n'                :                       return CXON_READ(null);
-    #                           undef CXON_READ
+                                    case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
+                                                            :                       return CXON_READ(number);
+                                    case 't': case 'f'      :                       return CXON_READ(boolean);
+                                    case 'n'                :                       return CXON_READ(null);
+#                               undef CXON_READ
                             }
                             return cx|node::error::invalid, false;
+                        }
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
+                            -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                        {
+                            return cio::key::read_key<Y>(t.template imbue<typename json::basic_node<Tr>::string>(), i, e, cx);
                         }
                 };
 
             template <typename X, typename Tr>
                 struct write<JSON<X>, json::basic_node<Tr>> {
+                    template <typename O, typename T, typename Cx, typename Y = JSON<X>>
+                        static auto write_key(O& o, const T& t, Cx& cx)
+                            -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                        {
+                            return write_value<Y>(o, t, cx);
+                        }
+                    template <typename O, typename T, typename Cx, typename Y = JSON<X>>
+                        static auto write_key(O& o, const T& t, Cx& cx)
+                            -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                        {
+                            return cio::key::write_key<Y>(o, t, cx);
+                        }
                     template <typename O, typename Cx, typename Y = JSON<X>>
                         static bool key(O& o, const json::basic_node<Tr>& t, Cx& cx) {
                             using json::node_kind;
                             switch (t.kind()) {
-#                               define CXON_WRITE(T) cio::key::write_key<Y>(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
+#                               define CXON_WRITE(T) write_key(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
                                     case node_kind::object  :                       return CXON_WRITE(object);
                                     case node_kind::array   :                       return CXON_WRITE(array);
                                     case node_kind::string  :                       return CXON_WRITE(string);

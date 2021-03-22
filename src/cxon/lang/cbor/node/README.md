@@ -545,17 +545,17 @@ template <typename T>
 `CXON/CBOR` defines the following in addition:
   - own error conditions
 
-      Error code                             | Message
-      ---------------------------------------|-------------------------------
-      `node_error::invalid`                  | invalid `CBOR`
-      `node_error::recursion_depth_exceeded` | recursion depth limit exceeded
+      Error code                              | Message
+      ----------------------------------------|-------------------------------
+      `node::error::invalid`                  | invalid `CBOR`
+      `node::error::recursion_depth_exceeded` | recursion depth limit exceeded
 
   - own context parameters
 
-      Parameter         | Context    | Type       | Default | Description
-      ------------------|------------|------------|---------|-------------------------
-      `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
-      `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
+      Parameter               | Context    | Type       | Default | Description
+      ------------------------|------------|------------|---------|----------------------
+      `node::recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
+      `node::recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
   
       *Note: The interface is overloaded for `cxon::cbor::basic_node` and the overload
        passes `recursion_guard` parameter. If `cxon::cbor::basic_node` is part of a type
