@@ -37,11 +37,14 @@ namespace cxon { namespace cbor { // helpers
     template <typename T>
         struct simple;
 
+    template <typename N, typename T, typename A = std::allocator<T>>
+        struct taggle;
+
 }}
 
 namespace cxon { namespace cbor { // node traits
 
-    enum class node_kind { sint, uint, bytes, text, array, map, boolean, null, undefined, real, simple };
+    enum class node_kind { sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple };
 
     struct node_traits {
         using                                       sint_type       = long long;
@@ -50,6 +53,7 @@ namespace cxon { namespace cbor { // node traits
         using                                       text_type       = std::basic_string<char>;
         template <typename T> using                 array_type      = std::vector<T>;
         template <typename K, typename V> using     map_type        = std::map<K, V>;
+        template <typename N, typename T> using     tag_type        = taggle<N, T>;
         using                                       boolean_type    = bool;
         using                                       null_type       = std::nullptr_t;
         using                                       undefined_type  = undefined;
@@ -73,6 +77,7 @@ namespace cxon { namespace cbor { // node
         template <typename N> struct node_kind_t<N, typename N::text>       { static constexpr node_kind value = node_kind::text; };
         template <typename N> struct node_kind_t<N, typename N::array>      { static constexpr node_kind value = node_kind::array; };
         template <typename N> struct node_kind_t<N, typename N::map>        { static constexpr node_kind value = node_kind::map; };
+        template <typename N> struct node_kind_t<N, typename N::tag>        { static constexpr node_kind value = node_kind::tag; };
         template <typename N> struct node_kind_t<N, typename N::null>       { static constexpr node_kind value = node_kind::null; };
         template <typename N> struct node_kind_t<N, typename N::undefined>  { static constexpr node_kind value = node_kind::undefined; };
         template <typename N> struct node_kind_t<N, typename N::boolean>    { static constexpr node_kind value = node_kind::boolean; };
@@ -99,6 +104,7 @@ namespace cxon { namespace cbor { // node
             using text      = typename Tr::text_type;
             using array     = typename Tr::template array_type<basic_node>;
             using map       = typename Tr::template map_type<basic_node, basic_node>;
+            using tag       = typename Tr::template tag_type<uint, basic_node>;
             using boolean   = typename Tr::boolean_type;
             using null      = typename Tr::null_type;
             using undefined = typename Tr::undefined_type;
@@ -108,14 +114,14 @@ namespace cxon { namespace cbor { // node
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
                     template <template <typename C> class X, bool = false>
-                        struct msvc_map_override            : bits::is_nothrow_x<X, sint, uint, bytes, text, array, map, boolean, null, undefined, real, simple> {};
+                        struct msvc_map_override            : bits::is_nothrow_x<X, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple> {};
                     template <template <typename C> class X>
-                        struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, sint, uint, bytes, text, array, /*map, */boolean, null, undefined, real, simple> {};
+                        struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, sint, uint, bytes, text, array, /*map, */tag, boolean, null, undefined, real, simple> {};
                     using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<map, std::map<basic_node, basic_node>>::value>;
                     using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<map, std::map<basic_node, basic_node>>::value>;
 #               else
-                    using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, boolean, null, undefined, real, simple>;
-                    using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, boolean, null, undefined, real, simple>;
+                    using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
 #               endif
             public:
 
@@ -131,6 +137,7 @@ namespace cxon { namespace cbor { // node
                         CXON_CBOR_TYPE_DEF(text);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
@@ -148,6 +155,7 @@ namespace cxon { namespace cbor { // node
                         CXON_CBOR_TYPE_DEF(text);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
@@ -167,6 +175,7 @@ namespace cxon { namespace cbor { // node
                         CXON_CBOR_TYPE_DEF(text);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
@@ -184,6 +193,7 @@ namespace cxon { namespace cbor { // node
                         CXON_CBOR_TYPE_DEF(text);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
@@ -205,6 +215,7 @@ namespace cxon { namespace cbor { // node
                 CXON_CBOR_TYPE_DEF(text);
                 CXON_CBOR_TYPE_DEF(array);
                 CXON_CBOR_TYPE_DEF(map);
+                CXON_CBOR_TYPE_DEF(tag);
                 CXON_CBOR_TYPE_DEF(boolean);
                 CXON_CBOR_TYPE_DEF(null);
                 CXON_CBOR_TYPE_DEF(undefined);
@@ -246,6 +257,7 @@ namespace cxon { namespace cbor { // node
                         CXON_CBOR_TYPE_DEF(text);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
@@ -296,6 +308,7 @@ namespace cxon { namespace cbor { // node
                         CXON_CBOR_TYPE_DEF(text);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
@@ -320,9 +333,10 @@ namespace cxon { namespace cbor { // node
                         CXON_CBOR_TYPE_DEF(text);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
                         CXON_CBOR_TYPE_DEF(boolean);
                         case node_kind::null: return false;
-                        case node_kind::undefined: return false;
+                        CXON_CBOR_TYPE_DEF(undefined);
                         CXON_CBOR_TYPE_DEF(real);
                         CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
@@ -331,7 +345,7 @@ namespace cxon { namespace cbor { // node
             }
 
         private:
-            using value_type = typename std::aligned_union<0, sint, uint, bytes, text, array, map, boolean, null, undefined, real, simple>::type;
+            using value_type = typename std::aligned_union<0, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>::type;
             value_type  value_;
             node_kind   kind_;
         };
@@ -358,6 +372,7 @@ namespace cxon { namespace cbor { // helpers
 
     struct undefined {
         bool operator ==(const undefined&) const { return true; }
+        bool operator  <(const undefined&) const { return false; }
     };
 
     template <typename T>
@@ -366,6 +381,52 @@ namespace cxon { namespace cbor { // helpers
 
             simple(T t = {}) : value(t) {}
             operator T() const { return value; }
+        };
+
+    template <typename N, typename T, typename A>
+        struct taggle {
+            N tag;
+            T& value;
+
+            taggle(A a = std::allocator<T>())
+            :   tag(-1), value(*std::allocator_traits<A>::allocate(a, 1)), a_(a)
+            {   std::allocator_traits<A>::construct(a_, &value); }
+            taggle(N n, const T& t, A a = std::allocator<T>())
+            :   tag(n), value(*std::allocator_traits<A>::allocate(a, 1)), a_(a)
+            {   std::allocator_traits<A>::construct(a_, &value, t); }
+            taggle(N n, T&& t, A a = std::allocator<T>())
+            :   tag(n), value(*std::allocator_traits<A>::allocate(a, 1)), a_(a)
+            {   std::allocator_traits<A>::construct(a_, &value, std::move(t)); }
+
+            ~taggle() {
+                std::allocator_traits<A>::destroy(a_, &value);
+                std::allocator_traits<A>::deallocate(a_, &value, 1);
+            }
+
+            taggle(taggle&& t)
+            :   tag(t.tag), value(*std::allocator_traits<A>::allocate(t.a_, 1)), a_(t.a_)
+            {
+                std::allocator_traits<A>::construct(a_, &value);
+                value = std::move(t.value);
+            }
+            taggle& operator =(taggle&& t)          { return a_ = t.a_, tag = t.tag, value = std::move(t.value), *this; }
+
+            taggle(const taggle& t)
+            :   tag(t.tag), value(*std::allocator_traits<A>::allocate(const_cast<A&>(t.a_), 1)), a_(t.a_)
+            {
+                std::allocator_traits<A>::construct(a_, &value);
+                value = t.value;
+            }
+            taggle& operator =(const taggle& t)     { return a_ = t.a_, tag = t.tag, value = t.value, *this; }
+
+            taggle& operator =(T&& t)       { value = std::move(t); }
+            taggle& operator =(const T& t)  { value = t; }
+
+            bool operator ==(const taggle& t) const { return tag == t.tag && value == t.value; }
+            bool operator  <(const taggle& t) const { return tag < t.tag || (tag == t.tag && value < t.value); }
+
+            private:
+                A a_;
         };
 
 }}

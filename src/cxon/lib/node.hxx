@@ -347,6 +347,7 @@
                                         case node_kind::text        :                       return CXON_WRITE(text);
                                         case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
                                         case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
+                                        case node_kind::tag         :                       return CXON_WRITE(tag);
                                         case node_kind::boolean     :                       return CXON_WRITE(boolean);
                                         case node_kind::null        :                       return CXON_WRITE(null);
                                         case node_kind::undefined   :                       return CXON_WRITE(undefined);
@@ -393,6 +394,7 @@
                                     case node_kind::text        :                       return CXON_WRITE(text);
                                     case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
                                     case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
+                                    case node_kind::tag         :                       return CXON_WRITE(tag);
                                     case node_kind::boolean     :                       return CXON_WRITE(boolean);
                                     case node_kind::null        :                       return CXON_WRITE(null);
                                     case node_kind::undefined   :                       return CXON_WRITE(undefined);
@@ -443,6 +445,25 @@
                     }
             };
 
+        template <typename X, typename N, typename T, typename A>
+            struct read<JSON<X>, cbor::taggle<N, T, A>> {
+                template <typename II, typename Cx, typename Y = JSON<X>>
+                    static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
+                        II const o = i;
+                        return  (/*read_value<Y>(t.tag, i, e) && */read_value<Y>(t.value, i, e)) || // TODO: keep as an object?
+                                (cio::rewind(i, o), cx|cio::read_error::unexpected)
+                        ;
+                    }
+            };
+
+        template <typename X, typename N, typename T, typename A>
+            struct write<JSON<X>, cbor::taggle<N, T, A>> {
+                template <typename O, typename Cx, typename Y = JSON<X>>
+                    static bool value(O& o, const cbor::taggle<N, T, A>& t, Cx& cx) {
+                        return /*write_value<Y>(o, t.tag, cx) && */write_value<Y>(o, t.value, cx); // TODO: keep as an object?
+                    }
+            };
+
 #       endif
 
     }
@@ -483,20 +504,16 @@
             struct read<CBOR<X>, cbor::basic_node<Tr>> {
                 template <typename II, typename Cx, typename Y = CBOR<X>>
                     static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                        size_t tag;
-                        if (!cbor::tag::read<Y>(tag, i, e, cx))
-                            return false;
                         bio::byte const b = bio::peek(i, e);
                         switch (b & X::mjr) {
 #                           define CXON_READ(T)             read_value<Y>(t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
-#                           define CXON_READ_ARR(T, tag)    cbor::cnt::read_array<Y>(t.template imbue<typename cbor::basic_node<Tr>::T>(), tag, i, e, cx)
                                 case X::pint            :                           return CXON_READ(uint);
                                 case X::nint            :                           return CXON_READ(sint);
                                 case X::bstr            :                           return CXON_READ(bytes);
                                 case X::tstr            :                           return CXON_READ(text);
-                                case X::arr             : { CXON_NODE_RG();         return CXON_READ_ARR(array, tag); }
-                                case X::map             : { CXON_NODE_RG();         return CXON_READ_ARR(map, tag); }
-                                case X::tag             : { CXON_NODE_RG();         return value(t, i, e, cx); }
+                                case X::arr             : { CXON_NODE_RG();         return CXON_READ(array); }
+                                case X::map             : { CXON_NODE_RG();         return CXON_READ(map); }
+                                case X::tag             :                           return CXON_READ(tag);
                                 case X::svn:
                                     switch (b) {
                                         case X::neg: case X::pos
@@ -507,7 +524,6 @@
                                                         :                           return CXON_READ(real);
                                         default         :                           return CXON_READ(simple);
                                     }
-#                           undef CXON_READ_ARR
 #                           undef CXON_READ
                         }
                         return false; // LCOV_EXCL_LINE
@@ -528,6 +544,7 @@
                                 case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
                                 case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
                                 case node_kind::boolean     :                       return CXON_WRITE(boolean);
+                                case node_kind::tag         :                       return CXON_WRITE(tag);
                                 case node_kind::null        :                       return CXON_WRITE(null);
                                 case node_kind::undefined   :                       return CXON_WRITE(undefined);
                                 case node_kind::real        :                       return CXON_WRITE(real);
@@ -600,14 +617,28 @@
                     }
             };
 
+        template <typename X, typename N, typename T, typename A>
+            struct read<CBOR<X>, cbor::taggle<N, T, A>> {
+                template <typename II, typename Cx, typename Y = CBOR<X>>
+                    static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
+                        return cbor::tag::read<Y>(t.tag, i, e, cx) && read_value<Y>(t.value, i, e, cx); // TODO: check simple-value values
+                    }
+            };
+
+        template <typename X, typename N, typename T, typename A>
+            struct write<CBOR<X>, cbor::taggle<N, T, A>> {
+                template <typename O, typename Cx, typename Y = CBOR<X>>
+                    static bool value(O& o, const cbor::taggle<N, T, A>& t, Cx& cx) {
+                        return write_value<Y>(o, t.tag, cx) && write_value<Y>(o, t.value, cx); // TODO: check simple-value values
+                    }
+            };
+
 #       ifdef CXON_JSON_DEFINED
 
             template <typename X, typename Tr>
                 struct read<CBOR<X>, json::basic_node<Tr>> {
                     template <typename II, typename Cx, typename Y = CBOR<X>>
                         static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                            if (!cbor::tag::read<Y>(i, e, cx))
-                                return false;
                             bio::byte const b = bio::peek(i, e);
                             switch (b & X::mjr) {
 #                               define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
@@ -617,7 +648,7 @@
                                     case X::tstr            :                       return CXON_READ(string);
                                     case X::arr             : { CXON_NODE_RG();     return CXON_READ(array); }
                                     case X::map             : { CXON_NODE_RG();     return CXON_READ(object); }
-                                    case X::tag             : { CXON_NODE_RG();     return value(t, i, e, cx); }
+                                    case X::tag             :                       return cbor::tag::read<Y>(i, e, cx) && value(t, i, e, cx);
                                     case X::svn:
                                         switch (b) {
                                             case X::neg: case X::pos

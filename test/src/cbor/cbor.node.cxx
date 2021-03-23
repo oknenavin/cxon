@@ -94,11 +94,18 @@ static unsigned self() {
     {   // tags
         node n1;
             auto const r1 = cxon::from_bytes(n1, "\xC1\x83\x01\x02\x03");
-        CHECK(r1 && n1.is<node::array>() && n1.get<node::array>() == (node::array {1U, 2U, 3U}));
+        CHECK(r1 && n1.is<node::tag>() && n1.get<node::tag>().tag == 1 && n1.get<node::tag>().value == (node::array {1U, 2U, 3U}));
 
         node n2;
             auto const r2 = cxon::from_bytes(n2, "\xC1\xC2\x83\x01\x02\x03");
-        CHECK(r2 && n2.is<node::array>() && n2.get<node::array>() == (node::array {1U, 2U, 3U}));
+        CHECK(
+            r2 &&
+            n2.is<node::tag>() &&
+            n2.get<node::tag>().tag == 1 &&
+            n2.get<node::tag>().value.is<node::tag>() &&
+            n2.get<node::tag>().value.get<node::tag>().tag == 2 &&
+            n2.get<node::tag>().value.get<node::tag>().value == (node::array {1U, 2U, 3U})
+        );
 
         node n3;
             auto const r3 = cxon::from_bytes(n3, "\xDC\x83\x01\x02\x03");
@@ -119,12 +126,14 @@ static unsigned self() {
                 { "text", 1 },
                 { node::array {1, 2, 3}, 1 },
                 { node::map {{1, 2}, {3, 4}}, 1 },
+                { node::tag {1, 2}, 1 },
                 { false, 1 },
                 { nullptr, 1 },
                 { node::undefined {}, 1 },
                 { 1.0, 1 },
                 { node::simple {16}, 1 }
             },
+            node::tag {1, 2},           // tag
             true,                       // bool
             false,                      // bool
             nullptr,                    // null
@@ -155,11 +164,13 @@ static unsigned self() {
                     m["text"] = 1;                      CHECK(m.find(node::text("text")) != m.end());
                     m[node::array {1, 2, 3}] = 1;       CHECK(m.find(node::array({1, 2, 3})) != m.end());
                     m[node::map {{1, 2}, {3, 4}}] = 1;  CHECK(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
+                    m[node::tag {1, 2}] = 1;            CHECK(m.find(node::tag(1, 2)) != m.end());
                     m[false] = 1;                       CHECK(m.find(node::boolean(false)) != m.end());
                     m[nullptr] = 1;                     CHECK(m.find(node::null(nullptr)) != m.end());
                     m[node::undefined {}] = 1;          CHECK(m.find(node::undefined {}) != m.end());
                     m[1.0] = 1;                         CHECK(m.find(node::real(1.0)) != m.end());
                     m[node::simple {16}] = 1;           CHECK(m.find(node::simple {16}) != m.end());
+                a.push_back(node::tag(1, 2));           CHECK(a.back().is<node::tag>());
                 a.push_back(true);                      CHECK(a.back().is<node::boolean>());
                 a.push_back(false);                     CHECK(a.back().is<node::boolean>());
                 a.push_back(nullptr);                   CHECK(a.back().is<node::null>());
@@ -235,6 +246,10 @@ static unsigned self() {
             node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
         }
         {
+            node::tag const o = { 1, "value" };
+            node n(o); CHECK(n.is<node::tag>() && n.get<node::tag>() == o);
+        }
+        {
             node::map const o = { {0.0, "value"} };
             node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
         }
@@ -307,6 +322,9 @@ static unsigned self() {
         {   node a = node::map {{"q", "?"}, {"a", 42}}, b;
             b = a; CHECK(a == b);
         }
+        {   node a = node::tag {42, "?"}, b;
+            b = a; CHECK(a == b);
+        }
         {   node a = true, b;
             b = a; CHECK(a == b);
         }
@@ -343,6 +361,9 @@ static unsigned self() {
             a = node(node::map {{1, 2}}); CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{1, 2}}));
         }
         {   node a;
+            a = node(node::tag {1, 2}); CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {1, 2}));
+        }
+        {   node a;
             a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
         }
         {   node a;
@@ -367,8 +388,8 @@ static unsigned self() {
             CHECK(s == "\x82\xF5\x66string");
         }
         {   node n1;
-                cxon::from_bytes(n1, "\x9F\x01\x21\x41\x03\x61\x34\x81\x05\xA1\x61\x36\x07\xF5\xF6\xF7\xFA\x00\x00\x00\x00\xC1\xC2\x08\xFF");
-            node n2 = node::array {1, -2, node::array {3}, "4", node::array {5}, node::object{{"6", 7}}, true, nullptr, nullptr, 0, 8 };
+                cxon::from_bytes(n1, "\x9F\x01\x21\x41\x03\x61\x34\x81\x05\xA1\x61\x36\x07\xC1\x08\xF5\xF6\xF7\xFA\x00\x00\x00\x00\x09\xFF");
+            node n2 = node::array {1, -2, node::array {3}, "4", node::array {5}, node::object{{"6", 7}}, 8, true, nullptr, nullptr, 0, 9 };
             CHECK(n2 == n1);
         }
         {   node n;
@@ -403,14 +424,46 @@ static unsigned self() {
             CHECK(n == to);
         }
         {   // cbor => json::node => cbor
-            // node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, true, nullptr, node::undefined {}, 13.0, node::simple {} };
-            char const fr[] =   "\x8B\x20\x02\x42\x03\x04\x64\x35\x2C\x20\x36\x82\x07\x08\xA2\x09\x0A\x62\x31\x31\x0C\xF5\xF6\xF7\xFB\x40\x2A\x00\x00\x00\x00\x00\x00\xE0";
-            char const to[] =   "\x8B\xFB\xBF\xF0\x00\x00\x00\x00\x00\x00\xFB\x40\x00\x00\x00\x00\x00\x00\x00"
+            // node::array {
+            //      -1,
+            //      2U,
+            //      node::bytes {  3,   4},
+            //      "5, 6",
+            //      node::array {  7,   8},
+            //      node::map {{  9,   10}, {"11",   12}},
+            //      node::tag {13, 14},
+            //      true,
+            //      nullptr,
+            //      node::undefined {},
+            //      15.0,
+            //      node::simple {}
+            //};
+            char const fr[] =   "\x8C"
+                                "\x20"
+                                "\x02"
+                                "\x42\x03\x04"
+                                "\x64\x35\x2C\x20\x36"
+                                "\x82\x07\x08"
+                                "\xA2\x09\x0A\x62\x31\x31\x0C"
+                                "\xCD\x0E"
+                                "\xF5"
+                                "\xF6"
+                                "\xF7"
+                                "\xFB\x40\x2E\x00\x00\x00\x00\x00\x00"
+                                "\xE0";
+            char const to[] =   "\x8C"
+                                "\xFB\xBF\xF0\x00\x00\x00\x00\x00\x00"
+                                "\xFB\x40\x00\x00\x00\x00\x00\x00\x00"
                                 "\x82\xFB\x40\x08\x00\x00\x00\x00\x00\x00\xFB\x40\x10\x00\x00\x00\x00\x00\x00"
                                 "\x64\x35\x2C\x20\x36"
                                 "\x82\xFB\x40\x1C\x00\x00\x00\x00\x00\x00\xFB\x40\x20\x00\x00\x00\x00\x00\x00"
                                 "\xA2\x62\x31\x31\xFB\x40\x28\x00\x00\x00\x00\x00\x00\xFB\x40\x22\x00\x00\x00\x00\x00\x00\xFB\x40\x24\x00\x00\x00\x00\x00\x00"
-                                "\xF5\xF6\xF6\xFB\x40\x2A\x00\x00\x00\x00\x00\x00\xFB\x00\x00\x00\x00\x00\x00\x00\x00";
+                                "\xFB\x40\x2C\x00\x00\x00\x00\x00\x00"
+                                "\xF5"
+                                "\xF6"
+                                "\xF6"
+                                "\xFB\x40\x2E\x00\x00\x00\x00\x00\x00"
+                                "\xFB\x00\x00\x00\x00\x00\x00\x00\x00";
             node n;
                 cxon::from_bytes(n, fr);
             std::vector<unsigned char> s;
