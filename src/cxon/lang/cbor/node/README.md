@@ -12,6 +12,7 @@
 - [Helper classes](#helper-classes)
   - [`cxon::cbor::undefined`](#undefined)
   - [`cxon::cbor::simple`](#simple)
+  - [`cxon::cbor::taggle`](#taggle)
 - [`CXON` integration](#cxon-integration)
 
 
@@ -24,23 +25,25 @@
 
 Major type (MT)             | Default binding
 ----------------------------|-----------------------------------------
-`unsigned integer / MT0`    | [`long long`][cpp-typ]
+`positive integer / MT0`    | [`long long`][cpp-typ]
 `negative integer / MT1`    | [`unsigned long long`][cpp-typ]
 `byte string / MT2`         | [`std::vector<unsigned char>`][cpp-vec]
 `text string / MT3`         | [`std::string`][cpp-str]
 `array / MT4`               | [`std::vector`][cpp-vec]
 `map / MT5`                 | [`std::map`][cpp-map]
-`boolean / MT7 (1)`         | [`bool`][cpp-typ]
-`null / MT7 (2)`            | [`std::nullptr_t`][cpp-typ]
-`undefined / MT7 (3)`       | [`cbor::undefined`](#undefined)
-`floating point / MT7 (3)`  | [`double`][cpp-typ]
-`simple / MT7 (4)`          | [`cbor::simple`](#simple)
+`tag / MT6 (1)`             | [`cbor::taggle`](#taggle)
+`boolean / MT7 (2)`         | [`bool`][cpp-typ]
+`null / MT7 (3)`            | [`std::nullptr_t`][cpp-typ]
+`undefined / MT7 (4)`       | [`cbor::undefined`](#undefined)
+`floating point / MT7 (5)`  | [`double`][cpp-typ]
+`simple / MT7 (6)`          | [`cbor::simple`](#simple)
 
-*`(1)` `0xF4` / `0xF5`*  
-*`(2)` `0xF6`*  
-*`(2)` `0xF7`*  
-*`(3)` `0xFA` (single-precision), `0xFB` (double-precision) - `0xF9` (half-precision) is not fully supported*  
-*`(4)` only unassigned values*
+*`(1)` essentially a pair of `positive integer` and `node`*  
+*`(2)` `0xF4` / `0xF5`*  
+*`(3)` `0xF6`*  
+*`(4)` `0xF7`*  
+*`(5)` `0xFA` (single-precision), `0xFB` (double-precision) - `0xF9` (half-precision) is not fully supported*  
+*`(6)` only unassigned values*
 
 ###### Example 1
 
@@ -96,12 +99,14 @@ int main() {
             { "text", 1 },
             { node::array {1, 2, 3}, 1 },
             { node::map {{1, 2}, {3, 4}}, 1 },
+            { node::tag {1, 2}, 1 },
             { false, 1 },
             { nullptr, 1 },
             { node::undefined(), 1 },
             { 1.0, 1 },
             { node::simple(16), 1 }
         },
+        node::tag {1, 2},           // tag
         true,                       // bool
         false,                      // bool
         nullptr,                    // null
@@ -132,17 +137,19 @@ int main() {
                 m["text"] = 1;                      assert(m.find(node::text("text")) != m.end());
                 m[node::array {1, 2, 3}] = 1;       assert(m.find(node::array({1, 2, 3})) != m.end());
                 m[node::map {{1, 2}, {3, 4}}] = 1;  assert(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
+                m[node::tag {1, 2}] = 1;            assert(m.find(node::tag(1, 2)) != m.end());
                 m[false] = 1;                       assert(m.find(node::boolean(false)) != m.end());
                 m[nullptr] = 1;                     assert(m.find(node::null(nullptr)) != m.end());
-                m[node::undefined {}] = 1;          CHECK(m.find(node::undefined {}) != m.end());
+                m[node::undefined {}] = 1;          assert(m.find(node::undefined {}) != m.end());
                 m[1.0] = 1;                         assert(m.find(node::real(1.0)) != m.end());
-                m[node::simple {16}] = 1;           CHECK(m.find(node::simple {16}) != m.end());
+                m[node::simple {16}] = 1;           assert(m.find(node::simple {16}) != m.end());
+            a.push_back(node::tag(1, 2));           assert(a.back().is<node::tag>());
             a.push_back(true);                      assert(a.back().is<node::boolean>());
             a.push_back(false);                     assert(a.back().is<node::boolean>());
             a.push_back(nullptr);                   assert(a.back().is<node::null>());
-            a.push_back(node::undefined {});        CHECK(a.back().is<node::undefined>());
+            a.push_back(node::undefined {});        assert(a.back().is<node::undefined>());
             a.push_back(1.0);                       assert(a.back().is<node::real>());
-            a.push_back(node::simple {24});         CHECK(a.back().is<node::simple>());
+            a.push_back(node::simple {24});         assert(a.back().is<node::simple>());
 
     assert(n1 == n2);
 
@@ -177,9 +184,9 @@ namespace cxon::cbor {
 
 ###### Aliases
 
-Type            | Definition
-----------------|---------------------------------------
-`cxon::cbor::node`  | `using node = basic_node<node_traits>`
+Type               | Definition
+-------------------|---------------------------------------
+`cxon::cbor::node` | `using node = basic_node<node_traits>`
 
 ###### Template parameters
 
@@ -201,6 +208,7 @@ Member type | Definition
 `text`      | `Traits::text_type`
 `array`     | `Traits::array_type<basic_node>`
 `map`       | `Traits::map_type<basic_node, basic_node>`
+`tag`       | `Traits::tag_type<uint, basic_node>`
 `boolean`   | `Traits::boolean_type`
 `null`      | `Traits::null_type`
 `undefined` | `Traits::undefined_type`
@@ -535,6 +543,33 @@ template <typename T>
     };
 ```
 
+##### `taggle`
+
+``` c++
+template <typename N, typename T, typename A>
+    struct taggle {
+        N tag;
+        T& value;
+
+        taggle(A a = std::allocator<T>());
+        taggle(N n, const T& t, A a = std::allocator<T>());
+        taggle(N n, T&& t, A a = std::allocator<T>())
+
+        ~taggle();
+
+        taggle(taggle&& t);
+        taggle& operator =(taggle&& t);
+
+        taggle(const taggle& t);
+        taggle& operator =(const taggle& t);
+
+        taggle& operator =(T&& t);
+        taggle& operator =(const T& t);
+
+        bool operator ==(const taggle& t) const;
+        bool operator  <(const taggle& t) const;
+    };
+```
 
 --------------------------------------------------------------------------------
 
