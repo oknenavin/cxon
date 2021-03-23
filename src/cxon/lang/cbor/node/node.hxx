@@ -419,8 +419,8 @@ namespace cxon { namespace cbor { // helpers
             }
             taggle& operator =(const taggle& t)     { return a_ = t.a_, tag = t.tag, value = t.value, *this; }
 
-            taggle& operator =(T&& t)       { value = std::move(t); }
-            taggle& operator =(const T& t)  { value = t; }
+            taggle& operator =(T&& t)       { return value = std::move(t), *this; }
+            taggle& operator =(const T& t)  { return value = t, *this; }
 
             bool operator ==(const taggle& t) const { return tag == t.tag && value == t.value; }
             bool operator  <(const taggle& t) const { return tag < t.tag || (tag == t.tag && value < t.value); }
