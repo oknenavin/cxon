@@ -256,7 +256,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
     }
     ```
-  - static members provided by the type
+  - static methods provided by the type
     ``` c++
     struct T {
         template <typename X, typename InIt, typename Cx>
@@ -269,7 +269,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
             }
     };
     ```
-  - members provided by the type
+  - methods provided by the type
     ``` c++
     struct T {
         template <typename X, typename InIt, typename Cx>
@@ -367,16 +367,24 @@ auto const result = cxon::from_bytes<my_json>(...);
 ...
 ```
 
-By using of this mechanism, specialization for a given type and format is ensured with 
+By using of this mechanism, specialization for a given type and format can be done with 
 code like this:
 
 ``` c++
 namespace cxon {
 
+    template <typename X>
+        struct write<CBOR<X>, Type> {
+            template <typename O, typename Cx>
+                static bool value(O& o, const Type& t, Cx& cx) {
+                    ...
+                }
+        };
+
     template <typename X, typename II, typename Cx>
-        auto read_value(char& t, II& i, II e, Cx& cx)
-            -> enable_for_t<X, JSON>
-        { ... }
+        auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
+            ...
+        }
 
 }
 ```

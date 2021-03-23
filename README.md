@@ -24,7 +24,7 @@
 `CXON` is a `C++11` compliant, self contained, header-only library  
 `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format  
 `CXON` implements [`CBOR`](https://cbor.io) as a serialization format  
-`CXON` is easy to extend for different formats and types imposing minimal overhead  
+`CXON` is easy to extend for different formats and types, imposing minimal overhead  
 
 
 --------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ int main() {
 
   - traits template parameter (support for different serialization formats, 
     see [`Format traits`](src/cxon/README.md#format-traits))
-  - trailing named parameters of arbitrary type (passing of parameters to specific 
+  - trailing named parameters of an arbitrary type (passing of parameters to specific 
     type serializers, see [Named parameters](src/cxon/README.md#named-parameters)
   - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](src/cxon/README.md#interface))
@@ -234,18 +234,15 @@ In both examples, `my_type` is bound to the same `JSON`:
 
 The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
 
-Most so-called `JSON` libraries, e.g. [`nlohmann/json`](https://github.com/nlohmann/json),
-implement a kind of polymorphic type to represent arbitrary `JSON` - many call it `DOM`, `DOM`-like, etc. and 
-[`cxon::json::node`](src/cxon/lang/json/node/README.md), which is part of `CXON/JSON`, is an implementation 
-of such a polymorphic type (and also an example of how `CXON` can be used).
+Like many similar libraries, `CXON/JSON` implements a polymorphic type [`cxon::json::node`](src/cxon/lang/json/node/README.md),
+which can represent arbitrary `JSON` (it's also an example of how `CXON` can be used).
 
 ##### [`CBOR`](https://cbor.io)
 
-The implementation strictly complies with [`RFC7049`][RFC7049].  
-`CBOR` format is a work in progress and currently supports all fundamental, compound and std types
-supported by `JSON`. Pending are:
-- `cxon::cbor::node` (see [`cxon::json::node`](src/cxon/lang/json/node/README.md))
-- typed arrays ([`RFC8746`][RFC8746])
+The implementation strictly complies with [`RFC7049`][RFC7049].
+
+Like many similar libraries, `CXON/CBOR` implements a polymorphic type [`cxon::cbor::node`](src/cxon/lang/cbor/node/README.md),
+which can represent arbitrary `JSON` (it's also an example of how `CXON` can be used).
 
 
 --------------------------------------------------------------------------------
@@ -253,7 +250,7 @@ supported by `JSON`. Pending are:
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`, 
-`clang++-3.5` and `msvc++ 14.1` (see [builds](https://github.com/oknenavin/cxon/tree/develop/.github/workflows)).
+`clang++-3.5` and `msvc++ 14.1` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
 
 --------------------------------------------------------------------------------
