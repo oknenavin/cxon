@@ -188,7 +188,7 @@ Type            | Definition
 ###### Non-member types
 
 ```c++
-enum class node_kind { sint, uint, bytes, text, array, map, boolean, null, real };
+enum class node_kind { sint, uint, bytes, text, array, map, boolean, null, undefined, real, simple };
 ```
 
 ###### Member types
@@ -289,7 +289,7 @@ Construct new node from a variety of data sources.
   - `(1)` Default constructor. Constructs node with `undefined` value type.
   - `(2)` Move and copy constructors
   - `(3)` Move and copy constructors for each value type
-  - `(4)` Constructors for `string` and `real` value types
+  - `(4)` Constructors for `integral` and `string` value types
 
 ###### Example
 

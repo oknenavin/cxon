@@ -482,10 +482,11 @@ bool operator != (const basic_node& n) const; (2)
   - own context parameters
 
       Parameter                    | Context    | Type       | Default | Description
-      -----------------------------|------------|------------|---------|---------------------------
+      -----------------------------|------------|------------|---------|---------------------------------------------
       `node::recursion_guard`      | read/write | `unsigned` | 0 (N/A) | recursion guard state
       `node::recursion_depth`      | read/write | `unsigned` | 64      | max recursion depth
       `node::json::arbitrary_keys` | read/write | `bool`     | false   | allow `node` as object key
+      `node::json::extract_nans`   | read       | `bool`     | false   | convert `inf`/`nan` strings to `node::number`
   
       *Note: The interface is overloaded for `cxon::json::basic_node` and the overload
        passes `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
