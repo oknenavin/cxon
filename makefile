@@ -32,8 +32,7 @@ cxon-lang-json = \
     $(srcdir)/lang/json/enum.hxx \
     $(srcdir)/lang/json/fundamental.hxx \
     $(srcdir)/lang/json/json.hxx \
-    $(srcdir)/lang/json/json-fwd.hxx \
-    $(srcdir)/lang/json/node.hxx
+    $(srcdir)/lang/json/json-fwd.hxx
 
 cxon-lang-json-lib-std-bits = \
     $(srcdir)/lang/json/lib/std/bits/map.hxx \
@@ -78,8 +77,7 @@ cxon-lang-cbor = \
     $(srcdir)/lang/cbor/compound.hxx \
     $(srcdir)/lang/cbor/enum.hxx \
     $(srcdir)/lang/cbor/error.hxx \
-    $(srcdir)/lang/cbor/fundamental.hxx \
-    $(srcdir)/lang/cbor/node.hxx
+    $(srcdir)/lang/cbor/fundamental.hxx
 
 cxon-lang-cbor-lib-std-bits = \
     $(srcdir)/lang/cbor/lib/std/bits/map.hxx \
@@ -138,6 +136,9 @@ cxon-lib-std = \
     $(srcdir)/lib/std/variant.hxx \
     $(srcdir)/lib/std/vector.hxx
 
+cxon-lib = \
+    $(srcdir)/lib/node.hxx
+
 cxon = \
     $(srcdir)/cxon.hxx \
     $(srcdir)/lang-fwd.hxx \
@@ -160,6 +161,7 @@ install: install-lang
 install-cxon:
 	@install -d                                         $(insdir)/cxon/lib/std
 	@install -p -m 0644 $(cxon)                         $(insdir)/cxon
+	@install -p -m 0644 $(cxon-lib)                     $(insdir)/cxon/lib
 	@install -p -m 0644 $(cxon-lib-std)                 $(insdir)/cxon/lib/std
 
 install-common: install-cxon
