@@ -633,10 +633,9 @@ static unsigned self() {
         }
     }
 #   undef CHECK
-    f_ ?
-        fprintf(stdout, "cxon/json/node/self: %u of %u failed\n", f_, a_) :
-        fprintf(stdout, "cxon/json/node/self: %u of %u passed\n", a_, a_)
-    ;
+
+    fprintf(stdout, "cxon/json/node/self:  %u of %3u failed\n", f_, a_); fflush(stdout);
+
     return f_;
 }
 
@@ -668,10 +667,7 @@ int main(int argc, char *argv[]) {
                     ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
                 }
             }
-        fc ?
-            fprintf(stdout, "cxon/json/node/pass: %zu of %zu failed\n", fc, pass.size()) :
-            fprintf(stdout, "cxon/json/node/pass: %zu of %zu passed\n", pass.size(), pass.size())
-        ;   fflush(stdout);
+        fprintf(stdout, "cxon/json/node/pass:  %zu of %3zu failed\n", fc, pass.size()); fflush(stdout);
     }
     if (!fail.empty()) {
         for (auto& c : fail) {
@@ -695,10 +691,7 @@ int main(int argc, char *argv[]) {
                     ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
                 }
             }
-        fc ?
-            fprintf(stdout, "cxon/json/node/fail: %zu of %zu failed\n", fc, fail.size()) :
-            fprintf(stdout, "cxon/json/node/fail: %zu of %zu passed\n", fail.size(), fail.size())
-        ;   fflush(stdout);
+        fprintf(stdout, "cxon/json/node/fail:  %zu of %3zu failed\n", fc, fail.size()); fflush(stdout);
     }
     if (!diff.empty()) {
         static auto const name = [](const std::string& p) {
@@ -757,7 +750,7 @@ int main(int argc, char *argv[]) {
             }
         }
         else {
-            fprintf(stdout, "cxon/json/node/diff: %zu of %zu failed\n", fc, diff.size()), fflush(stdout);
+            fprintf(stdout, "cxon/json/node/diff:  %zu of %3zu failed\n", fc, diff.size()), fflush(stdout);
         }
     }
     if (!time.empty()) {

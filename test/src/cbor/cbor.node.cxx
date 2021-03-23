@@ -419,11 +419,9 @@ static unsigned self() {
         }
     }
 #   undef CHECK
-    f_ ?
-        // coverity[ copy_paste_error ]
-        fprintf(stdout, "cxon/cbor/node/self: %u of %u failed\n", f_, a_) :
-        fprintf(stdout, "cxon/cbor/node/self: %u of %u passed\n", a_, a_)
-    ;
+    
+    fprintf(stdout, "cxon/cbor/node/self:  %u of %3u failed\n", f_, a_); fflush(stdout);
+
     return f_;
 }
 
@@ -474,10 +472,12 @@ struct fixture {
     struct fix {
         std::string act;
         std::string data;
+        std::string fail;
 
         CXON_JSON_CLS_READ_MEMBER(fix,
             CXON_JSON_CLS_FIELD_ASIS(act),
-            CXON_JSON_CLS_FIELD_ASIS(data)
+            CXON_JSON_CLS_FIELD_ASIS(data),
+            CXON_JSON_CLS_FIELD_ASIS(fail)
         )
     };
     std::string in;
@@ -506,7 +506,7 @@ int main(int argc, char *argv[]) {
 
         fixture fixture;
             auto const r = cxon::from_bytes<cxon::JSON<>>(fixture, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-            CXON_ASSERT(r, "TODO");
+            CXON_ASSERT(r, "invalid fixture");
         {
             std::ifstream is(fixture.in);
                 if (!is) {
@@ -516,41 +516,65 @@ int main(int argc, char *argv[]) {
 
             test::suite suite;
                 auto const r = cxon::from_bytes<cxon::JSON<>>(suite, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-                CXON_ASSERT(r, "TODO");
+                CXON_ASSERT(r, "invalid suite");
 
             for (auto& test : suite) {
                 ++all;
                 cxon::json::node decoded;
+                std::string fail;
                 {   auto const fix = fixture.fix.find(test.hex);
-                    if (fix == fixture.fix.end()) {
+                    if (fix != fixture.fix.end()) {
+                        if (fix->second.act == "json") {
+#                           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
+                                auto const r = cxon::from_bytes<cxon::JSON<>>(
+                                    decoded, fix->second.data,
+                                    cxon::node::json::arbitrary_keys::set<true>(),
+                                    cxon::node::json::extract_nans::set<true>()
+                                );
+#                           else
+                                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                                // seems to be fixed around 10
+                                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(
+                                    decoded, fix->second.data,
+                                    cxon::node::json::arbitrary_keys::set<true>(),
+                                    cxon::node::json::extract_nans::set<true>()
+                                );
+#                           endif
+                            CXON_ASSERT(r, "invalid fixture");
+                        }
+                        else if (fix->second.act == "skip") {
+                            ++skip/*, fprintf(stdout, "skip: '%s' (%s)\n", test.hex.c_str(), fix->second.data.c_str()), fflush(stdout)*/;
+                            continue;
+                        }
+                        fail = fix->second.fail;
+                    }
+                    else {
                         decoded = test.decoded;
-                    }
-                    else if (fix->second.act == "json") {
-#                       if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
-                            auto const r = cxon::from_bytes<cxon::JSON<>>(decoded, fix->second.data, cxon::node::json::arbitrary_keys::set<true>());
-#                       else
-                            // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                            // seems to be fixed around 10
-                            auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(decoded, fix->second.data, cxon::node::json::arbitrary_keys::set<true>());
-#                       endif
-                        CXON_ASSERT(r, "TODO");
-                    }
-                    else if (fix->second.act == "skip") {
-                        ++skip/*, fprintf(stdout, "skip: '%s' (%s)\n", test.hex.c_str(), fix->second.data.c_str()), fflush(stdout)*/;
-                        continue;
                     }
                 }
                 {   cxon::json::node json;
                         auto const r = cxon::from_bytes(json, test.bin());
-                    if (!r || json != decoded) {
-                        ++err, fprintf(stderr, "fail: '%s'\n", test.hex.c_str()), fflush(stderr);
+                    if (!r) {
+                        fail.empty() ?
+                            (++err, fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
+                            (/*fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
+                        ;   fflush(stderr);
+                    }
+                    else if (json != decoded) {
+                        fail.empty() ?
+                            (++err, fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
+                            (/*fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
+                        ;   fflush(stderr);
+                    }
+                    else if (!fail.empty()) {
+                        ++err, fprintf(stderr, "must fail but passed: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), fflush(stderr);;
                     }
                 }
             }
         }
     }
     
-    fprintf(stdout, "cxon/cbor/node/suite: %d failed and %d skipped out of %d\n", err, skip, all); fflush(stdout);
+    fprintf(stdout, "cxon/cbor/node/suite: %d of %3d failed (%d skipped)\n", err, all, skip); fflush(stdout);
 
     return err;
 }

@@ -39,6 +39,7 @@
     namespace cxon { namespace node { namespace json { // context parameters
 
         CXON_PARAMETER(arbitrary_keys, bool);   // read/write: constexpr
+        CXON_PARAMETER(extract_nans, bool);      // read/write: constexpr
         
     }}}
 
@@ -203,13 +204,13 @@
             template <typename X, typename Tr>
                 struct write<JSON<X>, json::basic_node<Tr>> {
                     template <typename O, typename T, typename Cx, typename Y = JSON<X>>
-                        static auto write_key(O& o, const T& t, Cx& cx)
+                        static auto write_key_(O& o, const T& t, Cx& cx)
                             -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
                         {
                             return write_value<Y>(o, t, cx);
                         }
                     template <typename O, typename T, typename Cx, typename Y = JSON<X>>
-                        static auto write_key(O& o, const T& t, Cx& cx)
+                        static auto write_key_(O& o, const T& t, Cx& cx)
                             -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
                         {
                             return cio::key::write_key<Y>(o, t, cx);
@@ -218,7 +219,7 @@
                         static bool key(O& o, const json::basic_node<Tr>& t, Cx& cx) {
                             using json::node_kind;
                             switch (t.kind()) {
-#                               define CXON_WRITE(T) write_key(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
+#                               define CXON_WRITE(T) write_key_(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
                                     case node_kind::object  :                       return CXON_WRITE(object);
                                     case node_kind::array   :                       return CXON_WRITE(array);
                                     case node_kind::string  :                       return CXON_WRITE(string);
@@ -233,13 +234,68 @@
 
         }}
 
+        namespace bits {
+
+            template <typename C>
+                struct nmst;
+            template <>
+                struct nmst<char> {
+                    static constexpr char const*        pinf =  "inf";
+                    static constexpr char const*        ninf = "-inf";
+                    static constexpr char const*        nan =   "nan";
+                };
+#           if __cplusplus > 201703L /* C++20 */
+                template <>
+                    struct nmst<char8_t> {
+                        static constexpr char8_t const* pinf =  u8"inf";
+                        static constexpr char8_t const* ninf = u8"-inf";
+                        static constexpr char8_t const* nan =   u8"nan";
+                    };
+#           endif
+            template <>
+                struct nmst<char16_t> {
+                    static constexpr char16_t const*    pinf =  u"inf";
+                    static constexpr char16_t const*    ninf = u"-inf";
+                    static constexpr char16_t const*    nan =   u"nan";
+                };
+            template <>
+                struct nmst<char32_t> {
+                    static constexpr char32_t const*    pinf =  U"inf";
+                    static constexpr char32_t const*    ninf = U"-inf";
+                    static constexpr char32_t const*    nan =   U"nan";
+                };
+            template <>
+                struct nmst<wchar_t> {
+                    static constexpr wchar_t const*     pinf =  L"inf";
+                    static constexpr wchar_t const*     ninf = L"-inf";
+                    static constexpr wchar_t const*     nan =   L"nan";
+                };
+
+        }
+
         template <typename X, typename Tr>
             struct read<JSON<X>, json::basic_node<Tr>> {
+                template <typename V, typename II, typename Cx, typename Y = JSON<X>>
+                    static bool read_value_(json::basic_node<Tr>&, V& v, II& i, II e, Cx& cx) {
+                        return read_value<Y>(v, i, e, cx);
+                    }
+                template <typename II, typename Cx, typename Y = JSON<X>>
+                    static auto read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::string& v, II& i, II e, Cx& cx)
+                        -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
+                    {
+                        bool const r = read_value<Y>(v, i, e, cx);
+                            using number = typename json::basic_node<Tr>::number;
+                            using symbol = typename json::basic_node<Tr>::string::value_type;
+                                 if (v == bits::nmst<symbol>::pinf) n.template imbue<number>() =  std::numeric_limits<number>::infinity();
+                            else if (v == bits::nmst<symbol>::ninf) n.template imbue<number>() = -std::numeric_limits<number>::infinity();
+                            else if (v == bits::nmst<symbol>::nan ) n.template imbue<number>() =  std::numeric_limits<number>::quiet_NaN();
+                        return r;
+                    }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
                         cio::consume<Y>(i, e);
                         switch (cio::peek(i, e)) {
-#                           define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
+#                           define CXON_READ(T) read_value_(t, t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
                                 case '{'                : { CXON_NODE_RG();     return CXON_READ(object); }
                                 case '['                : { CXON_NODE_RG();     return CXON_READ(array);  }
                                 case '\"'               :                       return CXON_READ(string);

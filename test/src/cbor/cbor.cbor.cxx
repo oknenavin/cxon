@@ -139,10 +139,6 @@ int main() {
     using cxon::test::suite;
     for (auto t : suite::get())
         t->test();
-    suite::err() ?
-        // coverity[ copy_paste_error ]
-        fprintf(stdout, "cxon/cbor: %u of %u failed\n", suite::err(), suite::all()) :
-        fprintf(stdout, "cxon/cbor: %u of %u passed\n", suite::all(), suite::all())
-    ;
+    fprintf(stdout, "cxon/cbor: %u of %4u failed\n", suite::err(), suite::all()); fflush(stdout);
     return suite::err();
 }
