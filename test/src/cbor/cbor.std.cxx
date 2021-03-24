@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -133,7 +133,7 @@ TEST_BEG(cxon::CBOR<>) // std::basic_string
         R_TEST(u32string(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"), // indefinite
                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
         // errors
-        R_TEST(new string(), BS("\xF7"), cbor::read_error::array_invalid, 0);
+        R_TEST((string*)nullptr, BS("\xF7"), cbor::read_error::array_invalid, 0);
 TEST_END()
 
 
@@ -207,6 +207,9 @@ TEST_BEG(cxon::CBOR<>) // std::bitset
     R_TEST(bitset<32>(), BS("\x5C"), cbor::read_error::size_invalid, 0);
     R_TEST(bitset<32>(), BS("\x44"), cbor::read_error::unexpected, 1);
     R_TEST(bitset<32>(), BS("\x64"), cbor::read_error::unexpected, 0);
+    R_TEST(bitset<7>(), BS("\x5C"), cbor::read_error::size_invalid, 0);
+    R_TEST(bitset<5>(), BS("\x41"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset<3>(), BS("\x64"), cbor::read_error::unexpected, 0);
     {   bio::byte o[1];
         auto const r = to_bytes(std::begin(o), std::end(o), bitset<8 * 32>());
         TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);

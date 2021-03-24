@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -149,7 +149,9 @@ TEST_BEG(cxon::JSON<>) // interface/parameters
         TEST_CHECK(to_bytes(r, 3.1415926, json::fp_precision::set<4>()) && r == e);
     }
     {   int *r = nullptr;
-        TEST_CHECK(from_bytes(r, "42", json::allocator::set(std::allocator<char>())) && *r == 42);
+        std::allocator<int> a;
+        TEST_CHECK(from_bytes(r, "42", json::allocator::set(a)) && *r == 42);
+        std::allocator_traits<std::allocator<int>>::deallocate(a, r, 4);
     }
     {   size_t r = 0;
         TEST_CHECK(from_bytes(r, std::string("123"), json::num_len_max::set<4>()) && r == 123);
@@ -259,65 +261,6 @@ TEST_BEG(cxon::JSON<>) // pretty
         ;
         std::string s1;
             to_bytes(test::make_indenter(s1, 2, ' '), m);
-        TEST_CHECK(s1 == s0);
-    }
-    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
-        std::string s1;
-            to_bytes(test::make_indenter(s1), m);
-        std::string const s0 =
-            test::pretty(s1);
-        TEST_CHECK(s1 == s0);
-    }
-TEST_END()
-
-namespace key {
-    template <typename X, bool Q> struct unquoted : X::traits {
-        struct map : X::traits::map {
-            static constexpr bool unquoted_keys = Q;
-        };
-    };
-    struct less_cstr {
-        bool operator ()(const char* k0, const char* k1) const { return (!k0 && k1) || (k0 && k1 && std::strcmp(k0, k1) < 0); }
-    };
-}
-
-TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>) // pretty
-    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
-        char const s0[] =
-            "{\n"
-            "  even: [\n"
-            "    2,\n"
-            "    4,\n"
-            "    6\n"
-            "  ],\n"
-            "  odd: [\n"
-            "    1,\n"
-            "    3,\n"
-            "    5\n"
-            "  ]\n"
-            "}"
-        ;
-        std::string s1;
-            to_bytes<XXON>(test::make_indenter(s1, 2, ' '), m);
-        TEST_CHECK(s1 == s0);
-    }
-    {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
-        std::string s1;
-            to_bytes(test::make_indenter(s1), m);
-        std::string const s0 =
-            test::pretty(s1);
-        TEST_CHECK(s1 == s0);
-    }
-    {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
-        char const s0[] =
-            "{\n"
-            "  ala: \"ba\\\"la\",\n"
-            "  bl\\nah: \"blah\",\n"
-            "  bl\\ ah: \"blah\"\n"
-            "}"
-        ;
-        std::string s1;
-            to_bytes<XXON>(test::make_indenter(s1, 2, ' '), m);
         TEST_CHECK(s1 == s0);
     }
     {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
@@ -479,9 +422,6 @@ int main() {
     using cxon::test::suite;
     for (auto t : suite::get())
         t->test();
-    suite::err() ?
-        fprintf(stdout, "cxon/json: %u of %u failed\n", suite::err(), suite::all()) :
-        fprintf(stdout, "cxon/json: %u of %u passed\n", suite::all(), suite::all())
-    ;
+    fprintf(stdout, "cxon/json: %u of %4u failed\n", suite::err(), suite::all()); fflush(stdout);
     return suite::err();
 }

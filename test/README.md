@@ -6,7 +6,7 @@
 #### `CXON`
 
 All tests are located in `cxon/test`. A group of tests for given `Traits` 
-can be defined as this:
+can be defined like this:
 
 ``` c++
 TEST_BEG(Traits)
@@ -20,16 +20,16 @@ For trivial cases, `R_TEST` and `W_TEST` macros can be used:
 TEST_BEG(cxon::JSON<>)
     // test bool type
     R_TEST(true, "true");                               // R_TEST(expected-value, string)
-    R_TEST(false, "t", read_error::boolean_invalid, 0); // ... + expected-error, expected-error-offset
+    R_TEST(false, "t", read_error::boolean_invalid, 0); // ... + expected-error[, expected-error-offset]
     W_TEST("true", true);                               // W_TEST(string, input-value)
     W_TEST("true", false);                              // ... + expected-error
 TEST_END()
 ```
 
-for non-trivial cases, free code can be used, provided that:
-- `suite::all()` shall be incremented for each new test
-- `suite::err()` shall be incremented if a test fails
-- in case of failure, error message + `assert` shall be used to point out failure's location
+for more complex cases, free code can be used, provided that:
+- `suite::all()` is incremented for each new test
+- `suite::err()` is incremented for each failed test
+- in case of failure, error message + an `assert` shall be used to point out failure's location
 
 example:
 
@@ -62,30 +62,37 @@ Is a utility that accepts a command and a list of inputs (or a `@file`, see belo
 - `@file` - is a new-line separated list of files. The files must be relative to the 
              current directory. Lines starting with `#` are ignored
 
-If no parameters are provided, self tests will be performed.  
-For example of its usage, see `check-json` rule in the [makefile](makefile).
+If no parameters are provided, the self tests will be executed.  
+For example of its usage, see `check-json-node` rule in the [makefile](makefile).
 
 ###### Suites
 
-Suite                            | Type | Origin
----------------------------------|------|--------------------------------------------------------------------------------------------------
-[set.1-pass](data/set.1-pass.in) | pass | [JSON_checker](http://json.org/JSON_checker)
-[set.1-fail](data/set.1-fail.in) | fail | [JSON_checker](http://json.org/JSON_checker)
-[set.2-pass](data/set.2-pass.in) | pass | [nst/JSONTestSuite](https://github.com/nst/JSONTestSuite)
-[set.2-fail](data/set.2-fail.in) | fail | [nst/JSONTestSuite](https://github.com/nst/JSONTestSuite)
-[set.3-diff](data/set.3-diff.in) | diff | [minimaxir/big-list-of-naughty-strings](https://github.com/minimaxir/big-list-of-naughty-strings)
-[set.4-diff](data/set.4-diff.in) | diff | [github/gemoji](https://github.com/github/gemoji)
-[set.5-diff](data/set.5-diff.in) | diff | [lemire/simdjson](https://github.com/lemire/simdjson)
+Suite                                 | Type | Origin
+--------------------------------------|------|--------------------------------------------------------------------------------------------------
+[set.1-pass](data/json/set.1-pass.in) | pass | [JSON_checker](http://json.org/JSON_checker)
+[set.1-fail](data/json/set.1-fail.in) | fail | [JSON_checker](http://json.org/JSON_checker)
+[set.2-pass](data/json/set.2-pass.in) | pass | [nst/JSONTestSuite](https://github.com/nst/JSONTestSuite)
+[set.2-fail](data/json/set.2-fail.in) | fail | [nst/JSONTestSuite](https://github.com/nst/JSONTestSuite)
+[set.3-diff](data/json/set.3-diff.in) | diff | [minimaxir/big-list-of-naughty-strings](https://github.com/minimaxir/big-list-of-naughty-strings)
+[set.4-diff](data/json/set.4-diff.in) | diff | [github/gemoji](https://github.com/github/gemoji)
+[set.5-diff](data/json/set.5-diff.in) | diff | [lemire/simdjson](https://github.com/lemire/simdjson)
 
 Note that some of the inputs are commented out, because of different reasons - for example:
-- [data/set.1/fail1.json](data/set.1/fail1.json) - ignored because `cxon::json::node` 
+- [data/set.1/fail1.json](data/set.1/fail1.json) - is ignored because `cxon::json::node` 
   allows arbitrary top-level value
-- [data/set.1/fail18.json](data/set.1/fail18.json) - ignored because `cxon::json::node` 
+- [data/set.1/fail18.json](data/set.1/fail18.json) - is ignored because `cxon::json::node` 
   default recursive depth is 64
-- [data/set.5/gsoc-2018.json](data/set.5/gsoc-2018.json) - ignored because the input contains 
+- [data/set.5/gsoc-2018.json](data/set.5/gsoc-2018.json) - is ignored because the input contains 
   redundant escapes, and the output is normalized
-- [data/set.5/marine_ik.json](data/set.5/marine_ik.json) - ignored because the input contains 
-  numbers with lower precision, and the output numbers are with the highest precision
+- [data/set.5/marine_ik.json](data/set.5/marine_ik.json) - is ignored because the input contains 
+  numbers with lower precision, and the output numbers are with the highest precision by default
+
+
+--------------------------------------------------------------------------------
+
+#### `CXON/CBOR/NODE`
+
+*Under construction.*
 
 
 --------------------------------------------------------------------------------

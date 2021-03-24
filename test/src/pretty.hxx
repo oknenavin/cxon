@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -67,9 +67,9 @@ namespace cxon { namespace test {
                         case qes:
                                               mut(quo), poke(o_, c);
                             break;
-                        case ges:
-                                              mut(grn), poke(o_, c);
-                            break;
+                        //case ges: // unquoted-keys
+                        //                      mut(grn), poke(o_, c);
+                        //    break;
                         case con:
                             if (is::spc(c))                                                     break;
                                               mut(grn);
@@ -82,7 +82,7 @@ namespace cxon { namespace test {
                             if (is::sep(c)) {           poke(o_, c) && poke(o_, '\n') && poke(o_, lvl_, pad_);                      break; }
                             if (is::map(c)) {           poke(o_, c) && poke(o_, ' ');                                               break; }
                             if (is::qub(c)) { mut(quo), poke(o_, c);                                                                break; }
-                            if (is::esc(c)) { mut(ges), poke(o_, c);                                                                break; }
+                            //if (is::esc(c)) { mut(ges), poke(o_, c);                                                                break; }
                             if (is::nsp(c)) {           poke(o_, c);                                                                break; }
                     }
                     return *this;
@@ -139,7 +139,7 @@ namespace cxon { namespace test {
                     static bool nsp(char c) { return !spc(c); }
                 };
 
-                enum { grn, con, quo, qes, ges };
+                enum { grn, con, quo, qes/*, ges*/ };
                 auto stt() const -> decltype(grn)   { return stt_; }
                 void mut(decltype(grn) s)           { stt_ = s; }
 

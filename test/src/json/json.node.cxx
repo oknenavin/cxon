@@ -1,10 +1,11 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
 
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node.hxx"
+#include "cxon/cbor.hxx"
+#include "cxon/lib/node.hxx"
 
 #include "cxon/lib/std/list.hxx"
 
@@ -218,11 +219,14 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
-#           if !defined(__GNUG__) || defined(__clang__)
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
                 cxon::to_bytes(cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
-                cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                    (cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, but after the inclusion of cbor.hxx,
+                // this workaround does not work for to_bytes anymore
+                //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                //    (cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           endif
             std::string const s0 =
                 cxon::test::pretty(s1, 4, ' ');
@@ -263,42 +267,49 @@ static unsigned self() {
         {   node n;
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
-#           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::to_bytes(cxon::test::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
+                auto const r = cxon::to_bytes(cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
+                CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           else
-                auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                    (cxon::test::make_indenter(s), n, cxon::json::recursion_depth::set<4>());
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, but after the inclusion of cbor.hxx,
+                // this workaround does not work for to_bytes anymore
+                //auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                //                    (cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
+                //CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           endif
-            CHECK(!r && r.ec == cxon::json::node_error::recursion_depth_exceeded);
         }
         {   node jn;
             auto const r = cxon::from_bytes(jn, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
-            CHECK(!r && r.ec == cxon::json::node_error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
         }
         {   node jn;
-#           if !defined(__GNUG__) || defined(__clang__)
-                auto const r = cxon::from_bytes(jn, "[[[[", cxon::json::recursion_depth::set<4>());
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
+                auto const r = cxon::from_bytes(jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           else
-                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits> // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
-                                    (jn, "[[[[", cxon::json::recursion_depth::set<4>());
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, after the inclusion of cbor.hxx,
+                // funnily enough, this workaround continues to work for from_chars (unlike to_chars)
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                                    (jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           endif
-            CHECK(!r && r.ec == cxon::json::node_error::recursion_depth_exceeded);
+            CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
         }
         {   node jn;
             auto const r = cxon::from_bytes(jn, "~");
-            CHECK(!r && r.ec == cxon::json::node_error::invalid);
+            CHECK(!r && r.ec == cxon::node::error::invalid);
         }
-        {   using namespace cxon::json;
+        {   using namespace cxon::node;
             std::error_condition ec;
-            ec = node_error::ok;
-                CXON_ASSERT(ec.category() == node_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/json/node") == 0, "check failed");
+            ec = error::ok;
+                CXON_ASSERT(ec.category() == error_category::value(), "check failed");
+                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/node") == 0, "check failed");
                 CXON_ASSERT(ec.message() == "no error", "check failed");
-            ec = node_error::invalid;
-                CXON_ASSERT(ec.message() == "invalid json", "check failed");
-            ec = node_error::recursion_depth_exceeded;
+            ec = error::invalid;
+                CXON_ASSERT(ec.message() == "invalid input", "check failed");
+            ec = error::recursion_depth_exceeded;
                 CXON_ASSERT(ec.message() == "recursion depth limit exceeded", "check failed");
-            ec = node_error(255);
+            ec = error(255);
                 CXON_ASSERT(ec.message() == "unknown error", "check failed");
         }
     }
@@ -392,10 +403,38 @@ static unsigned self() {
 
         std::string const pretty_json = cxon::test::pretty(s1);
     }
+    {
+        node n1(1);     CHECK(n1.is<node::number>() && n1.get<node::number>() == 1);
+        node n2(1L);    CHECK(n2.is<node::number>() && n2.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n3(1LL);   CHECK(n3.is<node::number>() && n3.get<node::number>() == 1);
+#       endif
+        node n4(1U);    CHECK(n4.is<node::number>() && n4.get<node::number>() == 1);
+        node n5(1UL);   CHECK(n5.is<node::number>() && n5.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n6(1ULL);  CHECK(n6.is<node::number>() && n6.get<node::number>() == 1);
+#       endif
+        node n7(1.);    CHECK(n7.is<node::number>() && n7.get<node::number>() == 1.);
+        node n8(1.F);   CHECK(n8.is<node::number>() && n8.get<node::number>() == 1.F);
+    }
+    {
+        node n1; n1 = 1;    CHECK(n1.is<node::number>() && n1.get<node::number>() == 1);
+        node n2; n2 = 1L;   CHECK(n2.is<node::number>() && n2.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n3; n3 = 1LL;  CHECK(n3.is<node::number>() && n3.get<node::number>() == 1);
+#       endif
+        node n4; n4 = 1U;   CHECK(n4.is<node::number>() && n4.get<node::number>() == 1);
+        node n5; n5 = 1UL;  CHECK(n5.is<node::number>() && n5.get<node::number>() == 1);
+#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
+            node n6; n6 = 1ULL; CHECK(n6.is<node::number>() && n6.get<node::number>() == 1);
+#       endif
+        node n7; n7 = 1.;   CHECK(n7.is<node::number>() && n7.get<node::number>() == 1.);
+        node n8; n8 = 1.F;  CHECK(n8.is<node::number>() && n8.get<node::number>() == 1.F);
+    }
     {   // ex5
         using node = cxon::json::node;
         {   // (1)
-            node n; CHECK(n.is<node::null>());
+            node n; CHECK(n.is<node::null>() && n.get<node::null>() == nullptr);
         }
         {   // (2)
             node o = true; CHECK(o.is<node::boolean>());
@@ -483,11 +522,133 @@ static unsigned self() {
             b = a; CHECK(a == b);
         }
     }
+    {   // move assignment
+        {   node a;
+            a = node(42); CHECK(a.is<node::number>() && a.get<node::number>() == 42);
+        }
+        {   node a;
+            a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+        }
+        {   node a;
+            a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+        }
+        {   node a;
+            a = node(""); CHECK(a.is<node::string>() && a.get<node::string>() == "");
+        }
+        {   node a;
+            a = node(node::array {1}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1}));
+        }
+        {   node a;
+            a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
+        }
+    }
+    {   // less than
+        CHECK(node(node::object{}) < node(node::array{}));
+        CHECK(node(node::object{{1, 0}}) < node(node::object{{2, 0}}));
+        CHECK(node(node::array{1}) < node(node::array{2}));
+        CHECK(node(node::array{1}) < node(node::array{2, 3}));
+        CHECK(node("A") < node("a"));
+        CHECK(node("a") < node("aa"));
+        CHECK(node(1) < node(2));
+        CHECK(node(false) < node(true));
+        CHECK(!(node(nullptr) < node(nullptr)));
+    }
+    {   node n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+        std::string s;
+            cxon::to_bytes(s, n);
+        CHECK(s == "{\"{\\\"1\\\":2}\":3,\"[4]\":5,\"6\":7,\"8\":9,\"true\":10,\"null\":11}");
+    }
+    {   // node::json::arbitrary_keys
+        using node = cxon::json::node;
+        {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, 8: 9, true: 10, null: 11}";
+            node const out = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+            node n;
+                cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, in, cxon::node::json::arbitrary_keys::set<true>());
+            CHECK(n == out);
+        }
+        {   node n;
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, "{x: 0}", cxon::node::json::arbitrary_keys::set<true>());
+            CHECK(!r && r.ec == cxon::node::error::invalid);
+        }
+        {
+            node const n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+            std::string s;
+#           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
+                cxon::to_bytes(s, n, cxon::node::json::arbitrary_keys::set<true>());
+                CHECK(s == "{{1:2}:3,[4]:5,\"6\":7,8:9,true:10,null:11}");
+#           else
+                // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
+                // seems to be fixed around 10, but after the inclusion of cbor.hxx,
+                // this workaround does not work for to_bytes anymore
+                //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                //    (s, n, cxon::node::json::arbitrary_keys::set<true>());
+                //CHECK(s == "{{1:2}:3,[4]:5,\"6\":7,8:9,true:10,null:11}");
+#           endif
+        }
+    }
+    {   // cbor::node
+        using node = cxon::cbor::node;
+        {   char const in[] = "{\"a\":[{\"f\":2},[3,4],\"string\",5,false,null],\"b\":\"string\",\"c\":1,\"d\":true,\"e\":null}";
+            node n;
+                cxon::from_bytes(n, in);
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == in);
+        }
+        {   char const in[] = "#[1]";
+            node n;
+                auto r = cxon::from_bytes(n, in);
+            CHECK(!r && r.ec == cxon::node::error::invalid);
+        }
+        {   node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{"5", 6}}, true, nullptr, node::undefined(), 7.0, node::simple(8) };
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == "[1,2,[3],\"text\",[4],{\"5\":6},true,null,null,7,8]");
+        }
+        {   node n = node::map {
+                { 1, 0 },
+                { 2U, 0 },
+                { node::bytes {3}, 0 },
+                { "4", 0 },
+                { node::array {5}, 0 },
+                { node::map {{6, 0}}, 0 },
+                { node::tag {7, 8}, 0 },
+                { true, 0 },
+                { nullptr, 0 },
+                { node::undefined(), 0 },
+                { 9.0, 0 },
+                { node::simple(10), 0 }
+            };
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == "{\"1\":0,\"2\":0,\"[3]\":0,\"4\":0,\"[5]\":0,\"{\\\"6\\\":0}\":0,\"8\":0,\"true\":0,\"null\":0,\"null\":0,\"9\":0,\"10\":0}");
+        }
+    }
+    {   // round-trip
+        using node = cxon::cbor::node;
+        {   // cbor::node => json => cbor::node
+            node const fr = node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, node::tag {13,   14}, true, nullptr, node::undefined(), 15.0, node::simple( 16) };
+            node const to = node::array { -1.0, 2.0, node::array {3.0, 4.0}, "5, 6", node::array {7.0, 8.0}, node::map {{"9", 10.0}, {"11", 12.0}},                14.0,  true, nullptr,           nullptr, 15.0,             16.0  };
+            std::string s;
+                cxon::to_bytes(s, fr);
+            node n;
+                cxon::from_bytes(n, s);
+            CHECK(n == to);
+        }
+        {   // json => cbor::node => json
+            std::string const fr = "[{\"1\": 2}, [3, 4], \"5, 6\", 7, true, null]";
+            std::string const to = "[{\"1\":2},[3,4],\"5, 6\",7,true,null]";
+            node n;
+                cxon::from_bytes(n, fr);
+            std::string s;
+                cxon::to_bytes(s, n);
+            CHECK(s == to);
+        }
+    }
 #   undef CHECK
-    f_ ?
-        fprintf(stdout, "cxon/json/node/self: %u of %u failed\n", f_, a_) :
-        fprintf(stdout, "cxon/json/node/self: %u of %u passed\n", a_, a_)
-    ;
+
+    fprintf(stdout, "cxon/json/node/self:  %u of %3u failed\n", f_, a_); fflush(stdout);
+
     return f_;
 }
 
@@ -519,10 +680,7 @@ int main(int argc, char *argv[]) {
                     ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
                 }
             }
-        fc ?
-            fprintf(stdout, "cxon/json/node/pass: %zu of %zu failed\n", fc, pass.size()) :
-            fprintf(stdout, "cxon/json/node/pass: %zu of %zu passed\n", pass.size(), pass.size())
-        ;   fflush(stdout);
+        fprintf(stdout, "cxon/json/node/pass:  %zu of %3zu failed\n", fc, pass.size()); fflush(stdout);
     }
     if (!fail.empty()) {
         for (auto& c : fail) {
@@ -546,10 +704,7 @@ int main(int argc, char *argv[]) {
                     ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
                 }
             }
-        fc ?
-            fprintf(stdout, "cxon/json/node/fail: %zu of %zu failed\n", fc, fail.size()) :
-            fprintf(stdout, "cxon/json/node/fail: %zu of %zu passed\n", fail.size(), fail.size())
-        ;   fflush(stdout);
+        fprintf(stdout, "cxon/json/node/fail:  %zu of %3zu failed\n", fc, fail.size()); fflush(stdout);
     }
     if (!diff.empty()) {
         static auto const name = [](const std::string& p) {
@@ -608,7 +763,7 @@ int main(int argc, char *argv[]) {
             }
         }
         else {
-            fprintf(stdout, "cxon/json/node/diff: %zu of %zu failed\n", fc, diff.size()), fflush(stdout);
+            fprintf(stdout, "cxon/json/node/diff:  %zu of %3zu failed\n", fc, diff.size()), fflush(stdout);
         }
     }
     if (!time.empty()) {

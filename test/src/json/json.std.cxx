@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -79,160 +79,6 @@ TEST_BEG(cxon::JSON<>) // string
         R_TEST(u32string(), "a", json::read_error::unexpected, 0);
         R_TEST(u32string(), "\"", json::read_error::unexpected, 1);
         R_TEST(u32string(), QS("\\u001"), json::read_error::escape_invalid, 1);
-TEST_END()
-
-
-namespace key {
-    template <typename X, bool Q> struct unquoted : X::traits {
-        struct map : X::traits::map {
-            static constexpr bool unquoted_keys = Q;
-        };
-    };
-    struct less_cstr {
-        bool operator ()(const char* k0, const char* k1) const { return (!k0 && k1) || (k0 && k1 && std::strcmp(k0, k1) < 0); }
-    };
-}
-
-
-TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, false>>)
-    using namespace std;
-    // std::map<int, std::string>
-        R_TEST((map<int, string>{}), "{}");
-        W_TEST("{}", (map<int, string>{}));
-        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{\"1\" : \"1\" , \"1\" : \"1\" , \"2\" : \"2\" , \"3\" : \"3\"}");
-        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-        W_TEST("{\"1\":\"1\",\"2\":\"2\",\"3\":\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-        R_TEST((map<int, string>{}), "{\"x\"}", json::read_error::integral_invalid, 2);
-        R_TEST((map<int, string>{}), "{\"1\": x}", json::read_error::unexpected, 6);
-    // std::map<std::string, int>
-        R_TEST((map<string, int>{}), "{}");
-        W_TEST("{}", (map<string, int>{}));
-        R_TEST((map<string, int>{{"", 1}}), "{\"\":1}");
-        W_TEST("{\"\":1}", (map<string, int>{{"", 1}}));
-        R_TEST((map<string, int>{{"1", 1}, {"2", 2}, {" 3 ", 3}}), "{\"1\": 1, \"1\": 1, \"2\": 2, \" 3 \": 3}");
-        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-    // std::map<int, int>
-        R_TEST((map<int, int>{}), "{}");
-        W_TEST("{}", (map<int, int>{}));
-        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
-        W_TEST("{\"1\":1,\"2\":2,\"3\":3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-    // std::multimap<int, int>
-        R_TEST((multimap<int, int>{}), "{}");
-        W_TEST("{}", (multimap<int, int>{}));
-        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
-        W_TEST("{\"1\":1,\"1\":1,\"2\":2,\"3\":3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
-    // std::unordered_map<int, int>
-        R_TEST((unordered_map<int, int>{}), "{}");
-        W_TEST("{}", (unordered_map<int, int>{}));
-        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
-        W_TEST("{\"1\":1}", (unordered_map<int, int>{{1, 1}, {1, 1}}));
-    // std::unordered_multimap<int, int>
-        R_TEST((unordered_multimap<int, int>{}), "{}");
-        W_TEST("{}", (unordered_multimap<int, int>{}));
-        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{\"1\" : 1 , \"1\" : 1 , \"2\" : 2 , \"3\" : 3}");
-        W_TEST("{\"1\":1,\"1\":1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
-TEST_END()
-
-TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
-    using namespace std;
-    // std::map<int, std::string>
-        R_TEST((map<int, string>{}), "{}");
-        W_TEST("{}", (map<int, string>{}));
-        R_TEST((map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}), "{1 : \"1\" , 1 : \"1\" , 2 : \"2\" , 3 : \"3\"}");
-        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, string>{{1, "1"}, {2, "2"}, {3, "3"}}));
-        W_TEST("{1:\"1\",2:\"2\",3:\"3\"}", (map<int, const char*>{{1, "1"}, {2, "2"}, {3, "3"}}));
-        R_TEST((map<int, string>{}), "{x}", json::read_error::integral_invalid, 1);
-        R_TEST((map<int, string>{}), "{1: x}", json::read_error::unexpected, 4);
-    // std::map<std::string, int>
-        R_TEST((map<string, int>{}), "{}");
-        W_TEST("{}", (map<string, int>{}));
-        R_TEST((map<string, int>{{"1:1", 1}}), "{1\\:1: 1}"); // ':'
-        R_TEST((map<string, int>{{"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
-        R_TEST((map<string, int>{{"1\"1", 1}}), "{1\"1: 1}"); // '"'
-        R_TEST((map<string, int>{{"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-        R_TEST((map<string, int>{{"1", 1}, {"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-        R_TEST((map<string, int>{}), "{\0: 1}", json::read_error::unexpected, 1);
-        W_TEST("{1\\:1:1}", (map<string, int>{{"1:1", 1}})); // ':'
-        W_TEST("{1\"1:1}", (map<string, int>{{"1\"1", 1}})); // '"'
-        W_TEST("{1'1:1}", (map<string, int>{{"1\'1", 1}})); // '\''
-        W_TEST("{1\\ 1:1}", (map<string, int>{{"1 1", 1}})); // ' '
-        W_TEST("{1:1,2:2,3:3}", (map<string, int>{{"1", 1}, {"2", 2}, {"3", 3}}));
-        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-    // std::map<std::u16string, int>
-        R_TEST((map<u16string, int>{}), "{}");
-        W_TEST("{}", (map<u16string, int>{}));
-        R_TEST((map<u16string, int>{{u"", 1}}), "{:1}");
-        R_TEST((map<u16string, int>{{u"", 1}}), "{\"\":1}");
-        W_TEST("{:1}", (map<u16string, int>{{u"", 1}}));
-        R_TEST((map<u16string, int>{{u"1:1", 1}}), "{1\\:1: 1}"); // ':'
-        R_TEST((map<u16string, int>{{u"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
-        R_TEST((map<u16string, int>{{u"1\"1", 1}}), "{1\"1: 1}"); // '"'
-        R_TEST((map<u16string, int>{{u"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-        R_TEST((map<u16string, int>{{u"1", 1}, {u"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-        R_TEST((map<u16string, int>{}), "{\0: 1}", json::read_error::unexpected, 1);
-        W_TEST("{1\\:1:1}", (map<u16string, int>{{u"1:1", 1}})); // ':'
-        W_TEST("{1\"1:1}", (map<u16string, int>{{u"1\"1", 1}})); // '"'
-        W_TEST("{1'1:1}", (map<u16string, int>{{u"1\'1", 1}})); // '\''
-        W_TEST("{1\\ 1:1}", (map<u16string, int>{{u"1 1", 1}})); // ' '
-        W_TEST("{1:1,2:2,3:3}", (map<u16string, int>{{u"1", 1}, {u"2", 2}, {u"3", 3}}));
-        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-    // std::map<std::u32string, int>
-        R_TEST((map<u32string, int>{}), "{}");
-        W_TEST("{}", (map<u32string, int>{}));
-        R_TEST((map<u32string, int>{{U"", 1}}), "{:1}");
-        R_TEST((map<u32string, int>{{U"", 1}}), "{\"\":1}");
-        W_TEST("{:1}", (map<u32string, int>{{U"", 1}}));
-        R_TEST((map<u32string, int>{{U"1:1", 1}}), "{1\\:1: 1}"); // ':'
-        R_TEST((map<u32string, int>{{U"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
-        R_TEST((map<u32string, int>{{U"1\"1", 1}}), "{1\"1: 1}"); // '"'
-        R_TEST((map<u32string, int>{{U"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-        R_TEST((map<u32string, int>{{U"1", 1}, {U"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-        R_TEST((map<u32string, int>{}), "{\0: 1}", json::read_error::unexpected, 1);
-        W_TEST("{1\\:1:1}", (map<u32string, int>{{U"1:1", 1}})); // ':'
-        W_TEST("{1\"1:1}", (map<u32string, int>{{U"1\"1", 1}})); // '"'
-        W_TEST("{1'1:1}", (map<u32string, int>{{U"1\'1", 1}})); // '\''
-        W_TEST("{1\\ 1:1}", (map<u32string, int>{{U"1 1", 1}})); // ' '
-        W_TEST("{1:1,2:2,3:3}", (map<u32string, int>{{U"1", 1}, {U"2", 2}, {U"3", 3}}));
-        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-    // std::map<std::wstring, int>
-        R_TEST((map<wstring, int>{}), "{}");
-        W_TEST("{}", (map<wstring, int>{}));
-        R_TEST((map<wstring, int>{{L"", 1}}), "{:1}");
-        R_TEST((map<wstring, int>{{L"", 1}}), "{\"\":1}");
-        W_TEST("{:1}", (map<wstring, int>{{L"", 1}}));
-        R_TEST((map<wstring, int>{{L"1:1", 1}}), "{1\\:1: 1}"); // ':'
-        R_TEST((map<wstring, int>{{L"1\n1", 1}}), "{1\\n1: 1}"); // '\n'
-        R_TEST((map<wstring, int>{{L"1\"1", 1}}), "{1\"1: 1}"); // '"'
-        R_TEST((map<wstring, int>{{L"1 1", 1}}), "{1\\ 1: 1}"); // ' '
-        R_TEST((map<wstring, int>{{L"1", 1}, {L"2", 1}}), "{1: 1, \"2\": 1}"); // mix
-        R_TEST((map<wstring, int>{}), "{\0: 1}", json::read_error::unexpected, 1);
-        W_TEST("{1\\:1:1}", (map<wstring, int>{{L"1:1", 1}})); // ':'
-        W_TEST("{1\"1:1}", (map<wstring, int>{{L"1\"1", 1}})); // '"'
-        W_TEST("{1'1:1}", (map<wstring, int>{{L"1\'1", 1}})); // '\''
-        W_TEST("{1\\ 1:1}", (map<wstring, int>{{L"1 1", 1}})); // ' '
-        W_TEST("{1:1,2:2,3:3}", (map<wstring, int>{{L"1", 1}, {L"2", 2}, {L"3", 3}}));
-        W_TEST("{1:1,2:2,3:3}", (map<const char*, int, key::less_cstr>{{"1", 1}, {"2", 2}, {"3", 3}}));
-    // std::map<int, int>
-        R_TEST((map<int, int>{}), "{}");
-        W_TEST("{}", (map<int, int>{}));
-        R_TEST((map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        W_TEST("{1:1,2:2,3:3}", (map<int, int>{{1, 1}, {2, 2}, {3, 3}}));
-    // std::multimap<int, int>
-        R_TEST((multimap<int, int>{}), "{}");
-        W_TEST("{}", (multimap<int, int>{}));
-        R_TEST((multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        W_TEST("{1:1,1:1,2:2,3:3}", (multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}));
-    // std::unordered_map<int, int>
-        R_TEST((unordered_map<int, int>{}), "{}");
-        W_TEST("{}", (unordered_map<int, int>{}));
-        R_TEST((unordered_map<int, int>{{1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        W_TEST("{1:1}", (unordered_map<int, int>{{1, 1}}));
-    // std::unordered_multimap<int, int>
-        R_TEST((unordered_multimap<int, int>{}), "{}");
-        W_TEST("{}", (unordered_multimap<int, int>{}));
-        R_TEST((unordered_multimap<int, int>{{1, 1}, {1, 1}, {2, 2}, {3, 3}}), "{1 : 1 , 1 : 1 , 2 : 2 , 3 : 3}");
-        W_TEST("{1:1,1:1}", (unordered_multimap<int, int>{{1, 1}, {1, 1}}));
 TEST_END()
 
 
@@ -372,6 +218,14 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[[]]", (list<vector<int>>{{}}));
         R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
         W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
+    // std::map
+        R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, "{\"1\": 2, \"3\": 4}");
+        W_TEST("{\"1\":2,\"3\":4}", map<int, int>{{1, 2}, {3, 4}});
+        R_TEST(map<string, int>{{"{\"1\":2}", 3}, {"{\"4\":5}", 6}}, "{\"{\\\"1\\\":2}\": 3, \"{\\\"4\\\":5}\": 6}");
+        W_TEST("{\"{\\\"1\\\":2}\":3,\"{\\\"4\\\":5}\":6}", map<map<string, int>, int>{{map<string, int>{{"1", 2}}, 3}, {map<string, int>{{"4", 5}}, 6}});
+    // std::unordered_map
+        R_TEST(unordered_map<string, int>{{"1", 2}}, "{\"1\": 2}");
+        W_TEST("{\"1\":2}", unordered_map<int, int>{{1, 2}});
 TEST_END()
 
 
@@ -391,12 +245,6 @@ TEST_BEG(cxon::JSON<>) // std::bitset
     W_TEST(QS("11111111"), bitset<8>(255));
     R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, "{\"01010101\":1}");
     W_TEST("{\"01010101\":1}", map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}});
-TEST_END()
-
-TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>)
-    using namespace std;
-    R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, "{01010101:1}");
-    W_TEST("{01010101:1}", map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}});
 TEST_END()
 
 
@@ -434,15 +282,6 @@ TEST_END()
         char const s[] = "1";
         W_TEST(QS("1"), string_view(s));
         W_TEST("{\"1\":1}", map<string_view, int>{{string_view(s), 1}});
-    TEST_END()
-#endif
-
-#ifdef CXON_HAS_LIB_STD_STRING_VIEW
-    TEST_BEG(cxon::JSON<key::unquoted<cxon::JSON<>, true>>) // std::string_view
-        using namespace std;
-        char const s[] = "1";
-        W_TEST(QS("1"), string_view(s));
-        W_TEST("{1:1}", map<string_view, int>{{string_view(s), 1}});
     TEST_END()
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 #define CXON_JSON_LIB_STD_STRING_VIEW_HXX_
 
-namespace cxon { namespace cio {
+namespace cxon { namespace cio { namespace key {
 
 #   define CXON_QUOTED(T)\
         template <typename ...R> struct is_quoted<std::basic_string_view<T, R...>> : std::true_type  {};
@@ -19,7 +19,7 @@ namespace cxon { namespace cio {
         CXON_QUOTED(char32_t)
 #   undef CXON_QUOTED
 
-}}
+}}}
 
 namespace cxon {
 
@@ -37,13 +37,6 @@ namespace cxon {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
                     return cio::str::pointer_write<J>(o, t.data(), t.size(), cx);
-                }
-        };
-    template <typename X, typename T, typename ...R>
-        struct write<JSON<cio::UQKEY<X>>, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx, typename J = JSON<cio::UQKEY<X>>>
-                static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return cio::str::uqkey_pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
 
