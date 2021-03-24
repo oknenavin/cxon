@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -7,6 +7,7 @@
 #define CXON_BIO_IO_HXX_
 
 #include "cxon/utility.hxx"
+#include <cmath> // std::ldexp
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -127,24 +128,30 @@ namespace cxon { namespace bio {
                 ;
             }
 
+        // coverity[ -tainted_data_return ]
+        // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T>
             inline T be_to_i_(const byte (&bs)[2]) {
-                using R = unsigned short;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+                using R = unsigned long;
+                CXON_ASSERT(sizeof(T) >= 2, "narrowing");
                 return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
             }
+        // coverity[ -tainted_data_return ]
+        // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T>
             inline T be_to_i_(const byte (&bs)[4]) {
                 using R = unsigned long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+                CXON_ASSERT(sizeof(T) >= 4, "narrowing");
                 return  (R(bs[3])<< 0) | (R(bs[2])<< 8) |
                         (R(bs[1])<<16) | (R(bs[0])<<24)
                 ;
             }
+        // coverity[ -tainted_data_return ]
+        // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T>
             inline T be_to_i_(const byte (&bs)[8]) {
                 using R = unsigned long long;
-                CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
+                CXON_ASSERT(sizeof(T) >= 8, "narrowing");
                 return  (R(bs[7])<< 0) | (R(bs[6])<< 8) |
                         (R(bs[5])<<16) | (R(bs[4])<<24) |
                         (R(bs[3])<<32) | (R(bs[2])<<40) |
@@ -153,8 +160,16 @@ namespace cxon { namespace bio {
             }
 
         template <typename T>
-            inline T be_to_fp_(const byte (&/*bs*/)[2]) {
-                return CXON_ASSERT(0, "not implemented"), 0;
+            inline T be_to_fp_(const byte (&bs)[2]) {
+                // TODO: not correct, but as in RFC7049 Appendix D
+                const unsigned half = (bs[0] << 8) + bs[1];
+                const unsigned exp = (half >> 10) & 0x1f;
+                const unsigned mant = half & 0x3ff;
+                double val;
+                     if (exp == 0)  val = std::ldexp(mant, -24);
+                else if (exp != 31) val = std::ldexp(mant + 1024, exp - 25);
+                else                val = mant == 0 ? INFINITY : NAN;
+                return (T)(half & 0x8000 ? -val : val);
             }
         template <typename T>
             inline T be_to_fp_(const byte (&bs)[4]) {
@@ -181,7 +196,7 @@ namespace cxon { namespace bio {
 
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N == 1, bool> {
-                return i != e && (t = T(*i), ++i, true);
+                return i != e && (t = T(static_cast<byte>(*i)), ++i, true);
             }
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {

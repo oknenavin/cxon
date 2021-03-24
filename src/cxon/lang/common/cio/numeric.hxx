@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -265,6 +265,7 @@ namespace cxon { namespace cio { namespace num {
                         II const o = i;
                             char s[num_len_max::constant<napa_type<Cx>>(64)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
+                                // coverity[ overrun_buffer_val ]
                                 return  (b != -1                                            || (rewind(i, o), cx|read_error::overflow)) &&
                                         (b !=  0                                            || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
                                         (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))

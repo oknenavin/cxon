@@ -256,7 +256,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
 
     }
     ```
-  - static members provided by the type
+  - static methods provided by the type
     ``` c++
     struct T {
         template <typename X, typename InIt, typename Cx>
@@ -269,7 +269,7 @@ The _implementation bridge_ however, bridges three additional methods of extensi
             }
     };
     ```
-  - members provided by the type
+  - methods provided by the type
     ``` c++
     struct T {
         template <typename X, typename InIt, typename Cx>
@@ -329,15 +329,13 @@ namespace cxon { namespace json {
         static constexpr char end           = '}';    // object end
         static constexpr char div           = ':';    // key/value separator
         static constexpr char sep           = ',';    // key/value list separator
-        static constexpr bool unquoted_keys = false;  // allow unquoted keys
     };
 
 }}
 ```
 
-As changing the `Traits` parameters (e.g. to have `unquoted_keys = true`) 
-can only be done by introducing a new type, specialization of a serializer 
-for a given format is not easy possible and because of this, 
+As changing the `Traits` parameters  can only be done by introducing a new type,
+ specialization of a serializer for a given format is not easy possible and because of this, 
 `CXON` uses so-called *format-selectors* 
 defined like this:
 
@@ -358,27 +356,35 @@ namespace cxon {
 and the interface is called with a *format-selector* instead of bare traits:
 
 ``` c++
-struct json_unquoted_keys_traits : cxon::json::format_traits {
+struct my_json_traits : cxon::json::format_traits {
     struct map : cxon::json::format_traits::map {
-        static constexpr bool unquoted_keys = true;
+        static constexpr char div = '='; // key/value separator
     };
 };
-using my_json = cxon::JSON<json_unquoted_keys_traits>;
+using my_json = cxon::JSON<my_json_traits>;
 ...
 auto const result = cxon::from_bytes<my_json>(...);
 ...
 ```
 
-By using of this mechanism, specialization for a given type and format is ensured with 
+By using of this mechanism, specialization for a given type and format can be done with 
 code like this:
 
 ``` c++
 namespace cxon {
 
+    template <typename X>
+        struct write<CBOR<X>, Type> {
+            template <typename O, typename Cx>
+                static bool value(O& o, const Type& t, Cx& cx) {
+                    ...
+                }
+        };
+
     template <typename X, typename II, typename Cx>
-        auto read_value(char& t, II& i, II e, Cx& cx)
-            -> enable_for_t<X, JSON>
-        { ... }
+        auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
+            ...
+        }
 
 }
 ```

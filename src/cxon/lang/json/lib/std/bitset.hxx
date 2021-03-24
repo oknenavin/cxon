@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -6,9 +6,9 @@
 #ifndef CXON_JSON_LIB_STD_BITSET_HXX_
 #define CXON_JSON_LIB_STD_BITSET_HXX_
 
-namespace cxon { namespace cio {
+namespace cxon { namespace cio { namespace key {
     template <size_t N> struct is_quoted<std::bitset<N>> : std::true_type {};
-}}
+}}}
 
 namespace cxon { namespace json { namespace bits {
 
@@ -38,9 +38,9 @@ namespace cxon {
         struct read<JSON<X>, std::bitset<N>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
-                    return  cio::str::consume_str<J>::beg(i, e, cx) &&
+                    return  cio::consume<X>(X::string::beg, i, e, cx) &&
                                 json::bits::read_bits<J>(t, i, e, cx) &&
-                            cio::str::consume_str<J>::end(i, e, cx)
+                            cio::consume<X>(X::string::end, i, e, cx)
                     ;
                 }
         };
@@ -49,9 +49,9 @@ namespace cxon {
         struct write<JSON<X>, std::bitset<N>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
-                    return  cio::poke<J>(o, cio::str::str<J>::beg, cx) &&
+                    return  cio::poke<J>(o, J::string::beg, cx) &&
                                 json::bits::write_bits<J>(o, t, cx) &&
-                            cio::poke<J>(o, cio::str::str<J>::end, cx)
+                            cio::poke<J>(o, J::string::end, cx)
                     ;
                 }
         };

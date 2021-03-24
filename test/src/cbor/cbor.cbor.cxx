@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -139,9 +139,6 @@ int main() {
     using cxon::test::suite;
     for (auto t : suite::get())
         t->test();
-    suite::err() ?
-        fprintf(stdout, "cxon/cbor: %u of %u failed\n", suite::err(), suite::all()) :
-        fprintf(stdout, "cxon/cbor: %u of %u passed\n", suite::all(), suite::all())
-    ;
+    fprintf(stdout, "cxon/cbor: %u of %4u failed\n", suite::err(), suite::all()); fflush(stdout);
     return suite::err();
 }

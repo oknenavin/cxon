@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -116,6 +116,7 @@ namespace cxon { // pointer/read
                     void grow(size_t n) {
                         CXON_ASSERT(n > size_t(l_ - f_), "unexpected");
                         auto const p = a_.create(n);
+                            // coverity[ deref_parm_in_call ]
                             std::move(f_, e_, p);
                             a_.release(f_, l_ - f_);
                         e_ = p + (e_ - f_), l_ = p + n, f_ = p;

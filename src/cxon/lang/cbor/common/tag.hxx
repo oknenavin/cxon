@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -14,8 +14,8 @@ namespace cxon { namespace cbor { namespace tag {
 
     template <typename X, typename II, typename Cx>
         inline bool read(II& i, II e, Cx& cx);
-    template <typename X, typename II, typename Cx>
-        inline bool read(size_t& t, II& i, II e, Cx& cx);
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read(T& t, II& i, II e, Cx& cx);
 
 }}}
 
@@ -49,8 +49,8 @@ namespace cxon { namespace cbor { namespace tag {
             }
         }
 
-    template <typename X, typename II, typename Cx>
-        inline bool read(size_t& t, II& i, II e, Cx& cx) {
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read(T& t, II& i, II e, Cx& cx) {
                 auto b = bio::peek(i, e);
                 switch (b & X::mjr) {
                     case X::tag: {

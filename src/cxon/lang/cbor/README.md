@@ -24,13 +24,13 @@ types is as follow:
 
   - [fundamental types][cpp-fund-types]
 
-    type                                                            | `CBOR`<br>Major type (`MT`) | `#include cxon/cbor.hxx`<br>header
-    ----------------------------------------------------------------|-----------------------------|-----------------------------------
-    `nullptr_t`                                                     | `MT7` / `Null`              | `cxon/lang/cbor/fundamental.hxx`
-    `bool`                                                          | `MT7` / `True` or `False`   | `cxon/lang/cbor/fundamental.hxx`
-    `char`, `char8_t`, `wchar_t`, `char16_t` and `char32_t`         | `MT0` or `MT1` / `integer`  | `cxon/lang/cbor/fundamental.hxx`
-    `signed`&`unsigned` `char`, `short`, `int`, `long`, `long long` | `MT0` or `MT1` / `integer`  | `cxon/lang/cbor/fundamental.hxx`
-    `float`, `double`, `long double`                                | `MT7` / `floating-point`    | `cxon/lang/cbor/fundamental.hxx`
+    type                                                               | `CBOR`<br>Major type (`MT`) | `#include cxon/cbor.hxx`<br>header
+    -------------------------------------------------------------------|-----------------------------|-----------------------------------
+    `nullptr_t`                                                        | `MT7` / `Null`              | `cxon/lang/cbor/fundamental.hxx`
+    `bool`                                                             | `MT7` / `True` or `False`   | `cxon/lang/cbor/fundamental.hxx`
+    `char`, `char8_t`, `wchar_t`, `char16_t` and `char32_t`            | `MT0` or `MT1` / `integer`  | `cxon/lang/cbor/fundamental.hxx`
+    `signed`and `unsigned` `char`, `short`, `int`, `long`, `long long` | `MT0` or `MT1` / `integer`  | `cxon/lang/cbor/fundamental.hxx`
+    `float`, `double`, `long double`                                   | `MT7` / `floating-point`    | `cxon/lang/cbor/fundamental.hxx`
  
   - compound types
 

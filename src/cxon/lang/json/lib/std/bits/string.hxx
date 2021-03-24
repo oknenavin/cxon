@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -16,7 +16,7 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
             -> enable_if_t<cio::chr::is_char_8<T>::value, bool>
         {
             II const o = i;
-                char32_t const c32 = cio::str::consume_str<X>::chr(i, e, cx);
+                char32_t const c32 = cio::chr::str_to_utf32<X>(i, e, cx);
                     if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
                 T b[4]; t.append(b, cio::chr::utf32_to_utf8(b, c32));
             return true;
@@ -26,7 +26,7 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
             -> enable_if_t<cio::chr::is_char_16<T>::value, bool>
         {
             II const o = i;
-                char32_t c32 = cio::str::consume_str<X>::chr(i, e, cx);
+                char32_t c32 = cio::chr::str_to_utf32<X>(i, e, cx);
                     if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
@@ -43,23 +43,22 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
             -> enable_if_t<cio::chr::is_char_32<T>::value, bool>
         {
             II const o = i;
-                char32_t const c32 = cio::str::consume_str<X>::chr(i, e, cx);
+                char32_t const c32 = cio::chr::str_to_utf32<X>(i, e, cx);
                     if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
             return t.push_back(T(c32)), true;
         }
 
     template <typename X, typename T, typename ...R, typename II, typename Cx>
         inline bool basic_string_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-            if (!cio::str::consume_str<X>::beg(i, e, cx)) return false;
+            if (!cio::consume<X>(X::string::beg, i, e, cx))         return false;
                 for (char c = cio::peek(i, e); cio::chr::is<X>::real(c); c = cio::peek(i, e)) {
-                    if (cio::str::is_str<X>::end(c))              return cio::str::consume_str<X>::end(i, e, cx);
+                    if (c == X::string::end)                        return cio::consume<X>(X::string::end, i, e, cx);
                     if (!basic_string_char_read<X>(t, i, e, cx))    return false;
                 }
             return cx|cio::read_error::unexpected;
         }
 
         using cio::str::pointer_write;
-        using cio::str::uqkey_pointer_write;
 
 }}}
 

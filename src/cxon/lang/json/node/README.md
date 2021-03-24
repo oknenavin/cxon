@@ -19,7 +19,7 @@
 `CXON/JSON/NODE` is an implementation of a polymorphic type, which can represent an arbitrary `JSON`.  
 `JSON` value type mapping is configurable with the following defaults:
 
-type         | default binding
+Type         | Default binding
 -------------|------------------------------
 `object`     | [`std::map`][cpp-map]
 `array`      | [`std::vector`][cpp-vect]
@@ -35,7 +35,7 @@ Build, write and read:
 
 ``` c++
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
@@ -63,7 +63,7 @@ Build using node's methods:
 
 ``` c++
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {
@@ -145,7 +145,7 @@ The resulting `JSON` is (*note, that the default number type is `double`*):
 #### `basic_node`
 
 *Defined in header [`cxon/lang/json/node/node.hxx`](node.hxx)*  
-*Include [`cxon/lang/json/node.hxx`](../node.hxx)*
+*Include [`cxon/lib/node.hxx`](../../../lib/node.hxx)*
 
 ``` c++
 namespace cxon::json {
@@ -172,14 +172,14 @@ enum class node_kind { object, array, string, number, boolean, null };
 
 ###### Member types
 
-Member type |Definition
+Member type | Definition
 ------------|------------------------------------------
 `null`      | `Traits::null_type`
 `boolean`   | `Traits::boolean_type`
 `number`    | `Traits::number_type`
 `string`    | `Traits::string_type`
 `array`     | `Traits::array_type<basic_node>`
-`object`    | `Traits::object_type<string, basic_node>`
+`object`    | `Traits::object_type<basic_node, basic_node>`
 
 ###### Member functions
 
@@ -247,7 +247,7 @@ basic_node(const boolean& v);
 basic_node(null&& v);
 basic_node(const null& v);
 
-basic_node(int v);                  (4)
+basic_node(<integral> v);           (4)
 basic_node(const char* v);
 ```
 
@@ -474,34 +474,39 @@ bool operator != (const basic_node& n) const; (2)
 `CXON/JSON` defines the following in addition:
   - own error conditions
 
-      Error code                           | Message
-      -------------------------------------|-------------------------------
-      node_error::invalid                  | invalid `JSON`
-      node_error::recursion_depth_exceeded | recursion depth limit exceeded
+      Error code                              | Message
+      ----------------------------------------|-------------------------------
+      `node::error::invalid`                  | invalid `JSON`
+      `node::error::recursion_depth_exceeded` | recursion depth limit exceeded
 
   - own context parameters
 
-      Parameter         | Context    | Type       | Default | Description
-      ------------------|------------|------------|---------|-------------------------
-      `recursion_guard` | read/write | `unsigned` | 0 (N/A) | recursion guard state
-      `recursion_depth` | read/write | `unsigned` | 64      | max recursion depth
+      Parameter                    | Context    | Type       | Default | Description
+      -----------------------------|------------|------------|---------|---------------------------------------------
+      `node::recursion_guard`      | read/write | `unsigned` | 0 (N/A) | recursion guard state
+      `node::recursion_depth`      | read/write | `unsigned` | 64      | max recursion depth
+      `node::json::arbitrary_keys` | read/write | `bool`     | false   | allow `node` as object key
+      `node::json::extract_nans`   | read       | `bool`     | false   | convert `inf`/`nan` strings to `node::number`
   
-      *Note: the interface is overloaded for `cxon::json::basic_node` and the overload
-       passes `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
+      *Note: The interface is overloaded for `cxon::json::basic_node` and the overload
+       passes the `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
        (e.g. `std::vector<basic_node>`) and guarding against recursion is needed, then
-       `recursion_guard` parameter must be passed explicitly.*
+       the `recursion_guard` parameter must be passed explicitly.*
 
-      *Note: currently calling of the overloads with parameter(s), e.g.
+      *Note: Currently calling the overloads with named-parameter(s) - e.g.
       `from_bytes(..., recursion_depth::set<unsigned, 4U>())`,
       fail to compile with g++ due to a bug in the compiler ([Bug 90642](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90642)).
       As a workaround, they may be called by passing the traits parameters explicitly - e.g.
       `from_bytes<FormatTraits, NodeTraits>(..., recursion_depth::set<unsigned, 4U>())`*
 
+      *Note: The bug mentioned above, seems to be resolved somewhere after 9.1 (at least it's not reproducible
+      with 10.2), but still, 90642 is not yet closed.*
+
 ###### Example
 
 ``` c++
 #include "cxon/json.hxx"
-#include "cxon/lang/json/node.hxx"
+#include "cxon/lib/node.hxx"
 #include <cassert>
 
 int main() {

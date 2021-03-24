@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 oknenavin.
+// Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
 // SPDX-License-Identifier: MIT
@@ -7,8 +7,8 @@
 #define CXON_CXON_HXX_
 
 #define CXON_VERSION_MAJOR 0
-#define CXON_VERSION_MINOR 50
-#define CXON_VERSION_PATCH 0
+#define CXON_VERSION_MINOR 51
+#define CXON_VERSION_PATCH 1
 
 #include "utility.hxx"
 #include "lang-fwd.hxx"
