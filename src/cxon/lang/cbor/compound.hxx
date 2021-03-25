@@ -47,6 +47,8 @@ namespace cxon { // pointer/read
                 using pointer = value_type*;
                 using reference = value_type&;
 
+                // coverity[assign_zero]
+                // coverity[var_deref_model]
                 pointer_container(const A& a) : a_(a), f_(), l_(), e_() { grow(8); }
 
                 pointer release() { return f_; }
@@ -69,7 +71,7 @@ namespace cxon { // pointer/read
                     void grow(size_t n) {
                         CXON_ASSERT(n > size_t(l_ - f_), "unexpected");
                         auto const p = a_.create(n);
-                            // coverity[ deref_parm_in_call ]
+                            // coverity[deref_parm_in_call] - f_ == e_ in this case
                             std::move(f_, e_, p);
                             a_.release(f_, l_ - f_);
                         e_ = p + (e_ - f_), l_ = p + n, f_ = p;
