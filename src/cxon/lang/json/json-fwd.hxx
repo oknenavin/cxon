@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_JSON_FWD_HXX_
 #define CXON_JSON_JSON_FWD_HXX_
 
-#include "cxon/lang/common/cio/error-fwd.hxx"
+#include <system_error>
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -25,16 +25,14 @@ namespace cxon { // format selector
 
 namespace cxon { namespace json { // errors
 
-    using cio::read_error;
-    using cio::write_error;
+    enum class read_error;
+    enum class write_error;
 
-    using cio::read_error_category;
-    using cio::write_error_category;
+    struct read_error_category;
+    inline std::error_condition make_error_condition(read_error e) noexcept;
 
-    // node
-
-    enum class node_error;
-    struct node_error_category;
+    struct write_error_category;
+    inline std::error_condition make_error_condition(write_error e) noexcept;
 
 }}
 

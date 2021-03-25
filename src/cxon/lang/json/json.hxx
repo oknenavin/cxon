@@ -12,6 +12,7 @@
 
 #include "cxon/cxon.hxx"
 
+#include "error.hxx"
 #include "fundamental.hxx"
 #include "enum.hxx"
 #include "compound.hxx"
@@ -22,6 +23,9 @@
 namespace cxon { namespace json { // format traits
 
     struct format_traits : cio::format_traits {
+        using read_error = json::read_error;
+        using write_error = json::write_error;
+
         static constexpr bool strict_js = false; // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
     };
 

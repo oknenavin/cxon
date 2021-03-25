@@ -423,28 +423,28 @@ namespace cxon { namespace bio {
 
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, byte b, Cx& cx) {
-            return bits::put_(o, b, 1) || (cx|cbor::write_error::output_failure);
+            return bits::put_(o, b, 1) || (cx|X::write_error::output_failure);
         }
 
     template <typename X, typename O, typename T, typename Cx>
         inline auto poke(O& o, T t, unsigned n, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value, bool>
         {
-            return bits::put_(o, t, n) || (cx|cbor::write_error::output_failure);
+            return bits::put_(o, t, n) || (cx|X::write_error::output_failure);
         }
 
     template <typename X, typename O, typename FI, typename Cx, typename T>
         inline auto poke(O& o, FI i, size_t n, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
         {
-            return bits::put_(o, i, n) || (cx|cbor::write_error::output_failure);
+            return bits::put_(o, i, n) || (cx|X::write_error::output_failure);
         }
 
     template <typename X, typename O, typename T, typename Cx>
         inline auto poke(O& o, T t, Cx& cx)
             -> enable_if_t<std::is_floating_point<T>::value, bool>
         {
-            return bits::put_(o, t) || (cx|cbor::write_error::output_failure);
+            return bits::put_(o, t) || (cx|X::write_error::output_failure);
         }
 
 }}

@@ -208,9 +208,9 @@ namespace cxon { namespace cio { namespace num {
                         II const o = i;
                             char s[num_len_max::constant<napa_type<Cx>>(32)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                            return  (b != -1                                                        || (rewind(i, o), cx|read_error::overflow)) &&
-                                    (b !=  0                                                        || (rewind(i, o), cx|read_error::integral_invalid)) &&
-                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (rewind(i, o), cx|read_error::integral_invalid))
+                            return  (b != -1                                                        || (rewind(i, o), cx|X::read_error::overflow)) &&
+                                    (b !=  0                                                        || (rewind(i, o), cx|X::read_error::integral_invalid)) &&
+                                    (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (rewind(i, o), cx|X::read_error::integral_invalid))
                             ;
                     }
                 template <typename N, typename Cx>
@@ -223,7 +223,7 @@ namespace cxon { namespace cio { namespace num {
                             auto const r = charconv::from_chars(b, i, t);
                             if (r.ec == std::errc() && r.ptr == i) return true;
                         }
-                        return i = b, cx|read_error::integral_invalid;
+                        return i = b, cx|X::read_error::integral_invalid;
                     }
                 // not strict
                 template <typename N, typename Cx>
@@ -231,7 +231,7 @@ namespace cxon { namespace cio { namespace num {
                         -> enable_if_t<std::is_integral<N>::value && !X::number::strict, bool>
                     {
                         auto const r = charconv::from_chars(i, e, t);
-                        return (r.ec == std::errc() && (i = r.ptr, true)) || (cx|read_error::integral_invalid);
+                        return (r.ec == std::errc() && (i = r.ptr, true)) || (cx|X::read_error::integral_invalid);
                     }
             // floating point
                 template <typename N>
@@ -266,9 +266,9 @@ namespace cxon { namespace cio { namespace num {
                             char s[num_len_max::constant<napa_type<Cx>>(64)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
                                 // coverity[ overrun_buffer_val ]
-                                return  (b != -1                                            || (rewind(i, o), cx|read_error::overflow)) &&
-                                        (b !=  0                                            || (rewind(i, o), cx|read_error::floating_point_invalid)) &&
-                                        (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|read_error::floating_point_invalid))
+                                return  (b != -1                                            || (rewind(i, o), cx|X::read_error::overflow)) &&
+                                        (b !=  0                                            || (rewind(i, o), cx|X::read_error::floating_point_invalid)) &&
+                                        (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx|X::read_error::floating_point_invalid))
                                 ;
                     }
                 template <typename N, typename Cx>
@@ -281,7 +281,7 @@ namespace cxon { namespace cio { namespace num {
                             auto const r = from_chars(b, i, t);
                             if (r.ec == std::errc() && r.ptr == i) return true;
                         }
-                        return i = b, cx|read_error::floating_point_invalid;
+                        return i = b, cx|X::read_error::floating_point_invalid;
                     }
                 // not strict
                 template <typename N, typename Cx>
@@ -289,7 +289,7 @@ namespace cxon { namespace cio { namespace num {
                         -> enable_if_t<std::is_floating_point<N>::value && !X::number::strict, bool>
                     {
                         auto const r = from_chars(i, e, t);
-                        return  (r.ec == std::errc() || (cx|read_error::floating_point_invalid)) &&
+                        return  (r.ec == std::errc() || (cx|X::read_error::floating_point_invalid)) &&
                                 (i = r.ptr, true)
                         ;
                     }
@@ -309,7 +309,7 @@ namespace cxon { namespace cio { namespace num { // number conversion: write
         inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
             char s[std::numeric_limits<T>::digits10 + 3];
             auto const r = charconv::to_chars(s, s + sizeof(s) / sizeof(char), t);
-            return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
+            return (r.ec == std::errc() || (cx|X::write_error::argument_invalid)) &&
                     poke<X>(o, s, r.ptr - s, cx)
             ;
         }
@@ -328,7 +328,7 @@ namespace cxon { namespace cio { namespace num { // number conversion: write
             auto const r = charconv::to_chars(
                 s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
             );
-            return (r.ec == std::errc() || (cx|write_error::argument_invalid)) &&
+            return (r.ec == std::errc() || (cx|X::write_error::argument_invalid)) &&
                     poke<X>(o, s, r.ptr - s, cx)
             ;
         }
