@@ -225,21 +225,21 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename II, typename Cx>
         inline bool read_size(size_t& s, II& i, II e, Cx& cx) {
             return  cbor::bits::read_unsigned_<X>(s, i, e, cx) ||
-                    cx|cbor::read_error::size_invalid
+                    cx/cbor::read_error::size_invalid
             ;
         }
     template <typename X, typename II, typename Cx>
         inline bool read_size_le(size_t& s, size_t n, II& i, II e, Cx& cx) {
             II const o = i; size_t t;
             return  (read_size<X>(t, i, e, cx) && t <= n && (s = t, true)) ||
-                    (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
+                    (bio::rewind(i, o), cx/cbor::read_error::size_invalid)
             ;
         }
     template <typename X, typename II, typename Cx>
         inline bool read_size_eq(size_t n, II& i, II e, Cx& cx) {
             II const o = i; size_t s;
             return  (read_size<X>(s, i, e, cx) && s == n) ||
-                    (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
+                    (bio::rewind(i, o), cx/cbor::read_error::size_invalid)
             ;
         }
 
@@ -277,8 +277,8 @@ namespace cxon { namespace cbor { namespace cnt {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_bytes_(T& t, size_t n, II& i, II e, Cx& cx) {
-                return  (element_read<X>(t, n, i, e, cx)) ||
-                        (cx|cbor::read_error::unexpected)
+                return  element_read<X>(t, n, i, e, cx) ||
+                        cx/cbor::read_error::unexpected
                 ;
             }
 
@@ -295,7 +295,7 @@ namespace cxon { namespace cbor { namespace cnt {
                 bio::byte const m = bio::get(i, e) & X::mjr;
                     for (auto b = bio::peek(i, e, 0); b != X::brk; b = bio::peek(i, e, 0)) {
                         if (m != (b & X::mjr))
-                            return cx|cbor::read_error::array_invalid;
+                            return cx/cbor::read_error::array_invalid;
                         if (!read_array_b_fix_<X>(t, i, e, cx))
                             return false;
                     }
@@ -305,7 +305,7 @@ namespace cxon { namespace cbor { namespace cnt {
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_b_(T& t, bio::byte m, II& i, II e, Cx& cx) {
                 switch (m & X::mnr) {
-                    case 0x1C: case 0x1D: case 0x1E:    return cx|cbor::read_error::size_invalid;
+                    case 0x1C: case 0x1D: case 0x1E:    return cx/cbor::read_error::size_invalid;
                     case 0x1F:                          return read_array_b_var_<X>(t, i, e, cx);
                     default:                            return read_array_b_fix_<X>(t, i, e, cx);
                 }
@@ -337,14 +337,14 @@ namespace cxon { namespace cbor { namespace cnt {
                         if (!element_read<X>(t, i, e, cx))
                             return false;
                 return  (bio::get(i, e, 0) == X::brk) ||
-                        (bio::rewind(i, o), cx|cbor::read_error::size_invalid)
+                        (bio::rewind(i, o), cx/cbor::read_error::size_invalid)
                 ;
             }
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_array_w_(T& t, bio::byte m, II& i, II e, Cx& cx) {
                 switch (m & X::mnr) {
-                    case 0x1C: case 0x1D: case 0x1E:    return cx|cbor::read_error::size_invalid;
+                    case 0x1C: case 0x1D: case 0x1E:    return cx/cbor::read_error::size_invalid;
                     case 0x1F:                          return bits::read_array_w_var_<X>(t, i, e, cx);
                     default:                            return bits::read_array_w_fix_<X>(t, i, e, cx);
                 }
@@ -362,7 +362,7 @@ namespace cxon { namespace cbor { namespace cnt {
                 switch (m & X::mjr) {
                     case X::bstr: case X::tstr: return bits::read_array_b_<X>(t, m, i, e, cx);
                     case X::arr:                return bits::read_array_w_<X>(t, m, i, e, cx);
-                    default:                    return cx|cbor::read_error::array_invalid;
+                    default:                    return cx/cbor::read_error::array_invalid;
                 }
             }
         template <typename X, typename T, typename II, typename Cx>
@@ -372,7 +372,7 @@ namespace cxon { namespace cbor { namespace cnt {
                 auto const m = bio::peek(i, e);
                 switch (m & X::mjr) {
                     case X::arr: case X::map:   return bits::read_array_w_<X>(t, m, i, e, cx);
-                    default:                    return cx|cbor::read_error::array_invalid;
+                    default:                    return cx/cbor::read_error::array_invalid;
                 }
             }
 

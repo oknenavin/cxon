@@ -50,7 +50,7 @@ namespace cxon { namespace cio { namespace enm {
             for ( ; f != l && std::strcmp(f->name, id) != 0; ++f)
                 ;
             return  (f != l && (t = f->value, true)) ||
-                    (rewind(i, o), cx|X::read_error::unexpected);
+                    (rewind(i, o), cx/X::read_error::unexpected);
         }
 
     template <typename X, typename E, typename V, typename O, typename Cx>
@@ -59,7 +59,7 @@ namespace cxon { namespace cio { namespace enm {
                 ;
             return f != l ?
                 poke<X>(o, X::string::beg, cx) && poke<X>(o, f->name, cx) && poke<X>(o, X::string::end, cx) :
-                cx|X::write_error::argument_invalid
+                cx/X::write_error::argument_invalid
             ;
         }
 

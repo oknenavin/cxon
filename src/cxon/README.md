@@ -529,10 +529,10 @@ Member name |Type                                   | Description
 
 ###### Member functions
 
-- `operator |` - assign an error condition enum
+- `operator /` - assign an error condition enum
     ``` c++
     template <typename E>
-        auto operator |(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, context&>;
+        auto operator /(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, bool>;
     ```
 - `operator bool` - check if the context is good (i.e. no error condition)
     ``` c++

@@ -15,7 +15,7 @@ namespace cxon { // nullptr_t
         inline auto read_value(std::nullptr_t& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
             II const o = i;
             return  (bio::get(i, e) == X::nil && (t = nullptr, true)) ||
-                    (bio::rewind(i, o), cx|cbor::read_error::null_invalid)
+                    (bio::rewind(i, o), cx/cbor::read_error::null_invalid)
             ;
         }
 
@@ -33,7 +33,7 @@ namespace cxon { // bool
             II const o = i;
                 auto const b = bio::get(i, e);
             return  ((b == X::neg || b == X::pos) && (t = bool(b - X::neg),  true)) ||
-                    (bio::rewind(i, o), cx|cbor::read_error::boolean_invalid)
+                    (bio::rewind(i, o), cx/cbor::read_error::boolean_invalid)
             ;
         }
 
@@ -58,10 +58,10 @@ namespace cxon { // numeric|character/read
                         return  (t = T(b), true);
                     case 0x18: case 0x19: case 0x1A: case 0x1B:
                         return  (bio::get(t, 1 << (b - 0x18), i, e)) ||
-                                (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
+                                (bio::rewind(i, o), cx/cbor::read_error::integer_invalid)
                         ;
                     case 0x1C: case 0x1D: case 0x1E: case 0x1F:
-                        return  (bio::rewind(i, o), cx|cbor::read_error::integer_invalid);
+                        return  (bio::rewind(i, o), cx/cbor::read_error::integer_invalid);
                     default:                                            // LCOV_EXCL_LINE
                         return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                 }
@@ -77,7 +77,7 @@ namespace cxon { // numeric|character/read
                 switch (bio::peek(i, e) & X::mjr) {
                     case 0x00:  return read_unsigned_<X>(t, i, e, cx);
                     case 0x20:  return read_signed_<X>(t, i, e, cx);
-                    default:    return cx|cbor::read_error::integer_invalid;
+                    default:    return cx/cbor::read_error::integer_invalid;
                 }
             }
 
@@ -114,18 +114,18 @@ namespace cxon { // numeric|character/read
                         switch (bio::get(i, e)) {
                             case X::fp16:
                                 return  (bio ::get<2>(t, i, e)) ||
-                                        (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                                        (bio::rewind(i, o), cx/cbor::read_error::floating_point_invalid)
                                 ;
                             case X::fp32:
                                 return  (bio ::get<4>(t, i, e)) ||
-                                        (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                                        (bio::rewind(i, o), cx/cbor::read_error::floating_point_invalid)
                                 ;
                             case X::fp64:
                                 return  (bio ::get<8>(t, i, e)) ||
-                                        (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid)
+                                        (bio::rewind(i, o), cx/cbor::read_error::floating_point_invalid)
                                 ;
                             default:
-                                return  (bio::rewind(i, o), cx|cbor::read_error::floating_point_invalid);
+                                return  (bio::rewind(i, o), cx/cbor::read_error::floating_point_invalid);
                         }
                         break;
                     }
@@ -139,7 +139,7 @@ namespace cxon { // numeric|character/read
                         return read_signed_<X>(u, i, e, cx) && (t = T(u), true);
                     }
                     default:
-                        return cx|cbor::read_error::floating_point_invalid;
+                        return cx/cbor::read_error::floating_point_invalid;
                 }
             }
 

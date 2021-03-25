@@ -27,7 +27,7 @@ namespace cxon {
                 static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
                 static bool index(size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return read_value<X>(n, i, e, cx) && (n < cnt_ || (bio::rewind(i, o), cx|cbor::read_error::unexpected));
+                    return read_value<X>(n, i, e, cx) && (n < cnt_ || (bio::rewind(i, o), cx/cbor::read_error::unexpected));
                 }
                 static bool read(V& t, II& i, II e, Cx& cx) {
                     size_t n;
@@ -41,7 +41,7 @@ namespace cxon {
         inline auto read_value(std::monostate&, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
             return cbor::tag::read<X>(i, e, cx) && (
                 (bio::peek(i, e) == X::und && (bio::get(i, e), true)) ||
-                (cx|cbor::read_error::unexpected)
+                (cx/cbor::read_error::unexpected)
             );
         }
 

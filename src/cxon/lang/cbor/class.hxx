@@ -159,7 +159,7 @@ namespace cxon { namespace cbor { namespace cls {
                         if (!read_value<X>(id, i, e, cx))
                             return false;
                         if (!bits::read_<X, 0, std::tuple_size<fields<F...>>::value>::fields(s, id, f, i, e, cx))
-                            return cx && (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                            return cx && (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                     }
                 }
             return n == 0;

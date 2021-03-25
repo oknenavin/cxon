@@ -100,7 +100,7 @@ namespace cxon { namespace cio {
     template <typename X, typename II, typename Cx>
         inline bool consume(char c, II& i, II e, Cx& cx) {
             consume<X>(i, e);
-            return (c == peek(i, e) && (next(i, e), true)) || (cx|X::read_error::unexpected);
+            return (c == peek(i, e) && (next(i, e), true)) || cx/X::read_error::unexpected;
         }
 
     template <typename X, typename II>
@@ -198,13 +198,13 @@ namespace cxon { namespace cio {
         inline bool poke(O&, std::nullptr_t) noexcept   { return true; }
 
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, char c, Cx& cx)                  { return bits::poke_(o, c)      || (cx|X::write_error::output_failure); }
+        inline bool poke(O& o, char c, Cx& cx)                  { return bits::poke_(o, c)      || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, Cx& cx)           { return bits::poke_(o, s)      || (cx|X::write_error::output_failure); }
+        inline bool poke(O& o, const char* s, Cx& cx)           { return bits::poke_(o, s)      || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return bits::poke_(o, s, n)   || (cx|X::write_error::output_failure); }
+        inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return bits::poke_(o, s, n)   || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return bits::poke_(o, n, c)   || (cx|X::write_error::output_failure); }
+        inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return bits::poke_(o, n, c)   || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
         constexpr bool poke(O&, std::nullptr_t, Cx&)            { return true; }
 

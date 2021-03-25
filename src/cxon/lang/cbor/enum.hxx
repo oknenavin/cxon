@@ -45,7 +45,7 @@ namespace cxon { namespace cbor { namespace enm {
             for ( ; f != l && f->alias != alias; ++f)
                 ;
             return  (f != l && (t = f->value, true)) ||
-                    (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                    (bio::rewind(i, o), cx/cbor::read_error::unexpected)
             ;
         }
 
@@ -55,7 +55,7 @@ namespace cxon { namespace cbor { namespace enm {
                 ;
             return f != l ?
                 cxon::write_value<X>(o, f->alias, cx) :
-                cx|cbor::write_error::argument_invalid
+                cx/cbor::write_error::argument_invalid
             ;
         }
 

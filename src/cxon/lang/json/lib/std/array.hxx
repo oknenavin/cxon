@@ -17,7 +17,7 @@ namespace cxon {
                     II const o = i;
                         size_t p = 0;
                     return cio::con::read_list<J>(i, e, cx, [&] {
-                        return (p != N || (cio::rewind(i, o), cx|json::read_error::overflow)) &&
+                        return (p != N || (cio::rewind(i, o), cx/json::read_error::overflow)) &&
                                 read_value<J>(t[p++], i, e, cx)
                         ;
                     });

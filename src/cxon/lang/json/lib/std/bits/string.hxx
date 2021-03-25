@@ -55,7 +55,7 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
                     if (c == X::string::end)                        return cio::consume<X>(X::string::end, i, e, cx);
                     if (!basic_string_char_read<X>(t, i, e, cx))    return false;
                 }
-            return cx|json::read_error::unexpected;
+            return cx/json::read_error::unexpected;
         }
 
         using cio::str::pointer_write;

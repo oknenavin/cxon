@@ -110,10 +110,10 @@ namespace cxon { namespace cbor { namespace bits {
                                     return  (bio::get(t, i, e));
                                 case 0x18: case 0x19: case 0x1A: case 0x1B:
                                     return  (bio::get(t, i, e, 1 + (1 << (mnr - 0x18)))) ||
-                                            (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                            (bio::rewind(i, o), cx/cbor::read_error::unexpected)
                                     ;
                                 case 0x1C: case 0x1D: case 0x1E: case 0x1F:
-                                    return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                    return  (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                 default:                                            // LCOV_EXCL_LINE
                                     return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                             }
@@ -125,7 +125,7 @@ namespace cxon { namespace cbor { namespace bits {
                                 case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
                                 case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
                                     return  (bio::get(t, i, e, 1 + mnr)) ||
-                                            (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                            (bio::rewind(i, o), cx/cbor::read_error::unexpected)
                                     ;
                                 case 0x18: case 0x19: case 0x1A: case 0x1B: {
                                     size_t n;
@@ -135,16 +135,16 @@ namespace cxon { namespace cbor { namespace bits {
                                                 bio::poke(t, n, 1U << (mnr - 0x18)) &&
                                                 bio::get(t, i, e, n)
                                             )   ||
-                                            (   bio::rewind(i, o), cx|cbor::read_error::unexpected
+                                            (   bio::rewind(i, o), cx/cbor::read_error::unexpected
                                             )
                                     ;
                                 }
                                 case 0x1F:
                                     do      (bio::get(t, i, e)); // should not fail
                                     while   (bio::peek(i, e) != Y::brk);
-                                    return  (bio::get(t, i, e) || (bio::rewind(i, o), cx|cbor::read_error::unexpected));
+                                    return  (bio::get(t, i, e) || (bio::rewind(i, o), cx/cbor::read_error::unexpected));
                                 case 0x1C: case 0x1D: case 0x1E:
-                                    return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                    return  (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                 default:                                            // LCOV_EXCL_LINE
                                     return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                             }
@@ -158,25 +158,25 @@ namespace cxon { namespace cbor { namespace bits {
                                     bio::get(t, i, e); // should not fail
                                     for (unsigned j = 0; j != mnr; ++j)
                                         if (!read_element(s, mjr, i, e, cx))
-                                            return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                            return (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                     return  true;
                                 case 0x18: case 0x19: case 0x1A: case 0x1B: {
                                     size_t n;
                                     if (!bio::get(t, i, e) || !bio::get(n, 1U << (mnr - 0x18), i, e) || !bio::poke(t, n, 1U << (mnr - 0x18)))
-                                        return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                        return (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                     for (unsigned j = 0; j != n; ++j)
                                         if (!read_element(s, mjr, i, e, cx))
-                                            return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                            return (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                     return  true;
                                 }
                                 case 0x1F:
                                     bio::get(t, i, e); // should not fail
                                     while (bio::peek(i, e) != Y::brk)
                                         if (!read_element(s, mjr, i, e, cx))
-                                            return (bio::rewind(i, o), cx|cbor::read_error::unexpected);
-                                    return  (bio::get(t, i, e) || (bio::rewind(i, o), cx|cbor::read_error::unexpected));
+                                            return (bio::rewind(i, o), cx/cbor::read_error::unexpected);
+                                    return  (bio::get(t, i, e) || (bio::rewind(i, o), cx/cbor::read_error::unexpected));
                                 case 0x1C: case 0x1D: case 0x1E:
-                                    return  (bio::rewind(i, o), cx|cbor::read_error::unexpected);
+                                    return  (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                 default:                                            // LCOV_EXCL_LINE
                                     return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                             }

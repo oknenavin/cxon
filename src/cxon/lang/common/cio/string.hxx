@@ -54,7 +54,7 @@ namespace cxon { namespace cio { namespace str {
                 char32_t const c32 = chr::str_to_utf32<X>(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 T b[4]; int const n = chr::utf32_to_utf8(b, c32);
-                    if (n == 0 || t + n > te) return cx|X::read_error::overflow;
+                    if (n == 0 || t + n > te) return cx/X::read_error::overflow;
                 std::copy_n(b, n, t);
             return t += n, true;
         }
@@ -67,7 +67,7 @@ namespace cxon { namespace cio { namespace str {
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
-                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx|X::read_error::overflow;
+                    *t = T(0xD800 | (c32 >> 10));   if (++t == te) return cx/X::read_error::overflow;
                     *t = T(0xDC00 | (c32 & 0x3FF));
                 }
                 else {
@@ -94,7 +94,7 @@ namespace cxon { namespace cio { namespace str {
                         if (peek(i, ie) == X::string::end)          return *t = '\0', consume<X>(X::string::end, i, ie, cx);
                         if (!array_char_read<X>(t, te, i, ie, cx))  return cx.ec == X::read_error::overflow && (rewind(i, o), false);
                     }
-                return (peek(i, ie) == X::string::end || (rewind(i, o), cx|X::read_error::overflow)) &&
+                return (peek(i, ie) == X::string::end || (rewind(i, o), cx/X::read_error::overflow)) &&
                         consume<X>(X::string::end, i, ie, cx)
                 ;
         }
@@ -127,7 +127,7 @@ namespace cxon { namespace cio { namespace str {
                 if (peek(i, e) == X::string::end)           return *p = '\0', t = b, consume<X>(X::string::end, i, e, cx);
                 if (!array_char_read<X>(p, be, i, e, cx))   goto err;
             }
-            err: return al.release(b, be - b), cx|X::read_error::unexpected;
+            err: return al.release(b, be - b), cx/X::read_error::unexpected;
         }
 
 }}}
