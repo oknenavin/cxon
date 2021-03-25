@@ -9,6 +9,7 @@
 #include "cio.hxx"
 #include "key.hxx"
 #include "char.hxx"
+#include "cxon/lang/common/allocator.hxx"
 #include <algorithm>
 
 // interface ///////////////////////////////////////////////////////////////////
@@ -112,23 +113,21 @@ namespace cxon { namespace cio { namespace str {
             consume<X>(i, e);
             if (peek(i, e) == *X::id::nil && consume<X>(X::id::nil, i, e)) return true;
                 if (!consume<X>(X::string::beg, i, e, cx)) return false;
-            auto ax = allocator::value(cx.px, std::allocator<T>());
-            typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
-                using al = std::allocator_traits<decltype(at)>;
-            T *b = al::allocate(at, 4), *p = b, *be = b + 4;
+            auto al = make_context_allocator<X, T>(cx);
+            T *b = al.create(4), *p = b, *be = b + 4;
             for ( ; ; ) {
                 if (p + 4 > be) {
-                    T *const n = al::allocate(at, 2 * (be - b));
+                    T *const n = al.create(2 * (be - b));
                         std::copy_n(b, p - b, n);
                     p = n + (p - b);
-                    al::deallocate(at, b, be - b);
+                    al.release(b, be - b);
                     be = n + 2 * (be - b), b = n;
                 }
                 if (!chr::is<X>::real(peek(i, e)))          goto err;
                 if (peek(i, e) == X::string::end)           return *p = '\0', t = b, consume<X>(X::string::end, i, e, cx);
                 if (!array_char_read<X>(p, be, i, e, cx))   goto err;
             }
-            err: return al::deallocate(at, b, be - b), cx|X::read_error::unexpected;
+            err: return al.release(b, be - b), cx|X::read_error::unexpected;
         }
 
 }}}

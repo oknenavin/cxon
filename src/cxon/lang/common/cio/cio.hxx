@@ -11,7 +11,6 @@
 namespace cxon { namespace cio { // named parameters
 
     CXON_PARAMETER(fp_precision, int);                  // write: constexpr: floating-points
-    CXON_PARAMETER(allocator, std::allocator<char>);    // read: T*
     CXON_PARAMETER(num_len_max, unsigned);              // read: constexpr: numbers
     CXON_PARAMETER(ids_len_max, unsigned);              // read: constexpr: object key
 

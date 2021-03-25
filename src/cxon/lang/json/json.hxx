@@ -41,7 +41,7 @@ namespace cxon { // format selector
 namespace cxon { namespace json { // named parameters
 
     using fp_precision = cio::fp_precision;     // write: constexpr: floating-points
-    using allocator = cio::allocator;           // read: T*
+    using allocator = allocator;                // read: T*
     using num_len_max = cio::num_len_max;       // read: constexpr: numbers
     using ids_len_max = cio::ids_len_max;       // read: constexpr: object key
 
