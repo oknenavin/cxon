@@ -212,11 +212,13 @@ namespace cxon { namespace test {
 
     template <typename T>           struct clean        { clean(T&) {} };
     template <typename T, size_t N> struct clean<T[N]>  { clean(T (&)[N]) {} };
+    // TODO: incorrect, see the TODO entry about this
     template <typename T>           struct clean<T*>    { clean(T* t) : t_(t) {} ~clean() { delete [] t_; } T* t_; }; // std::allocator
 
     template <typename X, typename T, typename C>
         static bool verify_read_(const T& ref, const C& sbj) {
             T res{}; clean<T> clean__(res);
+                // coverity[alloc_arg]
                 auto const r = from_string<X>(res, sbj);
             // coverity[leaked_storage]
             return r && r.end == std::end(sbj) && match<T>::values(res, ref);
@@ -224,6 +226,7 @@ namespace cxon { namespace test {
     template <typename X, typename T, typename C, typename E>
         static bool verify_read_(const T&, const C& sbj, E err, int pos) {
             T res{}; clean<T> clean__(res);
+                // coverity[alloc_arg]
                 auto const r = from_string<X>(res, sbj);
             // coverity[leaked_storage]
             return r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);

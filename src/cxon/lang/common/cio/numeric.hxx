@@ -265,9 +265,9 @@ namespace cxon { namespace cio { namespace num {
                         II const o = i;
                             char s[num_len_max::constant<napa_type<Cx>>(64)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                                // coverity[ overrun_buffer_val ]
-                                return  (b != -1                                            || (rewind(i, o), cx/X::read_error::overflow)) &&
-                                        (b !=  0                                            || (rewind(i, o), cx/X::read_error::floating_point_invalid)) &&
+                                // coverity[overrun_buffer_val] - add explicit 'false' for the error, because coverity does not understand that it's implicitly 'false' 
+                                return  (b != -1                                            || (rewind(i, o), cx/X::read_error::overflow, false)) &&
+                                        (b !=  0                                            || (rewind(i, o), cx/X::read_error::floating_point_invalid, false)) &&
                                         (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx/X::read_error::floating_point_invalid))
                                 ;
                     }
