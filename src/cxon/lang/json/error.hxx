@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CIO_ERROR_HXX_
-#define CXON_CIO_ERROR_HXX_
+#ifndef CXON_JSON_ERROR_HXX_
+#define CXON_JSON_ERROR_HXX_
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace cio {
+namespace cxon { namespace json {
 
     enum class read_error : int {
         ok,                     // no error
@@ -81,8 +81,8 @@ namespace cxon { namespace cio {
 }}
 
 namespace std { // cxon errors
-    template <> struct is_error_condition_enum<cxon::cio::read_error> : true_type {};
-    template <> struct is_error_condition_enum<cxon::cio::write_error> : true_type {};
+    template <> struct is_error_condition_enum<cxon::json::read_error> : true_type {};
+    template <> struct is_error_condition_enum<cxon::json::write_error> : true_type {};
 }
 
-#endif // CXON_CIO_ERROR_HXX_
+#endif // CXON_JSON_ERROR_HXX_

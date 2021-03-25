@@ -18,7 +18,7 @@ namespace cxon { // pointer
                     cio::consume<J>(i, e);
                     if (cio::peek(i, e) == *J::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
-                        return  (cio::consume<J>(J::id::nil, i, e) || (cio::rewind(i, o), cx|cio::read_error::unexpected)) &&
+                        return  (cio::consume<J>(J::id::nil, i, e) || (cio::rewind(i, o), cx|json::read_error::unexpected)) &&
                                 (t = nullptr, true)
                         ;
                     }
@@ -51,7 +51,7 @@ namespace cxon { // array
                     II const o = i;
                         size_t p = 0;
                     return cio::con::read_list<J>(i, e, cx, [&] {
-                        return (p != N || (cio::rewind(i, o), cx|cio::read_error::overflow)) &&
+                        return (p != N || (cio::rewind(i, o), cx|json::read_error::overflow)) &&
                                 read_value<J>(t[p++], i, e, cx)
                         ;
                     });

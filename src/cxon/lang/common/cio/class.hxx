@@ -155,7 +155,7 @@ namespace cxon { namespace cio { namespace cls {
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return false;
                     if (!bits::read<X, S, F...>::fields(s, id, f, i, e, cx))
-                        return cx && (rewind(i, o), cx|read_error::unexpected);
+                        return cx && (rewind(i, o), cx|X::read_error::unexpected);
                     if (consume<X>(X::map::sep, i, e)) continue;
                 return consume<X>(X::map::end, i, e, cx);
             }

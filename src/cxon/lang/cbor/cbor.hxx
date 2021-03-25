@@ -23,7 +23,6 @@
 namespace cxon { namespace cbor { // format traits
 
     struct format_traits {
-
         using read_error = cbor::read_error;
         using write_error = cbor::write_error;
         

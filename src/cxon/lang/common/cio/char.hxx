@@ -120,17 +120,17 @@ namespace cxon { namespace cio { namespace chr {
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx) {
             char32_t const c32 = esc_to<X>::utf32(i, e);
-                if (c32 == 0xFFFFFFFF) return cx|read_error::escape_invalid, 0xFFFFFFFF;
+                if (c32 == 0xFFFFFFFF) return cx|X::read_error::escape_invalid, 0xFFFFFFFF;
             if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
             // surrogate
-                if (peek(i, e) != '\\') return cx|read_error::surrogate_invalid, 0xFFFFFFFF;
+                if (peek(i, e) != '\\') return cx|X::read_error::surrogate_invalid, 0xFFFFFFFF;
             char32_t const s32 = (++i, esc_to<X>::utf32(i, e));
                 if (s32 < 0xDC00 || s32 > 0xDFFF)
-                    return (s32 == 0xFFFFFFFF ? cx|read_error::escape_invalid : cx|read_error::surrogate_invalid), 0xFFFFFFFF;
+                    return (s32 == 0xFFFFFFFF ? cx|X::read_error::escape_invalid : cx|X::read_error::surrogate_invalid), 0xFFFFFFFF;
             return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
         }
 
-#   define CXON_EXPECT(c) if (!(c)) return cx|read_error::character_invalid, 0xFFFFFFFF
+#   define CXON_EXPECT(c) if (!(c)) return cx|X::read_error::character_invalid, 0xFFFFFFFF
         template <typename X, typename II, typename Cx>
             static char32_t str_to_utf32(II& i, II e, Cx& cx) {
                 char32_t const c0 = peek(i, e);

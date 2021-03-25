@@ -413,7 +413,7 @@
                         II const o = i;
                         cio::consume<Y>(i, e);
                         return  (cio::consume<Y>(Y::id::nil, i, e) ||
-                                (cio::rewind(i, o), cx|cio::read_error::unexpected))
+                                (cio::rewind(i, o), cx|json::read_error::unexpected))
                         ;
                     }
             };
@@ -432,7 +432,7 @@
                     static bool value(cbor::simple<T>& t, II& i, II e, Cx& cx) {
                         II const o = i;
                         return  (read_value<Y>(t.value, i, e) || // TODO: check simple-value values
-                                (cio::rewind(i, o), cx|cio::read_error::unexpected))
+                                (cio::rewind(i, o), cx|json::read_error::unexpected))
                         ;
                     }
             };
@@ -451,7 +451,7 @@
                     static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
                         II const o = i;
                         return  (/*read_value<Y>(t.tag, i, e) && */read_value<Y>(t.value, i, e)) || // TODO: keep as an object?
-                                (cio::rewind(i, o), cx|cio::read_error::unexpected)
+                                (cio::rewind(i, o), cx|json::read_error::unexpected)
                         ;
                     }
             };

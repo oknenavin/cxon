@@ -16,7 +16,7 @@ namespace cxon { namespace json { namespace bits {
         inline bool read_bits(std::bitset<N>& t, II& i, II e, Cx& cx) {
             for (size_t p = N; p != 0; ) {
                 char const c = cio::peek(i, e);
-                    if (c != '0' && c != '1') return cx|cio::read_error::unexpected;
+                    if (c != '0' && c != '1') return cx|json::read_error::unexpected;
                 t.set(--p, c == '1'), cio::next(i, e);
             }
             return true;
