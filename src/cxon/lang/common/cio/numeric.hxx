@@ -236,7 +236,6 @@ namespace cxon { namespace cio { namespace num {
             // floating point
                 template <typename N>
                     static charconv::bits::from_chars_result from_chars(const char* b, const char* e, N& t) {
-                        CXON_ASSERT(e - b >= 6, "unexpected");
                         if (*b == '"') {
                             if (b[1] == '-') {
                                 if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<N>::infinity(),
@@ -266,8 +265,9 @@ namespace cxon { namespace cio { namespace num {
                         II const o = i;
                             char s[num_len_max::constant<napa_type<Cx>>(64)];
                             int const b = number_consumer<X, T>::consume(s, s + sizeof(s), i, e);
-                                return  (b != -1                                            || (rewind(i, o), cx/X::read_error::overflow, false)) &&
-                                        (b !=  0                                            || (rewind(i, o), cx/X::read_error::floating_point_invalid, false)) &&
+                                // coverity[overrun_buffer_val] - if b > 0 and the input is a string, the possible values are \"nan\", \"inf\" and \"-inf\"
+                                return  (b != -1                                            || (rewind(i, o), cx/X::read_error::overflow)) &&
+                                        (b !=  0                                            || (rewind(i, o), cx/X::read_error::floating_point_invalid)) &&
                                         (from_chars(s, s + sizeof(s), t).ec == std::errc()  || (rewind(i, o), cx/X::read_error::floating_point_invalid))
                                 ;
                     }
