@@ -139,7 +139,7 @@
 
 #define CXON_NODE_RG()\
     cxon::node::bits::scinc<Cx> RG__(cx);\
-    if (!RG__.check()) return cx|cxon::node::error::recursion_depth_exceeded, false
+    if (!RG__.check()) return cx/cxon::node::error::recursion_depth_exceeded
 
 #ifdef CXON_JSON_DEFINED
 
@@ -191,7 +191,7 @@
                                     case 'n'                :                       return CXON_READ(null);
 #                               undef CXON_READ
                             }
-                            return cx|node::error::invalid, false;
+                            return cx/node::error::invalid;
                         }
                     template <typename II, typename Cx, typename Y = JSON<X>>
                         static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
@@ -305,7 +305,7 @@
                                 case 'n'                :                       return CXON_READ(null);
 #                           undef CXON_READ
                         }
-                        return cx|node::error::invalid, false;
+                        return cx/node::error::invalid;
                     }
             };
 
@@ -377,7 +377,7 @@
                                     case 'n'                    :                       return CXON_READ(null);
 #                               undef CXON_READ
                             }
-                            return cx|node::error::invalid, false;
+                            return cx/node::error::invalid;
                         }
                 };
 
@@ -413,7 +413,7 @@
                         II const o = i;
                         cio::consume<Y>(i, e);
                         return  (cio::consume<Y>(Y::id::nil, i, e) ||
-                                (cio::rewind(i, o), cx|json::read_error::unexpected))
+                                (cio::rewind(i, o), cx/json::read_error::unexpected))
                         ;
                     }
             };
@@ -432,7 +432,7 @@
                     static bool value(cbor::simple<T>& t, II& i, II e, Cx& cx) {
                         II const o = i;
                         return  (read_value<Y>(t.value, i, e) || // TODO: check simple-value values
-                                (cio::rewind(i, o), cx|json::read_error::unexpected))
+                                (cio::rewind(i, o), cx/json::read_error::unexpected))
                         ;
                     }
             };
@@ -451,7 +451,7 @@
                     static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
                         II const o = i;
                         return  (/*read_value<Y>(t.tag, i, e) && */read_value<Y>(t.value, i, e)) || // TODO: keep as an object?
-                                (cio::rewind(i, o), cx|json::read_error::unexpected)
+                                (cio::rewind(i, o), cx/json::read_error::unexpected)
                         ;
                     }
             };
@@ -561,7 +561,7 @@
                     static bool value(cbor::undefined&, II& i, II e, Cx& cx) {
                         II const o = i;
                         return  (bio::get(i, e) == Y::und) ||
-                                (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                (bio::rewind(i, o), cx/cbor::read_error::unexpected)
                         ;
                     }
             };
@@ -588,14 +588,14 @@
                                         return  (t = T(b & X::mnr), true);
                                     case 0x18:
                                         return  (bio::get(t.value, 1, i, e)) ||
-                                                (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                                (bio::rewind(i, o), cx/cbor::read_error::unexpected)
                                         ;
                                     case 0x14: case 0x15: case 0x16: case 0x17:
                                     case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: case 0x1E: case 0x1F:
                                         break;
                                 }
                         }
-                        return bio::rewind(i, o), cx|cbor::read_error::unexpected;
+                        return bio::rewind(i, o), cx/cbor::read_error::unexpected;
                     }
             };
 
@@ -612,7 +612,7 @@
                                 return  bio::poke<Y>(o, bio::byte(X::svn + 0x18), cx) && bio::poke<Y>(o, t.value, 1, cx);
                             case 0x14: case 0x15: case 0x16: case 0x17:
                             case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: case 0x1E: case 0x1F:
-                                return  cx|cbor::write_error::argument_invalid;
+                                return  cx/cbor::write_error::argument_invalid;
                         }
                     }
             };

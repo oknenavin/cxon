@@ -84,8 +84,8 @@ namespace cxon { // context
             }
 
             template <typename E>
-                auto operator |(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, context&> {
-                    return ec = e, *this;
+                auto operator /(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, bool> {
+                    return ec = e, !ec;
                 }
             operator bool() const noexcept { return !ec; }
         };

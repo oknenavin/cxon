@@ -36,10 +36,10 @@ namespace cxon { namespace cbor { namespace tag {
                             return  (bio::get(i, e), true);
                         case 0x18: case 0x19: case 0x1A: case 0x1B:
                             return  (bio::advance(i, e, 1 + (1 << (b - 0x18)))) ||
-                                    (bio::rewind(i, o), cx|cbor::read_error::unexpected)
+                                    (bio::rewind(i, o), cx/cbor::read_error::unexpected)
                             ;
                         case 0x1C: case 0x1D: case 0x1E: case 0x1F:
-                            return  (bio::rewind(i, o), cx|cbor::read_error::tag_invalid);
+                            return  (bio::rewind(i, o), cx/cbor::read_error::tag_invalid);
                         default:                                            // LCOV_EXCL_LINE
                             return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                     }
@@ -62,10 +62,10 @@ namespace cxon { namespace cbor { namespace tag {
                                 return  (bio::get(i, e), t = size_t(b), true);
                             case 0x18: case 0x19: case 0x1A: case 0x1B:
                                 return  (bio::get(i, e), bio::get(t, 1 << (b - 0x18), i, e)) ||
-                                        (bio::rewind(i, o), cx|cbor::read_error::integer_invalid)
+                                        (bio::rewind(i, o), cx/cbor::read_error::integer_invalid)
                                 ;
                             case 0x1C: case 0x1D: case 0x1E: case 0x1F:
-                                return  (bio::rewind(i, o), cx|cbor::read_error::tag_invalid);
+                                return  (bio::rewind(i, o), cx/cbor::read_error::tag_invalid);
                             default:                                            // LCOV_EXCL_LINE
                                 return  CXON_ASSERT(0, "unexpected"), false;    // LCOV_EXCL_LINE
                         }

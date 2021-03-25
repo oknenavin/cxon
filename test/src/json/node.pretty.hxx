@@ -10,7 +10,7 @@ namespace cxon {
 
 #   define CXON_JSON_NODE_RG()\
         cxon::node::bits::scinc<Cx> RG__(cx);\
-        if (!RG__.check()) return cx|cxon::node::error::recursion_depth_exceeded, false
+        if (!RG__.check()) return cx/cxon::node::error::recursion_depth_exceeded
 #   define CXON_JSON_NODE_CHECK(e) if (!(e)) return false
 
     template <typename X, typename Tr, typename O, typename Cx> // pretty write
