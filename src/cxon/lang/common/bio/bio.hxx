@@ -10,7 +10,6 @@
 
 namespace cxon { namespace bio { // named parameters
 
-    CXON_PARAMETER(allocator, std::allocator<char>);    // read: T*
     CXON_PARAMETER(ids_len_max, unsigned);              // read: constexpr: object key
 
 }}

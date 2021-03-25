@@ -8,6 +8,7 @@
 
 #include "cxon/lang/common/cio/string.hxx"
 #include "cxon/lang/common/cio/container.hxx"
+#include "cxon/lang/common/allocator.hxx"
 
 namespace cxon { // pointer
 
@@ -22,12 +23,10 @@ namespace cxon { // pointer
                                 (t = nullptr, true)
                         ;
                     }
-                    auto ax = cio::allocator::value(cx.px, std::allocator<T>());
-                    typename std::allocator_traits<decltype(ax)>::template rebind_alloc<T> at;
-                        using al = std::allocator_traits<decltype(at)>;
-                    T *const n = al::allocate(at, 1); al::construct(at, n);
+                    auto al = make_context_allocator<X, T>(cx);
+                    T *const n = al.create();
                         if (!read_value<J>(*n, i, e, cx))
-                            return al::destroy(at, n), al::deallocate(at, n, 1), false;
+                            return al.release(n), false;
                     return t = n, true;
                 }
         };
