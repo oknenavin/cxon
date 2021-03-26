@@ -14,7 +14,6 @@
 
 #include "node.ordered.hxx"
 
-#include <algorithm>
 #include <fstream>
 #include <memory>
 #include <chrono>
@@ -27,7 +26,7 @@
 using node = cxon::json::ordered_node;
 
 struct test_time {
-    double base = 0;
+    size_t size = 0;
     double read = 0;
     double write = 0;
     double pretty_string = 0;
@@ -72,12 +71,8 @@ static void cxon_json_test_time(test_case& test) {
     std::ifstream is(test.source, std::ifstream::binary);
         if (!is) return test.error = "cannot be opened", void();
     std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-    {   // base
-        std::vector<std::unique_ptr<char[]>> vs;
-        test.time.base = measure(cxon_json_repeat, [&] { // something like strdup
-            vs.emplace_back(std::unique_ptr<char[]>(new char[strlen(json.c_str()) + 1]));
-            std::memcpy(vs.back().get(), json.c_str(), json.size());
-        });
+    {   // size
+        test.time.size = json.size();
     }
     {   // cxon
         std::vector<node> vj;
@@ -124,7 +119,7 @@ static bool cl_parse(int argc, char *argv[], cases& pass, cases& fail, cases& ti
                         }
                     }
             }
-            else    fprintf(stderr, "%s: cannot be opened\n", v);
+            else    std::fprintf(stderr, "%s: cannot be opened\n", v);
         }
         else {
             c.push_back({v, {}, {}});
@@ -170,7 +165,7 @@ static unsigned self() {
     unsigned a_ = 0;
     unsigned f_ = 0;
 #   define CHECK(c) ++a_; if (!(c))\
-        fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr), ++f_;\
+        std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_;\
         CXON_ASSERT((c), "check failed");
     {   // custom type binding + equal keys
         using node = cxon::json::basic_node<my_traits>;
@@ -648,7 +643,7 @@ static unsigned self() {
     }
 #   undef CHECK
 
-    fprintf(stdout, "cxon/json/node/self:  %u of %3u failed\n", f_, a_); fflush(stdout);
+    std::fprintf(stdout, "cxon/json/node/self:  %u of %3u failed\n", f_, a_); std::fflush(stdout);
 
     return f_;
 }
@@ -661,7 +656,7 @@ int main(int argc, char *argv[]) {
     cases pass, fail, time, diff;
 
     if (!cl_parse(argc, argv, pass, fail, time, diff)) {
-        return fprintf(stderr, "usage: cxon/json/node ((pass|fail|diff|time) (file|@file)+)+\n"), fflush(stderr), 1;
+        return std::fprintf(stderr, "usage: cxon/json/node ((pass|fail|diff|time) (file|@file)+)+\n"), std::fflush(stderr), 1;
     }
 
     int err = 0;
@@ -682,10 +677,10 @@ int main(int argc, char *argv[]) {
         size_t fc = 0;
             for (auto& c : pass) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
+                    ++fc, std::fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
                 }
             }
-        fprintf(stdout, "cxon/json/node/pass:  %zu of %3zu failed\n", fc, pass.size()); fflush(stdout);
+        std::fprintf(stdout, "cxon/json/node/pass:  %zu of %3zu failed\n", fc, pass.size()); std::fflush(stdout);
     }
 
     if (!fail.empty()) {
@@ -707,10 +702,10 @@ int main(int argc, char *argv[]) {
         size_t fc = 0;
             for (auto& c : fail) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
+                    ++fc, std::fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
                 }
             }
-        fprintf(stdout, "cxon/json/node/fail:  %zu of %3zu failed\n", fc, fail.size()); fflush(stdout);
+        std::fprintf(stdout, "cxon/json/node/fail:  %zu of %3zu failed\n", fc, fail.size()); std::fflush(stdout);
     }
 
     if (!diff.empty()) {
@@ -761,16 +756,16 @@ int main(int argc, char *argv[]) {
         size_t fc = 0;
             for (auto& c : diff) {
                 if (!c.error.empty()) {
-                    ++fc, fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str()), fflush(stderr);
+                    ++fc, std::fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
                 }
             }
         if (!fc) {
             for (auto& c : diff) {
-                fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str()), fflush(stdout);
+                std::fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str()), std::fflush(stdout);
             }
         }
         else {
-            fprintf(stdout, "cxon/json/node/diff:  %zu of %3zu failed\n", fc, diff.size()), fflush(stdout);
+            std::fprintf(stdout, "cxon/json/node/diff:  %zu of %3zu failed\n", fc, diff.size()), std::fflush(stdout);
         }
     }
 
@@ -779,67 +774,92 @@ int main(int argc, char *argv[]) {
             cxon_json_test_time(c);
         }
 
-        auto const& i = std::max_element(time.begin(), time.end(), [](const test_case& c1, const test_case& c2) {
-            return c1.source.length() < c2.source.length();
-        });
-        unsigned const col[10] = { (unsigned)i->source.length(), 8, 8, 8, 8, 8, 8, 8, 8, 8 };
-        auto const line = [&]() {
-            static auto const s = std::string(128, '-');
-            fprintf(stdout, "+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+\n",
-                col[0], s.c_str(), col[1], s.c_str(),
-                col[2], s.c_str(), col[3], s.c_str(),
-                col[4], s.c_str(), col[5], s.c_str(),
-                col[6], s.c_str(), col[7], s.c_str(),
-                col[8], s.c_str(), col[9], s.c_str()
-            );
-        };
-
-        if (!diff.empty()) fprintf(stdout, "\n");
-
-        line();
-            fprintf(stdout,
-                "| %-*s | %*s | %*s | %-*s | %*s | %-*s | %*s | %-*s | %*s | %-*s |\n",
-                col[0], "File",
-                col[1], "Base",
-                col[2], "Read", col[3], "/ Base",
-                col[4], "Write", col[5], "/ Base",
-                col[6], "Pretty/0", col[7], "/ Base",
-                col[8], "Pretty/1", col[9], "/ Base"
-            );
-        line();
+        std::vector<std::vector<std::string>> tab;
+        {   // build the table
+            static auto const fmt = [](double d) -> std::string {
+                char b[64];
+                std::snprintf(b, sizeof(b), "%.2f", d);
+                return b;
+            };
+            {   // header
+                tab.push_back({"File", "Size", "Read", "MB/s", "Write", "MB/s", "Pretty/0", "MB/s", "Pretty/1", "MB/s"});
+            }
             test_time total;
-            for (auto& c : time) {
-                if (c.error.empty()) {
-                    fprintf(stdout,
-                        "| %-*s | %*.2f | %*.2f | x %*.2f | %*.2f | x %*.2f | %*.2f | x %*.2f | %*.2f | x %*.2f |\n",
-                        col[0], c.source.c_str(),
-                        col[1], c.time.base,
-                        col[2], c.time.read, col[3] - 2, c.time.read / c.time.base,
-                        col[4], c.time.write, col[5] - 2, c.time.write / c.time.base,
-                        col[6], c.time.pretty, col[7] - 2, c.time.pretty / c.time.base,
-                        col[8], c.time.pretty_string, col[9] - 2, c.time.pretty_string / c.time.base
-                    );
-                    total.base += c.time.base,
+            {   // body
+                for (auto& c : time) {
+                    double const size = double(c.time.size) / (1024. * 1024);
+                    tab.push_back({
+                        c.source,
+                        fmt(size),
+                        fmt(c.time.read), fmt(size / (c.time.read / 1000)),
+                        fmt(c.time.write), fmt(size / (c.time.write/ 1000)),
+                        fmt(c.time.pretty), fmt(size / (c.time.pretty / 1000)),
+                        fmt(c.time.pretty_string), fmt(size / (c.time.pretty_string / 1000))
+                    });
+                    total.size += c.time.size,
                     total.read += c.time.read,
                     total.write += c.time.write,
                     total.pretty_string += c.time.pretty_string,
                     total.pretty += c.time.pretty;
                 }
-                else {
-                    fprintf(stdout, "| %-*s | %-*s |\n", col[0], c.source.c_str(), col[1] + col[2] + col[3] + col[4] + col[5] + col[6] + col[7] + col[8] + col[9] + 24, c.error.c_str());
+            }
+            {   // average
+                double const size = double(total.size) / (1024. * 1024);
+                tab.push_back({
+                    "",
+                    "",
+                    "", fmt(size / (total.read / 1000)),
+                    "", fmt(size / (total.write/ 1000)),
+                    "", fmt(size / (total.pretty / 1000)),
+                    "", fmt(size / (total.pretty_string / 1000))
+                });
+            }
+        }
+
+        std::vector<size_t> wid(tab[0].size(), 0);
+        {   // column width
+            for (auto& r : tab)
+                for (size_t i = 0, is = r.size(); i != is; ++i)
+                    wid[i] = std::max(wid[i], r[i].length());
+        }
+
+        {   // print
+            auto const line = [&wid]() {
+                static auto const s = std::string(128, '-');
+                std::fputc('+', stdout);
+                for (auto s : wid)
+                    std::fprintf(stdout, "-%s-+", std::string(s, '-').c_str());
+                std::fputc('\n', stdout);
+            };
+
+            if (!diff.empty())
+                std::fprintf(stdout, "\n");
+
+            line();
+            {   // header
+                std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.front()[0].c_str());
+                for (size_t i = 1, is = tab.front().size(); i != is; ++i)
+                    std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.front()[i].c_str());
+                std::fputc('\n', stdout);
+            }
+            line();
+            {   // body
+                for (size_t i = 1, is = tab.size() - 1; i != is; ++i) {
+                    std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab[i][0].c_str());
+                    for (size_t j = 1, js = tab[i].size(); j != js; ++j)
+                        std::fprintf(stdout, " %*s |", (unsigned)wid[j], tab[i][j].c_str());
+                    std::fputc('\n', stdout);
                 }
             }
-        line();
-            fprintf(stdout,
-                "| %-*s | %*s | %*s | x %*.2f | %*s | x %*.2f | %*s | x %*.2f | %*s | x %*.2f |\n",
-                col[0], "",
-                col[1], "",
-                col[2], "", col[3] - 2, total.read / total.base,
-                col[4], "", col[5] - 2, total.write / total.base,
-                col[6], "", col[7] - 2, total.pretty / total.base,
-                col[8], "", col[9] - 2, total.pretty_string / total.base
-            );
-        line();
+            line();
+            {   // average
+                std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.back()[0].c_str());
+                for (size_t i = 1, is = tab.back().size(); i != is; ++i)
+                    std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.back()[i].c_str());
+                std::fputc('\n', stdout);
+            }
+            line();
+        }
     }
 
     return err;
