@@ -25,6 +25,8 @@ check-cbor-node-src = \
 
 check: check-json check-json-node check-cbor check-cbor-node
 
+time: time-json
+
 check-json: $(outdir)/check-json
 	@(cd $(outdir) && ../$<)
 
@@ -40,6 +42,9 @@ check-json-node: $(outdir)/check-json-node
                                     @$(datdir)/json/set.4-diff.in \
                                     @$(datdir)/json/set.5-diff.in \
                                     | xargs -n2 diff -q)
+
+time-json: $(outdir)/check-json-node
+	@(cd $(outdir) && ../$< time @$(datdir)/json/time.in)
 
 check-cbor: $(outdir)/check-cbor
 	@(cd $(outdir) && ../$<)
@@ -67,4 +72,4 @@ $(outdir)/check-cbor-node: $(check-cbor-node-src)
 clean:
 	@rm -fr $(outdir)
 
-.PHONY: check check-json check-json-node check-cbor check-cbor-node clean
+.PHONY: check check-json check-json-node check-cbor check-cbor-node time time-json clean
