@@ -1,0 +1,37 @@
+name: Time
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+
+  # gcc ########################################################################
+
+  gcc-10:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-10 g++-10
+    - name: Check
+      env:
+        CXX: g++-10
+        CXXFLAGS: -std=c++20
+      run: make -j time
+
+  # clang ######################################################################
+
+  clang-11:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-11
+    - name: Check
+      env:
+        CXX: clang++-11
+        CXXFLAGS: -std=c++20
+      run: make -j time

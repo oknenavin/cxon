@@ -14,6 +14,7 @@
 
 #include "node.ordered.hxx"
 
+#include <algorithm>
 #include <fstream>
 #include <memory>
 #include <chrono>
@@ -656,11 +657,15 @@ int main(int argc, char *argv[]) {
     if (argc == 1) {
         return self();
     }
+
     cases pass, fail, time, diff;
+
     if (!cl_parse(argc, argv, pass, fail, time, diff)) {
         return fprintf(stderr, "usage: cxon/json/node ((pass|fail|diff|time) (file|@file)+)+\n"), fflush(stderr), 1;
     }
+
     int err = 0;
+
     if (!pass.empty()) {
         for (auto& c : pass) {
             std::ifstream is(c.source, std::ifstream::binary);
@@ -682,6 +687,7 @@ int main(int argc, char *argv[]) {
             }
         fprintf(stdout, "cxon/json/node/pass:  %zu of %3zu failed\n", fc, pass.size()); fflush(stdout);
     }
+
     if (!fail.empty()) {
         for (auto& c : fail) {
             std::ifstream is(c.source, std::ifstream::binary);
@@ -706,6 +712,7 @@ int main(int argc, char *argv[]) {
             }
         fprintf(stdout, "cxon/json/node/fail:  %zu of %3zu failed\n", fc, fail.size()); fflush(stdout);
     }
+
     if (!diff.empty()) {
         static auto const name = [](const std::string& p) {
             auto f = p.find_last_of("/\\"); f = f != p.npos ? f + 1 : 0;
@@ -766,34 +773,74 @@ int main(int argc, char *argv[]) {
             fprintf(stdout, "cxon/json/node/diff:  %zu of %3zu failed\n", fc, diff.size()), fflush(stdout);
         }
     }
+
     if (!time.empty()) {
         for (auto& c : time) {
             cxon_json_test_time(c);
         }
-        test_time total;
-        for (auto& c : time) {
-            fprintf(stdout, "%s:\n", c.source.c_str());
-            if (c.error.empty()) {
-                fprintf(stdout, "\tbase          :\t%8.2f\n", c.time.base);
-                fprintf(stdout, "\tread          :\t%8.2f\tx %6.2f\n", c.time.read, c.time.read / c.time.base);
-                fprintf(stdout, "\twrite         :\t%8.2f\tx %6.2f\n", c.time.write, c.time.write / c.time.base);
-                fprintf(stdout, "\tpretty/string :\t%8.2f\tx %6.2f\n", c.time.pretty_string, c.time.pretty_string / c.time.base);
-                fprintf(stdout, "\tpretty        :\t%8.2f\tx %6.2f\n", c.time.pretty, c.time.pretty / c.time.base);
-                total.base += c.time.base,
-                total.read += c.time.read,
-                total.write += c.time.write,
-                total.pretty_string += c.time.pretty_string,
-                total.pretty += c.time.pretty;
+
+        auto const& i = std::max_element(time.begin(), time.end(), [](const test_case& c1, const test_case& c2) {
+            return c1.source.length() < c2.source.length();
+        });
+        unsigned const col[10] = { (unsigned)i->source.length(), 8, 8, 8, 8, 8, 8, 8, 8, 8 };
+        auto const line = [&]() {
+            static auto const s = std::string(128, '-');
+            fprintf(stdout, "+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+-%.*s-+\n",
+                col[0], s.c_str(), col[1], s.c_str(),
+                col[2], s.c_str(), col[3], s.c_str(),
+                col[4], s.c_str(), col[5], s.c_str(),
+                col[6], s.c_str(), col[7], s.c_str(),
+                col[8], s.c_str(), col[9], s.c_str()
+            );
+        };
+
+        if (!diff.empty()) fprintf(stdout, "\n");
+
+        line();
+            fprintf(stdout,
+                "| %-*s | %*s | %*s | %-*s | %*s | %-*s | %*s | %-*s | %*s | %-*s |\n",
+                col[0], "File",
+                col[1], "Base",
+                col[2], "Read", col[3], "/ Base",
+                col[4], "Write", col[5], "/ Base",
+                col[6], "Pretty/0", col[7], "/ Base",
+                col[8], "Pretty/1", col[9], "/ Base"
+            );
+        line();
+            test_time total;
+            for (auto& c : time) {
+                if (c.error.empty()) {
+                    fprintf(stdout,
+                        "| %-*s | %*.2f | %*.2f | x %*.2f | %*.2f | x %*.2f | %*.2f | x %*.2f | %*.2f | x %*.2f |\n",
+                        col[0], c.source.c_str(),
+                        col[1], c.time.base,
+                        col[2], c.time.read, col[3] - 2, c.time.read / c.time.base,
+                        col[4], c.time.write, col[5] - 2, c.time.write / c.time.base,
+                        col[6], c.time.pretty, col[7] - 2, c.time.pretty / c.time.base,
+                        col[8], c.time.pretty_string, col[9] - 2, c.time.pretty_string / c.time.base
+                    );
+                    total.base += c.time.base,
+                    total.read += c.time.read,
+                    total.write += c.time.write,
+                    total.pretty_string += c.time.pretty_string,
+                    total.pretty += c.time.pretty;
+                }
+                else {
+                    fprintf(stdout, "| %-*s | %-*s |\n", col[0], c.source.c_str(), col[1] + col[2] + col[3] + col[4] + col[5] + col[6] + col[7] + col[8] + col[9] + 24, c.error.c_str());
+                }
             }
-            else {
-                fprintf(stdout, "\tfailed: %s\n", c.error.c_str());
-            }
-        }
-        fprintf(stdout, "------------------------------------------------\n");
-        fprintf(stdout, "\tread          :                 x %6.2f\n", total.read / total.base);
-        fprintf(stdout, "\twrite         :                 x %6.2f\n", total.write / total.base);
-        fprintf(stdout, "\tpretty/string :                 x %6.2f\n", total.pretty_string / total.base);
-        fprintf(stdout, "\tpretty        :                 x %6.2f\n", total.pretty / total.base);
+        line();
+            fprintf(stdout,
+                "| %-*s | %*s | %*s | x %*.2f | %*s | x %*.2f | %*s | x %*.2f | %*s | x %*.2f |\n",
+                col[0], "",
+                col[1], "",
+                col[2], "", col[3] - 2, total.read / total.base,
+                col[4], "", col[5] - 2, total.write / total.base,
+                col[6], "", col[7] - 2, total.pretty / total.base,
+                col[8], "", col[9] - 2, total.pretty_string / total.base
+            );
+        line();
     }
+
     return err;
 }

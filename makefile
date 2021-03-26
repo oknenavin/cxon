@@ -156,6 +156,12 @@ check-json-node:
 check-cbor:
 	@$(MAKE) -C test check-cbor
 
+time:
+	@$(MAKE) -C test time
+
+time-json:
+	@$(MAKE) -C test time-json
+
 install: install-lang
 
 install-cxon:
