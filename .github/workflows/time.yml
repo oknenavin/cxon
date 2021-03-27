@@ -48,4 +48,5 @@ jobs:
     - name: Build
       run: cd test ; cmake --build build --parallel
     - name: Check
+      shell: cmd
       run: cd test/build ; ./cxon.json.node time @../data/json/time.in
