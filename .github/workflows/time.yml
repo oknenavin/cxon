@@ -35,3 +35,17 @@ jobs:
         CXX: clang++-11
         CXXFLAGS: -std=c++20
       run: make -j time
+
+  # msvc #######################################################################
+
+  msvc-2019:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure
+      run: cd test ; cmake -S . -B build --target cxon.json.node -D CMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cd test ; cmake --build build
+    - name: Check
+      run: cd test/build ; cxon.json.node time @../data/json/time.in
