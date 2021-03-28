@@ -261,7 +261,7 @@ namespace cxon { namespace charconv { // <charconv>
             }
         std::to_chars_result to_chars(char*, char*, bool, int = 10) = delete;
 
-        // gc++: error: 'general' is not a member of 'std::chars_format'
+        // g++: error: 'general' is not a member of 'std::chars_format'
         template <typename T, typename = void>
             struct general {
                 static constexpr T      value = (T)7;
