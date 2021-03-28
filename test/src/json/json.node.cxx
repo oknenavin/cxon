@@ -778,7 +778,7 @@ int main(int argc, char *argv[]) {
         {   // build the table
             static auto const fmt = [](double d) -> std::string {
                 char b[64];
-                std::snprintf(b, sizeof(b), "%.2f", d);
+                int const r = std::snprintf(b, sizeof(b), "%.2f", d); CXON_ASSERT( r > 0 && r < sizeof(b), "unexpected");
                 return b;
             };
             {   // header
