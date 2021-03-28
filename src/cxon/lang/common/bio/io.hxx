@@ -108,23 +108,28 @@ namespace cxon { namespace bio {
                         (std::copy(i, i + N, std::begin(bs)), std::advance(i, N), true)
                 ;
             }
+
+        template <typename T, typename II>
+            inline bool get_1_(T& t, II& i, II e) {
+                return i != e ? (t = T(*i), ++i, true) : false;
+            }
         template <typename II>
             inline auto get_n_(byte (&bs)[2], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e)
+                return  get_1_(bs[0], i, e) && get_1_(bs[1], i, e)
                 ;
             }
         template <typename II>
             inline auto get_n_(byte (&bs)[4], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
-                        get<1>(bs[2], i, e) && get<1>(bs[3], i, e)
+                return  get_1_(bs[0], i, e) && get_1_(bs[1], i, e) &&
+                        get_1_(bs[2], i, e) && get_1_(bs[3], i, e)
                 ;
             }
         template <typename II>
             inline auto get_n_(byte (&bs)[8], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get<1>(bs[0], i, e) && get<1>(bs[1], i, e) &&
-                        get<1>(bs[2], i, e) && get<1>(bs[3], i, e) &&
-                        get<1>(bs[4], i, e) && get<1>(bs[5], i, e) &&
-                        get<1>(bs[6], i, e) && get<1>(bs[7], i, e)
+                return  get_1_(bs[0], i, e) && get_1_(bs[1], i, e) &&
+                        get_1_(bs[2], i, e) && get_1_(bs[3], i, e) &&
+                        get_1_(bs[4], i, e) && get_1_(bs[5], i, e) &&
+                        get_1_(bs[6], i, e) && get_1_(bs[7], i, e)
                 ;
             }
 
