@@ -5,6 +5,7 @@ insdir = $(DESTDIR)$(prefix)/include
 srcdir = src/cxon
 
 cxon-lang-common = \
+    $(srcdir)/lang/common/allocator.hxx \
     $(srcdir)/lang/common/charconv.hxx
 
 cxon-lang-common-cio = \
@@ -14,8 +15,6 @@ cxon-lang-common-cio = \
     $(srcdir)/lang/common/cio/class.hxx \
     $(srcdir)/lang/common/cio/container.hxx \
     $(srcdir)/lang/common/cio/enum.hxx \
-    $(srcdir)/lang/common/cio/error.hxx \
-    $(srcdir)/lang/common/cio/error-fwd.hxx \
     $(srcdir)/lang/common/cio/io.hxx \
     $(srcdir)/lang/common/cio/key.hxx \
     $(srcdir)/lang/common/cio/numeric.hxx \
@@ -30,6 +29,7 @@ cxon-lang-json = \
     $(srcdir)/lang/json/class.hxx \
     $(srcdir)/lang/json/compound.hxx \
     $(srcdir)/lang/json/enum.hxx \
+    $(srcdir)/lang/json/error.hxx \
     $(srcdir)/lang/json/fundamental.hxx \
     $(srcdir)/lang/json/json.hxx \
     $(srcdir)/lang/json/json-fwd.hxx
