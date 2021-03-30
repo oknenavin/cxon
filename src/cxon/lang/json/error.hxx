@@ -30,7 +30,7 @@ namespace cxon { namespace json {
 
     struct read_error_category : std::error_category {
         const char* name() const noexcept override {
-            return "cxon/cio/read";
+            return "cxon/json/read";
         }
         std::string message(int ev) const override {
             switch (static_cast<read_error>(ev)) {
@@ -58,7 +58,7 @@ namespace cxon { namespace json {
 
     struct write_error_category : std::error_category {
         const char* name() const noexcept override {
-            return "cxon/cio/write";
+            return "cxon/json/write";
         }
         std::string message(int ev) const override {
             switch (static_cast<write_error>(ev)) {
