@@ -45,6 +45,8 @@ namespace cxon { namespace json { // node traits
 
 }}
 
+#define CXON_JSON_NODE_DEFINED
+
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace json { // node

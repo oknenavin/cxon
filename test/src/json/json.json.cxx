@@ -13,7 +13,7 @@
 #include "cxon/lib/std/map.hxx"
 #include "cxon/lib/std/tuple.hxx"
 
-#include "../pretty.hxx"
+#include "cxon/lang/json/tidy.hxx"
 
 #include <cstdio>
 
@@ -241,14 +241,14 @@ TEST_BEG(cxon::JSON<>) // pretty
             "}"
         ;
         std::string s1;
-            to_bytes(test::make_indenter(s1, 2, ' '), m);
+            to_bytes(json::make_indenter(s1, 2, ' '), m);
         TEST_CHECK(s1 == s0);
     }
     {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
         std::string s1;
-            to_bytes(test::make_indenter(s1), m);
+            to_bytes(json::make_indenter(s1), m);
         std::string const s0 =
-            test::pretty(s1);
+            json::tidy(s1);
         TEST_CHECK(s1 == s0);
     }
     {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
@@ -260,14 +260,14 @@ TEST_BEG(cxon::JSON<>) // pretty
             "}"
         ;
         std::string s1;
-            to_bytes(test::make_indenter(s1, 2, ' '), m);
+            to_bytes(json::make_indenter(s1, 2, ' '), m);
         TEST_CHECK(s1 == s0);
     }
     {   std::map<std::string, std::string> const m = { {"ala", "ba\"la"}, {"bl\nah", "blah"}, {"bl ah", "blah"} };
         std::string s1;
-            to_bytes(test::make_indenter(s1), m);
+            to_bytes(json::make_indenter(s1), m);
         std::string const s0 =
-            test::pretty(s1);
+            json::tidy(s1);
         TEST_CHECK(s1 == s0);
     }
 TEST_END()

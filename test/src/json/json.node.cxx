@@ -5,12 +5,11 @@
 
 #include "cxon/json.hxx"
 #include "cxon/cbor.hxx"
-#include "cxon/lib/node.hxx"
 
+#include "cxon/lib/node.hxx"
 #include "cxon/lib/std/list.hxx"
 
-#include "../pretty.hxx"
-#include "node.pretty.hxx"
+#include "cxon/lang/json/tidy.hxx"
 
 #include "node.ordered.hxx"
 
@@ -29,8 +28,8 @@ struct test_time {
     size_t size = 0;
     double read = 0;
     double write = 0;
-    double pretty_string = 0;
-    double pretty = 0;
+    double tidy_itr = 0;
+    double tidy_str = 0;
 };
 
 struct test_case {
@@ -86,13 +85,13 @@ static void cxon_json_test_time(test_case& test) {
             std::string s; cxon::to_bytes(s, j);
         });
         {   std::string s;
-            test.time.pretty_string = measure(cxon_json_repeat, [&] {
-                s = cxon::test::pretty(json);
+            test.time.tidy_itr = measure(cxon_json_repeat, [&] {
+                cxon::to_bytes(cxon::json::make_indenter(s), j);
             });
         }
         {   std::string s;
-            test.time.pretty = measure(cxon_json_repeat, [&] {
-                cxon::to_bytes(cxon::test::make_indenter(s), j);
+            test.time.tidy_str = measure(cxon_json_repeat, [&] {
+                s = cxon::json::tidy(json);
             });
         }
     }
@@ -204,11 +203,11 @@ static unsigned self() {
             CHECK(r == s);
         }
         {   std::string s1;
-                cxon::to_bytes(cxon::test::make_indenter(s1), jns);
+                cxon::to_bytes(cxon::json::make_indenter(s1), jns);
             std::string s2;
-                cxon::to_bytes(cxon::test::make_indenter(s2), jno);
+                cxon::to_bytes(cxon::json::make_indenter(s2), jno);
             std::string const s0 =
-                cxon::test::pretty(s1);
+                cxon::json::tidy(s1);
             CHECK(s1 == s0);
             CHECK(s2 == s0);
         }
@@ -216,62 +215,62 @@ static unsigned self() {
                 cxon::from_bytes(n, "[3.1415926, 3.1415926, 3.1415926]");
             std::string s1;
 #           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
-                cxon::to_bytes(cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
+                cxon::to_bytes(cxon::json::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           else
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                 // seems to be fixed around 10, but after the inclusion of cbor.hxx,
                 // this workaround does not work for to_bytes anymore
                 //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
-                //    (cxon::test::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
+                //    (cxon::json::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #           endif
             std::string const s0 =
-                cxon::test::pretty(s1, 4, ' ');
+                cxon::json::tidy(s1, 4, ' ');
             CHECK(s1 == s0);
         }
         {   node n;
                 cxon::from_bytes(n, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
             std::string s1;
-                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), n);
+                cxon::to_bytes(cxon::json::make_indenter(s1, 2, ' '), n);
             std::string const s0 =
-                cxon::test::pretty(s1, 2, ' ');
+                cxon::json::tidy(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::vector<node> v;
                 cxon::from_bytes(v, "[[3.1415926, 3.1415926, [3.1415926, 3.1415926]], [3.1415926]]");
             std::string s1;
-                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), v);
+                cxon::to_bytes(cxon::json::make_indenter(s1, 2, ' '), v);
             std::string const s0 =
-                cxon::test::pretty(s1, 2, ' ');
+                cxon::json::tidy(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::vector<node> v;
                 cxon::from_bytes(v, "[{\"even\": [2, 4, 6]}, {\"odd\": [1, 3, 5]}]");
             std::string s1;
-                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), v);
+                cxon::to_bytes(cxon::json::make_indenter(s1, 2, ' '), v);
             std::string const s0 =
-                cxon::test::pretty(s1, 2, ' ');
+                cxon::json::tidy(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   std::map<std::string, node> m;
                 cxon::from_bytes(m, "{\"even\": [2, 4, 6], \"odd\": [1, 3, 5]}");
             std::string s1;
-                cxon::to_bytes(cxon::test::make_indenter(s1, 2, ' '), m);
+                cxon::to_bytes(cxon::json::make_indenter(s1, 2, ' '), m);
             std::string const s0 =
-                cxon::test::pretty(s1, 2, ' ');
+                cxon::json::tidy(s1, 2, ' ');
             CHECK(s1 == s0);
         }
         {   node n;
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
 #           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
-                auto const r = cxon::to_bytes(cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
+                auto const r = cxon::to_bytes(cxon::json::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
                 CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           else
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                 // seems to be fixed around 10, but after the inclusion of cbor.hxx,
                 // this workaround does not work for to_bytes anymore
                 //auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
-                //                    (cxon::test::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
+                //                    (cxon::json::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
                 //CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #           endif
         }
@@ -319,7 +318,7 @@ static unsigned self() {
             cxon::from_bytes(mv2, json);
         CHECK(mv1 == mv2);
 
-        std::string const pretty_json = cxon::test::pretty(json);
+        std::string const tidy_json = cxon::json::tidy(json);
     }
     {   // ex2
         my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
@@ -397,7 +396,7 @@ static unsigned self() {
             cxon::to_bytes(s2, n2);
         CHECK(s1 == s2);
 
-        std::string const pretty_json = cxon::test::pretty(s1);
+        std::string const tidy_json = cxon::json::tidy(s1);
     }
     {
         node n1(1);     CHECK(n1.is<node::number>() && n1.get<node::number>() == 1);
@@ -724,13 +723,13 @@ int main(int argc, char *argv[]) {
                     }
                 json.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
             }
-            {   // pretty
+            {   // tidy
                 std::ofstream os(name(c.source) + ".0.json", std::ofstream::binary);
                     if (!os) {
                         ++err, c.error = name(c.source) + ".0.json" + ": cannot be opened";
                         continue;
                     }
-                cxon::test::pretty(std::ostreambuf_iterator<char>(os), json);
+                cxon::json::tidy(std::ostreambuf_iterator<char>(os), json);
             }
             node result;
             {   // from
@@ -746,7 +745,7 @@ int main(int argc, char *argv[]) {
                         ++err, c.error = name(c.source) + ".1.json" + "cannot be opened";
                         continue;
                     }
-                auto const w = cxon::to_bytes(cxon::test::make_indenter(std::ostreambuf_iterator<char>(os)), result);
+                auto const w = cxon::to_bytes(cxon::json::make_indenter(std::ostreambuf_iterator<char>(os)), result);
                     if (!w) {
                         ++err, c.error += w.ec.category().name(),
                         c.error += ": " + w.ec.message();
@@ -782,7 +781,7 @@ int main(int argc, char *argv[]) {
                 return b;
             };
             {   // header
-                tab.push_back({"File", "Size", "Read", "MB/s", "Write", "MB/s", "Pretty/0", "MB/s", "Pretty/1", "MB/s"});
+                tab.push_back({"File", "Size", "Read", "MB/s", "Write", "MB/s", "Tidy/itr", "MB/s", "Tidy/str", "MB/s"});
             }
             test_time total;
             {   // body
@@ -793,14 +792,14 @@ int main(int argc, char *argv[]) {
                         fmt(size),
                         fmt(c.time.read), fmt(size / (c.time.read / 1000)),
                         fmt(c.time.write), fmt(size / (c.time.write/ 1000)),
-                        fmt(c.time.pretty), fmt(size / (c.time.pretty / 1000)),
-                        fmt(c.time.pretty_string), fmt(size / (c.time.pretty_string / 1000))
+                        fmt(c.time.tidy_itr), fmt(size / (c.time.tidy_itr / 1000)),
+                        fmt(c.time.tidy_str), fmt(size / (c.time.tidy_str / 1000))
                     });
                     total.size += c.time.size,
                     total.read += c.time.read,
                     total.write += c.time.write,
-                    total.pretty_string += c.time.pretty_string,
-                    total.pretty += c.time.pretty;
+                    total.tidy_itr += c.time.tidy_itr;
+                    total.tidy_str += c.time.tidy_str;
                 }
             }
             {   // average
@@ -810,8 +809,8 @@ int main(int argc, char *argv[]) {
                     "",
                     "", fmt(size / (total.read / 1000)),
                     "", fmt(size / (total.write/ 1000)),
-                    "", fmt(size / (total.pretty / 1000)),
-                    "", fmt(size / (total.pretty_string / 1000))
+                    "", fmt(size / (total.tidy_itr / 1000)),
+                    "", fmt(size / (total.tidy_str / 1000))
                 });
             }
         }

@@ -32,7 +32,8 @@ cxon-lang-json = \
     $(srcdir)/lang/json/error.hxx \
     $(srcdir)/lang/json/fundamental.hxx \
     $(srcdir)/lang/json/json.hxx \
-    $(srcdir)/lang/json/json-fwd.hxx
+    $(srcdir)/lang/json/json-fwd.hxx \
+    $(srcdir)/lang/json/tidy.hxx
 
 cxon-lang-json-lib-std-bits = \
     $(srcdir)/lang/json/lib/std/bits/map.hxx \
