@@ -188,39 +188,39 @@ TEST_BEG(cxon::JSON<>) // errors
     using namespace cxon;
     {   std::error_condition ec;
             ec = json::read_error::ok;
-                CXON_ASSERT(ec.category() == json::read_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cio/read") == 0, "check failed");
-                CXON_ASSERT(ec.message() == "no error", "check failed");
+                TEST_CHECK(ec.category() == json::read_error_category::value());
+                TEST_CHECK(std::strcmp(ec.category().name(), "cxon/json/read") == 0);
+                TEST_CHECK(ec.message() == "no error");
             ec = json::read_error::unexpected;
-                CXON_ASSERT(ec.message() == "unexpected input", "check failed");
+                TEST_CHECK(ec.message() == "unexpected input");
             ec = json::read_error::character_invalid;
-                CXON_ASSERT(ec.message() == "invalid character", "check failed");
+                TEST_CHECK(ec.message() == "invalid character");
             ec = json::read_error::integral_invalid;
-                CXON_ASSERT(ec.message() == "invalid integral or value out of range", "check failed");
+                TEST_CHECK(ec.message() == "invalid integral or value out of range");
             ec = json::read_error::floating_point_invalid;
-                CXON_ASSERT(ec.message() == "invalid floating point", "check failed");
+                TEST_CHECK(ec.message() == "invalid floating point");
             ec = json::read_error::boolean_invalid;
-                CXON_ASSERT(ec.message() == "invalid boolean", "check failed");
+                TEST_CHECK(ec.message() == "invalid boolean");
             ec = json::read_error::escape_invalid;
-                CXON_ASSERT(ec.message() == "invalid escape sequence", "check failed");
+                TEST_CHECK(ec.message() == "invalid escape sequence");
             ec = json::read_error::surrogate_invalid;
-                CXON_ASSERT(ec.message() == "invalid surrogate", "check failed");
+                TEST_CHECK(ec.message() == "invalid surrogate");
             ec = json::read_error::overflow;
-                CXON_ASSERT(ec.message() == "buffer overflow", "check failed");
+                TEST_CHECK(ec.message() == "buffer overflow");
             ec = json::read_error(255);
-                CXON_ASSERT(ec.message() == "unknown error", "check failed");
+                TEST_CHECK(ec.message() == "unknown error");
     }
     {   std::error_condition ec;
             ec = json::write_error::ok;
-                CXON_ASSERT(ec.category() == json::write_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cio/write") == 0, "check failed");
-                CXON_ASSERT(ec.message() == "no error", "check failed");
+                TEST_CHECK(ec.category() == json::write_error_category::value());
+                TEST_CHECK(std::strcmp(ec.category().name(), "cxon/json/write") == 0);
+                TEST_CHECK(ec.message() == "no error");
             ec = json::write_error::output_failure;
-                CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
+                TEST_CHECK(ec.message() == "output cannot be written");
             ec = json::write_error::argument_invalid;
-                CXON_ASSERT(ec.message() == "invalid argument", "check failed");
+                TEST_CHECK(ec.message() == "invalid argument");
             ec = json::write_error(255);
-                CXON_ASSERT(ec.message() == "unknown error", "check failed");
+                TEST_CHECK(ec.message() == "unknown error");
     }
 TEST_END()
 

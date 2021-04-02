@@ -96,39 +96,39 @@ TEST_BEG(cxon::CBOR<>) // errors
     using namespace cxon;
     {   std::error_condition ec;
             ec = cbor::read_error::ok;
-                CXON_ASSERT(ec.category() == cbor::read_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cbor/read") == 0, "check failed");
-                CXON_ASSERT(ec.message() == "no error", "check failed");
+                TEST_CHECK(ec.category() == cbor::read_error_category::value());
+                TEST_CHECK(std::strcmp(ec.category().name(), "cxon/cbor/read") == 0);
+                TEST_CHECK(ec.message() == "no error");
             ec = cbor::read_error::unexpected;
-                CXON_ASSERT(ec.message() == "unexpected input", "check failed");
+                TEST_CHECK(ec.message() == "unexpected input");
             ec = cbor::read_error::boolean_invalid;
-                CXON_ASSERT(ec.message() == "invalid boolean", "check failed");
+                TEST_CHECK(ec.message() == "invalid boolean");
             ec = cbor::read_error::null_invalid;
-                CXON_ASSERT(ec.message() == "invalid null", "check failed");
+                TEST_CHECK(ec.message() == "invalid null");
             ec = cbor::read_error::integer_invalid;
-                CXON_ASSERT(ec.message() == "invalid integer", "check failed");
+                TEST_CHECK(ec.message() == "invalid integer");
             ec = cbor::read_error::floating_point_invalid;
-                CXON_ASSERT(ec.message() == "invalid floating-point", "check failed");
+                TEST_CHECK(ec.message() == "invalid floating-point");
             ec = cbor::read_error::size_invalid;
-                CXON_ASSERT(ec.message() == "invalid size", "check failed");
+                TEST_CHECK(ec.message() == "invalid size");
             ec = cbor::read_error::array_invalid;
-                CXON_ASSERT(ec.message() == "invalid array", "check failed");
+                TEST_CHECK(ec.message() == "invalid array");
             ec = cbor::read_error::tag_invalid;
-                CXON_ASSERT(ec.message() == "invalid tag", "check failed");
+                TEST_CHECK(ec.message() == "invalid tag");
             ec = cbor::read_error(255);
-                CXON_ASSERT(ec.message() == "unknown error", "check failed");
+                TEST_CHECK(ec.message() == "unknown error");
     }
     {   std::error_condition ec;
             ec = cbor::write_error::ok;
-                CXON_ASSERT(ec.category() == cbor::write_error_category::value(), "check failed");
-                CXON_ASSERT(std::strcmp(ec.category().name(), "cxon/cbor/write") == 0, "check failed");
-                CXON_ASSERT(ec.message() == "no error", "check failed");
+                TEST_CHECK(ec.category() == cbor::write_error_category::value());
+                TEST_CHECK(std::strcmp(ec.category().name(), "cxon/cbor/write") == 0);
+                TEST_CHECK(ec.message() == "no error");
             ec = cbor::write_error::output_failure;
-                CXON_ASSERT(ec.message() == "output cannot be written", "check failed");
+                TEST_CHECK(ec.message() == "output cannot be written");
             ec = cbor::write_error::argument_invalid;
-                CXON_ASSERT(ec.message() == "invalid argument", "check failed");
+                TEST_CHECK(ec.message() == "invalid argument");
             ec = cbor::write_error(255);
-                CXON_ASSERT(ec.message() == "unknown error", "check failed");
+                TEST_CHECK(ec.message() == "unknown error");
     }
 TEST_END()
 
