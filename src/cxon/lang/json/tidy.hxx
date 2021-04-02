@@ -104,9 +104,10 @@ namespace cxon { namespace json {
 
             template <typename VI>
                 bool indent_value(VI indent_value) {
-                    if (stt() == con)
-                        mut(grn), cio::poke(o_, '\n') && cio::poke(o_, lvl_ += tab_, pad_);
-                    return indent_value(o_, lvl_, tab_, pad_);
+                    return stt() == con ?
+                        (mut(grn), cio::poke(o_, '\n') && cio::poke(o_, lvl_ += tab_, pad_)) && indent_value(o_, lvl_, tab_, pad_) :
+                                                                                                indent_value(o_, lvl_, tab_, pad_)
+                    ;
                 }
 
             template <typename S = out_type>
@@ -157,7 +158,8 @@ namespace cxon { namespace json {
     template <typename X, typename OI, typename II>
         inline auto tidy(OI o, II b, II e, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, void> {
             auto i = make_indenter<X>(o, tab, pad);
-            for ( ; b != e; ++b) *i = *b;
+            for ( ; b != e && cio::poke(i, *b); ++b)
+                ;
         }
     template <typename X, typename OI, typename I>
         inline auto tidy(OI o, const I& i, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, void> {
@@ -167,7 +169,8 @@ namespace cxon { namespace json {
         inline auto tidy(II b, II e, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
             R r;
                 auto i = make_indenter<X>(r, tab, pad);
-                for ( ; b != e; ++b) *i = *b;
+                for ( ; b != e && cio::poke(i, *b); ++b)
+                    ;
             return r;
         }
     template <typename X, typename R, typename I>

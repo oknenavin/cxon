@@ -259,6 +259,15 @@ static unsigned self() {
                 cxon::json::tidy(s1, 2, ' ');
             CHECK(s1 == s0);
         }
+        {   char b[2];
+            auto const r = cxon::to_bytes(cxon::json::make_indenter(std::begin(b), std::end(b)), std::vector<int>{1});
+            CHECK(!r && r.ec == cxon::json::write_error::output_failure);
+        }
+        {   char b[2];
+            auto o = cxon::make_output_iterator(std::begin(b), std::end(b));
+                cxon::json::tidy(o, "[1]");
+            CHECK(b[0] == '[' && b[1] == '\n');
+        }
         {   node n;
                 cxon::from_bytes(n, "[[[[42]]]]");
             std::string s;
