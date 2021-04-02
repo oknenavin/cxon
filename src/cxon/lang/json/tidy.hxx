@@ -45,7 +45,9 @@ namespace cxon { namespace json {
 
             using out_type          = O;
 
-            constexpr indent_iterator(out_type o, unsigned tab = 1, char pad = '\t') : o_(o), stt_(grn), lvl_(), tab_(tab), pad_(pad) {}
+            constexpr indent_iterator(out_type o, unsigned tab = 1, char pad = '\t')
+            :   o_(o), stt_(grn), lvl_(), tab_(tab), pad_(pad)
+            {}
 
             indent_iterator& operator ++() noexcept { return *this; }
             indent_iterator& operator *() noexcept  { return *this; }
@@ -128,17 +130,17 @@ namespace cxon { namespace json {
             template <typename S = out_type>
                 auto good() const noexcept -> decltype(std::declval<S>().operator bool(), bool())   { return o_; }
 
-        private:
-            enum { grn, con, quo, qes };
-            auto stt() const -> decltype(grn)   { return stt_; }
-            void mut(decltype(grn) s)           { stt_ = s; }
+            private:
+                enum { grn, con, quo, qes };
+                auto stt() const -> decltype(grn)   { return stt_; }
+                void mut(decltype(grn) s)           { stt_ = s; }
 
-        private:
-            out_type        o_;
-            decltype(grn)   stt_;
-            unsigned        lvl_;
-            unsigned const  tab_;
-            char const      pad_;
+            private:
+                out_type        o_;
+                decltype(grn)   stt_;
+                unsigned        lvl_;
+                unsigned const  tab_;
+                char const      pad_;
         };
 
     template <typename X, typename OI>

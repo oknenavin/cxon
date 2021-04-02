@@ -818,7 +818,7 @@ int main(int argc, char *argv[]) {
             {   // average
                 double const size = double(total.size) / (1024. * 1024);
                 tab.push_back({
-                    "",
+                    "Average",
                     "",
                     "", fmt(size / (total.read / 1000)),
                     "", fmt(size / (total.write/ 1000)),

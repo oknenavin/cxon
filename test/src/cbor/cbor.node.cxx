@@ -26,7 +26,7 @@ static unsigned self() {
     unsigned f_ = 0;
 
 #   define CHECK(c) ++a_; if (!(c))\
-        fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr), ++f_;\
+        fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_;\
         CXON_ASSERT((c), "check failed");
 
     using node = cxon::cbor::node;
@@ -553,7 +553,7 @@ int main(int argc, char *argv[]) {
     for (int i = 1; i != argc; ++i) {
         std::ifstream is(argv[i]);
             if (!is) {
-                ++err, fprintf(stderr, "file not found: '%s'\n", argv[i]), fflush(stderr);
+                ++err, fprintf(stderr, "file not found: '%s'\n", argv[i]);
                 break;
             }
 
@@ -563,7 +563,7 @@ int main(int argc, char *argv[]) {
         {
             std::ifstream is(fixture.in);
                 if (!is) {
-                    ++err, fprintf(stderr, "file not found: '%s'\n", fixture.in.c_str()), fflush(stderr);
+                    ++err, fprintf(stderr, "file not found: '%s'\n", fixture.in.c_str());
                     break;
                 }
 
@@ -611,16 +611,16 @@ int main(int argc, char *argv[]) {
                         fail.empty() ?
                             (++err, fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
                             (/*fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
-                        ;   fflush(stderr);
+                        ;
                     }
                     else if (json != decoded) {
                         fail.empty() ?
                             (++err, fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
                             (/*fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
-                        ;   fflush(stderr);
+                        ;
                     }
                     else if (!fail.empty()) {
-                        ++err, fprintf(stderr, "must fail but passed: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), fflush(stderr);;
+                        ++err, fprintf(stderr, "must fail but passed: '%s' (%s)\n", test.hex.c_str(), fail.c_str());
                     }
                 }
             }
