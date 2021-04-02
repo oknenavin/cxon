@@ -62,7 +62,7 @@ namespace cxon { namespace test {
 
 #define TEST_CHECK(conditon)\
     do if (++suite::all(), !(conditon)) {\
-        ++suite::err(), fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__), fflush(stderr);\
+        ++suite::err(), fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__);\
         CXON_ASSERT(false, "check failed");\
     } while (0)
 
