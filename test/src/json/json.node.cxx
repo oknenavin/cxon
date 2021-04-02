@@ -777,7 +777,7 @@ int main(int argc, char *argv[]) {
         {   // build the table
             static auto const fmt = [](double d) -> std::string {
                 char b[64];
-                int const r = std::snprintf(b, sizeof(b), "%.2f", d); CXON_ASSERT( r > 0 && r < sizeof(b), "unexpected");
+                int const r = std::snprintf(b, sizeof(b), "%.2f", d); CXON_ASSERT( r > 0 && r < (int)sizeof(b), "unexpected");
                 return b;
             };
             {   // header
@@ -786,6 +786,10 @@ int main(int argc, char *argv[]) {
             test_time total;
             {   // body
                 for (auto& c : time) {
+                    if (!c.error.empty()) {
+                        std::fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str());
+                        continue;
+                    }
                     double const size = double(c.time.size) / (1024. * 1024);
                     tab.push_back({
                         c.source,
@@ -798,7 +802,7 @@ int main(int argc, char *argv[]) {
                     total.size += c.time.size,
                     total.read += c.time.read,
                     total.write += c.time.write,
-                    total.tidy_itr += c.time.tidy_itr;
+                    total.tidy_itr += c.time.tidy_itr,
                     total.tidy_str += c.time.tidy_str;
                 }
             }
