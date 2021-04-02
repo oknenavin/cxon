@@ -55,19 +55,19 @@ check-cbor-node: $(outdir)/check-cbor-node
 
 $(outdir)/check-json: $(check-json-src)
 	@mkdir -p $(outdir)
-	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
+	$(CXX) -I $(incdir) -DNDEBUG -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-src) -o $@
 
 $(outdir)/check-json-node: $(check-json-node-src)
 	@mkdir -p $(outdir)
-	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
+	$(CXX) -I $(incdir) -DNDEBUG -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-json-node-src) -o $@
 
 $(outdir)/check-cbor: $(check-cbor-src)
 	@mkdir -p $(outdir)
-	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-cbor-src) -o $@
+	$(CXX) -I $(incdir) -DNDEBUG -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-cbor-src) -o $@
 
 $(outdir)/check-cbor-node: $(check-cbor-node-src)
 	@mkdir -p $(outdir)
-	$(CXX) -I $(incdir) -DNDEBUG $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-cbor-node-src) -o $@
+	$(CXX) -I $(incdir) -DNDEBUG -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-cbor-node-src) -o $@
 
 clean:
 	@rm -fr $(outdir)
