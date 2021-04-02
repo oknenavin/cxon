@@ -6,6 +6,20 @@ jobs:
 
   # gcc ########################################################################
 
+  gcc-5:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-5 g++-5
+    - name: Check
+      env:
+        CXX: g++-5
+        CXXFLAGS: -std=c++11
+      run: make -j time
+
   gcc-10:
     runs-on: ubuntu-20.04
     steps:
@@ -21,6 +35,20 @@ jobs:
       run: make -j time
 
   # clang ######################################################################
+
+  clang-3-5:
+    runs-on: ubuntu-16.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-3.5
+    - name: Check
+      env:
+        CXX: clang++-3.5
+        CXXFLAGS: -std=c++11
+      run: make -j time
 
   clang-11:
     runs-on: ubuntu-20.04
