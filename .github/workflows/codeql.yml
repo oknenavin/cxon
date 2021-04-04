@@ -8,13 +8,12 @@ jobs:
   CodeQL:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
         uses: actions/checkout@v2
-      - name: Initialize
+      - name: CodeQL setup
         uses: github/codeql-action/init@v1
         with:
           languages: cpp
-      - name: Autobuild
+      - name: Check
         uses: github/codeql-action/autobuild@v1
       #- run: |
       #   make bootstrap
