@@ -8,7 +8,7 @@ jobs:
   CodeQL:
     runs-on: ubuntu-latest
     steps:
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: CodeQL setup
         uses: github/codeql-action/init@v1
         with:
