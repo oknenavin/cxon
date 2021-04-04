@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
-    - name: Setup compiler
+    - name: Compiler setup
       run: |
         sudo apt-get update
         sudo apt-get install gcc-8 g++-8
@@ -16,7 +16,7 @@ jobs:
         CXX: g++-8
         CXXFLAGS: --coverage -std=c++17 -O0
       run: make -j check
-    - name: Setup lcov
+    - name: LCOV setup
       run: |
         wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
         tar xvfz lcov-1.14.tar.gz
