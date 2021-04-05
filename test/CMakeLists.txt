@@ -46,7 +46,16 @@ set_target_properties (
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
- 
+
+add_executable (
+    cxon.cbor.node src/cbor/cbor.node.cxx
+)
+set_target_properties (
+    cxon.cbor.node PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
+)
 
 enable_testing()
 
@@ -87,6 +96,18 @@ add_test (
 )
 
 add_test (
-    NAME cxon/cbor/suite
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor ../data/json/set.1.in
+    NAME cxon/cbor/node/self
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor.node
 )
+add_test (
+    NAME cxon/cbor/node/test-vector
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor.node ../data/cbor/test-vector.in
+)
+
+if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
+    add_test (
+        NAME cxon/cbor/node/round-trip
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon.cbor.node ../data/cbor/round-trip.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+    )
+endif ()
