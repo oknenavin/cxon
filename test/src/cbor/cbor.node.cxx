@@ -13,10 +13,11 @@
 
 #include "cxon/lang/json/tidy.hxx"
 
-#include "../json/node.ordered.hxx"
+#include "../node.ordered.hxx"
 
-#include <cstring>
 #include <fstream>
+#include <chrono>
+#include <cstring>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -567,7 +568,7 @@ namespace test_vector
             std::ifstream is(file);
                 if (!is) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, fprintf(stderr, "error: file not found: '%s'\n", file.c_str());
+                    ++res.err, fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
             test::vector vector;
@@ -662,7 +663,7 @@ namespace round_trip
             std::ifstream is(file);
                 if (!is) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, fprintf(stderr, "error: file not found: '%s'\n", file.c_str());
+                    ++res.err, fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
             std::string const f0 = name(file) + ".0.json";
@@ -725,8 +726,184 @@ namespace round_trip
 namespace timing
 {
 
+    struct test_time {
+        std::string source;
+        std::string error;
+        size_t size = 0;
+        double read = 0;
+        double write = 0;
+    };
+
+    constexpr unsigned cxon_cbor_repeat = 3;
+
+    template <typename B>
+        static double measure(unsigned c, B block) {
+            CXON_ASSERT(c > 0, "unexpected");
+            using clock = std::chrono::steady_clock;
+            using std::chrono::duration_cast;
+            using std::chrono::nanoseconds;
+            double t = std::numeric_limits<double>::max();
+                do {
+                    auto const s = clock::now();
+                    block();
+                    t = std::min(t, duration_cast<nanoseconds>(clock::now() - s).count() / 1e6);
+                }   while (--c);
+            return t;
+        }
+
+    template <typename R, typename I>
+        static std::string format_error(const R& r, I b) {
+            return std::string()
+                .append(r.ec.category().name())
+                .append(":")
+                .append(std::to_string(std::distance(b, r.end)))
+                .append(": ")
+                .append(r.ec.message())
+            ;
+        }
+
     static result execute(const fixture& fixture) {
-        return {};
+        CXON_ASSERT(fixture.type == "timing", "unexpected");
+        
+        using JSON = cxon::JSON<>;
+        using CBOR = cxon::CBOR<>;
+
+        std::vector<test_time> time;
+
+        for (auto& file: fixture.in) {
+            test_time t;
+
+            std::vector<unsigned char> cbor;
+            {   // JSON => CBOR
+                std::ifstream is(file);
+                    if (!is) {
+                        CXON_ASSERT(0, "unexpected");
+                        t.error = "error: cannot be opened: ''" + file + "'";
+                        continue;
+                    }
+                cxon::test::cbor::ordered_node n;
+                {   auto const r = cxon::from_bytes<JSON>(n, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+                    if (!r) {
+                        t.error = r.ec.category().name() + std::string(": ") + r.ec.message();
+                        continue;
+                    }
+                }
+                {   auto const r = cxon::to_bytes<CBOR>(cbor, n);
+                    if (!r) {
+                        t.error = r.ec.category().name() + std::string(": ") + r.ec.message();
+                        continue;
+                    }
+                }
+            }
+            {   // time
+                t.source = file;
+                t.size = cbor.size();
+
+                std::vector<cxon::test::cbor::ordered_node> vn;
+                t.read = measure(cxon_cbor_repeat, [&] {
+                    vn.emplace_back();
+                    auto const r = cxon::from_bytes(vn.back(), cbor);
+                    if (!r) t.error = format_error(r, cbor.cbegin());
+                });
+
+                auto const& n = vn.back();
+                std::vector<std::string> vs;
+                t.write = measure(cxon_cbor_repeat, [&] {
+                    vs.emplace_back();
+                    cxon::to_bytes(vs.back(), n);
+                });
+            }
+            time.push_back(t);
+        }
+
+        {   // print
+            std::vector<std::vector<std::string>> tab;
+            {   // build the table
+                static auto const fmt = [](double d) -> std::string {
+                    char b[64];
+                    int const r = std::snprintf(b, sizeof(b), "%.2f", d); CXON_ASSERT( r > 0 && r < (int)sizeof(b), "unexpected");
+                    return b;
+                };
+                {   // header
+                    tab.push_back({"CBOR/File", "Size", "Read", "MB/s", "Write", "MB/s"});
+                }
+                test_time total;
+                {   // body
+                    for (auto& t : time) {
+                        if (!t.error.empty()) {
+                            std::fprintf(stderr, "%s: %s\n", t.source.c_str(), t.error.c_str());
+                            continue;
+                        }
+                        double const size = double(t.size) / (1024. * 1024);
+                        tab.push_back({
+                            t.source,
+                            fmt(size),
+                            fmt(t.read), fmt(size / (t.read / 1000)),
+                            fmt(t.write), fmt(size / (t.write/ 1000))
+                        });
+                        total.size += t.size,
+                        total.read += t.read,
+                        total.write += t.write;
+                    }
+                }
+                {   // average
+                    double const size = double(total.size) / (1024. * 1024);
+                    tab.push_back({
+                        "Average",
+                        "",
+                        "", fmt(size / (total.read / 1000)),
+                        "", fmt(size / (total.write/ 1000))
+                    });
+                }
+            }
+
+            std::vector<size_t> wid(tab[0].size(), 0);
+            {   // column width
+                for (auto& r : tab)
+                    for (size_t i = 0, is = r.size(); i != is; ++i)
+                        wid[i] = std::max(wid[i], r[i].length());
+            }
+
+            {   // print
+                auto const line = [&wid]() {
+                    static auto const s = std::string(128, '-');
+                    std::fputc('+', stdout);
+                    for (auto s : wid)
+                        std::fprintf(stdout, "-%s-+", std::string(s, '-').c_str());
+                    std::fputc('\n', stdout);
+                };
+
+                line();
+                {   // header
+                    std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.front()[0].c_str());
+                    for (size_t i = 1, is = tab.front().size(); i != is; ++i)
+                        std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.front()[i].c_str());
+                    std::fputc('\n', stdout);
+                }
+                line();
+                {   // body
+                    for (size_t i = 1, is = tab.size() - 1; i != is; ++i) {
+                        std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab[i][0].c_str());
+                        for (size_t j = 1, js = tab[i].size(); j != js; ++j)
+                            std::fprintf(stdout, " %*s |", (unsigned)wid[j], tab[i][j].c_str());
+                        std::fputc('\n', stdout);
+                    }
+                }
+                line();
+                {   // average
+                    std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.back()[0].c_str());
+                    for (size_t i = 1, is = tab.back().size(); i != is; ++i)
+                        std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.back()[i].c_str());
+                    std::fputc('\n', stdout);
+                }
+                line();
+            }
+        }
+
+        result res;
+            for (auto& t : time)
+                ++res.all, res.err += !t.error.empty();
+        return res;
     }
 
 }
@@ -737,12 +914,13 @@ int main(int argc, char *argv[]) {
     }
 
     result res;
+    bool has_diff = false;
 
     for (int i = 1; i != argc; ++i) {
         std::ifstream is(argv[i]);
             if (!is) {
                 CXON_ASSERT(0, "unexpected");
-                ++res.err, fprintf(stderr, "file not found: '%s'\n", argv[i]);
+                ++res.err, fprintf(stderr, "cannot be opened: '%s'\n", argv[i]);
                 continue;
             }
         fixture fixture;
@@ -758,10 +936,13 @@ int main(int argc, char *argv[]) {
             res.all += r.all, res.err += r.err;
         }
         else if (fixture.type == "round-trip") {
+            has_diff = !fixture.in.empty();
             result const r = round_trip::execute(fixture);
             res.all += r.all, res.err += r.err;
         }
         else if (fixture.type == "timing") {
+            if (!fixture.in.empty() && has_diff)
+                std::fprintf(stdout, "\n");
             result const r = timing::execute(fixture);
             res.all += r.all, res.err += r.err;
         }
