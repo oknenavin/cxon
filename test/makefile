@@ -52,6 +52,7 @@ check-cbor: $(outdir)/check-cbor
 check-cbor-node: $(outdir)/check-cbor-node
 	@(cd $(outdir) && ../$<)
 	@(cd $(outdir) && ../$< $(datdir)/cbor/set.1.in)
+	@(cd $(outdir) && ../$< $(datdir)/cbor/round-trip.in | xargs -n2 diff -q)
 
 $(outdir)/check-json: $(check-json-src)
 	@mkdir -p $(outdir)

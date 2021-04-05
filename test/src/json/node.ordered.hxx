@@ -6,7 +6,9 @@
 #ifndef CXON_TEST_NODE_ORDERED_HXX_
 #define CXON_TEST_NODE_ORDERED_HXX_
 
-namespace cxon { namespace json { namespace ordered {
+// interface ///////////////////////////////////////////////////////////////////
+
+namespace cxon { namespace test { namespace ordered {
 
     template <typename K, typename V, typename ...R>
         struct object : std::vector<std::pair<K, V>, R...> {
@@ -16,43 +18,102 @@ namespace cxon { namespace json { namespace ordered {
 
 }}}
 
+namespace cxon { namespace test { namespace json {
+
+    struct ordered_node_traits : cxon::json::node_traits {
+        template <typename K, typename V> using object_type = ordered::object<K, V>;
+    };
+    using ordered_node = cxon::json::basic_node<ordered_node_traits>;
+
+}}}
+
+namespace cxon { namespace test { namespace cbor {
+
+    struct ordered_node_traits : cxon::cbor::node_traits {
+        template <typename K, typename V> using map_type = ordered::object<K, V>;
+    };
+    using ordered_node = cxon::cbor::basic_node<ordered_node_traits>;
+
+}}}
+
+// implementation //////////////////////////////////////////////////////////////
+
 namespace cxon {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct read<X, json::ordered::object<K, V, R...>> {
-            template <typename II, typename Cx>
-                static bool value(json::ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
-                    return cio::con::read_map<X>(i, e, cx, [&] {
+        struct read<JSON<X>, test::ordered::object<K, V, R...>> {
+            template <typename II, typename Cx, typename Y = JSON<X>>
+                static bool value(test::ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
+                    return cio::con::read_map<Y>(i, e, cx, [&] {
 #                       if __cplusplus < 201703L
                             auto& o = (t.emplace_back(), t.back());
 #                       else
                             auto& o = t.emplace_back();
 #                       endif
-                        return cio::read_key<X>(o.first, i, e, cx) && read_value<X>(o.second, i, e, cx);
+                        return cio::read_key<Y>(o.first, i, e, cx) && read_value<Y>(o.second, i, e, cx);
                     });
                 }
         };
 
     template <typename X, typename K, typename V, typename ...R>
-        struct write<X, json::ordered::object<K, V, R...>> {
-            template <typename O, typename Cx>
-                static bool value(O& o, const json::ordered::object<K, V, R...>& t, Cx& cx) {
-                    using value_type = typename json::ordered::object<K, V, R...>::value_type;
-                    return cio::con::write_map<X>(o, t, cx, [&](const value_type& e) {
-                        return cio::write_key<X>(o, e.first, cx) && write_value<X>(o, e.second, cx);
+        struct write<JSON<X>, test::ordered::object<K, V, R...>> {
+            template <typename O, typename Cx, typename Y = JSON<X>>
+                static bool value(O& o, const test::ordered::object<K, V, R...>& t, Cx& cx) {
+                    using value_type = typename test::ordered::object<K, V, R...>::value_type;
+                    return cio::con::write_map<Y>(o, t, cx, [&](const value_type& e) {
+                        return cio::write_key<Y>(o, e.first, cx) && write_value<Y>(o, e.second, cx);
                     });
                 }
         };
 
 }
 
-namespace cxon { namespace json {
+namespace cxon {
 
-    struct ordered_node_traits : node_traits {
-        template <typename K, typename V> using object_type = ordered::object<K, V>;
-    };
-    using ordered_node = basic_node<ordered_node_traits>;
+    namespace cbor { namespace cnt {
 
-}}
+        template <typename X, typename K, typename V, typename ...R>
+            struct element_reader<CBOR<X>, test::ordered::object<K, V, R...>> {
+                template <typename II, typename Cx, typename Y = CBOR<X>>
+                    static bool read(test::ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
+#                       if __cplusplus < 201703L
+                            auto& o = (t.emplace_back(), t.back());
+#                       else
+                            auto& o = t.emplace_back();
+#                       endif
+                        return  read_value<Y>(o.first, i, e, cx) &&
+                                read_value<Y>(o.second, i, e, cx)
+                        ;
+                    }
+            };
+        template <typename X, typename K, typename V, typename ...R>
+            struct element_writer<CBOR<X>, test::ordered::object<K, V, R...>> {
+            template <typename O, typename Cx, typename Y = CBOR<X>>
+                static bool write(O& o, const typename test::ordered::object<K, V, R...>::value_type& t, Cx& cx) {
+                    return  write_value<Y>(o, t.first, cx) &&
+                            write_value<Y>(o, t.second, cx)
+                    ;
+                }
+            };
+
+    }}
+
+    template <typename X, typename K, typename V, typename ...R>
+        struct read<CBOR<X>, test::ordered::object<K, V, R...>> {
+            template <typename II, typename Cx, typename Y = CBOR<X>>
+                static bool value(test::ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
+                    return cbor::cnt::read_array<Y>(t, i, e, cx);
+                }
+        };
+
+    template <typename X, typename K, typename V, typename ...R>
+        struct write<CBOR<X>, test::ordered::object<K, V, R...>> {
+            template <typename O, typename Cx, typename Y = CBOR<X>>
+                static bool value(O& o, const test::ordered::object<K, V, R...>& t, Cx& cx) {
+                    return cbor::cnt::write_array<Y, Y::map>(o, t, cx);
+                }
+        };
+
+}
 
 #endif // CXON_TEST_NODE_ORDERED_HXX_

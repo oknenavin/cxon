@@ -22,7 +22,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using node = cxon::json::ordered_node;
+using node = cxon::test::json::ordered_node;
 
 struct test_time {
     size_t size = 0;

@@ -1,5 +1,6 @@
 {
-    "in": "../data/cbor/set.1/appendix_a.json",
+    "type": "test-vector",
+    "in": ["../data/cbor/set.1/appendix_a.json"],
     "fix": {
         "c249010000000000000000":                             { "act": "json", "data": "[1, 0, 0, 0, 0, 0, 0, 0, 0]" },
         "3bffffffffffffffff":                                 { "act": "skip", "data": "invalid 64-bit signed integer" },
