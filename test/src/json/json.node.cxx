@@ -11,7 +11,7 @@
 
 #include "cxon/lang/json/tidy.hxx"
 
-#include "node.ordered.hxx"
+#include "../node.ordered.hxx"
 
 #include <fstream>
 #include <memory>
@@ -22,7 +22,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using node = cxon::json::ordered_node;
+using node = cxon::test::json::ordered_node;
 
 struct test_time {
     size_t size = 0;
@@ -71,7 +71,7 @@ static void cxon_json_test_time(test_case& test) {
         if (!is) return test.error = "cannot be opened", void();
     std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
     {   // size
-        test.time.size = json.size();
+        test.time.size = json.size() - 1;
     }
     {   // cxon
         std::vector<node> vj;
@@ -294,7 +294,7 @@ static unsigned self() {
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                 // seems to be fixed around 10, after the inclusion of cbor.hxx,
                 // funnily enough, this workaround continues to work for from_chars (unlike to_chars)
-                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::test::json::ordered_node_traits>
                                     (jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           endif
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
@@ -790,7 +790,7 @@ int main(int argc, char *argv[]) {
                 return b;
             };
             {   // header
-                tab.push_back({"File", "Size", "Read", "MB/s", "Write", "MB/s", "Tidy/itr", "MB/s", "Tidy/str", "MB/s"});
+                tab.push_back({"JSON/File", "Size", "Read", "MB/s", "Write", "MB/s", "Tidy/itr", "MB/s", "Tidy/str", "MB/s"});
             }
             test_time total;
             {   // body

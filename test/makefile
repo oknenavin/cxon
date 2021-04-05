@@ -25,7 +25,7 @@ check-cbor-node-src = \
 
 check: check-json check-json-node check-cbor check-cbor-node
 
-time: time-json
+time: time-json time-cbor
 
 check-json: $(outdir)/check-json
 	@(cd $(outdir) && ../$<)
@@ -51,7 +51,11 @@ check-cbor: $(outdir)/check-cbor
 
 check-cbor-node: $(outdir)/check-cbor-node
 	@(cd $(outdir) && ../$<)
-	@(cd $(outdir) && ../$< $(datdir)/cbor/set.1.in)
+	@(cd $(outdir) && ../$< $(datdir)/cbor/test-vector.in)
+	@(cd $(outdir) && ../$< $(datdir)/cbor/round-trip.in | xargs -n2 diff -q)
+
+time-cbor: $(outdir)/check-cbor-node
+	@(cd $(outdir) && ../$< $(datdir)/cbor/time.in)
 
 $(outdir)/check-json: $(check-json-src)
 	@mkdir -p $(outdir)

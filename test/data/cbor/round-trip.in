@@ -1,0 +1,13 @@
+{
+    "type": "round-trip",
+    "in": [
+        "../data/json/set.3/blns.json",
+        "../data/json/set.4/emoji.json",
+        "../data/json/set.5/random.json",
+        "../data/json/set.5/instruments.json",
+        "../data/json/set.5/apache_builds.json",
+        "../data/json/set.5/canada.json",
+        "../data/json/set.5/citm_catalog.json",
+        "../data/json/set.5/github_events.json"
+    ]
+}
