@@ -733,9 +733,9 @@ int main(int argc, char *argv[]) {
                 json.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
             }
             {   // tidy
-                std::ofstream os(name(c.source) + ".0.json", std::ofstream::binary);
+                std::ofstream os(name(c.source) + ".jt(0).json", std::ofstream::binary);
                     if (!os) {
-                        ++err, c.error = name(c.source) + ".0.json" + ": cannot be opened";
+                        ++err, c.error = name(c.source) + ".jt(0).json" + ": cannot be opened";
                         continue;
                     }
                 cxon::json::tidy(std::ostreambuf_iterator<char>(os), json);
@@ -749,9 +749,9 @@ int main(int argc, char *argv[]) {
                     }
             }
             {   // to
-                std::ofstream os(name(c.source) + ".1.json", std::ofstream::binary);
+                std::ofstream os(name(c.source) + ".jt(1).json", std::ofstream::binary);
                     if (!os) {
-                        ++err, c.error = name(c.source) + ".1.json" + "cannot be opened";
+                        ++err, c.error = name(c.source) + ".jt(1).json" + "cannot be opened";
                         continue;
                     }
                 auto const w = cxon::to_bytes(cxon::json::make_indenter(std::ostreambuf_iterator<char>(os)), result);
@@ -769,7 +769,7 @@ int main(int argc, char *argv[]) {
             }
         if (!fc) {
             for (auto& c : diff) {
-                std::fprintf(stdout, "%s %s ", (name(c.source) + ".0.json").c_str(), (name(c.source) + ".1.json").c_str()), std::fflush(stdout);
+                std::fprintf(stdout, "%s %s ", (name(c.source) + ".jt(0).json").c_str(), (name(c.source) + ".jt(1).json").c_str()), std::fflush(stdout);
             }
         }
         else {
