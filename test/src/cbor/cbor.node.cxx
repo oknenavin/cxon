@@ -8,12 +8,10 @@
 #include "cxon/cbor.hxx"
 #include "cxon/json.hxx"
 
-#include "cxon/lib/node.hxx"
+#include "cxon/lib/node.ordered.hxx"
 #include "cxon/lib/std/list.hxx"
 
 #include "cxon/lang/json/tidy.hxx"
-
-#include "../node.ordered.hxx"
 
 #include <fstream>
 #include <chrono>
@@ -681,7 +679,7 @@ namespace round_trip
             }
             {   // json => cbor => json
                 is.seekg(0);
-                cxon::test::cbor::ordered_node n0;
+                cxon::cbor::ordered_node n0;
                     {   auto const r = cxon::from_bytes<JSON>(n0, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
                         if (!r) {
                             ++res.err, fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
@@ -695,7 +693,7 @@ namespace round_trip
                             continue;
                         }
                     }
-                cxon::test::json::ordered_node n1;
+                cxon::json::ordered_node n1;
                     {   auto const r = cxon::from_bytes<CBOR>(n1, cbor);
                         if (!r) {
                             ++res.err, fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
@@ -781,7 +779,7 @@ namespace timing
                         t.error = "error: cannot be opened: ''" + file + "'";
                         continue;
                     }
-                cxon::test::cbor::ordered_node n;
+                cxon::cbor::ordered_node n;
                 {   auto const r = cxon::from_bytes<JSON>(n, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
                     if (!r) {
                         t.error = r.ec.category().name() + std::string(": ") + r.ec.message();
@@ -799,7 +797,7 @@ namespace timing
                 t.source = file;
                 t.size = cbor.size();
 
-                std::vector<cxon::test::cbor::ordered_node> vn;
+                std::vector<cxon::cbor::ordered_node> vn;
                 t.read = measure(cxon_cbor_repeat, [&] {
                     vn.emplace_back();
                     auto const r = cxon::from_bytes(vn.back(), cbor);
