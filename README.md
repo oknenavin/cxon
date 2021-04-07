@@ -24,6 +24,7 @@
 `CXON` is a `C++11` compliant, self contained, header-only library  
 `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format  
 `CXON` implements [`CBOR`](https://cbor.io) as a serialization format  
+`CXON` allows for cross-format serialization and deserialization  
 `CXON` is easy to extend for different formats and types, imposing minimal overhead  
 
 
@@ -47,8 +48,8 @@
 ###### Example
 
 ``` c++
-#include "cxon/json.hxx" /* included first, JSON will be the default format */
-#include "cxon/cbor.hxx" /* not the first, CBOR format must be explicitly specified */
+#include "cxon/json.hxx" // included first, JSON will be the default format
+#include "cxon/cbor.hxx" // not the first, CBOR format must be explicitly specified
 
 // use for all formats, the relevant code will be included depending of the formats included above
 #include "cxon/lib/std/string.hxx"
@@ -86,7 +87,7 @@ int main() {
 
   - traits template parameter (support for different serialization formats, 
     see [`Format traits`](src/cxon/README.md#format-traits))
-  - trailing named parameters of an arbitrary type (passing of parameters to specific 
+  - trailing named parameters of an arbitrary type (for passing of parameters to specific 
     type serializers, see [Named parameters](src/cxon/README.md#named-parameters)
   - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](src/cxon/README.md#interface))
@@ -249,8 +250,8 @@ which can represent arbitrary `JSON` (it's also an example of how `CXON` can be 
 
 #### Compilation
 
-`CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++-5`, 
-`clang++-3.5` and `msvc++ 14.1` (see the [builds](https://github.com/oknenavin/cxon/actions)).
+`CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
+`clang++ >= 3.5` and `msvc++ >= 14.1` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
 
 --------------------------------------------------------------------------------
