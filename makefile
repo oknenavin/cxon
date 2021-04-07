@@ -138,7 +138,8 @@ cxon-lib-std = \
     $(srcdir)/lib/std/vector.hxx
 
 cxon-lib = \
-    $(srcdir)/lib/node.hxx
+    $(srcdir)/lib/node.hxx \
+    $(srcdir)/lib/node.ordered.hxx
 
 cxon = \
     $(srcdir)/cxon.hxx \
