@@ -6,12 +6,10 @@
 #include "cxon/json.hxx"
 #include "cxon/cbor.hxx"
 
-#include "cxon/lib/node.hxx"
+#include "cxon/lib/node.ordered.hxx"
 #include "cxon/lib/std/list.hxx"
 
 #include "cxon/lang/json/tidy.hxx"
-
-#include "../node.ordered.hxx"
 
 #include <fstream>
 #include <memory>
@@ -22,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using node = cxon::test::json::ordered_node;
+using node = cxon::json::ordered_node;
 
 struct test_time {
     size_t size = 0;
@@ -294,7 +292,7 @@ static unsigned self() {
                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                 // seems to be fixed around 10, after the inclusion of cbor.hxx,
                 // funnily enough, this workaround continues to work for from_chars (unlike to_chars)
-                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::test::json::ordered_node_traits>
+                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
                                     (jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #           endif
             CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
