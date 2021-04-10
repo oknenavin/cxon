@@ -6,17 +6,11 @@
 #ifndef CXON_CBOR_CBOR_HXX_
 #define CXON_CBOR_CBOR_HXX_
 
-#ifndef CXON_DEFAULT_FORMAT
-#   define CXON_DEFAULT_FORMAT CBOR<>
-#endif
-
-#include "cxon/cxon.hxx"
-
 #include "error.hxx"
 #include "fundamental.hxx"
 #include "compound.hxx"
-#include "class.hxx"
 #include "enum.hxx"
+#include "class.hxx"
 
 // implementation //////////////////////////////////////////////////////////////
 

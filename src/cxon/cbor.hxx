@@ -3,10 +3,15 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CBOR_HXX_
-#   define CXON_CBOR_HXX_
+#ifndef CXON_CBOR_DEFINED
+#define CXON_CBOR_DEFINED
 
-#   include "lang/cbor/cbor.hxx"
-#   define CXON_CBOR_DEFINED
+#ifndef CXON_DEFAULT_FORMAT
+#   define CXON_DEFAULT_FORMAT CBOR<>
+#endif
 
-#endif // CXON_CBOR_HXX_
+#include "lang/cbor/cbor-fwd.hxx"
+#   include "cxon.hxx"
+#include "lang/cbor/cbor.hxx"
+
+#endif // CXON_CBOR_DEFINED
