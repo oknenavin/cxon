@@ -11,7 +11,6 @@
 #define CXON_VERSION_PATCH 2
 
 #include "utility.hxx"
-#include "lang-fwd.hxx"
 
 #include <utility>
 #include <type_traits>

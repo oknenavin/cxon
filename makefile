@@ -143,7 +143,6 @@ cxon-lib = \
 
 cxon = \
     $(srcdir)/cxon.hxx \
-    $(srcdir)/lang-fwd.hxx \
     $(srcdir)/utility.hxx
 
 check:

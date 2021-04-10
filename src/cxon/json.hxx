@@ -3,10 +3,15 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_HXX_
-#   define CXON_JSON_HXX_
+#ifndef CXON_JSON_DEFINED
+#define CXON_JSON_DEFINED
 
-#   include "lang/json/json.hxx"
-#   define CXON_JSON_DEFINED
+#ifndef CXON_DEFAULT_FORMAT
+#   define CXON_DEFAULT_FORMAT JSON<>
+#endif
 
-#endif // CXON_JSON_HXX_
+#include "lang/json/json-fwd.hxx"
+#   include "cxon/cxon.hxx"
+#include "lang/json/json.hxx"
+
+#endif // CXON_JSON_DEFINED

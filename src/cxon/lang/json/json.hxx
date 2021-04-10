@@ -6,16 +6,10 @@
 #ifndef CXON_JSON_JSON_HXX_
 #define CXON_JSON_JSON_HXX_
 
-#ifndef CXON_DEFAULT_FORMAT
-#   define CXON_DEFAULT_FORMAT JSON<>
-#endif
-
-#include "cxon/cxon.hxx"
-
 #include "error.hxx"
 #include "fundamental.hxx"
-#include "enum.hxx"
 #include "compound.hxx"
+#include "enum.hxx"
 #include "class.hxx"
 
 // implementation //////////////////////////////////////////////////////////////

@@ -176,7 +176,7 @@ namespace cxon {
             range_output_iterator& operator  *() noexcept { return *this; }
 
             range_output_iterator(FwIt b, FwIt e)
-            :   b_(b), e_(e)
+            :   b_(b), e_(e), g_(true)
             { CXON_ASSERT(std::distance(b_, e_) >= 0, "unexpected range"); }
 
             range_output_iterator& operator =(const value_type& b) {
@@ -211,7 +211,7 @@ namespace cxon {
             private:
                 FwIt b_;
                 FwIt e_;
-                bool g_ = true;
+                bool g_;
         };
 
     template <typename FwIt>
