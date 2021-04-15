@@ -102,7 +102,7 @@ namespace cxon { // pointer/read
             }
 
         template <typename X, typename T, typename II, typename Cx>
-            static auto read_pointer_(T*& t, II& i, II e, Cx& cx)
+            inline auto read_pointer_(T*& t, II& i, II e, Cx& cx)
                 -> enable_if_t< std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
             {
                 size_t tag;
@@ -117,7 +117,7 @@ namespace cxon { // pointer/read
                 }
             }
         template <typename X, typename T, typename II, typename Cx>
-            static auto read_pointer_(T*& t, II& i, II e, Cx& cx)
+            inline auto read_pointer_(T*& t, II& i, II e, Cx& cx)
                 -> enable_if_t<!std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
             {
                 size_t tag;

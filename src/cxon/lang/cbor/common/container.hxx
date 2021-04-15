@@ -125,25 +125,25 @@ namespace cxon { namespace cbor { namespace cnt { // container mutation
     namespace bits {
 
         template <typename C>
-            static auto emplace_(option<3>, C& c)
+            inline auto emplace_(option<3>, C& c)
                 -> enable_if_t<std::is_same<decltype(container_mutator<C>::emplace(c)), typename C::reference>::value, typename C::reference>
             {
                 return container_mutator<C>::emplace(c);
             }
         template <typename C>
-            static auto emplace_(option<2>, C& c)
+            inline auto emplace_(option<2>, C& c)
                 -> enable_if_t<has_emplace_back<C>::value, typename C::reference>
             {
                 return c.emplace_back();
             }
         template <typename C>
-            static auto emplace_(option<1>, C& c)
+            inline auto emplace_(option<1>, C& c)
                 -> enable_if_t<has_emplace_back_void<C>::value && has_back<C>::value, typename C::reference>
             {
                 return c.emplace_back(), c.back();
             }
         template <typename C>
-            static auto emplace_(option<0>, C& c)
+            inline auto emplace_(option<0>, C& c)
                 -> enable_if_t<has_push_back<C>::value && has_back<C>::value, typename C::reference>
             {
                 return c.push_back({}), c.back();

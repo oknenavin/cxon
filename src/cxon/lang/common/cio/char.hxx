@@ -37,10 +37,10 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx);
     template <typename X, typename II, typename Cx>
-        static char32_t str_to_utf32(II& i, II e, Cx& cx);
+        inline char32_t str_to_utf32(II& i, II e, Cx& cx);
 
     template <typename T>
-        static auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
+        inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> enable_if_t<is_char_8<T>::value, int>;
 
 }}}
@@ -132,7 +132,7 @@ namespace cxon { namespace cio { namespace chr {
 
 #   define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, 0xFFFFFFFF
         template <typename X, typename II, typename Cx>
-            static char32_t str_to_utf32(II& i, II e, Cx& cx) {
+            inline char32_t str_to_utf32(II& i, II e, Cx& cx) {
                 char32_t const c0 = peek(i, e);
                 if (c0 != '\\') {
                     if ((c0 & 0x80) == 0)
@@ -159,7 +159,7 @@ namespace cxon { namespace cio { namespace chr {
 #   undef CXON_EXPECT
 
     template <typename T>
-        static auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
+        inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> enable_if_t<is_char_8<T>::value, int>
         {
             if (c32 < 0x80)  // 0XXX XXXX

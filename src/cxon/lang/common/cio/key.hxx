@@ -32,10 +32,10 @@ namespace cxon { namespace cio { namespace key { // key read/write extension poi
         struct write;
 
     template <typename X, typename T, typename II, typename Cx>
-        static bool read_key(T& t, II& i, II e, Cx& cx); // <key>
+        inline bool read_key(T& t, II& i, II e, Cx& cx); // <key>
 
     template <typename X, typename T, typename O, typename Cx>
-        static bool write_key(O& o, const T& t, Cx& cx); // <key>
+        inline bool write_key(O& o, const T& t, Cx& cx); // <key>
 
 }}}
 
@@ -79,20 +79,20 @@ namespace cxon { namespace cio { namespace key {
     namespace bits {
 
         template <typename X, typename T, typename II, typename Cx>
-            static auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!is_quoted<T>::value, bool> {
+            inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!is_quoted<T>::value, bool> {
                 return  consume<X>(X::string::beg, i, e, cx) &&
                             read_value<X>(t, i, e, cx) &&
                         consume<X>(X::string::end, i, e, cx)
                 ;
             }
         template <typename X, typename T, typename II, typename Cx>
-            static auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t< is_quoted<T>::value, bool> {
+            inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t< is_quoted<T>::value, bool> {
                 return  read_value<X>(t, i, e, cx);
             }
 
     }
     template <typename X, typename T, typename II, typename Cx>
-        static bool read_key(T& t, II& i, II e, Cx& cx) {
+        inline bool read_key(T& t, II& i, II e, Cx& cx) {
             return bits::read_key_<X>(t, i, e, cx);
         }
 
@@ -155,7 +155,7 @@ namespace cxon { namespace cio { namespace key {
             }
 
         template <typename X, typename T, typename O, typename Cx>
-            static auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!is_quoted<T>::value, bool> {
+            inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!is_quoted<T>::value, bool> {
                 auto e = make_escaper<X>(o);
                 return  poke<X>(o, X::string::beg, cx) &&
                             write_value<X>(e, t, cx) &&
@@ -163,13 +163,13 @@ namespace cxon { namespace cio { namespace key {
                 ;
             }
         template <typename X, typename T, typename O, typename Cx>
-            static auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t< is_quoted<T>::value, bool> {
+            inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t< is_quoted<T>::value, bool> {
                 return  write_value<X>(o, t, cx);
             }
 
     }
     template <typename X, typename T, typename O, typename Cx>
-        static bool write_key(O& o, const T& t, Cx& cx) {
+        inline bool write_key(O& o, const T& t, Cx& cx) {
             return bits::write_key_<X>(o, t, cx);
         }
 
