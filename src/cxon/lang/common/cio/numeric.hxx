@@ -213,22 +213,22 @@ namespace cxon { namespace cio { namespace num { // read
                 return (r.ec == std::errc() && (i = r.ptr, true)) || cx/X::read_error::integral_invalid;
             }
 
-        template <typename N>
-            inline charconv::bits::from_chars_result from_chars_(const char* b, const char* e, N& t) {
+        template <typename T>
+            inline charconv::bits::from_chars_result from_chars_(const char* b, const char* e, T& t) {
                 if (*b == '"') {
-                    if (b[1] == '-' && e - b >= 6) { // (false [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
-                        if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<N>::infinity(),
+                    if (b[1] == '-' && e - b >= 6) { // (false-positive [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
+                        if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<T>::infinity(),
                             charconv::bits::from_chars_result{ b + 6, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                         ;
-                        return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
+                        return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<T>::quiet_NaN(),
                             charconv::bits::from_chars_result{ b + 6, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                     }
-                    else if (e - b >= 5) { // (false [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
-                        if (b[1] == 'i') return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ? t =  std::numeric_limits<N>::infinity(),
+                    else if (e - b >= 5) { // (false-positive [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
+                        if (b[1] == 'i') return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ? t =  std::numeric_limits<T>::infinity(),
                             charconv::bits::from_chars_result{ b + 5, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                         ;
-                        return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<N>::quiet_NaN(),
+                        return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<T>::quiet_NaN(),
                             charconv::bits::from_chars_result{ b + 5, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                     }
@@ -243,7 +243,7 @@ namespace cxon { namespace cio { namespace num { // read
                 II const o = i;
                     char s[num_len_max::constant<napa_type<Cx>>(64)];
                     int const b = number_consume_<X, T>(s, s + sizeof(s), i, e);
-                        // coverity[overrun_buffer_val] - if b > 0 and the input is a string, the possible values are \"nan\", \"inf\" and \"-inf\" (see [&1])
+                        // coverity[overrun-buffer-val] - if b > 0 and the input is a string, the possible values are \"nan\", \"inf\" and \"-inf\" (see [&1])
                         return  (b != -1                                            || (rewind(i, o), cx/X::read_error::overflow)) &&
                                 (b !=  0                                            || (rewind(i, o), cx/X::read_error::floating_point_invalid)) &&
                                 (from_chars_(s, s + sizeof(s), t).ec == std::errc() || (rewind(i, o), cx/X::read_error::floating_point_invalid))
