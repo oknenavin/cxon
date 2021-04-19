@@ -11,16 +11,23 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<JSON<X>, std::unordered_set<T, R...>>   : json::bits::set_reader<JSON<X>, std::unordered_set<T, R...>> {};
+        struct element_reader<JSON<X>, std::unordered_set<T, R...>>         : json::bits::set_element_reader<JSON<X>, std::unordered_set<T, R...>> {};
+    template <typename X, typename T, typename ...R>
+        struct element_reader<JSON<X>, std::unordered_multiset<T, R...>>    : json::bits::set_element_reader<JSON<X>, std::unordered_multiset<T, R...>> {};
+
+}
+
+namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct write<JSON<X>, std::unordered_set<T, R...>>  : json::bits::set_writer<JSON<X>, std::unordered_set<T, R...>> {};
+        struct read<JSON<X>, std::unordered_set<T, R...>>                   : json::bits::set_reader<JSON<X>, std::unordered_set<T, R...>> {};
+    template <typename X, typename T, typename ...R>
+        struct write<JSON<X>, std::unordered_set<T, R...>>                  : json::bits::set_writer<JSON<X>, std::unordered_set<T, R...>> {};
 
     template <typename X, typename T, typename ...R>
-        struct read<JSON<X>, std::unordered_multiset<T, R...>>  : json::bits::set_reader<JSON<X>, std::unordered_multiset<T, R...>> {};
-
+        struct read<JSON<X>, std::unordered_multiset<T, R...>>              : json::bits::set_reader<JSON<X>, std::unordered_multiset<T, R...>> {};
     template <typename X, typename T, typename ...R>
-        struct write<JSON<X>, std::unordered_multiset<T, R...>> : json::bits::set_writer<JSON<X>, std::unordered_multiset<T, R...>> {};
+        struct write<JSON<X>, std::unordered_multiset<T, R...>>             : json::bits::set_writer<JSON<X>, std::unordered_multiset<T, R...>> {};
 
 }
 

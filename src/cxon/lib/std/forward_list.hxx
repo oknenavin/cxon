@@ -15,4 +15,19 @@
 #       include "cxon/lang/cbor/lib/std/forward_list.hxx"
 #   endif
 
+namespace cxon {
+
+    template <typename T, typename ...R>
+        struct container_traits<std::forward_list<T, R...>> {
+            static auto emplace(std::forward_list<T, R...>& c) -> typename std::forward_list<T, R...>::reference {
+#               if __cplusplus < 201703L
+                    return c.emplace_front(), c.front();
+#               else
+                    return c.emplace_front();
+#               endif
+            }
+        };
+
+}
+
 #endif // CXON_LIB_STD_FORWARD_LIST_

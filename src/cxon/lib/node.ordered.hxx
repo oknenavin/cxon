@@ -57,17 +57,31 @@
     namespace cxon {
 
         template <typename X, typename K, typename V, typename ...R>
+            struct element_reader<JSON<X>, ordered::object<K, V, R...>> {
+                template <typename II, typename Cx, typename Y = JSON<X>>
+                    static bool read(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
+                        auto& o = container_emplace(t);
+                        return  cio::read_key<Y>(o.first, i, e, cx) &&
+                                read_value<Y>(o.second, i, e, cx)
+                        ;
+                    }
+            };
+
+        template <typename X, typename K, typename V, typename ...R>
+            struct element_writer<JSON<X>, ordered::object<K, V, R...>> {
+                template <typename O, typename Cx, typename Y = JSON<X>>
+                    static bool write(O& o, const typename ordered::object<K, V, R...>::value_type& e, Cx& cx) {
+                        return  cio::write_key<Y>(o, e.first, cx) &&
+                                write_value<Y>(o, e.second, cx)
+                        ;
+                    }
+            };
+
+        template <typename X, typename K, typename V, typename ...R>
             struct read<JSON<X>, ordered::object<K, V, R...>> {
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
-                        return cio::con::read_map<Y>(i, e, cx, [&] {
-#                           if __cplusplus < 201703L
-                                auto& o = (t.emplace_back(), t.back());
-#                           else
-                                auto& o = t.emplace_back();
-#                           endif
-                            return cio::read_key<Y>(o.first, i, e, cx) && read_value<Y>(o.second, i, e, cx);
-                        });
+                        return cio::cnt::read_map<Y>(t, i, e, cx);
                     }
             };
 
@@ -75,10 +89,7 @@
             struct write<JSON<X>, ordered::object<K, V, R...>> {
                 template <typename O, typename Cx, typename Y = JSON<X>>
                     static bool value(O& o, const ordered::object<K, V, R...>& t, Cx& cx) {
-                        using value_type = typename ordered::object<K, V, R...>::value_type;
-                        return cio::con::write_map<Y>(o, t, cx, [&](const value_type& e) {
-                            return cio::write_key<Y>(o, e.first, cx) && write_value<Y>(o, e.second, cx);
-                        });
+                        return cio::cnt::write_map<Y>(o, t, cx);
                     }
             };
 
@@ -90,33 +101,25 @@
 
     namespace cxon {
 
-        namespace cbor { namespace cnt {
-
-            template <typename X, typename K, typename V, typename ...R>
-                struct element_reader<CBOR<X>, ordered::object<K, V, R...>> {
-                    template <typename II, typename Cx, typename Y = CBOR<X>>
-                        static bool read(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
-#                           if __cplusplus < 201703L
-                                auto& o = (t.emplace_back(), t.back());
-#                           else
-                                auto& o = t.emplace_back();
-#                           endif
-                            return  read_value<Y>(o.first, i, e, cx) &&
-                                    read_value<Y>(o.second, i, e, cx)
-                            ;
-                        }
-                };
-            template <typename X, typename K, typename V, typename ...R>
-                struct element_writer<CBOR<X>, ordered::object<K, V, R...>> {
-                template <typename O, typename Cx, typename Y = CBOR<X>>
-                    static bool write(O& o, const typename ordered::object<K, V, R...>::value_type& t, Cx& cx) {
-                        return  write_value<Y>(o, t.first, cx) &&
-                                write_value<Y>(o, t.second, cx)
+        template <typename X, typename K, typename V, typename ...R>
+            struct element_reader<CBOR<X>, ordered::object<K, V, R...>> {
+                template <typename II, typename Cx, typename Y = CBOR<X>>
+                    static bool read(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
+                        auto& o = container_emplace(t);
+                        return  read_value<Y>(o.first, i, e, cx) &&
+                                read_value<Y>(o.second, i, e, cx)
                         ;
                     }
-                };
-
-        }}
+            };
+        template <typename X, typename K, typename V, typename ...R>
+            struct element_writer<CBOR<X>, ordered::object<K, V, R...>> {
+            template <typename O, typename Cx, typename Y = CBOR<X>>
+                static bool write(O& o, const typename ordered::object<K, V, R...>::value_type& t, Cx& cx) {
+                    return  write_value<Y>(o, t.first, cx) &&
+                            write_value<Y>(o, t.second, cx)
+                    ;
+                }
+            };
 
         template <typename X, typename K, typename V, typename ...R>
             struct read<CBOR<X>, ordered::object<K, V, R...>> {

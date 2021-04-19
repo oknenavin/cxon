@@ -16,7 +16,7 @@ namespace cxon {
                 static bool value(std::valarray<T>& t, II& i, II e, Cx& cx) { // no, it sucks
                     std::valarray<T> v(4);
                     size_t p = 0;
-                    bool const r = cio::con::read_list<Y>(i, e, cx, [&] {
+                    bool const r = cio::cnt::read_list<Y>(i, e, cx, [&] {
                         if (p >= v.size()) {
                             std::valarray<T> n(std::move(v));
                             v.resize(p + p);
@@ -36,11 +36,11 @@ namespace cxon {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::valarray<T>& t, Cx& cx) {
 #                   ifdef _MSC_VER // std::begin/std::end broken for empty std::valarray
-                        return (t.size() && cio::con::write_list<Y>(o, std::begin(t), std::end(t), cx)) ||
+                        return (t.size() && cio::cnt::write_list<Y, std::valarray<T>>(o, std::begin(t), std::end(t), cx)) ||
                                (cio::poke<Y>(o, Y::list::beg, cx) && cio::poke<Y>(o, Y::list::end, cx))
                         ;
 #                   else
-                        return cio::con::write_list<Y>(o, std::begin(t), std::end(t), cx);
+                        return cio::cnt::write_list<Y, std::valarray<T>>(o, std::begin(t), std::end(t), cx);
 #                   endif
                 }
         };

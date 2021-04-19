@@ -10,17 +10,29 @@
 
 namespace cxon {
 
-    template <typename X, typename ...R>
-        struct read<JSON<X>, std::unordered_map<R...>>  : json::bits::map_reader<JSON<X>, std::unordered_map<R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct element_reader<JSON<X>, std::unordered_map<K, V, R...>>      : json::bits::map_element_reader<JSON<X>, std::unordered_map<K, V, R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct element_writer<JSON<X>, std::unordered_map<K, V, R...>>      : json::bits::map_element_writer<JSON<X>, std::unordered_map<K, V, R...>> {};
 
-    template <typename X, typename ...R>
-        struct write<JSON<X>, std::unordered_map<R...>> : json::bits::map_writer<JSON<X>, std::unordered_map<R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct element_reader<JSON<X>, std::unordered_multimap<K, V, R...>> : json::bits::map_element_reader<JSON<X>, std::unordered_multimap<K, V, R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct element_writer<JSON<X>, std::unordered_multimap<K, V, R...>> : json::bits::map_element_writer<JSON<X>, std::unordered_multimap<K, V, R...>> {};
 
-    template <typename X, typename ...R>
-        struct read<JSON<X>, std::unordered_multimap<R...>>     : json::bits::map_reader<JSON<X>, std::unordered_multimap<R...>> {};
+}
 
-    template <typename X, typename ...R>
-        struct write<JSON<X>, std::unordered_multimap<R...>>    : json::bits::map_writer<JSON<X>, std::unordered_multimap<R...>> {};
+namespace cxon {
+
+    template <typename X, typename K, typename V, typename ...R>
+        struct read<JSON<X>, std::unordered_map<K, V, R...>>                : json::bits::map_reader<JSON<X>, std::unordered_map<K, V, R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct write<JSON<X>, std::unordered_map<K, V, R...>>               : json::bits::map_writer<JSON<X>, std::unordered_map<K, V, R...>> {};
+
+    template <typename X, typename K, typename V, typename ...R>
+        struct read<JSON<X>, std::unordered_multimap<K, V, R...>>           : json::bits::map_reader<JSON<X>, std::unordered_multimap<K, V, R...>> {};
+    template <typename X, typename K, typename V, typename ...R>
+        struct write<JSON<X>, std::unordered_multimap<K, V, R...>>          : json::bits::map_writer<JSON<X>, std::unordered_multimap<K, V, R...>> {};
 
 }
 

@@ -16,7 +16,7 @@ namespace cxon {
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
                     II const o = i;
                         size_t p = 0;
-                    return cio::con::read_list<J>(i, e, cx, [&] {
+                    return cio::cnt::read_list<J>(i, e, cx, [&] {
                         return (p != N || (cio::rewind(i, o), cx/json::read_error::overflow)) &&
                                 read_value<J>(t[p++], i, e, cx)
                         ;
@@ -35,7 +35,7 @@ namespace cxon {
         struct write<JSON<X>, std::array<T, N>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::array<T, N>& t, Cx& cx) {
-                    return cio::con::write_list<J>(o, t, cx);
+                    return cio::cnt::write_list<J>(o, t, cx);
                 }
         };
 

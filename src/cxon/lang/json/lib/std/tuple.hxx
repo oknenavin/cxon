@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_TUPLE_HXX_
 #define CXON_JSON_LIB_STD_TUPLE_HXX_
 
-namespace cxon { namespace cio { namespace con { // container read/write helpers
+namespace cxon { namespace cio { namespace cnt { // container read/write helpers
 
     namespace bits {
 
@@ -73,7 +73,7 @@ namespace cxon {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::tuple<T...>& t, II& i, II e, Cx& cx) {
                     return  cio::consume<J>(J::list::beg, i, e, cx) &&
-                                cio::con::read_tuple<J>(t, i, e, cx) &&
+                                cio::cnt::read_tuple<J>(t, i, e, cx) &&
                             cio::consume<J>(J::list::end, i, e, cx)
                     ;
                 }
@@ -94,7 +94,7 @@ namespace cxon {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::tuple<T...>& t, Cx& cx) {
                     return  cio::poke<J>(o, J::list::beg, cx) &&
-                                cio::con::write_tuple<J>(o, t, cx) &&
+                                cio::cnt::write_tuple<J>(o, t, cx) &&
                             cio::poke<J>(o, J::list::end, cx)
                     ;
                 }

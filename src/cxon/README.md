@@ -649,7 +649,7 @@ namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON obj
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
                     return  cio::poke<J>(o, J::map::beg, cx) &&
-                                cio::con::write_tuple<J>(o, t, cx) &&
+                                cio::cnt::write_tuple<J>(o, t, cx) &&
                             cio::poke<J>(o, J::map::end, cx)
                     ;
                 }

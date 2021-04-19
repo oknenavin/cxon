@@ -14,7 +14,7 @@ namespace cxon {
         struct read<CBOR<X>, std::stack<T, R...>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::stack<T, R...>& t, II& i, II e, Cx& cx) {
-                    auto& c = cbor::cnt::adaptor<std::stack<T, R...>>::container(t);
+                    auto& c = adaptor_container(t);
                     return cbor::cnt::read_array<Y>(c, i, e, cx);
                 }
         };
@@ -23,7 +23,7 @@ namespace cxon {
         struct write<CBOR<X>, std::stack<T, R...>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::stack<T, R...>& t, Cx& cx) {
-                    auto const& c = cbor::cnt::adaptor<std::stack<T, R...>>::container(t);
+                    auto const& c = adaptor_container(t);
                     return cbor::cnt::write_array<Y>(o, c.begin(), c.end(), cx);
                 }
         };

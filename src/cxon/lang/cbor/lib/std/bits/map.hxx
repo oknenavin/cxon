@@ -12,7 +12,7 @@ namespace cxon { namespace cbor { namespace bits {
         struct map_element_reader {
             template <typename II, typename Cx>
                 static bool read(M& m, II& i, II e, Cx& cx) {
-                    auto k = typename M::key_type {}; auto v = typename M::mapped_type {};
+                    typename M::key_type k{}; typename M::mapped_type v{}; // TODO: allocator
                     return  read_value<X>(k, i, e, cx) &&
                             read_value<X>(v, i, e, cx) &&
                             (m.emplace(std::move(k), std::move(v)), true)
@@ -27,6 +27,22 @@ namespace cxon { namespace cbor { namespace bits {
                     return  write_value<X>(o, t.first, cx) &&
                             write_value<X>(o, t.second, cx)
                     ;
+                }
+        };
+
+    template <typename X, typename M>
+        struct map_reader {
+            template <typename II, typename Cx>
+                static bool value(M& m, II& i, II e, Cx& cx) {
+                    return cbor::cnt::read_array<X>(m, i, e, cx);
+                }
+        };
+
+    template <typename X, typename M>
+        struct map_writer {
+            template <typename O, typename Cx>
+                static bool value(O& o, const M& m, Cx& cx) {
+                    return cbor::cnt::write_array<X, X::map>(o, m, cx);
                 }
         };
 

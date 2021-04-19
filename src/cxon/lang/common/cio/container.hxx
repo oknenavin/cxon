@@ -7,123 +7,136 @@
 #define CXON_CIO_CONTAINER_HXX_
 
 #include "cio.hxx"
+#include "cxon/lang/common/container.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace cio { namespace con { // container read/write helpers
-
+namespace cxon { namespace cio { namespace cnt { // container read/write helpers
+    
+    template <typename X, typename C, typename II, typename Cx>
+        inline bool read_list(C& c, II& i, II e, Cx& cx);
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_list(II& i, II e, Cx& cx, EA element_add);
 
+    template <typename X, typename C, typename II, typename Cx>
+        inline bool read_map(C& c, II& i, II e, Cx& cx);
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_map(II& i, II e, Cx& cx, EA element_add);
 
-    template <typename X, typename O, typename II, typename Cx, typename L>
+    template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_list(O& o, II b, II e, Cx& cx, L element_write);
-    template <typename X, typename O, typename T, typename Cx, typename L>
-        inline bool write_list(O& o, const T& t, Cx& cx, L element_write);
-    template <typename X, typename O, typename II, typename Cx>
+    template <typename X, typename O, typename C, typename Cx, typename L>
+        inline bool write_list(O& o, const C& c, Cx& cx, L element_write);
+    template <typename X, typename C, typename O, typename II, typename Cx>
         inline bool write_list(O& o, II b, II e, Cx& cx);
-    template <typename X, typename O, typename T, typename Cx>
-        inline bool write_list(O& o, const T& t, Cx& cx);
+    template <typename X, typename O, typename C, typename Cx>
+        inline bool write_list(O& o, const C& c, Cx& cx);
 
-    template <typename X, typename O, typename II, typename Cx, typename L>
+    template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_map(O& o, II b, II e, Cx& cx, L element_write);
-    template <typename X, typename O, typename T, typename Cx, typename L>
-        inline bool write_map(O& o, const T& t, Cx& cx, L element_write);
-    template <typename X, typename O, typename II, typename Cx>
+    template <typename X, typename O, typename C, typename Cx, typename L>
+        inline bool write_map(O& o, const C& c, Cx& cx, L element_write);
+    template <typename X, typename C, typename O, typename II, typename Cx>
         inline bool write_map(O& o, II b, II e, Cx& cx);
-    template <typename X, typename O, typename T, typename Cx>
-        inline bool write_map(O& o, const T& t, Cx& cx);
+    template <typename X, typename O, typename C, typename Cx>
+        inline bool write_map(O& o, const C& c, Cx& cx);
 
 }}}
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace cio { namespace con {
+namespace cxon { namespace cio { namespace cnt {
 
     namespace bits {
 
         template <typename X, typename Cr, typename II, typename EA>
-            inline void list_read(II& i, II e, EA element_add) {
+            inline void list_read_(II& i, II e, EA element_add) {
                 // expects non-empty list
                 while (element_add() && consume<X>(Cr::sep, i, e)) ;
             }
-
-        template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
-            inline void list_write(O& o, II b, II e, Cx& cx, L element_write) {
-                if (b != e && element_write(*b)) {
-                    while (++b != e && poke<X>(o, Cr::sep, cx) && element_write(*b)) ;
-                }
-            }
-
-        template <typename A>
-            struct adaptor : A {
-                static const typename A::container_type& container(const A& a) noexcept { return ((adaptor&)a).c; }
-            };
 
         template <typename X, typename Cr, typename II, typename Cx, typename EA>
             inline bool read(II& i, II e, Cx& cx, EA element_add) {
                 if (!consume<X>(Cr::beg, i, e, cx)) return false;
                 if ( consume<X>(Cr::end, i, e))     return true;
-                return list_read<X, Cr>(i, e, element_add), !cx.ec && consume<X>(Cr::end, i, e, cx);
+                return list_read_<X, Cr>(i, e, element_add), !cx.ec && consume<X>(Cr::end, i, e, cx);
             }
 
         template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>
-            inline bool write(O& o, II b, II e, Cx& cx, L element_write) {
-                if (!poke<X>(o, Cr::beg, cx)) return false;
-                return list_write<X, Cr>(o, b, e, cx, element_write), !cx.ec && poke<X>(o, Cr::end, cx);
+            inline void list_write_(O& o, II b, II e, Cx& cx, L element_write) {
+                if (b != e && element_write(*b)) {
+                    while (++b != e && poke<X>(o, Cr::sep, cx) && element_write(*b)) ;
+                }
             }
-        template <typename X, typename Cr, typename O, typename II, typename Cx>
-            inline bool write(O& o, II b, II e, Cx& cx) {
-                return write<X, Cr>(o, b, e, cx, [&](const decltype(*b)& e) {
-                    return write_value<X>(o, e, cx);
+
+        template <typename X, typename Xc, typename O, typename II, typename Cx, typename L>
+            inline bool write_(O& o, II b, II e, Cx& cx, L element_write) {
+                if (!poke<X>(o, Xc::beg, cx)) return false;
+                return list_write_<X, Xc>(o, b, e, cx, element_write), !cx.ec && poke<X>(o, Xc::end, cx);
+            }
+        template <typename X, typename C, typename Xc, typename O, typename II, typename Cx>
+            inline bool write_(O& o, II b, II e, Cx& cx) {
+                return write_<X, Xc>(o, b, e, cx, [&](const decltype(*b)& e) {
+                    return element_write<X, C>(o, e, cx);
                 });
             }
 
     }
 
+    template <typename X, typename C, typename II, typename Cx>
+        inline bool read_list(C& c, II& i, II e, Cx& cx) {
+            return bits::read<X, typename X::list>(i, e, cx, [&] {
+                return element_read<X>(c, i, e, cx);
+            });
+        }
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_list(II& i, II e, Cx& cx, EA element_add) {
             return bits::read<X, typename X::list>(i, e, cx, element_add);
+        }
+
+    template <typename X, typename C, typename II, typename Cx>
+        inline bool read_map(C& c, II& i, II e, Cx& cx) {
+            return bits::read<X, typename X::map>(i, e, cx, [&] {
+                return element_read<X>(c, i, e, cx);
+            });
         }
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_map(II& i, II e, Cx& cx, EA element_add) {
             return bits::read<X, typename X::map>(i, e, cx, element_add);
         }
 
-    template <typename X, typename O, typename II, typename Cx, typename L>
+    template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_list(O& o, II b, II e, Cx& cx, L element_write) {
-            return bits::write<X, typename X::list>(o, b, e, cx, element_write);
+            return bits::write_<X, typename X::list>(o, b, e, cx, element_write);
         }
-    template <typename X, typename O, typename T, typename Cx, typename L>
-        inline bool write_list(O& o, const T& t, Cx& cx, L element_write) {
-            return write_list<X>(o, std::begin(t), std::end(t), cx, element_write);
+    template <typename X, typename O, typename C, typename Cx, typename L>
+        inline bool write_list(O& o, const C& c, Cx& cx, L element_write) {
+            return write_list<X, C>(o, std::begin(c), std::end(c), cx, element_write);
         }
-    template <typename X, typename O, typename II, typename Cx>
+    template <typename X, typename C, typename O, typename II, typename Cx>
         inline bool write_list(O& o, II b, II e, Cx& cx) {
-            return bits::write<X, typename X::list>(o, b, e, cx);
+            return bits::write_<X, C, typename X::list>(o, b, e, cx);
         }
-    template <typename X, typename O, typename T, typename Cx>
-        inline bool write_list(O& o, const T& t, Cx& cx) {
-            return write_list<X>(o, std::begin(t), std::end(t), cx);
+    template <typename X, typename O, typename C, typename Cx>
+        inline bool write_list(O& o, const C& c, Cx& cx) {
+            return write_list<X, C>(o, std::begin(c), std::end(c), cx);
         }
 
-    template <typename X, typename O, typename II, typename Cx, typename L>
+    template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_map(O& o, II b, II e, Cx& cx, L element_write) {
-            return bits::write<X, typename X::map>(o, b, e, cx, element_write);
+            return bits::write_<X, typename X::map>(o, b, e, cx, element_write);
         }
-    template <typename X, typename O, typename T, typename Cx, typename L>
-        inline bool write_map(O& o, const T& t, Cx& cx, L element_write) {
-            return write_map<X>(o, std::begin(t), std::end(t), cx, element_write);
+    template <typename X, typename O, typename C, typename Cx, typename L>
+        inline bool write_map(O& o, const C& c, Cx& cx, L element_write) {
+            return write_map<X, C>(o, std::begin(c), std::end(c), cx, element_write);
         }
-    template <typename X, typename O, typename II, typename Cx>
+    template <typename X, typename C, typename O, typename II, typename Cx>
         inline bool write_map(O& o, II b, II e, Cx& cx) {
-            return bits::write<X, typename X::map>(o, b, e, cx);
+            return bits::write_<X, C, typename X::map>(o, b, e, cx);
         }
-    template <typename X, typename O, typename T, typename Cx>
-        inline bool write_map(O& o, const T& t, Cx& cx) {
-            return write_map<X>(o, std::begin(t), std::end(t), cx);
+    template <typename X, typename O, typename C, typename Cx>
+        inline bool write_map(O& o, const C& c, Cx& cx) {
+            return write_map<X, C>(o, std::begin(c), std::end(c), cx);
         }
 
 }}}
