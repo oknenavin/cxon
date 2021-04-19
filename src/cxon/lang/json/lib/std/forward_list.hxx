@@ -14,15 +14,7 @@ namespace cxon {
         struct read<JSON<X>, std::forward_list<T, R...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::forward_list<T, R...>& t, II& i, II e, Cx& cx) {
-                    return cio::con::read_list<J>(i, e, cx, [&] {
-#                       if __cplusplus < 201703L
-                            t.emplace_front();
-                            return read_value<J>(t.front(), i, e, cx);
-#                       else
-                            return read_value<J>(t.emplace_front(), i, e, cx);
-#                       endif
-                    }) &&
-                    (t.reverse(), true);
+                    return cio::cnt::read_list<J>(t, i, e, cx) && (t.reverse(), true);
                 }
         };
 
@@ -30,7 +22,7 @@ namespace cxon {
         struct write<JSON<X>, std::forward_list<T, R...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::forward_list<T, R...>& t, Cx& cx) {
-                    return cio::con::write_list<J>(o, t, cx);
+                    return cio::cnt::write_list<J>(o, t, cx);
                 }
         };
 

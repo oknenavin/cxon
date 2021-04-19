@@ -10,9 +10,9 @@
 
 namespace cxon { namespace cio { // named parameters
 
-    CXON_PARAMETER(fp_precision, int);                  // write: constexpr: floating-points
-    CXON_PARAMETER(num_len_max, unsigned);              // read: constexpr: numbers
-    CXON_PARAMETER(ids_len_max, unsigned);              // read: constexpr: object key
+    CXON_PARAMETER(fp_precision, int);      // write: constexpr: floating-points
+    CXON_PARAMETER(num_len_max, unsigned);  // read: constexpr: numbers
+    CXON_PARAMETER(ids_len_max, unsigned);  // read: constexpr: object key
 
 }}
 
@@ -20,27 +20,27 @@ namespace cxon { namespace cio { // format traits
 
     struct format_traits {
         struct map {
-            static constexpr char           beg             = '{';
-            static constexpr char           end             = '}';
-            static constexpr char           div             = ':';
-            static constexpr char           sep             = ',';
+            static constexpr char           beg     = '{';
+            static constexpr char           end     = '}';
+            static constexpr char           div     = ':';
+            static constexpr char           sep     = ',';
         };
         struct list {
-            static constexpr char           beg             = '[';
-            static constexpr char           end             = ']';
-            static constexpr char           sep             = ',';
+            static constexpr char           beg     = '[';
+            static constexpr char           end     = ']';
+            static constexpr char           sep     = ',';
         };
         struct string {
-            static constexpr char           beg             = '"';
-            static constexpr char           end             = '"';
+            static constexpr char           beg     = '"';
+            static constexpr char           end     = '"';
         };
         struct number {
-            static constexpr bool           strict          = false;
+            static constexpr bool           strict  = false;
         };
         struct id {
-            static constexpr char const*    nil             = "null";
-            static constexpr char const*    pos             = "true";
-            static constexpr char const*    neg             = "false";
+            static constexpr char const*    nil     = "null";
+            static constexpr char const*    pos     = "true";
+            static constexpr char const*    neg     = "false";
         };
     };
 

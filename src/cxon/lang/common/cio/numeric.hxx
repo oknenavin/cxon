@@ -20,10 +20,7 @@ namespace cxon { namespace cio { namespace num { // number conversion
         inline bool number_read(T& t, II& i, II e, Cx& cx);
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool>;
-
-    template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool>;
+        inline bool number_write(O& o, T t, Cx& cx);
 
 }}}
 
@@ -282,32 +279,40 @@ namespace cxon { namespace cio { namespace num { // read
 
 namespace cxon { namespace cio { namespace num { // write
 
-    template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
-            char s[std::numeric_limits<T>::digits10 + 3];
-            auto const r = charconv::to_chars(s, s + sizeof(s) / sizeof(char), t);
-            return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
-                    poke<X>(o, s, r.ptr - s, cx)
-            ;
-        }
+    namespace bits {
 
-    template <typename X, typename T, typename O, typename Cx>
-        inline auto number_write(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
-            if (std::isinf(t)) {
-                if (!poke<X>(o, X::string::beg, cx)) return false;
-                if (std::signbit(t) && !poke<X>(o, '-', cx)) return false;
-                return poke<X>(o, "inf", cx) && poke<X>(o, X::string::end, cx);
+        template <typename X, typename T, typename O, typename Cx>
+            inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
+                char s[std::numeric_limits<T>::digits10 + 3];
+                auto const r = charconv::to_chars(s, s + sizeof(s) / sizeof(char), t);
+                return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
+                        poke<X>(o, s, r.ptr - s, cx)
+                ;
             }
-            if (std::isnan(t))
-                return poke<X>(o, X::string::beg, cx) && poke<X>(o, "nan", cx) && poke<X>(o, X::string::end, cx);
-            CXON_ASSERT(std::isfinite(t), "unexpected");
-            char s[std::numeric_limits<T>::max_digits10 * 2];
-            auto const r = charconv::to_chars(
-                s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
-            );
-            return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
-                    poke<X>(o, s, r.ptr - s, cx)
-            ;
+
+        template <typename X, typename T, typename O, typename Cx>
+            inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
+                if (std::isinf(t)) {
+                    if (!poke<X>(o, X::string::beg, cx)) return false;
+                    if (std::signbit(t) && !poke<X>(o, '-', cx)) return false;
+                    return poke<X>(o, "inf", cx) && poke<X>(o, X::string::end, cx);
+                }
+                if (std::isnan(t))
+                    return poke<X>(o, X::string::beg, cx) && poke<X>(o, "nan", cx) && poke<X>(o, X::string::end, cx);
+                CXON_ASSERT(std::isfinite(t), "unexpected");
+                char s[std::numeric_limits<T>::max_digits10 * 2];
+                auto const r = charconv::to_chars(
+                    s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
+                );
+                return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
+                        poke<X>(o, s, r.ptr - s, cx)
+                ;
+            }
+
+    }
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool number_write(O& o, T t, Cx& cx) {
+            return bits::number_write_<X>(o, t, cx);
         }
 
 }}}

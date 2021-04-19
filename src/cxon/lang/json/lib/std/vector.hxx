@@ -14,14 +14,7 @@ namespace cxon {
         struct read<JSON<X>, std::vector<T, R...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::vector<T, R...>& t, II& i, II e, Cx& cx) {
-                    return cio::con::read_list<J>(i, e, cx, [&] {
-#                       if __cplusplus < 201703L
-                            t.emplace_back();
-                            return read_value<J>(t.back(), i, e, cx);
-#                       else
-                            return read_value<J>(t.emplace_back(), i, e, cx);
-#                       endif
-                    });
+                    return cio::cnt::read_list<J>(t, i, e, cx);
                 }
         };
 
@@ -29,7 +22,7 @@ namespace cxon {
         struct write<JSON<X>, std::vector<T, R...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::vector<T, R...>& t, Cx& cx) {
-                    return cio::con::write_list<J>(o, t, cx);
+                    return cio::cnt::write_list<J>(o, t, cx);
                 }
         };
 

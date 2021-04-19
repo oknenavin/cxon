@@ -40,22 +40,22 @@ namespace cxon { namespace cio { namespace chr { // character classes
         C8      = ALPH|REAL
     };
     static constexpr unsigned char is_x_[] = { 
-        /*  0*/  C0,C0,C0,C0,C0,C0,C0,C0,C0,C3,C3,C2,C2,C3,C0,C0,
-        /* 16*/  C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,
-        /* 32*/  C4,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /* 48*/  C5,C5,C5,C5,C5,C5,C5,C5,C6,C6,C1,C1,C1,C1,C1,C1,
-        /* 64*/  C1,C7,C7,C7,C7,C7,C7,C8,C8,C8,C8,C8,C8,C8,C8,C8,
-        /* 80*/  C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C1,C1,C1,C1,C1,
-        /* 96*/  C1,C7,C7,C7,C7,C7,C7,C8,C8,C8,C8,C8,C8,C8,C8,C8,
-        /*112*/  C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C1,C1,C1,C1,C1,
-        /*128*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /*144*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /*160*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /*176*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /*192*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /*208*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /*224*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
-        /*240*/  C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,00
+        C0,C0,C0,C0,C0,C0,C0,C0,C0,C3,C3,C2,C2,C3,C0,C0,
+        C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,C0,
+        C4,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C5,C5,C5,C5,C5,C5,C5,C5,C6,C6,C1,C1,C1,C1,C1,C1,
+        C1,C7,C7,C7,C7,C7,C7,C8,C8,C8,C8,C8,C8,C8,C8,C8,
+        C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C1,C1,C1,C1,C1,
+        C1,C7,C7,C7,C7,C7,C7,C8,C8,C8,C8,C8,C8,C8,C8,C8,
+        C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C8,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,
+        C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,C1,00
     };
 
     template <typename X>

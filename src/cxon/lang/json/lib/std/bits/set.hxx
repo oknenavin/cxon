@@ -11,23 +11,29 @@
 namespace cxon { namespace json { namespace bits {
 
     template <typename X, typename S>
+        struct set_element_reader {
+            template <typename II, typename Cx>
+                static bool read(S& t, II& i, II e, Cx& cx) {
+                    typename S::value_type o{}; // TODO: allocator
+                    return  read_value<X>(o, i, e, cx) &&
+                            (t.emplace(std::move(o)), true)
+                    ;
+                }
+        };
+
+    template <typename X, typename S>
         struct set_reader {
             template <typename II, typename Cx>
-                static bool value(S& t, II& i, II e, Cx& cx) {
-                    return cio::con::read_list<X>(i, e, cx, [&] {
-                        typename S::value_type o{};
-                        return  read_value<X>(o, i, e, cx) &&
-                                (t.emplace(std::move(o)), true)
-                        ;
-                    });
+                static bool value(S& s, II& i, II e, Cx& cx) {
+                    return cio::cnt::read_list<X>(s, i, e, cx);
                 }
         };
 
     template <typename X, typename S>
         struct set_writer {
             template <typename O, typename Cx>
-                static bool value(O& o, const S& t, Cx& cx) {
-                    return cio::con::write_list<X>(o, t, cx);
+                static bool value(O& o, const S& s, Cx& cx) {
+                    return cio::cnt::write_list<X>(o, s, cx);
                 }
         };
 
