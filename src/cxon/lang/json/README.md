@@ -121,8 +121,8 @@ can be found here [`JSON-RPC`](../../README.md#example-json-rpc).
     Parameter      | Type                     | Default                             | Description
     ---------------|--------------------------|-------------------------------------|-------------------------
     `allocator`    | [`Allocator`][std-alloc] | `std::allocator<T>`                 | `T*` allocator
-    `num_len_max`  | `size_t`                 | 32 (integral) / 64 (floating-point) | number read buffer size
-    `ids_len_max`  | `size_t`                 | 64                                  | token read buffer size
+    `num_len_max`  | `unsigned`               | 32 (integral) / 64 (floating-point) | number read buffer size
+    `ids_len_max`  | `unsigned`               | 64                                  | token read buffer size
 
   - _write_
 
