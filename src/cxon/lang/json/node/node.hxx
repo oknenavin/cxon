@@ -21,12 +21,12 @@ namespace cxon { namespace json { // node
 
     using node = basic_node<struct node_traits>;
 
-    template <typename T, typename N> inline        bool    is(const N& n);
-    template <typename T, typename N> inline        T&      imbue(N& n);
-    template <typename T, typename N> inline        T&      get(N& n);
-    template <typename T, typename N> inline const  T&      get(const N& n);
-    template <typename T, typename N> inline        T*      get_if(N& n);
-    template <typename T, typename N> inline const  T*      get_if(const N& n);
+    template <typename T, typename N> inline        bool    is(const N& n) noexcept;
+    template <typename T, typename N> inline        T&      imbue(N& n)/* noexcept(std::is_nothrow_default_constructible<T>::value)*/;
+    template <typename T, typename N> inline        T&      get(N& n) noexcept;
+    template <typename T, typename N> inline const  T&      get(const N& n) noexcept;
+    template <typename T, typename N> inline        T*      get_if(N& n) noexcept;
+    template <typename T, typename N> inline const  T*      get_if(const N& n) noexcept;
 
 }}
 
@@ -83,17 +83,21 @@ namespace cxon { namespace json { // node
             using array     = typename Tr::template array_type<basic_node>;
             using object    = typename Tr::template object_type<basic_node, basic_node>;
 
-#           ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
-                template <template <typename C> class X, bool = false>
-                    struct msvc_map_override            : bits::is_nothrow_x<X, object, array, string, number, boolean, null> {};
-                template <template <typename C> class X>
-                    struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, /*object, */array, string, number, boolean, null> {};
-                using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<basic_node, basic_node>>::value>;
-                using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<basic_node, basic_node>>::value>;
-#           else
-                using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
-                using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
-#           endif
+            private:
+#               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
+                    template <template <typename C> class X, bool = false>
+                        struct msvc_map_override            : bits::is_nothrow_x<X, object, array, string, number, boolean, null> {};
+                    template <template <typename C> class X>
+                        struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, /*object, */array, string, number, boolean, null> {};
+                    using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<basic_node, basic_node>>::value>;
+                    using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<basic_node, basic_node>>::value>;
+#               else
+                    using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
+                    using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
+#               endif
+                    using is_nothrow_copy_constructible = bits::is_nothrow_x<std::is_nothrow_copy_constructible, object, array, string, number, boolean, null>;
+                    using is_nothrow_copy_assignable    = bits::is_nothrow_x<std::is_nothrow_copy_assignable, object, array, string, number, boolean, null>;
+            public:
 
             basic_node() noexcept : kind_(node_kind::null)  { get<null>() = nullptr; }
             ~basic_node()                                   { reset(); }
@@ -124,7 +128,7 @@ namespace cxon { namespace json { // node
                 return *this;
             }
 
-            basic_node(const basic_node& o) : kind_(o.kind_) {
+            basic_node(const basic_node& o) noexcept(is_nothrow_copy_constructible::value) : kind_(o.kind_) {
                 switch (o.kind_) {
 #                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: new (&reinterpret_cast<T&>(value_)) T(o.get<T>()); break
                         CXON_JSON_TYPE_DEF(object);
@@ -136,7 +140,7 @@ namespace cxon { namespace json { // node
 #                   undef CXON_JSON_TYPE_DEF
                 }
             }
-            basic_node& operator =(const basic_node& o) {
+            basic_node& operator =(const basic_node& o) noexcept(is_nothrow_copy_assignable::value) {
                 switch (o.kind_) {
 #                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: imbue<T>() = o.get<T>(); break
                         CXON_JSON_TYPE_DEF(object);
@@ -183,7 +187,7 @@ namespace cxon { namespace json { // node
                 basic_node(const typename string::value_type* s) : kind_(node_kind::null)   { imbue<string>() = s; }
                 basic_node& operator =(const typename string::value_type* s)                { imbue<string>() = s; return *this; }
 
-            void reset() {
+            void reset() noexcept {
                 switch (kind_) {
 #                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: reinterpret_cast<T&>(value_).~T(); break
                         CXON_JSON_TYPE_DEF(object);
@@ -199,11 +203,11 @@ namespace cxon { namespace json { // node
 
             node_kind kind() const noexcept { return kind_; }
 
-            template <typename T> bool  is() const {
+            template <typename T> bool  is() const noexcept {
                 return kind_ == bits::node_kind_from<basic_node, T>();
             }
 
-            template <typename T> T& imbue() {
+            template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
                 if (!is<T>()) {
                     reset(), kind_ = bits::node_kind_from<basic_node, T>();
                     new (&value_) T();
@@ -211,11 +215,11 @@ namespace cxon { namespace json { // node
                 return reinterpret_cast<T&>(value_);
             }
 
-            template <typename T> T& get() {
+            template <typename T> T& get() noexcept {
                 CXON_ASSERT(is<T>(), "node type mismatch");
                 return reinterpret_cast<T&>(value_);
             }
-            template <typename T> const T& get() const {
+            template <typename T> const T& get() const noexcept {
                 CXON_ASSERT(is<T>(), "node type mismatch");
                 return reinterpret_cast<const T&>(value_);
             }
@@ -227,7 +231,7 @@ namespace cxon { namespace json { // node
                 return is<T>() ? &reinterpret_cast<const T&>(value_) : nullptr;
             }
 
-            bool operator == (const basic_node& n) const {
+            bool operator == (const basic_node& n) const noexcept {
                 if (kind() != n.kind()) return false;
                 switch (kind_) {
 #                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return get<T>() == n.get<T>()
@@ -241,11 +245,11 @@ namespace cxon { namespace json { // node
                 }
                 return false; // LCOV_EXCL_LINE
             }
-            bool operator != (const basic_node& n) const {
+            bool operator != (const basic_node& n) const noexcept {
                 return !operator ==(n);
             }
 
-            bool operator < (const basic_node& n) const {
+            bool operator < (const basic_node& n) const noexcept {
                 if (kind() != n.kind())
                     return kind() < n.kind();
                 switch (kind_) {
@@ -261,27 +265,28 @@ namespace cxon { namespace json { // node
                 return false; // LCOV_EXCL_LINE
             }
 
-        private:
-            using value_type = typename std::aligned_union<0, object, array, string, number, boolean, null>::type;
-            value_type  value_;
-            node_kind   kind_;
+            private:
+                using value_type = typename std::aligned_union<0, object, array, string, number, boolean, null>::type;
+                value_type  value_;
+                node_kind   kind_;
         };
 
     template <typename T, typename N>
-        inline bool is(const N& n)          { return n.template is<T>(); }
+        inline bool is(const N& n) noexcept         { return n.template is<T>(); }
 
     template <typename T, typename N>
-        inline T& imbue(N& n)               { return n.template imbue<T>(); }
+        inline T& imbue(N& n)/* noexcept(std::is_nothrow_default_constructible<T>::value)*/
+                                                    { return n.template imbue<T>(); }
 
     template <typename T, typename N>
-        inline T& get(N& n)                 { return n.template get<T>(); }
+        inline T& get(N& n) noexcept                { return n.template get<T>(); }
     template <typename T, typename N>
-        inline const T& get(const N& n)     { return n.template get<T>(); }
+        inline const T& get(const N& n) noexcept    { return n.template get<T>(); }
 
     template <typename T, typename N>
-        inline T* get_if(N& n)              { return n.template get_if<T>(); }
+        inline T* get_if(N& n) noexcept             { return n.template get_if<T>(); }
     template <typename T, typename N>
-        inline const T* get_if(const N& n)  { return n.template get_if<T>(); }
+        inline const T* get_if(const N& n) noexcept { return n.template get_if<T>(); }
 
 }}
 

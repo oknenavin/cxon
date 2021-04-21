@@ -62,7 +62,7 @@ template <typename R, typename I>
         ;
     }
 
-constexpr unsigned cxon_json_repeat = 33;
+constexpr unsigned cxon_json_repeat = 3;
 
 static void cxon_json_test_time(test_case& test) {
     std::ifstream is(test.source, std::ifstream::binary);
