@@ -61,7 +61,7 @@ namespace cxon { // container element read/write
 
 namespace cxon {
 
-    namespace bits {
+    namespace imp {
 
         template <typename C>
             inline auto reserve_(option<2>, C& c, size_t s)
@@ -83,11 +83,11 @@ namespace cxon {
     }
     template <typename C>
         inline bool container_reserve(C& c, size_t s) {
-            return bits::reserve_(option<1>(), c, s);
+            return imp::reserve_(option<1>(), c, s);
         }
 
 
-    namespace bits {
+    namespace imp {
 
         template <typename C>
             inline auto emplace_(option<3>, C& c)
@@ -117,10 +117,10 @@ namespace cxon {
     }
     template <typename C>
         inline auto container_emplace(C& c) -> typename C::reference {
-            return bits::emplace_(option<3>(), c);
+            return imp::emplace_(option<3>(), c);
         }
 
-    namespace bits {
+    namespace imp {
 
         template <typename C, typename II>
             inline auto append_(option<1>, C& c, II f, II l)
@@ -140,12 +140,12 @@ namespace cxon {
     }
     template <typename C, typename II>
         inline bool container_append(C& c, II f, II l) {
-            return bits::append_(option<1>(), c, f, l);
+            return imp::append_(option<1>(), c, f, l);
         }
 
     
 
-    namespace bits {
+    namespace imp {
 
         template <typename A>
             struct adaptor : A {
@@ -156,11 +156,11 @@ namespace cxon {
     }
     template <typename C>
         inline auto adaptor_container(      C& c) ->       typename C::container_type& {
-            return bits::adaptor<C>::container(c);
+            return imp::adaptor<C>::container(c);
         }
     template <typename C>
         inline auto adaptor_container(const C& c) -> const typename C::container_type& {
-            return bits::adaptor<C>::container(c);
+            return imp::adaptor<C>::container(c);
         }
 
 }

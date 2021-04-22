@@ -117,7 +117,7 @@
         template <> struct is_error_condition_enum<cxon::node::error> : true_type {};
     }
 
-    namespace cxon { namespace node { namespace bits {
+    namespace cxon { namespace node { namespace imp {
 
         template <typename Cx, bool G = recursion_guard::in<napa_type<Cx>>::value>
             struct scinc {
@@ -138,7 +138,7 @@
 #endif
 
 #define CXON_NODE_RG()\
-    cxon::node::bits::scinc<Cx> RG__(cx);\
+    cxon::node::imp::scinc<Cx> RG__(cx);\
     if (!RG__.check()) return cx/cxon::node::error::recursion_depth_exceeded
 
 #ifdef CXON_JSON_DEFINED
@@ -234,7 +234,7 @@
 
         }}
 
-        namespace bits {
+        namespace imp {
 
             template <typename C>
                 struct nmst;
@@ -286,9 +286,9 @@
                         bool const r = read_value<Y>(v, i, e, cx);
                             using number = typename json::basic_node<Tr>::number;
                             using symbol = typename json::basic_node<Tr>::string::value_type;
-                                 if (v == bits::nmst<symbol>::pinf) n.template imbue<number>() =  std::numeric_limits<number>::infinity();
-                            else if (v == bits::nmst<symbol>::ninf) n.template imbue<number>() = -std::numeric_limits<number>::infinity();
-                            else if (v == bits::nmst<symbol>::nan ) n.template imbue<number>() =  std::numeric_limits<number>::quiet_NaN();
+                                 if (v == imp::nmst<symbol>::pinf) n.template imbue<number>() =  std::numeric_limits<number>::infinity();
+                            else if (v == imp::nmst<symbol>::ninf) n.template imbue<number>() = -std::numeric_limits<number>::infinity();
+                            else if (v == imp::nmst<symbol>::nan ) n.template imbue<number>() =  std::numeric_limits<number>::quiet_NaN();
                         return r;
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>

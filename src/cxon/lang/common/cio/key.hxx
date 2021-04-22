@@ -76,7 +76,7 @@ namespace cxon { namespace cio { namespace key {
 
 namespace cxon { namespace cio { namespace key {
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename T, typename II, typename Cx>
             inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!is_quoted<T>::value, bool> {
@@ -93,7 +93,7 @@ namespace cxon { namespace cio { namespace key {
     }
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_key(T& t, II& i, II e, Cx& cx) {
-            return bits::read_key_<X>(t, i, e, cx);
+            return imp::read_key_<X>(t, i, e, cx);
         }
 
     template <typename X, typename T>
@@ -104,7 +104,7 @@ namespace cxon { namespace cio { namespace key {
                 }
         };
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename O>
             struct escape_iterator {
@@ -170,7 +170,7 @@ namespace cxon { namespace cio { namespace key {
     }
     template <typename X, typename T, typename O, typename Cx>
         inline bool write_key(O& o, const T& t, Cx& cx) {
-            return bits::write_key_<X>(o, t, cx);
+            return imp::write_key_<X>(o, t, cx);
         }
 
     template <typename X, typename T>

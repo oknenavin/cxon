@@ -6,33 +6,33 @@
 #ifndef CXON_JSON_LIB_STD_MAP_HXX_
 #define CXON_JSON_LIB_STD_MAP_HXX_
 
-#include "bits/map.hxx"
+#include "imp/map.hxx"
 
 namespace cxon {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct element_reader<JSON<X>, std::map<K, V, R...>>        : json::bits::map_element_reader<JSON<X>, std::map<K, V, R...>> {};
+        struct element_reader<JSON<X>, std::map<K, V, R...>>        : json::imp::map_element_reader<JSON<X>, std::map<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct element_writer<JSON<X>, std::map<K, V, R...>>        : json::bits::map_element_writer<JSON<X>, std::map<K, V, R...>> {};
+        struct element_writer<JSON<X>, std::map<K, V, R...>>        : json::imp::map_element_writer<JSON<X>, std::map<K, V, R...>> {};
 
     template <typename X, typename K, typename V, typename ...R>
-        struct element_reader<JSON<X>, std::multimap<K, V, R...>>   : json::bits::map_element_reader<JSON<X>, std::multimap<K, V, R...>> {};
+        struct element_reader<JSON<X>, std::multimap<K, V, R...>>   : json::imp::map_element_reader<JSON<X>, std::multimap<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct element_writer<JSON<X>, std::multimap<K, V, R...>>   : json::bits::map_element_writer<JSON<X>, std::multimap<K, V, R...>> {};
+        struct element_writer<JSON<X>, std::multimap<K, V, R...>>   : json::imp::map_element_writer<JSON<X>, std::multimap<K, V, R...>> {};
 
 }
 
 namespace cxon {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct read<JSON<X>, std::map<K, V, R...>>                  : json::bits::map_reader<JSON<X>, std::map<K, V, R...>> {};
+        struct read<JSON<X>, std::map<K, V, R...>>                  : json::imp::map_reader<JSON<X>, std::map<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct write<JSON<X>, std::map<K, V, R...>>                 : json::bits::map_writer<JSON<X>, std::map<K, V, R...>> {};
+        struct write<JSON<X>, std::map<K, V, R...>>                 : json::imp::map_writer<JSON<X>, std::map<K, V, R...>> {};
 
     template <typename X, typename K, typename V, typename ...R>
-        struct read<JSON<X>, std::multimap<K, V, R...>>             : json::bits::map_reader<JSON<X>, std::multimap<K, V, R...>> {};
+        struct read<JSON<X>, std::multimap<K, V, R...>>             : json::imp::map_reader<JSON<X>, std::multimap<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct write<JSON<X>, std::multimap<K, V, R...>>            : json::bits::map_writer<JSON<X>, std::multimap<K, V, R...>> {};
+        struct write<JSON<X>, std::multimap<K, V, R...>>            : json::imp::map_writer<JSON<X>, std::multimap<K, V, R...>> {};
 
 }
 

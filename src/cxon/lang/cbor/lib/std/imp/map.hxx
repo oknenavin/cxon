@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_CBOR_LIB_STD_BITS_MAP_HXX_
-#define CXON_CBOR_LIB_STD_BITS_MAP_HXX_
+#ifndef CXON_CBOR_LIB_STD_IMP_MAP_HXX_
+#define CXON_CBOR_LIB_STD_IMP_MAP_HXX_
 
-namespace cxon { namespace cbor { namespace bits {
+namespace cxon { namespace cbor { namespace imp {
 
     template <typename X, typename M>
         struct map_element_reader {
@@ -48,4 +48,4 @@ namespace cxon { namespace cbor { namespace bits {
 
 }}}
 
-#endif // CXON_CBOR_LIB_STD_BITS_MAP_HXX_
+#endif // CXON_CBOR_LIB_STD_IMP_MAP_HXX_

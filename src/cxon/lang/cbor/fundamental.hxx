@@ -46,7 +46,7 @@ namespace cxon { // bool
 
 namespace cxon { // numeric|character/read
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_unsigned_(T& t, II& i, II e, Cx& cx) {
@@ -88,11 +88,11 @@ namespace cxon { // numeric|character/read
             -> enable_if_t<std::is_integral<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             return  cbor::tag::read<X>(i, e, cx) &&
-                    cbor::bits::read_integral_<X>(t, i, e, cx)
+                    cbor::imp::read_integral_<X>(t, i, e, cx)
             ;
         }
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename T>   struct unsigned_;
         template <>             struct unsigned_<float>     { using type = unsigned long; };
@@ -150,7 +150,7 @@ namespace cxon { // numeric|character/read
             -> enable_if_t<std::is_floating_point<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             return  cbor::tag::read<X>(i, e, cx) &&
-                    cbor::bits::read_floating_point_<X>(t, i, e, cx)
+                    cbor::imp::read_floating_point_<X>(t, i, e, cx)
             ;
         }
 
@@ -158,7 +158,7 @@ namespace cxon { // numeric|character/read
 
 namespace cxon { // numeric|character/write
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename T>
             inline auto power_(T  ) -> enable_if_t<sizeof(T) == 1, unsigned> { return 0; }
@@ -180,9 +180,9 @@ namespace cxon { // numeric|character/write
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::bits::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
         {
-            auto const p = cbor::bits::power_(t);
+            auto const p = cbor::imp::power_(t);
             return t > 0x17 ?
                 bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(X::pint + t), cx)
@@ -190,10 +190,10 @@ namespace cxon { // numeric|character/write
         }
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::bits::is_quantum<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_quantum<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             using Q = typename std::make_unsigned<T>::type;
-            auto const p = cbor::bits::power_(t);
+            auto const p = cbor::imp::power_(t);
             return Q(t) > 0x17 ?
                 bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, Q(t), 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(X::pint + Q(t)), cx)
@@ -201,10 +201,10 @@ namespace cxon { // numeric|character/write
         }
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::bits::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             auto const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
-            auto const p = cbor::bits::power_(t);
+            auto const p = cbor::imp::power_(t);
             return t > 0x17 ?
                 bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(m + t), cx)

@@ -35,10 +35,10 @@ cxon-lang-json = \
     $(srcdir)/lang/json/json-fwd.hxx \
     $(srcdir)/lang/json/tidy.hxx
 
-cxon-lang-json-lib-std-bits = \
-    $(srcdir)/lang/json/lib/std/bits/map.hxx \
-    $(srcdir)/lang/json/lib/std/bits/set.hxx \
-    $(srcdir)/lang/json/lib/std/bits/string.hxx
+cxon-lang-json-lib-std-imp = \
+    $(srcdir)/lang/json/lib/std/imp/map.hxx \
+    $(srcdir)/lang/json/lib/std/imp/set.hxx \
+    $(srcdir)/lang/json/lib/std/imp/string.hxx
 
 cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/array.hxx \
@@ -80,9 +80,9 @@ cxon-lang-cbor = \
     $(srcdir)/lang/cbor/error.hxx \
     $(srcdir)/lang/cbor/fundamental.hxx
 
-cxon-lang-cbor-lib-std-bits = \
-    $(srcdir)/lang/cbor/lib/std/bits/map.hxx \
-    $(srcdir)/lang/cbor/lib/std/bits/set.hxx
+cxon-lang-cbor-lib-std-imp = \
+    $(srcdir)/lang/cbor/lib/std/imp/map.hxx \
+    $(srcdir)/lang/cbor/lib/std/imp/set.hxx
 
 cxon-lang-cbor-lib-std = \
     $(srcdir)/lang/cbor/lib/std/array.hxx \
@@ -183,17 +183,17 @@ install-lang: install-cxon install-common
 	@install -d                                         $(insdir)/cxon/lang/json/node
 	@install -p -m 0644 $(cxon-lang-json)               $(insdir)/cxon/lang/json
 	@install -p -m 0644 $(cxon-lang-json-node)          $(insdir)/cxon/lang/json/node
-	@install -d                                         $(insdir)/cxon/lang/json/lib/std/bits
+	@install -d                                         $(insdir)/cxon/lang/json/lib/std/imp
 	@install -p -m 0644 $(cxon-lang-json-lib-std)       $(insdir)/cxon/lang/json/lib/std
-	@install -p -m 0644 $(cxon-lang-json-lib-std-bits)  $(insdir)/cxon/lang/json/lib/std/bits
+	@install -p -m 0644 $(cxon-lang-json-lib-std-imp)   $(insdir)/cxon/lang/json/lib/std/imp
 	@install -d                                         $(insdir)/cxon/lang/cbor/common
 	@install -p -m 0644 $(cxon-lang-cbor-common)        $(insdir)/cxon/lang/cbor/common
 	@install -d                                         $(insdir)/cxon/lang/cbor/node
 	@install -p -m 0644 $(cxon-lang-cbor)               $(insdir)/cxon/lang/cbor
 	@install -p -m 0644 $(cxon-lang-cbor-node)          $(insdir)/cxon/lang/cbor/node
-	@install -d                                         $(insdir)/cxon/lang/cbor/lib/std/bits
+	@install -d                                         $(insdir)/cxon/lang/cbor/lib/std/imp
 	@install -p -m 0644 $(cxon-lang-cbor-lib-std)       $(insdir)/cxon/lang/cbor/lib/std
-	@install -p -m 0644 $(cxon-lang-cbor-lib-std-bits)  $(insdir)/cxon/lang/cbor/lib/std/bits
+	@install -p -m 0644 $(cxon-lang-cbor-lib-std-imp)   $(insdir)/cxon/lang/cbor/lib/std/imp
 
 uninstall:
 	@rm -fr $(insdir)/cxon

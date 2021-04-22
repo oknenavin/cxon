@@ -10,7 +10,7 @@ namespace cxon { namespace cio { namespace key {
     template <size_t N> struct is_quoted<std::bitset<N>> : std::true_type {};
 }}}
 
-namespace cxon { namespace json { namespace bits {
+namespace cxon { namespace json { namespace imp {
 
     template <typename X, size_t N, typename II, typename Cx>
         inline bool read_bits(std::bitset<N>& t, II& i, II e, Cx& cx) {
@@ -39,7 +39,7 @@ namespace cxon {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
                     return  cio::consume<X>(X::string::beg, i, e, cx) &&
-                                json::bits::read_bits<J>(t, i, e, cx) &&
+                                json::imp::read_bits<J>(t, i, e, cx) &&
                             cio::consume<X>(X::string::end, i, e, cx)
                     ;
                 }
@@ -50,7 +50,7 @@ namespace cxon {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
                     return  cio::poke<J>(o, J::string::beg, cx) &&
-                                json::bits::write_bits<J>(o, t, cx) &&
+                                json::imp::write_bits<J>(o, t, cx) &&
                             cio::poke<J>(o, J::string::end, cx)
                     ;
                 }

@@ -3,13 +3,13 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_LIB_STD_BITS_STRING_HXX_
-#define CXON_JSON_LIB_STD_BITS_STRING_HXX_
+#ifndef CXON_JSON_LIB_STD_IMP_STRING_HXX_
+#define CXON_JSON_LIB_STD_IMP_STRING_HXX_
 
 #include "cxon/lang/common/cio/char.hxx"
 #include "cxon/lang/common/cio/string.hxx"
 
-namespace cxon { namespace json { namespace bits { // std::basic_string read
+namespace cxon { namespace json { namespace imp { // std::basic_string read
 
     template <typename X, typename T, typename ...R, typename II, typename Cx> // TODO: common with arrays?
         inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
@@ -62,4 +62,4 @@ namespace cxon { namespace json { namespace bits { // std::basic_string read
 
 }}}
 
-#endif // CXON_JSON_LIB_STD_BITS_STRING_HXX_
+#endif // CXON_JSON_LIB_STD_IMP_STRING_HXX_

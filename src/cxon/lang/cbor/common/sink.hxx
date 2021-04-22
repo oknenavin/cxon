@@ -51,13 +51,13 @@ namespace cxon { namespace cbor {
     template <typename T>
         struct is_sink<sink<T>> : std::true_type {};
 
-    namespace bits {
+    namespace imp {
         template <typename X, typename S>
             struct sink_reader_;
     }
     template <typename X, typename S, typename II, typename Cx>
         inline bool sink_read(S& s, II& i, II e, Cx& cx) {
-            return bits::sink_reader_<X, S>::read(s, i, e, cx);
+            return imp::sink_reader_<X, S>::read(s, i, e, cx);
         }
 
     template <typename X, typename O, typename S, typename Cx>
@@ -90,7 +90,7 @@ namespace cxon {
 
 }
 
-namespace cxon { namespace cbor { namespace bits {
+namespace cxon { namespace cbor { namespace imp {
     
     template <typename X, typename S>
         struct sink_reader_<CBOR<X>, S> {

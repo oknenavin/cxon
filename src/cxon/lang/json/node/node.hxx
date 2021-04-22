@@ -51,7 +51,7 @@ namespace cxon { namespace json { // node traits
 
 namespace cxon { namespace json { // node
 
-    namespace bits {
+    namespace imp {
 
         template <typename N, typename T>
             struct node_kind_t;
@@ -86,17 +86,17 @@ namespace cxon { namespace json { // node
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
                     template <template <typename C> class X, bool = false>
-                        struct msvc_map_override            : bits::is_nothrow_x<X, object, array, string, number, boolean, null> {};
+                        struct msvc_map_override            : imp::is_nothrow_x<X, object, array, string, number, boolean, null> {};
                     template <template <typename C> class X>
-                        struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, /*object, */array, string, number, boolean, null> {};
+                        struct msvc_map_override<X, true>   : imp::is_nothrow_x<X, /*object, */array, string, number, boolean, null> {};
                     using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<basic_node, basic_node>>::value>;
                     using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<basic_node, basic_node>>::value>;
 #               else
-                    using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
-                    using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
+                    using is_nothrow_move_constructible = imp::is_nothrow_x<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
+                    using is_nothrow_move_assignable    = imp::is_nothrow_x<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
 #               endif
-                    using is_nothrow_copy_constructible = bits::is_nothrow_x<std::is_nothrow_copy_constructible, object, array, string, number, boolean, null>;
-                    using is_nothrow_copy_assignable    = bits::is_nothrow_x<std::is_nothrow_copy_assignable, object, array, string, number, boolean, null>;
+                    using is_nothrow_copy_constructible = imp::is_nothrow_x<std::is_nothrow_copy_constructible, object, array, string, number, boolean, null>;
+                    using is_nothrow_copy_assignable    = imp::is_nothrow_x<std::is_nothrow_copy_assignable, object, array, string, number, boolean, null>;
             public:
 
             basic_node() noexcept : kind_(node_kind::null)  { get<null>() = nullptr; }
@@ -204,12 +204,12 @@ namespace cxon { namespace json { // node
             node_kind kind() const noexcept { return kind_; }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == bits::node_kind_from<basic_node, T>();
+                return kind_ == imp::node_kind_from<basic_node, T>();
             }
 
             template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
                 if (!is<T>()) {
-                    reset(), kind_ = bits::node_kind_from<basic_node, T>();
+                    reset(), kind_ = imp::node_kind_from<basic_node, T>();
                     new (&value_) T();
                 }
                 return reinterpret_cast<T&>(value_);

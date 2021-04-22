@@ -10,7 +10,7 @@
 
 namespace cxon {
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename X, typename V, size_t Ndx, typename II, typename Cx>
             static bool variant_read(V& t, II& i, II e, Cx& cx) {
@@ -56,7 +56,7 @@ namespace cxon {
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
                     return  cbor::tag::read<Y>(i, e, cx) &&
                             cbor::cnt::read_size_eq<Y>(2, i, e, cx) &&
-                            cbor::bits::variant<Y, std::variant<T...>, II, Cx>::read(t, i, e, cx)
+                            cbor::imp::variant<Y, std::variant<T...>, II, Cx>::read(t, i, e, cx)
                     ;
                 }
         };

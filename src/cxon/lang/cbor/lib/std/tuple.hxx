@@ -10,7 +10,7 @@
 
 namespace cxon { namespace cbor { namespace cnt { // container read/write helpers
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename T, unsigned N, unsigned L>
             struct tuple_read {
@@ -48,12 +48,12 @@ namespace cxon { namespace cbor { namespace cnt { // container read/write helper
 
     template <typename X, typename II, typename Cx, typename ...T>
         inline bool read_tuple(std::tuple<T...>& t, II& i, II e, Cx& cx) {
-            return bits::tuple_read<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value>::value(t, i, e, cx);
+            return imp::tuple_read<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value>::value(t, i, e, cx);
         }
 
     template <typename X, typename O, typename Cx, typename ...T>
         inline bool write_tuple(O& o, const std::tuple<T...>& t, Cx& cx) {
-            return bits::tuple_write<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value - 1>::value(o, t, cx);
+            return imp::tuple_write<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value - 1>::value(o, t, cx);
         }
 
 }}}

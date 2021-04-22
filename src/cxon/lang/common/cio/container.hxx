@@ -47,7 +47,7 @@ namespace cxon { namespace cio { namespace cnt { // container read/write helpers
 
 namespace cxon { namespace cio { namespace cnt {
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename Cr, typename II, typename EA>
             inline void list_read_(II& i, II e, EA element_add) {
@@ -85,29 +85,29 @@ namespace cxon { namespace cio { namespace cnt {
 
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_list(C& c, II& i, II e, Cx& cx) {
-            return bits::read<X, typename X::list>(i, e, cx, [&] {
+            return imp::read<X, typename X::list>(i, e, cx, [&] {
                 return element_read<X>(c, i, e, cx);
             });
         }
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_list(II& i, II e, Cx& cx, EA element_add) {
-            return bits::read<X, typename X::list>(i, e, cx, element_add);
+            return imp::read<X, typename X::list>(i, e, cx, element_add);
         }
 
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_map(C& c, II& i, II e, Cx& cx) {
-            return bits::read<X, typename X::map>(i, e, cx, [&] {
+            return imp::read<X, typename X::map>(i, e, cx, [&] {
                 return element_read<X>(c, i, e, cx);
             });
         }
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_map(II& i, II e, Cx& cx, EA element_add) {
-            return bits::read<X, typename X::map>(i, e, cx, element_add);
+            return imp::read<X, typename X::map>(i, e, cx, element_add);
         }
 
     template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_list(O& o, II b, II e, Cx& cx, L element_write) {
-            return bits::write_<X, typename X::list>(o, b, e, cx, element_write);
+            return imp::write_<X, typename X::list>(o, b, e, cx, element_write);
         }
     template <typename X, typename O, typename C, typename Cx, typename L>
         inline bool write_list(O& o, const C& c, Cx& cx, L element_write) {
@@ -115,7 +115,7 @@ namespace cxon { namespace cio { namespace cnt {
         }
     template <typename X, typename C, typename O, typename II, typename Cx>
         inline bool write_list(O& o, II b, II e, Cx& cx) {
-            return bits::write_<X, C, typename X::list>(o, b, e, cx);
+            return imp::write_<X, C, typename X::list>(o, b, e, cx);
         }
     template <typename X, typename O, typename C, typename Cx>
         inline bool write_list(O& o, const C& c, Cx& cx) {
@@ -124,7 +124,7 @@ namespace cxon { namespace cio { namespace cnt {
 
     template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_map(O& o, II b, II e, Cx& cx, L element_write) {
-            return bits::write_<X, typename X::map>(o, b, e, cx, element_write);
+            return imp::write_<X, typename X::map>(o, b, e, cx, element_write);
         }
     template <typename X, typename O, typename C, typename Cx, typename L>
         inline bool write_map(O& o, const C& c, Cx& cx, L element_write) {
@@ -132,7 +132,7 @@ namespace cxon { namespace cio { namespace cnt {
         }
     template <typename X, typename C, typename O, typename II, typename Cx>
         inline bool write_map(O& o, II b, II e, Cx& cx) {
-            return bits::write_<X, C, typename X::map>(o, b, e, cx);
+            return imp::write_<X, C, typename X::map>(o, b, e, cx);
         }
     template <typename X, typename O, typename C, typename Cx>
         inline bool write_map(O& o, const C& c, Cx& cx) {

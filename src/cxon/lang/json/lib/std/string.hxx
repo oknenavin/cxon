@@ -6,7 +6,7 @@
 #ifndef CXON_JSON_LIB_STD_STRING_HXX_
 #define CXON_JSON_LIB_STD_STRING_HXX_
 
-#include "bits/string.hxx"
+#include "imp/string.hxx"
 
 namespace cxon { namespace cio { namespace key {
 
@@ -29,7 +29,7 @@ namespace cxon {
         struct read<JSON<X>, std::basic_string<T, R...>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    return json::bits::basic_string_read<J>(t, i, e, cx);
+                    return json::imp::basic_string_read<J>(t, i, e, cx);
                 }
         };
 
@@ -37,7 +37,7 @@ namespace cxon {
         struct write<JSON<X>, std::basic_string<T, R...>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return json::bits::pointer_write<J>(o, t.data(), t.size(), cx);
+                    return json::imp::pointer_write<J>(o, t.data(), t.size(), cx);
                 }
         };
 

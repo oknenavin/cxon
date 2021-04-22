@@ -28,7 +28,7 @@ namespace cxon { namespace cio { namespace num { // number conversion
 
 namespace cxon { namespace cio { namespace num { // read
 
-    namespace bits {
+    namespace imp {
 
         template <typename T>
             inline auto is_sign_(char c) -> enable_if_t<std::is_signed<T>::value, bool> {
@@ -211,22 +211,22 @@ namespace cxon { namespace cio { namespace num { // read
             }
 
         template <typename T>
-            inline charconv::bits::from_chars_result from_chars_(const char* b, const char* e, T& t) {
+            inline charconv::imp::from_chars_result from_chars_(const char* b, const char* e, T& t) {
                 if (*b == '"') {
                     if (b[1] == '-' && e - b >= 6) { // (false-positive [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
                         if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<T>::infinity(),
-                            charconv::bits::from_chars_result{ b + 6, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
+                            charconv::imp::from_chars_result{ b + 6, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                         return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<T>::quiet_NaN(),
-                            charconv::bits::from_chars_result{ b + 6, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
+                            charconv::imp::from_chars_result{ b + 6, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                     }
                     else if (e - b >= 5) { // (false-positive [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
                         if (b[1] == 'i') return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ? t =  std::numeric_limits<T>::infinity(),
-                            charconv::bits::from_chars_result{ b + 5, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
+                            charconv::imp::from_chars_result{ b + 5, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                         return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<T>::quiet_NaN(),
-                            charconv::bits::from_chars_result{ b + 5, std::errc() } : charconv::bits::from_chars_result{ b, std::errc::invalid_argument }
+                            charconv::imp::from_chars_result{ b + 5, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                     }
                 }
@@ -272,14 +272,14 @@ namespace cxon { namespace cio { namespace num { // read
     template <typename X, typename T, typename II, typename Cx>
         inline bool number_read(T& t, II& i, II e, Cx& cx) {
             consume<X>(i, e);
-            return bits::number_read_<X>(t, i, e, cx);
+            return imp::number_read_<X>(t, i, e, cx);
         }
 
 }}}
 
 namespace cxon { namespace cio { namespace num { // write
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
@@ -312,7 +312,7 @@ namespace cxon { namespace cio { namespace num { // write
     }
     template <typename X, typename T, typename O, typename Cx>
         inline bool number_write(O& o, T t, Cx& cx) {
-            return bits::number_write_<X>(o, t, cx);
+            return imp::number_write_<X>(o, t, cx);
         }
 
 }}}

@@ -10,7 +10,7 @@
 
 namespace cxon {
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename T>
             struct valarray_container {
@@ -58,7 +58,7 @@ namespace cxon {
         struct read<CBOR<X>, std::valarray<T>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::valarray<T>& t, II& i, II e, Cx& cx) {
-                    auto c = cbor::bits::valarray_container<T> {t};
+                    auto c = cbor::imp::valarray_container<T> {t};
                     return cbor::cnt::read_array<Y>(c, i, e, cx);
                 }
         };
