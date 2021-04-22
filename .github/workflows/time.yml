@@ -20,7 +20,7 @@ jobs:
         CXXFLAGS: -std=c++11
       run: make time
     - name: Check Boost
-      run: sudo apt-get update && apt-cache search ^libboost1
+      run: sudo apt-get update -y && apt-cache search ^libboost1
 
   gcc-10:
     runs-on: ubuntu-20.04
@@ -36,7 +36,7 @@ jobs:
         CXXFLAGS: -std=c++20
       run: make time
     - name: Check Boost
-      run: sudo apt-get update && apt-cache search ^libboost1
+      run: sudo apt-get update -y && apt-cache search ^libboost1
 
   # clang ######################################################################
 
@@ -54,7 +54,7 @@ jobs:
         CXXFLAGS: -std=c++11
       run: make time
     - name: Check Boost
-      run: sudo apt-get update && apt-cache search ^libboost1
+      run: sudo apt-get update -y && apt-cache search ^libboost1
 
   clang-11:
     runs-on: ubuntu-20.04
@@ -70,4 +70,4 @@ jobs:
         CXXFLAGS: -std=c++20
       run: make time
     - name: Check Boost
-      run: sudo apt-get update && apt-cache search ^libboost1
+      run: sudo apt-get update -y && apt-cache search ^libboost1
