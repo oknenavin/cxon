@@ -19,6 +19,8 @@ jobs:
         CXX: g++-5
         CXXFLAGS: -std=c++11
       run: make time
+    - name: Check Boost
+      run: apt-cache search ^libboost1
 
   gcc-10:
     runs-on: ubuntu-20.04
@@ -33,6 +35,8 @@ jobs:
         CXX: g++-10
         CXXFLAGS: -std=c++20
       run: make time
+    - name: Check Boost
+      run: apt-cache search ^libboost1
 
   # clang ######################################################################
 
@@ -49,6 +53,8 @@ jobs:
         CXX: clang++-3.5
         CXXFLAGS: -std=c++11
       run: make time
+    - name: Check Boost
+      run: apt-cache search ^libboost1
 
   clang-11:
     runs-on: ubuntu-20.04
@@ -63,3 +69,5 @@ jobs:
         CXX: clang++-11
         CXXFLAGS: -std=c++20
       run: make time
+    - name: Check Boost
+      run: apt-cache search ^libboost1
