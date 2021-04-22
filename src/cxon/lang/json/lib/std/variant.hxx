@@ -11,18 +11,18 @@ namespace cxon {
     namespace json { namespace imp {
 
         template <typename X, typename V, size_t Ndx, typename II, typename Cx>
-            static bool variant_read(V& t, II& i, II e, Cx& cx) {
+            static bool variant_read_(V& t, II& i, II e, Cx& cx) {
                 V v{std::in_place_index_t<Ndx>()};
                 return read_value<X>(std::get<Ndx>(v), i, e, cx) && (t = std::move(v), true);
             }
 
         template <typename X, typename V, typename II, typename Cx, typename Ndx = std::make_index_sequence<std::variant_size<V>::value>>
-            struct variant;
+            struct variant_;
         template <typename X, typename V, typename II, typename Cx, size_t ...Ndx>
-            struct variant<X, V, II, Cx, std::index_sequence<Ndx...>> {
+            struct variant_<X, V, II, Cx, std::index_sequence<Ndx...>> {
                 using reader_t = bool(*)(V&, II&, II, Cx&);
                 static constexpr size_t cnt_ = std::index_sequence<Ndx...>::size();
-                static constexpr reader_t rdr_[cnt_] = { &variant_read<X, V, Ndx, II, Cx>... };
+                static constexpr reader_t rdr_[cnt_] = { &variant_read_<X, V, Ndx, II, Cx>... };
                 static bool index(size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
                     return cio::read_key<X>(n, i, e, cx) && (n < cnt_ || (cio::rewind(i, o), cx/json::read_error::unexpected));
@@ -51,7 +51,7 @@ namespace cxon {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
                     return  cio::consume<J>(J::map::beg, i, e, cx) &&
-                                json::imp::variant<J, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
+                                json::imp::variant_<J, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
                             cio::consume<J>(J::map::end, i, e, cx)
                     ;
                 }

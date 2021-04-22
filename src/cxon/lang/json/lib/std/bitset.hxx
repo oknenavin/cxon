@@ -13,7 +13,7 @@ namespace cxon { namespace cio { namespace key {
 namespace cxon { namespace json { namespace imp {
 
     template <typename X, size_t N, typename II, typename Cx>
-        inline bool read_bits(std::bitset<N>& t, II& i, II e, Cx& cx) {
+        inline bool read_bits_(std::bitset<N>& t, II& i, II e, Cx& cx) {
             for (size_t p = N; p != 0; ) {
                 char const c = cio::peek(i, e);
                     if (c != '0' && c != '1') return cx/json::read_error::unexpected;
@@ -23,7 +23,7 @@ namespace cxon { namespace json { namespace imp {
         }
 
     template <typename X, size_t N, typename O, typename Cx>
-        inline bool write_bits(O& o, const std::bitset<N>& t, Cx& cx) {
+        inline bool write_bits_(O& o, const std::bitset<N>& t, Cx& cx) {
             for (size_t p = N; p != 0; ) {
                 if (!cio::poke<X>(o, t[--p] ? '1' : '0', cx)) return false;
             }
@@ -39,7 +39,7 @@ namespace cxon {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
                     return  cio::consume<X>(X::string::beg, i, e, cx) &&
-                                json::imp::read_bits<J>(t, i, e, cx) &&
+                                json::imp::read_bits_<J>(t, i, e, cx) &&
                             cio::consume<X>(X::string::end, i, e, cx)
                     ;
                 }
@@ -50,7 +50,7 @@ namespace cxon {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
                     return  cio::poke<J>(o, J::string::beg, cx) &&
-                                json::imp::write_bits<J>(o, t, cx) &&
+                                json::imp::write_bits_<J>(o, t, cx) &&
                             cio::poke<J>(o, J::string::end, cx)
                     ;
                 }

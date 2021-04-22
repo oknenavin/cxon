@@ -42,12 +42,12 @@ namespace cxon { // pointer/read
     namespace cbor { namespace imp {
 
         template <typename T, typename A>
-            struct pointer_container {
+            struct pointer_container_ {
                 using value_type = T;
                 using pointer = value_type*;
                 using reference = value_type&;
 
-                pointer_container(const A& a)
+                pointer_container_(const A& a)
                 :   a_(a), f_(), l_(), e_()
                 {
                     // coverity[var_deref_model] - 'grow dereferences null this->f_' - it's about std::move(f_, e_, p), but in this case f_ == e_
@@ -84,7 +84,7 @@ namespace cxon { // pointer/read
                     pointer f_, l_, e_;
             };
         template <typename X, typename T, typename Cx>
-            auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<X, T>(cx))> {
+            auto make_pointer_container_(Cx& cx) -> pointer_container_<T, decltype(make_context_allocator<X, T>(cx))> {
                 return { make_context_allocator<X, T>(cx) };
             }
 
@@ -112,7 +112,7 @@ namespace cxon { // pointer/read
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::bstr: case X::tstr: case X::arr: {
-                                auto c = make_pointer_container<X, T>(cx);
+                                auto c = make_pointer_container_<X, T>(cx);
                                 return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
                     }
                     default:    return read_pointer_t_<X>(t, i, e, cx);
@@ -127,7 +127,7 @@ namespace cxon { // pointer/read
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::arr: {
-                                auto c = make_pointer_container<X, T>(cx);
+                                auto c = make_pointer_container_<X, T>(cx);
                                 return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
                     }
                     default:    return read_pointer_t_<X>(t, i, e, cx);

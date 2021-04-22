@@ -101,8 +101,12 @@ namespace cxon { // context
 
 namespace cxon { // bridge
 
-    template <typename E, typename T, typename R = E>
-        using enable_if_same_t = enable_if_t< std::is_same<E, T>::value, R>;
+    namespace imp {
+        template <typename E, typename T, typename R = E>
+            using enable_if_same_t_ = enable_if_t< std::is_same<E, T>::value, R>;
+        template <typename T>
+            using enable_for_bridge_ = enable_if_same_t_<bool, T>;
+    }
 
     // read value
 
@@ -113,19 +117,19 @@ namespace cxon { // bridge
 
     template <typename X, typename T, typename II, typename Cx> // struct read
         inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_same_t<bool, decltype(read<X, T>::value(t, i, e, cx))>
+            -> imp::enable_for_bridge_<decltype(read<X, T>::value(t, i, e, cx))>
         {
             return read<X, T>::value(t, i, e, cx);
         }
     template <typename X, typename T, typename II, typename Cx> // read_value static method of T
         inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_same_t<bool, decltype(T::template read_value<X>(t, i, e, cx))>
+            -> imp::enable_for_bridge_<decltype(T::template read_value<X>(t, i, e, cx))>
         {
             return T::template read_value<X>(t, i, e, cx);
         }
     template <typename X, typename T, typename II, typename Cx> // read_value method of T
         inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_same_t<bool, decltype(t.template read_value<X>(i, e, cx))>
+            -> imp::enable_for_bridge_<decltype(t.template read_value<X>(i, e, cx))>
         {
             return t.template read_value<X>(i, e, cx);
         }
@@ -139,19 +143,19 @@ namespace cxon { // bridge
 
     template <typename X, typename T, typename O, typename Cx> // struct write
         inline auto write_value(O& o, const T& t, Cx& cx)
-            -> enable_if_same_t<bool, decltype(write<X, T>::value(o, t, cx))>
+            -> imp::enable_for_bridge_<decltype(write<X, T>::value(o, t, cx))>
         {
             return write<X, T>::value(o, t, cx);
         }
     template <typename X, typename T, typename O, typename Cx> // write_value static method of T
         inline auto write_value(O& o, const T& t, Cx& cx)
-            -> enable_if_same_t<bool, decltype(T::template write_value<X>(o, t, cx))>
+            -> imp::enable_for_bridge_<decltype(T::template write_value<X>(o, t, cx))>
         {
             return T::template write_value<X>(o, t, cx);
         }
     template <typename X, typename T, typename O, typename Cx> // write_value method of T
         inline auto write_value(O& o, const T& t, Cx& cx)
-            -> enable_if_same_t<bool, decltype(t.template write_value<X>(o, cx))>
+            -> imp::enable_for_bridge_<decltype(t.template write_value<X>(o, cx))>
         {
             return t.template write_value<X>(o, cx);
         }

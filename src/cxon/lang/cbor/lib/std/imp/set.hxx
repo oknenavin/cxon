@@ -9,7 +9,7 @@
 namespace cxon { namespace cbor { namespace imp {
 
     template <typename X, typename S>
-        struct set_element_reader {
+        struct set_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(S& s, II& i, II e, Cx& cx) {
                     auto v = typename S::value_type {}; // TODO: allocator
@@ -20,7 +20,7 @@ namespace cxon { namespace cbor { namespace imp {
         };
 
     template <typename X, typename S>
-        struct set_reader {
+        struct set_reader_ {
             template <typename II, typename Cx>
                 static bool value(S& s, II& i, II e, Cx& cx) {
                     return cbor::cnt::read_array<X>(s, i, e, cx);
@@ -28,7 +28,7 @@ namespace cxon { namespace cbor { namespace imp {
         };
 
     template <typename X, typename S>
-        struct set_writer {
+        struct set_writer_ {
             template <typename O, typename Cx>
                 static bool value(O& o, const S& s, Cx& cx) {
                     return cbor::cnt::write_array<X>(o, std::begin(s), std::end(s), cx);

@@ -28,8 +28,6 @@
 
 namespace cxon { namespace charconv { namespace imp {
 
-    using namespace std;
-
     enum class chars_format {
         scientific  = 1,
         fixed       = 2,
@@ -39,57 +37,57 @@ namespace cxon { namespace charconv { namespace imp {
 
     struct from_chars_result {
         const char* ptr;
-        errc ec;
+        std::errc ec;
     };
 
     namespace {
 
         template <typename T, typename F>
-            constexpr auto clamp(F t)       -> enable_if_t<sizeof(T) == sizeof(F), T> {
+            constexpr auto clamp_(F t)          -> enable_if_t<sizeof(T) == sizeof(F), T> {
                 return t;
             }
         template <typename T, typename F>
-            inline auto clamp(F f) noexcept -> enable_if_t<sizeof(T) < sizeof(F) && std::is_signed<T>(), T> {
-                        if (f < numeric_limits<T>::min()) errno = ERANGE, f = numeric_limits<T>::min();
-                else    if (f > numeric_limits<T>::max()) errno = ERANGE, f = numeric_limits<T>::max();
+            inline auto clamp_(F f) noexcept    -> enable_if_t<sizeof(T) < sizeof(F) && std::is_signed<T>(), T> {
+                        if (f < std::numeric_limits<T>::min()) errno = ERANGE, f = std::numeric_limits<T>::min();
+                else    if (f > std::numeric_limits<T>::max()) errno = ERANGE, f = std::numeric_limits<T>::max();
                 return (T)f;
             }
         template <typename T, typename F>
-            inline auto clamp(F f) noexcept -> enable_if_t<sizeof(T) < sizeof(F) && std::is_unsigned<T>(), T> {
-                if (numeric_limits<T>::max() < f) errno = ERANGE, f = numeric_limits<T>::max();
+            inline auto clamp_(F f) noexcept    -> enable_if_t<sizeof(T) < sizeof(F) && std::is_unsigned<T>(), T> {
+                if (std::numeric_limits<T>::max() < f) errno = ERANGE, f = std::numeric_limits<T>::max();
                 return (T)f;
             }
 
         template <typename T>
-            inline auto is_sign_invalid(char c) noexcept -> enable_if_t<std::is_signed<T>::value, bool> {
+            inline auto is_sign_invalid_(char c) noexcept -> enable_if_t<std::is_signed<T>::value, bool> {
                 return c == '+';
             }
         template <typename T>
-            inline auto is_sign_invalid(char c) noexcept -> enable_if_t<std::is_unsigned<T>::value, bool> {
+            inline auto is_sign_invalid_(char c) noexcept -> enable_if_t<std::is_unsigned<T>::value, bool> {
                 return c == '+' || c == '-';
             }
 
         template <typename T, typename Cv>
-            inline from_chars_result number_from_chars(const char* first, const char*, Cv convert, T& value, int base) {
+            inline from_chars_result number_from_chars_(const char* first, const char*, Cv convert, T& value, int base) {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
-                    if (is_sign_invalid<T>(*first)) return { first, errc::invalid_argument };
+                    if (is_sign_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
                 char* end;
-                errno = 0; auto const v = clamp<T>(convert(first, &end, base));
-                return { end, end != first ? errno != ERANGE ? (value = v, errc{}) : errc::result_out_of_range : errc::invalid_argument };
+                errno = 0; auto const v = clamp_<T>(convert(first, &end, base));
+                return { end, end != first ? errno != ERANGE ? (value = v, std::errc{}) : std::errc::result_out_of_range : std::errc::invalid_argument };
             }
         template <typename T, typename Cv>
-            inline from_chars_result number_from_chars(const char* first, const char*, Cv convert, T& value, chars_format) {
-                    if (is_sign_invalid<T>(*first)) return { first, errc::invalid_argument };
+            inline from_chars_result number_from_chars_(const char* first, const char*, Cv convert, T& value, chars_format) {
+                    if (is_sign_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
                 char* end;
                 errno = 0; auto const v = convert(first, &end);
-                return { end, end != first ? errno != ERANGE ? (value = v, errc{}) : errc::result_out_of_range : errc::invalid_argument };
+                return { end, end != first ? errno != ERANGE ? (value = v, std::errc{}) : std::errc::result_out_of_range : std::errc::invalid_argument };
             }
 
     }
 
 #   define CXON_FROM_CHARS(T, C)\
         inline from_chars_result from_chars(const char* first, const char* last, T& value, int base = 10) {\
-            return number_from_chars(first, last, C, value, base);\
+            return number_from_chars_(first, last, C, value, base);\
         }
         CXON_FROM_CHARS(char, strtol)
         CXON_FROM_CHARS(signed char, strtol)
@@ -105,7 +103,7 @@ namespace cxon { namespace charconv { namespace imp {
 #   undef CXON_FROM_CHARS
 #   define CXON_FROM_CHARS(T, C)\
         inline from_chars_result from_chars(const char* first, const char* last, T& value, chars_format fmt = chars_format::general) {\
-            return number_from_chars(first, last, C, value, fmt);\
+            return number_from_chars_(first, last, C, value, fmt);\
         }
         CXON_FROM_CHARS(float, strtof)
         CXON_FROM_CHARS(double, strtod)
@@ -114,24 +112,24 @@ namespace cxon { namespace charconv { namespace imp {
 
     struct to_chars_result {
         char* ptr;
-        errc ec;
+        std::errc ec;
     };
 
     namespace {
 
         template <typename T>
-            inline auto itoa(char* b, T t, int base) -> typename std::enable_if<std::is_unsigned<T>::value, unsigned>::type {
+            inline auto itoa_(char* b, T t, int base) -> typename std::enable_if<std::is_unsigned<T>::value, unsigned>::type {
                 char    *p = b;
                 do      *p = "0123456789abcdefghijklmnopqrstuvwxyz"[t % (T)base], ++p;
                 while   (t /= (T)base);
                 return  std::reverse(b, p), unsigned(p - b);
             }
         template <typename T>
-            inline auto itoa(char* b, T t, int base) -> typename std::enable_if<std::is_signed<T>::value, unsigned>::type {
+            inline auto itoa_(char* b, T t, int base) -> typename std::enable_if<std::is_signed<T>::value, unsigned>::type {
                 using U = typename std::make_unsigned<T>::type;
                 return t < 0 ?
-                    *b = '-', itoa<U>(++b, -t, base) + 1 :
-                              itoa<U>(  b,  t, base)
+                    *b = '-', itoa_<U>(++b, -t, base) + 1 :
+                              itoa_<U>(  b,  t, base)
                 ;
             }
 
@@ -139,34 +137,34 @@ namespace cxon { namespace charconv { namespace imp {
         //  a copy of the value last in ptr, and leaves the contents of the range [first, last) in unspecified state,
         //  but we don't care, the buffer must be sufficient
         template <typename T>
-            inline auto number_to_chars(char* first, char* last, T value, int base)
-                 -> typename std::enable_if<is_integral<T>::value, to_chars_result>::type
+            inline auto number_to_chars_(char* first, char* last, T value, int base)
+                 -> typename std::enable_if<std::is_integral<T>::value, to_chars_result>::type
             {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
                 CXON_ASSERT(last > first && size_t(last - first) >= std::numeric_limits<T>::digits10 + 1, "buffer too small");
-                unsigned const w = itoa(first, value, base);
-                return { first + w, errc{} };
+                unsigned const w = itoa_(first, value, base);
+                return { first + w, std::errc{} };
             }
 
-        template <typename> struct fmt;
-        template <> struct fmt<float>       { static constexpr char const*const str = "%.*g";   };
-        template <> struct fmt<double>      { static constexpr char const*const str = "%.*g";   };
-        template <> struct fmt<long double> { static constexpr char const*const str = "%.*Lg";  };
+        template <typename> struct fmt_;
+        template <> struct fmt_<float>          { static constexpr char const*const str = "%.*g";   };
+        template <> struct fmt_<double>         { static constexpr char const*const str = "%.*g";   };
+        template <> struct fmt_<long double>    { static constexpr char const*const str = "%.*Lg";  };
 
         template <typename T>
-            inline auto number_to_chars(char* first, char* last, T value, int precision)
-                 -> typename std::enable_if<is_floating_point<T>::value, to_chars_result>::type
+            inline auto number_to_chars_(char* first, char* last, T value, int precision)
+                 -> typename std::enable_if<std::is_floating_point<T>::value, to_chars_result>::type
             {
                 size_t const l = last - first;
-                int const w = snprintf(first, l, fmt<T>::str, precision, value); CXON_ASSERT(w > 0 && (size_t)w < l, "conversion failed");
-                return { first + w, errc{} };
+                int const w = std::snprintf(first, l, fmt_<T>::str, precision, value); CXON_ASSERT(w > 0 && (size_t)w < l, "conversion failed");
+                return { first + w, std::errc{} };
             }
 
     }
 
 #   define CXON_TO_CHARS(T)\
         inline to_chars_result to_chars(char* first, char* last, T value, int base = 10) {\
-            return number_to_chars<T>(first, last, value, base);\
+            return number_to_chars_<T>(first, last, value, base);\
         }
         CXON_TO_CHARS(signed char)
         CXON_TO_CHARS(unsigned char)
@@ -181,7 +179,7 @@ namespace cxon { namespace charconv { namespace imp {
 #   undef CXON_TO_CHARS
 #   define CXON_TO_CHARS(T)\
         inline to_chars_result to_chars(char* first, char* last, T value, int precision) {\
-            return number_to_chars<T>(first, last, value, precision);\
+            return number_to_chars_<T>(first, last, value, precision);\
         }
         CXON_TO_CHARS(float)
         CXON_TO_CHARS(double)

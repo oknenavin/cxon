@@ -11,23 +11,23 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct element_reader<JSON<X>, std::unordered_set<T, R...>>         : json::imp::set_element_reader<JSON<X>, std::unordered_set<T, R...>> {};
+        struct element_reader<JSON<X>, std::unordered_set<T, R...>>         : json::imp::set_element_reader_<JSON<X>, std::unordered_set<T, R...>> {};
     template <typename X, typename T, typename ...R>
-        struct element_reader<JSON<X>, std::unordered_multiset<T, R...>>    : json::imp::set_element_reader<JSON<X>, std::unordered_multiset<T, R...>> {};
+        struct element_reader<JSON<X>, std::unordered_multiset<T, R...>>    : json::imp::set_element_reader_<JSON<X>, std::unordered_multiset<T, R...>> {};
 
 }
 
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<JSON<X>, std::unordered_set<T, R...>>                   : json::imp::set_reader<JSON<X>, std::unordered_set<T, R...>> {};
+        struct read<JSON<X>, std::unordered_set<T, R...>>                   : json::imp::set_reader_<JSON<X>, std::unordered_set<T, R...>> {};
     template <typename X, typename T, typename ...R>
-        struct write<JSON<X>, std::unordered_set<T, R...>>                  : json::imp::set_writer<JSON<X>, std::unordered_set<T, R...>> {};
+        struct write<JSON<X>, std::unordered_set<T, R...>>                  : json::imp::set_writer_<JSON<X>, std::unordered_set<T, R...>> {};
 
     template <typename X, typename T, typename ...R>
-        struct read<JSON<X>, std::unordered_multiset<T, R...>>              : json::imp::set_reader<JSON<X>, std::unordered_multiset<T, R...>> {};
+        struct read<JSON<X>, std::unordered_multiset<T, R...>>              : json::imp::set_reader_<JSON<X>, std::unordered_multiset<T, R...>> {};
     template <typename X, typename T, typename ...R>
-        struct write<JSON<X>, std::unordered_multiset<T, R...>>             : json::imp::set_writer<JSON<X>, std::unordered_multiset<T, R...>> {};
+        struct write<JSON<X>, std::unordered_multiset<T, R...>>             : json::imp::set_writer_<JSON<X>, std::unordered_multiset<T, R...>> {};
 
 }
 

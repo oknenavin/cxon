@@ -13,12 +13,12 @@ namespace cxon {
     namespace cbor { namespace imp {
 
         template <typename T>
-            struct valarray_container {
+            struct valarray_container_ {
                 using value_type = T;
                 using reference = value_type&;
                 using iterator = decltype(std::begin(std::declval<std::valarray<T>&>()));
 
-                valarray_container(std::valarray<T>& a) : a_(a), i_() {}
+                valarray_container_(std::valarray<T>& a) : a_(a), i_() {}
 
                 size_t size() const     { return a_.size(); }
                 size_t max_size() const { return std::numeric_limits<size_t>::max(); }
@@ -58,7 +58,7 @@ namespace cxon {
         struct read<CBOR<X>, std::valarray<T>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::valarray<T>& t, II& i, II e, Cx& cx) {
-                    auto c = cbor::imp::valarray_container<T> {t};
+                    auto c = cbor::imp::valarray_container_<T> {t};
                     return cbor::cnt::read_array<Y>(c, i, e, cx);
                 }
         };

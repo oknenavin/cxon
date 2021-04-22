@@ -70,29 +70,29 @@ namespace cxon { namespace cbor { // node
     namespace imp {
 
         template <typename N, typename T>
-            struct node_kind_t;
-        template <typename N> struct node_kind_t<N, typename N::sint>       { static constexpr node_kind value = node_kind::sint; };
-        template <typename N> struct node_kind_t<N, typename N::uint>       { static constexpr node_kind value = node_kind::uint; };
-        template <typename N> struct node_kind_t<N, typename N::bytes>      { static constexpr node_kind value = node_kind::bytes; };
-        template <typename N> struct node_kind_t<N, typename N::text>       { static constexpr node_kind value = node_kind::text; };
-        template <typename N> struct node_kind_t<N, typename N::array>      { static constexpr node_kind value = node_kind::array; };
-        template <typename N> struct node_kind_t<N, typename N::map>        { static constexpr node_kind value = node_kind::map; };
-        template <typename N> struct node_kind_t<N, typename N::tag>        { static constexpr node_kind value = node_kind::tag; };
-        template <typename N> struct node_kind_t<N, typename N::null>       { static constexpr node_kind value = node_kind::null; };
-        template <typename N> struct node_kind_t<N, typename N::undefined>  { static constexpr node_kind value = node_kind::undefined; };
-        template <typename N> struct node_kind_t<N, typename N::boolean>    { static constexpr node_kind value = node_kind::boolean; };
-        template <typename N> struct node_kind_t<N, typename N::real>       { static constexpr node_kind value = node_kind::real; };
-        template <typename N> struct node_kind_t<N, typename N::simple>     { static constexpr node_kind value = node_kind::simple; };
+            struct node_kind_;
+        template <typename N> struct node_kind_<N, typename N::sint>        { static constexpr node_kind value = node_kind::sint; };
+        template <typename N> struct node_kind_<N, typename N::uint>        { static constexpr node_kind value = node_kind::uint; };
+        template <typename N> struct node_kind_<N, typename N::bytes>       { static constexpr node_kind value = node_kind::bytes; };
+        template <typename N> struct node_kind_<N, typename N::text>        { static constexpr node_kind value = node_kind::text; };
+        template <typename N> struct node_kind_<N, typename N::array>       { static constexpr node_kind value = node_kind::array; };
+        template <typename N> struct node_kind_<N, typename N::map>         { static constexpr node_kind value = node_kind::map; };
+        template <typename N> struct node_kind_<N, typename N::tag>         { static constexpr node_kind value = node_kind::tag; };
+        template <typename N> struct node_kind_<N, typename N::null>        { static constexpr node_kind value = node_kind::null; };
+        template <typename N> struct node_kind_<N, typename N::undefined>   { static constexpr node_kind value = node_kind::undefined; };
+        template <typename N> struct node_kind_<N, typename N::boolean>     { static constexpr node_kind value = node_kind::boolean; };
+        template <typename N> struct node_kind_<N, typename N::real>        { static constexpr node_kind value = node_kind::real; };
+        template <typename N> struct node_kind_<N, typename N::simple>      { static constexpr node_kind value = node_kind::simple; };
 
         template <typename N, typename T>
-            constexpr node_kind node_kind_from() noexcept { return node_kind_t<N, T>::value; }
+            constexpr node_kind node_kind_from_() noexcept { return node_kind_<N, T>::value; }
 
         template <template <typename C> class X, typename ...>
-            struct is_nothrow_x             { static constexpr bool value = true; };
+            struct is_nothrow_x_                { static constexpr bool value = true; };
         template <template <typename C> class X, typename T>
-            struct is_nothrow_x<X, T>       { static constexpr bool value = X<T>::value; };
+            struct is_nothrow_x_<X, T>          { static constexpr bool value = X<T>::value; };
         template <template <typename C> class X, typename H, typename ...T>
-            struct is_nothrow_x<X, H, T...> { static constexpr bool value = is_nothrow_x<X, H>::value && is_nothrow_x<X, T...>::value; };
+            struct is_nothrow_x_<X, H, T...>    { static constexpr bool value = is_nothrow_x_<X, H>::value && is_nothrow_x_<X, T...>::value; };
 
     }
 
@@ -114,17 +114,17 @@ namespace cxon { namespace cbor { // node
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
                     template <template <typename C> class X, bool = false>
-                        struct msvc_map_override            : imp::is_nothrow_x<X, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple> {};
+                        struct msvc_map_override            : imp::is_nothrow_x_<X, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple> {};
                     template <template <typename C> class X>
-                        struct msvc_map_override<X, true>   : imp::is_nothrow_x<X, sint, uint, bytes, text, array, /*map, */tag, boolean, null, undefined, real, simple> {};
+                        struct msvc_map_override<X, true>   : imp::is_nothrow_x_<X, sint, uint, bytes, text, array, /*map, */tag, boolean, null, undefined, real, simple> {};
                     using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<map, std::map<basic_node, basic_node>>::value>;
                     using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<map, std::map<basic_node, basic_node>>::value>;
 #               else
-                    using is_nothrow_move_constructible = imp::is_nothrow_x<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
-                    using is_nothrow_move_assignable    = imp::is_nothrow_x<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_move_constructible = imp::is_nothrow_x_<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_move_assignable    = imp::is_nothrow_x_<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
 #               endif
-                    using is_nothrow_copy_constructible = imp::is_nothrow_x<std::is_nothrow_copy_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
-                    using is_nothrow_copy_assignable    = imp::is_nothrow_x<std::is_nothrow_copy_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_copy_constructible = imp::is_nothrow_x_<std::is_nothrow_copy_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
             public:
 
             basic_node() noexcept : kind_(node_kind::undefined) {}
@@ -273,12 +273,12 @@ namespace cxon { namespace cbor { // node
             node_kind kind() const noexcept { return kind_; }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == imp::node_kind_from<basic_node, T>();
+                return kind_ == imp::node_kind_from_<basic_node, T>();
             }
 
             template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
                 if (!is<T>()) {
-                    reset(), kind_ = imp::node_kind_from<basic_node, T>();
+                    reset(), kind_ = imp::node_kind_from_<basic_node, T>();
                     new (&value_) T();
                 }
                 return reinterpret_cast<T&>(value_);

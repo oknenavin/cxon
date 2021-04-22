@@ -12,28 +12,28 @@
 namespace cxon {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct element_reader<CBOR<X>, std::unordered_map<K, V, R...>>      : cbor::imp::map_element_reader<CBOR<X>, std::unordered_map<K, V, R...>> {};
+        struct element_reader<CBOR<X>, std::unordered_map<K, V, R...>>      : cbor::imp::map_element_reader_<CBOR<X>, std::unordered_map<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct element_writer<CBOR<X>, std::unordered_map<K, V, R...>>      : cbor::imp::map_element_writer<CBOR<X>, std::unordered_map<K, V, R...>> {};
+        struct element_writer<CBOR<X>, std::unordered_map<K, V, R...>>      : cbor::imp::map_element_writer_<CBOR<X>, std::unordered_map<K, V, R...>> {};
 
     template <typename X, typename K, typename V, typename ...R>
-        struct element_reader<CBOR<X>, std::unordered_multimap<K, V, R...>> : cbor::imp::map_element_reader<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
+        struct element_reader<CBOR<X>, std::unordered_multimap<K, V, R...>> : cbor::imp::map_element_reader_<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct element_writer<CBOR<X>, std::unordered_multimap<K, V, R...>> : cbor::imp::map_element_writer<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
+        struct element_writer<CBOR<X>, std::unordered_multimap<K, V, R...>> : cbor::imp::map_element_writer_<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
 
 }
 
 namespace cxon {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct read<CBOR<X>, std::unordered_map<K, V, R...>>                : cbor::imp::map_reader<CBOR<X>, std::unordered_map<K, V, R...>> {};
+        struct read<CBOR<X>, std::unordered_map<K, V, R...>>                : cbor::imp::map_reader_<CBOR<X>, std::unordered_map<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct write<CBOR<X>, std::unordered_map<K, V, R...>>               : cbor::imp::map_writer<CBOR<X>, std::unordered_map<K, V, R...>> {};
+        struct write<CBOR<X>, std::unordered_map<K, V, R...>>               : cbor::imp::map_writer_<CBOR<X>, std::unordered_map<K, V, R...>> {};
 
     template <typename X, typename K, typename V, typename ...R>
-        struct read<CBOR<X>, std::unordered_multimap<K, V, R...>>           : cbor::imp::map_reader<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
+        struct read<CBOR<X>, std::unordered_multimap<K, V, R...>>           : cbor::imp::map_reader_<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct write<CBOR<X>, std::unordered_multimap<K, V, R...>>          : cbor::imp::map_writer<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
+        struct write<CBOR<X>, std::unordered_multimap<K, V, R...>>          : cbor::imp::map_writer_<CBOR<X>, std::unordered_multimap<K, V, R...>> {};
 
 }
 

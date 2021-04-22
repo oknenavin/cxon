@@ -120,16 +120,16 @@
     namespace cxon { namespace node { namespace imp {
 
         template <typename Cx, bool G = recursion_guard::in<napa_type<Cx>>::value>
-            struct scinc {
+            struct scinc_ {
                 Cx& cx;
-                scinc(Cx& cx) : cx(cx)  { ++recursion_guard::reference(cx.px); }
-                ~scinc()                { --recursion_guard::reference(cx.px); }
+                scinc_(Cx& cx) : cx(cx)  { ++recursion_guard::reference(cx.px); }
+                ~scinc_()                { --recursion_guard::reference(cx.px); }
                 bool check() const      { return recursion_guard::value(cx.px) < recursion_depth::constant<napa_type<Cx>>(64); }
             };
         template <typename Cx>
-            struct scinc<Cx, false> {
-                scinc(Cx&)              {}
-                ~scinc()                {}
+            struct scinc_<Cx, false> {
+                scinc_(Cx&)              {}
+                ~scinc_()                {}
                 bool check() const      { return true; }
             };
 
@@ -138,7 +138,7 @@
 #endif
 
 #define CXON_NODE_RG()\
-    cxon::node::imp::scinc<Cx> RG__(cx);\
+    cxon::node::imp::scinc_<Cx> RG__(cx);\
     if (!RG__.check()) return cx/cxon::node::error::recursion_depth_exceeded
 
 #ifdef CXON_JSON_DEFINED
@@ -237,35 +237,35 @@
         namespace imp {
 
             template <typename C>
-                struct nmst;
+                struct nmst_;
             template <>
-                struct nmst<char> {
+                struct nmst_<char> {
                     static constexpr char const*        pinf =  "inf";
                     static constexpr char const*        ninf = "-inf";
                     static constexpr char const*        nan =   "nan";
                 };
 #           if __cplusplus > 201703L /* C++20 */
                 template <>
-                    struct nmst<char8_t> {
+                    struct nmst_<char8_t> {
                         static constexpr char8_t const* pinf =  u8"inf";
                         static constexpr char8_t const* ninf = u8"-inf";
                         static constexpr char8_t const* nan =   u8"nan";
                     };
 #           endif
             template <>
-                struct nmst<char16_t> {
+                struct nmst_<char16_t> {
                     static constexpr char16_t const*    pinf =  u"inf";
                     static constexpr char16_t const*    ninf = u"-inf";
                     static constexpr char16_t const*    nan =   u"nan";
                 };
             template <>
-                struct nmst<char32_t> {
+                struct nmst_<char32_t> {
                     static constexpr char32_t const*    pinf =  U"inf";
                     static constexpr char32_t const*    ninf = U"-inf";
                     static constexpr char32_t const*    nan =   U"nan";
                 };
             template <>
-                struct nmst<wchar_t> {
+                struct nmst_<wchar_t> {
                     static constexpr wchar_t const*     pinf =  L"inf";
                     static constexpr wchar_t const*     ninf = L"-inf";
                     static constexpr wchar_t const*     nan =   L"nan";
@@ -286,9 +286,9 @@
                         bool const r = read_value<Y>(v, i, e, cx);
                             using number = typename json::basic_node<Tr>::number;
                             using symbol = typename json::basic_node<Tr>::string::value_type;
-                                 if (v == imp::nmst<symbol>::pinf) n.template imbue<number>() =  std::numeric_limits<number>::infinity();
-                            else if (v == imp::nmst<symbol>::ninf) n.template imbue<number>() = -std::numeric_limits<number>::infinity();
-                            else if (v == imp::nmst<symbol>::nan ) n.template imbue<number>() =  std::numeric_limits<number>::quiet_NaN();
+                                 if (v == imp::nmst_<symbol>::pinf) n.template imbue<number>() =  std::numeric_limits<number>::infinity();
+                            else if (v == imp::nmst_<symbol>::ninf) n.template imbue<number>() = -std::numeric_limits<number>::infinity();
+                            else if (v == imp::nmst_<symbol>::nan ) n.template imbue<number>() =  std::numeric_limits<number>::quiet_NaN();
                         return r;
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>

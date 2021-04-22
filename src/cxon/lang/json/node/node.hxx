@@ -54,23 +54,23 @@ namespace cxon { namespace json { // node
     namespace imp {
 
         template <typename N, typename T>
-            struct node_kind_t;
-        template <typename N> struct node_kind_t<N, typename N::null>       { static constexpr node_kind value = node_kind::null; };
-        template <typename N> struct node_kind_t<N, typename N::boolean>    { static constexpr node_kind value = node_kind::boolean; };
-        template <typename N> struct node_kind_t<N, typename N::number>     { static constexpr node_kind value = node_kind::number; };
-        template <typename N> struct node_kind_t<N, typename N::string>     { static constexpr node_kind value = node_kind::string; };
-        template <typename N> struct node_kind_t<N, typename N::array>      { static constexpr node_kind value = node_kind::array; };
-        template <typename N> struct node_kind_t<N, typename N::object>     { static constexpr node_kind value = node_kind::object; };
+            struct node_kind_;
+        template <typename N> struct node_kind_<N, typename N::null>        { static constexpr node_kind value = node_kind::null; };
+        template <typename N> struct node_kind_<N, typename N::boolean>     { static constexpr node_kind value = node_kind::boolean; };
+        template <typename N> struct node_kind_<N, typename N::number>      { static constexpr node_kind value = node_kind::number; };
+        template <typename N> struct node_kind_<N, typename N::string>      { static constexpr node_kind value = node_kind::string; };
+        template <typename N> struct node_kind_<N, typename N::array>       { static constexpr node_kind value = node_kind::array; };
+        template <typename N> struct node_kind_<N, typename N::object>      { static constexpr node_kind value = node_kind::object; };
 
         template <typename N, typename T>
-            constexpr node_kind node_kind_from() noexcept { return node_kind_t<N, T>::value; }
+            constexpr node_kind node_kind_from_() noexcept { return node_kind_<N, T>::value; }
 
         template <template <typename C> class X, typename ...>
-            struct is_nothrow_x             { static constexpr bool value = true; };
+            struct is_nothrow_x_                { static constexpr bool value = true; };
         template <template <typename C> class X, typename T>
-            struct is_nothrow_x<X, T>       { static constexpr bool value = X<T>::value; };
+            struct is_nothrow_x_<X, T>          { static constexpr bool value = X<T>::value; };
         template <template <typename C> class X, typename H, typename ...T>
-            struct is_nothrow_x<X, H, T...> { static constexpr bool value = is_nothrow_x<X, H>::value && is_nothrow_x<X, T...>::value; };
+            struct is_nothrow_x_<X, H, T...>    { static constexpr bool value = is_nothrow_x_<X, H>::value && is_nothrow_x_<X, T...>::value; };
 
     }
 
@@ -86,17 +86,17 @@ namespace cxon { namespace json { // node
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
                     template <template <typename C> class X, bool = false>
-                        struct msvc_map_override            : imp::is_nothrow_x<X, object, array, string, number, boolean, null> {};
+                        struct msvc_map_override            : imp::is_nothrow_x_<X, object, array, string, number, boolean, null> {};
                     template <template <typename C> class X>
-                        struct msvc_map_override<X, true>   : imp::is_nothrow_x<X, /*object, */array, string, number, boolean, null> {};
+                        struct msvc_map_override<X, true>   : imp::is_nothrow_x_<X, /*object, */array, string, number, boolean, null> {};
                     using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<basic_node, basic_node>>::value>;
                     using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<basic_node, basic_node>>::value>;
 #               else
-                    using is_nothrow_move_constructible = imp::is_nothrow_x<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
-                    using is_nothrow_move_assignable    = imp::is_nothrow_x<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
+                    using is_nothrow_move_constructible = imp::is_nothrow_x_<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
+                    using is_nothrow_move_assignable    = imp::is_nothrow_x_<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
 #               endif
-                    using is_nothrow_copy_constructible = imp::is_nothrow_x<std::is_nothrow_copy_constructible, object, array, string, number, boolean, null>;
-                    using is_nothrow_copy_assignable    = imp::is_nothrow_x<std::is_nothrow_copy_assignable, object, array, string, number, boolean, null>;
+                    using is_nothrow_copy_constructible = imp::is_nothrow_x_<std::is_nothrow_copy_constructible, object, array, string, number, boolean, null>;
+                    using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, object, array, string, number, boolean, null>;
             public:
 
             basic_node() noexcept : kind_(node_kind::null)  { get<null>() = nullptr; }
@@ -204,12 +204,12 @@ namespace cxon { namespace json { // node
             node_kind kind() const noexcept { return kind_; }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == imp::node_kind_from<basic_node, T>();
+                return kind_ == imp::node_kind_from_<basic_node, T>();
             }
 
             template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
                 if (!is<T>()) {
-                    reset(), kind_ = imp::node_kind_from<basic_node, T>();
+                    reset(), kind_ = imp::node_kind_from_<basic_node, T>();
                     new (&value_) T();
                 }
                 return reinterpret_cast<T&>(value_);

@@ -30,7 +30,7 @@ namespace cxon { namespace cio { namespace val {
     namespace imp {
 
         template <typename X>
-            struct value {
+            struct value_ {
                 template <typename O, typename II>
                     static bool skip(O& o, II& i, II e) {
                         for ( ; i != e; ++i) {
@@ -101,7 +101,7 @@ namespace cxon { namespace cio { namespace val {
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool sink_read(T& t, II& i, II e, Cx& cx) {
-            return imp::value<X>::skip(t, i, e) || cx/X::read_error::unexpected;
+            return imp::value_<X>::skip(t, i, e) || cx/X::read_error::unexpected;
         }
 
     template <typename X, typename O, typename S, typename Cx>

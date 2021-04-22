@@ -9,7 +9,7 @@
 namespace cxon { namespace cbor { namespace imp {
 
     template <typename X, typename M>
-        struct map_element_reader {
+        struct map_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(M& m, II& i, II e, Cx& cx) {
                     typename M::key_type k{}; typename M::mapped_type v{}; // TODO: allocator
@@ -21,7 +21,7 @@ namespace cxon { namespace cbor { namespace imp {
         };
 
     template <typename X, typename M>
-        struct map_element_writer {
+        struct map_element_writer_ {
             template <typename O, typename Cx>
                 static bool write(O& o, const typename M::value_type& t, Cx& cx) {
                     return  write_value<X>(o, t.first, cx) &&
@@ -31,7 +31,7 @@ namespace cxon { namespace cbor { namespace imp {
         };
 
     template <typename X, typename M>
-        struct map_reader {
+        struct map_reader_ {
             template <typename II, typename Cx>
                 static bool value(M& m, II& i, II e, Cx& cx) {
                     return cbor::cnt::read_array<X>(m, i, e, cx);
@@ -39,7 +39,7 @@ namespace cxon { namespace cbor { namespace imp {
         };
 
     template <typename X, typename M>
-        struct map_writer {
+        struct map_writer_ {
             template <typename O, typename Cx>
                 static bool value(O& o, const M& m, Cx& cx) {
                     return cbor::cnt::write_array<X, X::map>(o, m, cx);
