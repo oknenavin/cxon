@@ -170,17 +170,17 @@ namespace cxon { // numeric|character/write
             inline auto power_(T t) -> enable_if_t<sizeof(T) == 8, unsigned> { return !(t >> 32) ? !(t >> 16) ? !(t >> 8) ? 0 : 1 : 2 : 3; }
 
         template <typename T>
-            struct is_quantum   { static constexpr bool value = std::is_same<T, char>::value || std::is_same<T, wchar_t>::value; };
+            struct is_quantum_  { static constexpr bool value = std::is_same<T, char>::value || std::is_same<T, wchar_t>::value; };
         template <typename T>
-            struct is_signed    { static constexpr bool value = std::is_signed<T>::value   && !is_quantum<T>::value; };
+            struct is_signed_   { static constexpr bool value = std::is_signed<T>::value   && !is_quantum_<T>::value; };
         template <typename T>
-            struct is_unsigned  { static constexpr bool value = std::is_unsigned<T>::value && !is_quantum<T>::value; };
+            struct is_unsigned_ { static constexpr bool value = std::is_unsigned<T>::value && !is_quantum_<T>::value; };
 
     }}
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_unsigned<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_unsigned_<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             auto const p = cbor::imp::power_(t);
             return t > 0x17 ?
@@ -190,7 +190,7 @@ namespace cxon { // numeric|character/write
         }
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_quantum<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_quantum_<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             using Q = typename std::make_unsigned<T>::type;
             auto const p = cbor::imp::power_(t);
@@ -201,7 +201,7 @@ namespace cxon { // numeric|character/write
         }
     template <typename X, typename T, typename O, typename Cx>
         inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_signed<T>::value && is_same_format<X, CBOR>::value, bool>
+            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_signed_<T>::value && is_same_format<X, CBOR>::value, bool>
         {
             auto const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
             auto const p = cbor::imp::power_(t);

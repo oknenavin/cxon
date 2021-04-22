@@ -148,19 +148,19 @@ namespace cxon {
     namespace imp {
 
         template <typename A>
-            struct adaptor : A {
-                static const typename A::container_type& container(const A& a) noexcept { return ((adaptor&)a).c; }
-                static       typename A::container_type& container(      A& a) noexcept { return ((adaptor&)a).c; }
+            struct adaptor_ : A {
+                static const typename A::container_type& container(const A& a) noexcept { return ((adaptor_&)a).c; }
+                static       typename A::container_type& container(      A& a) noexcept { return ((adaptor_&)a).c; }
             };
 
     }
     template <typename C>
         inline auto adaptor_container(      C& c) ->       typename C::container_type& {
-            return imp::adaptor<C>::container(c);
+            return imp::adaptor_<C>::container(c);
         }
     template <typename C>
         inline auto adaptor_container(const C& c) -> const typename C::container_type& {
-            return imp::adaptor<C>::container(c);
+            return imp::adaptor_<C>::container(c);
         }
 
 }

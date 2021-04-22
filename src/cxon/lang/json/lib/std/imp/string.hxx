@@ -12,7 +12,7 @@
 namespace cxon { namespace json { namespace imp { // std::basic_string read
 
     template <typename X, typename T, typename ...R, typename II, typename Cx> // TODO: common with arrays?
-        inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
+        inline auto basic_string_char_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
             -> enable_if_t<cio::chr::is_char_8<T>::value, bool>
         {
             II const o = i;
@@ -22,7 +22,7 @@ namespace cxon { namespace json { namespace imp { // std::basic_string read
             return true;
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
-        inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
+        inline auto basic_string_char_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
             -> enable_if_t<cio::chr::is_char_16<T>::value, bool>
         {
             II const o = i;
@@ -39,7 +39,7 @@ namespace cxon { namespace json { namespace imp { // std::basic_string read
             return true;
         }
     template <typename X, typename T, typename ...R, typename II, typename Cx>
-        inline auto basic_string_char_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
+        inline auto basic_string_char_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
             -> enable_if_t<cio::chr::is_char_32<T>::value, bool>
         {
             II const o = i;
@@ -49,16 +49,14 @@ namespace cxon { namespace json { namespace imp { // std::basic_string read
         }
 
     template <typename X, typename T, typename ...R, typename II, typename Cx>
-        inline bool basic_string_read(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
+        inline bool basic_string_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
             if (!cio::consume<X>(X::string::beg, i, e, cx))         return false;
                 for (char c = cio::peek(i, e); cio::chr::is<X>::real(c); c = cio::peek(i, e)) {
                     if (c == X::string::end)                        return cio::consume<X>(X::string::end, i, e, cx);
-                    if (!basic_string_char_read<X>(t, i, e, cx))    return false;
+                    if (!basic_string_char_read_<X>(t, i, e, cx))    return false;
                 }
             return cx/json::read_error::unexpected;
         }
-
-        using cio::str::pointer_write;
 
 }}}
 

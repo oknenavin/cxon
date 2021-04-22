@@ -187,7 +187,7 @@ namespace cxon { namespace json {
     namespace cxon {
 
 #       define CXON_JSON_NODE_RG()\
-            cxon::node::imp::scinc<Cx> RG__(cx);\
+            cxon::node::imp::scinc_<Cx> RG__(cx);\
             if (!RG__.check()) return cx/cxon::node::error::recursion_depth_exceeded
 #       define CXON_JSON_NODE_CHECK(e) if (!(e)) return false
 

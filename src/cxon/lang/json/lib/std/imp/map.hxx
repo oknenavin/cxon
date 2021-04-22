@@ -11,7 +11,7 @@
 namespace cxon { namespace json { namespace imp {
 
     template <typename X, typename M>
-        struct map_element_reader {
+        struct map_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(M& m, II& i, II e, Cx& cx) {
                     typename M::key_type k{}; typename M::mapped_type v{}; // TODO: allocator
@@ -23,7 +23,7 @@ namespace cxon { namespace json { namespace imp {
         };
 
     template <typename X, typename M>
-        struct map_element_writer {
+        struct map_element_writer_ {
             template <typename O, typename Cx>
                 static bool write(O& o, const typename M::value_type& e, Cx& cx) {
                     return  cio::write_key<X>(o, e.first, cx) &&
@@ -33,7 +33,7 @@ namespace cxon { namespace json { namespace imp {
         };
 
     template <typename X, typename M>
-        struct map_reader {
+        struct map_reader_ {
             template <typename II, typename Cx>
                 static bool value(M& m, II& i, II e, Cx& cx) {
                     return cio::cnt::read_map<X>(m, i, e, cx);
@@ -41,7 +41,7 @@ namespace cxon { namespace json { namespace imp {
         };
 
     template <typename X, typename M>
-        struct map_writer {
+        struct map_writer_ {
             template <typename O, typename Cx>
                 static bool value(O& o, const M& m, Cx& cx) {
                     return cio::cnt::write_map<X>(o, m, cx);

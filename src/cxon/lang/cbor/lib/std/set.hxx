@@ -12,24 +12,24 @@
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct element_reader<CBOR<X>, std::set<T, R...>>       : cbor::imp::set_element_reader<CBOR<X>, std::set<T, R...>> {};
+        struct element_reader<CBOR<X>, std::set<T, R...>>       : cbor::imp::set_element_reader_<CBOR<X>, std::set<T, R...>> {};
 
     template <typename X, typename T, typename ...R>
-        struct element_reader<CBOR<X>, std::multiset<T, R...>>  : cbor::imp::set_element_reader<CBOR<X>, std::multiset<T, R...>> {};
+        struct element_reader<CBOR<X>, std::multiset<T, R...>>  : cbor::imp::set_element_reader_<CBOR<X>, std::multiset<T, R...>> {};
 
 }
 
 namespace cxon {
 
     template <typename X, typename T, typename ...R>
-        struct read<CBOR<X>, std::set<T, R...>>                  : cbor::imp::set_reader<CBOR<X>, std::set<T, R...>> {};
+        struct read<CBOR<X>, std::set<T, R...>>                  : cbor::imp::set_reader_<CBOR<X>, std::set<T, R...>> {};
     template <typename X, typename T, typename ...R>
-        struct write<CBOR<X>, std::set<T, R...>>                 : cbor::imp::set_writer<CBOR<X>, std::set<T, R...>> {};
+        struct write<CBOR<X>, std::set<T, R...>>                 : cbor::imp::set_writer_<CBOR<X>, std::set<T, R...>> {};
 
     template <typename X, typename T, typename ...R>
-        struct read<CBOR<X>, std::multiset<T, R...>>             : cbor::imp::set_reader<CBOR<X>, std::multiset<T, R...>> {};
+        struct read<CBOR<X>, std::multiset<T, R...>>             : cbor::imp::set_reader_<CBOR<X>, std::multiset<T, R...>> {};
     template <typename X, typename T, typename ...R>
-        struct write<CBOR<X>, std::multiset<T, R...>>            : cbor::imp::set_writer<CBOR<X>, std::multiset<T, R...>> {};
+        struct write<CBOR<X>, std::multiset<T, R...>>            : cbor::imp::set_writer_<CBOR<X>, std::multiset<T, R...>> {};
 
 }
 

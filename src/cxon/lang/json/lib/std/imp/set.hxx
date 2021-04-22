@@ -11,7 +11,7 @@
 namespace cxon { namespace json { namespace imp {
 
     template <typename X, typename S>
-        struct set_element_reader {
+        struct set_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(S& t, II& i, II e, Cx& cx) {
                     typename S::value_type o{}; // TODO: allocator
@@ -22,7 +22,7 @@ namespace cxon { namespace json { namespace imp {
         };
 
     template <typename X, typename S>
-        struct set_reader {
+        struct set_reader_ {
             template <typename II, typename Cx>
                 static bool value(S& s, II& i, II e, Cx& cx) {
                     return cio::cnt::read_list<X>(s, i, e, cx);
@@ -30,7 +30,7 @@ namespace cxon { namespace json { namespace imp {
         };
 
     template <typename X, typename S>
-        struct set_writer {
+        struct set_writer_ {
             template <typename O, typename Cx>
                 static bool value(O& o, const S& s, Cx& cx) {
                     return cio::cnt::write_list<X>(o, s, cx);

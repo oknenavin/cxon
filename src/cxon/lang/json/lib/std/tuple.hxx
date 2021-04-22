@@ -11,31 +11,31 @@ namespace cxon { namespace cio { namespace cnt { // container read/write helpers
     namespace imp {
 
         template <typename X, typename T, unsigned N, unsigned L>
-            struct tuple_read {
+            struct tuple_read_ {
                 template <typename II, typename Cx>
                     static bool value(T& t, II& i, II e, Cx& cx) {
                         if (!read_value<X>(std::get<N>(t), i, e, cx)) return false;
                         if (N + 1 != L) if (!cio::consume<X>(X::list::sep, i, e, cx)) return false;
-                        return tuple_read<X, T, N + 1, L>::value(t, i, e, cx);
+                        return tuple_read_<X, T, N + 1, L>::value(t, i, e, cx);
                     }
             };
         template <typename X, typename T, unsigned N>
-            struct tuple_read<X, T, N, N> {
+            struct tuple_read_<X, T, N, N> {
                 template <typename II, typename Cx>
                     static constexpr bool value(T&, II&, II, Cx&) { return true; }
             };
 
         template <typename X, typename T, unsigned N, unsigned L>
-            struct tuple_write {
+            struct tuple_write_ {
                 template <typename O, typename Cx>
                     static bool value(O& o, const T& t, Cx& cx) {
                         return  write_value<X>(o, std::get<N>(t), cx) && cio::poke<X>(o, X::list::sep, cx) &&
-                                tuple_write<X, T, N + 1, L>::value(o, t, cx)
+                                tuple_write_<X, T, N + 1, L>::value(o, t, cx)
                         ;
                     }
             };
         template <typename X, typename T, unsigned N>
-            struct tuple_write<X, T, N, N> {
+            struct tuple_write_<X, T, N, N> {
                 template <typename O, typename Cx>
                     static bool value(O& o, const T& t, Cx& cx) {
                         return write_value<X>(o, std::get<N>(t), cx);
@@ -46,12 +46,12 @@ namespace cxon { namespace cio { namespace cnt { // container read/write helpers
 
     template <typename X, typename II, typename Cx, typename ...T>
         inline bool read_tuple(std::tuple<T...>& t, II& i, II e, Cx& cx) {
-            return imp::tuple_read<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value>::value(t, i, e, cx);
+            return imp::tuple_read_<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value>::value(t, i, e, cx);
         }
 
     template <typename X, typename O, typename Cx, typename ...T>
         inline bool write_tuple(O& o, const std::tuple<T...>& t, Cx& cx) {
-            return imp::tuple_write<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value - 1>::value(o, t, cx);
+            return imp::tuple_write_<X, std::tuple<T...>, 0, std::tuple_size<std::tuple<T...>>::value - 1>::value(o, t, cx);
         }
 
 }}}
