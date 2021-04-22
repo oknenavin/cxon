@@ -50,7 +50,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename II, typename Cx>
         inline bool read_size(size_t& s, II& i, II e, Cx& cx) {
-            return  cbor::bits::read_unsigned_<X>(s, i, e, cx) ||
+            return  cbor::imp::read_unsigned_<X>(s, i, e, cx) ||
                     cx/cbor::read_error::size_invalid
             ;
         }
@@ -71,7 +71,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename O, typename Cx>
         inline bool write_size(O& o, bio::byte m, size_t s, Cx& cx) {
-            unsigned const p = cbor::bits::power_(s);
+            unsigned const p = cbor::imp::power_(s);
             return s > 0x17 ?
                 bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, s, 1 << p, cx) :
                 bio::poke<X>(o, bio::byte(m + s), cx)
@@ -82,7 +82,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
 namespace cxon { namespace cbor { namespace cnt {
 
-    namespace bits { // byte/text arrays
+    namespace imp { // byte/text arrays
 
         template <typename C>
             inline auto size_(option<1>, const C& c) -> decltype(c.size(), size_t()) {
@@ -152,7 +152,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
     }
 
-    namespace bits { // value arrays
+    namespace imp { // value arrays
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_elements_(T& t, size_t n, II& i, II e, Cx& cx) {
@@ -184,14 +184,14 @@ namespace cxon { namespace cbor { namespace cnt {
             inline bool read_array_w_(T& t, bio::byte m, II& i, II e, Cx& cx) {
                 switch (m & X::mnr) {
                     case 0x1C: case 0x1D: case 0x1E:    return cx/cbor::read_error::size_invalid;
-                    case 0x1F:                          return bits::read_array_w_var_<X>(t, i, e, cx);
-                    default:                            return bits::read_array_w_fix_<X>(t, i, e, cx);
+                    case 0x1F:                          return imp::read_array_w_var_<X>(t, i, e, cx);
+                    default:                            return imp::read_array_w_fix_<X>(t, i, e, cx);
                 }
             }
 
     }
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename T, typename II, typename Cx>
             inline auto read_array_(T& t, II& i, II e, Cx& cx)
@@ -199,8 +199,8 @@ namespace cxon { namespace cbor { namespace cnt {
             {
                 auto const m = bio::peek(i, e);
                 switch (m & X::mjr) {
-                    case X::bstr: case X::tstr: return bits::read_array_b_<X>(t, m, i, e, cx);
-                    case X::arr:                return bits::read_array_w_<X>(t, m, i, e, cx);
+                    case X::bstr: case X::tstr: return imp::read_array_b_<X>(t, m, i, e, cx);
+                    case X::arr:                return imp::read_array_w_<X>(t, m, i, e, cx);
                     default:                    return cx/cbor::read_error::array_invalid;
                 }
             }
@@ -210,7 +210,7 @@ namespace cxon { namespace cbor { namespace cnt {
             {
                 auto const m = bio::peek(i, e);
                 switch (m & X::mjr) {
-                    case X::arr: case X::map:   return bits::read_array_w_<X>(t, m, i, e, cx);
+                    case X::arr: case X::map:   return imp::read_array_w_<X>(t, m, i, e, cx);
                     default:                    return cx/cbor::read_error::array_invalid;
                 }
             }
@@ -226,10 +226,10 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename T, typename II, typename Cx>
         inline bool read_array(T& t, size_t/* tag*/, II& i, II e, Cx& cx) {
             // TODO: tags - e.g. typed-arrays (RFC8746)
-            return bits::read_array_<X>(t, i, e, cx);
+            return imp::read_array_<X>(t, i, e, cx);
         }
 
-    namespace bits {
+    namespace imp {
 
         template <typename FI>
             struct range_container_ {
@@ -267,7 +267,7 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, size_t/* tag*/, II& i, II e, Cx& cx) {
             // TODO: tags - e.g. typed-arrays (RFC8746)
-            auto c = bits::make_range_container_(f, l);
+            auto c = imp::make_range_container_(f, l);
             return read_array<X>(c, i, e, cx);
         }
 
@@ -275,7 +275,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
 namespace cxon { namespace cbor { namespace cnt {
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
             inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
@@ -301,7 +301,7 @@ namespace cxon { namespace cbor { namespace cnt {
     }
     template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx) {
-            return bits::write_array_<X>(o, f, l, cx);
+            return imp::write_array_<X>(o, f, l, cx);
         }
 
     template <typename X, bio::byte M, typename T, typename O, typename Cx>

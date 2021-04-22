@@ -26,7 +26,7 @@
 #   endif
 #endif
 
-namespace cxon { namespace charconv { namespace bits {
+namespace cxon { namespace charconv { namespace imp {
 
     using namespace std;
 
@@ -204,7 +204,7 @@ namespace cxon { namespace charconv { // <charconv>
             inline auto from_chars_i_(option<0>, const char* f, const char* l, T& t, int base = 10)
                 ->  std::from_chars_result
             {
-                auto const r = bits::from_chars(f, l, t, base);
+                auto const r = imp::from_chars(f, l, t, base);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -227,7 +227,7 @@ namespace cxon { namespace charconv { // <charconv>
             inline auto from_chars_f_(option<0>, const char* f, const char* l, T& t)
                 ->  std::from_chars_result
             {
-                auto const r = bits::from_chars(f, l, t);
+                auto const r = imp::from_chars(f, l, t);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -249,7 +249,7 @@ namespace cxon { namespace charconv { // <charconv>
             inline auto to_chars_i_(option<0>, char* f, char* l, T t, int base = 10)
                 ->  std::to_chars_result
             {
-                auto const r = bits::to_chars(f, l, t, base);
+                auto const r = imp::to_chars(f, l, t, base);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -277,7 +277,7 @@ namespace cxon { namespace charconv { // <charconv>
                 ->  decltype(std::to_chars(f, l, t, (std::chars_format)0, precision), std::to_chars_result())
             {
 #               if defined(_MSC_VER) && _MSC_VER <= 1923
-                    auto const r = bits::to_chars(f, l, t, precision);
+                    auto const r = imp::to_chars(f, l, t, precision);
                     return { r.ptr, r.ec };
 #               else
                     return std::to_chars(f, l, t, general<std::chars_format>::value, precision);
@@ -294,7 +294,7 @@ namespace cxon { namespace charconv { // <charconv>
             inline auto to_chars_f_(option<0>, char* f, char* l, T t, int precision)
                 ->  std::to_chars_result
             {
-                auto const r = bits::to_chars(f, l, t, precision);
+                auto const r = imp::to_chars(f, l, t, precision);
                 return { r.ptr, r.ec };
             }
         template <typename T>
@@ -305,8 +305,8 @@ namespace cxon { namespace charconv { // <charconv>
                 return to_chars_f_(option<2>(), f, l, t, precision);
             }
 #   else
-        using bits::from_chars;
-        using bits::to_chars;
+        using imp::from_chars;
+        using imp::to_chars;
 #   endif
 
 }}

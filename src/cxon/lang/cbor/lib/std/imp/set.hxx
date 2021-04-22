@@ -3,20 +3,18 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_LIB_STD_BITS_SET_HXX_
-#define CXON_JSON_LIB_STD_BITS_SET_HXX_
+#ifndef CXON_CBOR_LIB_STD_IMP_SET_HXX_
+#define CXON_CBOR_LIB_STD_IMP_SET_HXX_
 
-#include "cxon/lang/common/cio/container.hxx"
-
-namespace cxon { namespace json { namespace bits {
+namespace cxon { namespace cbor { namespace imp {
 
     template <typename X, typename S>
         struct set_element_reader {
             template <typename II, typename Cx>
-                static bool read(S& t, II& i, II e, Cx& cx) {
-                    typename S::value_type o{}; // TODO: allocator
-                    return  read_value<X>(o, i, e, cx) &&
-                            (t.emplace(std::move(o)), true)
+                static bool read(S& s, II& i, II e, Cx& cx) {
+                    auto v = typename S::value_type {}; // TODO: allocator
+                    return  read_value<X>(v, i, e, cx) &&
+                            (s.emplace(std::move(v)), true)
                     ;
                 }
         };
@@ -25,7 +23,7 @@ namespace cxon { namespace json { namespace bits {
         struct set_reader {
             template <typename II, typename Cx>
                 static bool value(S& s, II& i, II e, Cx& cx) {
-                    return cio::cnt::read_list<X>(s, i, e, cx);
+                    return cbor::cnt::read_array<X>(s, i, e, cx);
                 }
         };
 
@@ -33,10 +31,10 @@ namespace cxon { namespace json { namespace bits {
         struct set_writer {
             template <typename O, typename Cx>
                 static bool value(O& o, const S& s, Cx& cx) {
-                    return cio::cnt::write_list<X>(o, s, cx);
+                    return cbor::cnt::write_array<X>(o, std::begin(s), std::end(s), cx);
                 }
         };
 
 }}}
 
-#endif // CXON_JSON_LIB_STD_BITS_SET_HXX_
+#endif // CXON_CBOR_LIB_STD_IMP_SET_HXX_

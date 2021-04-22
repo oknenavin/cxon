@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_LIB_STD_BITS_MAP_HXX_
-#define CXON_JSON_LIB_STD_BITS_MAP_HXX_
+#ifndef CXON_JSON_LIB_STD_IMP_MAP_HXX_
+#define CXON_JSON_LIB_STD_IMP_MAP_HXX_
 
 #include "cxon/lang/common/cio/container.hxx"
 
-namespace cxon { namespace json { namespace bits {
+namespace cxon { namespace json { namespace imp {
 
     template <typename X, typename M>
         struct map_element_reader {
@@ -50,4 +50,4 @@ namespace cxon { namespace json { namespace bits {
 
 }}}
 
-#endif // CXON_JSON_LIB_STD_BITS_MAP_HXX_
+#endif // CXON_JSON_LIB_STD_IMP_MAP_HXX_

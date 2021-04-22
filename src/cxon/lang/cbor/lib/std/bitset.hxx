@@ -10,7 +10,7 @@
 
 namespace cxon {
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename X, size_t N, typename II, typename Cx>
             inline auto read_bitset_(std::bitset<N>& t, II& i, II e, Cx& cx) -> enable_if_t<N >= 8, bool> {
@@ -56,7 +56,7 @@ namespace cxon {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::bitset<N>& t, II& i, II e, Cx& cx) {
                     return  cbor::tag::read<Y>(i, e, cx) &&
-                            cbor::bits::read_bitset_<Y>(t, i, e, cx)
+                            cbor::imp::read_bitset_<Y>(t, i, e, cx)
                     ;
                 }
         };

@@ -117,7 +117,7 @@ namespace cxon { namespace cio {
 
     // output
 
-    namespace bits {
+    namespace imp {
 
         template <typename O>
             inline auto push_(O& o, char c) -> enable_if_t<is_output_iterator<O>::value> {
@@ -187,24 +187,24 @@ namespace cxon { namespace cio {
     }
 
     template <typename O>
-        inline bool poke(O& o, char c)                  { return bits::poke_(o, c); }
+        inline bool poke(O& o, char c)                  { return imp::poke_(o, c); }
     template <typename O>
-        inline bool poke(O& o, const char* s)           { return bits::poke_(o, s); }
+        inline bool poke(O& o, const char* s)           { return imp::poke_(o, s); }
     template <typename O>
-        inline bool poke(O& o, const char* s, size_t n) { return bits::poke_(o, s, n); }
+        inline bool poke(O& o, const char* s, size_t n) { return imp::poke_(o, s, n); }
     template <typename O>
-        inline bool poke(O& o, unsigned n, char c)      { return bits::poke_(o, n, c); }
+        inline bool poke(O& o, unsigned n, char c)      { return imp::poke_(o, n, c); }
     template <typename O>
         inline bool poke(O&, std::nullptr_t) noexcept   { return true; }
 
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, char c, Cx& cx)                  { return bits::poke_(o, c)      || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, char c, Cx& cx)                  { return imp::poke_(o, c)       || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, Cx& cx)           { return bits::poke_(o, s)      || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, const char* s, Cx& cx)           { return imp::poke_(o, s)       || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return bits::poke_(o, s, n)   || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, const char* s, size_t n, Cx& cx) { return imp::poke_(o, s, n)    || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return bits::poke_(o, n, c)   || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, unsigned n, char c, Cx& cx)      { return imp::poke_(o, n, c)    || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
         constexpr bool poke(O&, std::nullptr_t, Cx&)            { return true; }
 

@@ -39,7 +39,7 @@ namespace cxon { // array/write
 
 namespace cxon { // pointer/read
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename T, typename A>
             struct pointer_container {
@@ -90,7 +90,7 @@ namespace cxon { // pointer/read
 
     }}
 
-    namespace cbor { namespace bits {
+    namespace cbor { namespace imp {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_t_(T*& t, II& i, II e, Cx& cx) {
@@ -140,14 +140,14 @@ namespace cxon { // pointer/read
         struct read<CBOR<X>, T*> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(T*& t, II& i, II e, Cx& cx) {
-                    return cbor::bits::read_pointer_<Y>(t, i, e, cx);
+                    return cbor::imp::read_pointer_<Y>(t, i, e, cx);
                 }
         };
     template <typename X, typename T>
         struct read<CBOR<X>, const T*> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(const T*& t, II& i, II e, Cx& cx) {
-                    return cbor::bits::read_pointer_<Y>((T*&)t, i, e, cx);
+                    return cbor::imp::read_pointer_<Y>((T*&)t, i, e, cx);
                 }
         };
 

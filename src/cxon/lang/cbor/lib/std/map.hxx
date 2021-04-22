@@ -7,33 +7,33 @@
 #define CXON_CBOR_LIB_STD_MAP_HXX_
 
 #include "cxon/lang/cbor/common/container.hxx"
-#include "bits/map.hxx"
+#include "imp/map.hxx"
 
 namespace cxon {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct element_reader<CBOR<X>, std::map<K, V, R...>>        : cbor::bits::map_element_reader<CBOR<X>, std::map<K, V, R...>> {};
+        struct element_reader<CBOR<X>, std::map<K, V, R...>>        : cbor::imp::map_element_reader<CBOR<X>, std::map<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct element_writer<CBOR<X>, std::map<K, V, R...>>        : cbor::bits::map_element_writer<CBOR<X>, std::map<K, V, R...>> {};
+        struct element_writer<CBOR<X>, std::map<K, V, R...>>        : cbor::imp::map_element_writer<CBOR<X>, std::map<K, V, R...>> {};
 
     template <typename X, typename K, typename V, typename ...R>
-        struct element_reader<CBOR<X>, std::multimap<K, V, R...>>   : cbor::bits::map_element_reader<CBOR<X>, std::multimap<K, V, R...>> {};
+        struct element_reader<CBOR<X>, std::multimap<K, V, R...>>   : cbor::imp::map_element_reader<CBOR<X>, std::multimap<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct element_writer<CBOR<X>, std::multimap<K, V, R...>>   : cbor::bits::map_element_writer<CBOR<X>, std::multimap<K, V, R...>> {};
+        struct element_writer<CBOR<X>, std::multimap<K, V, R...>>   : cbor::imp::map_element_writer<CBOR<X>, std::multimap<K, V, R...>> {};
 
 }
 
 namespace cxon {
 
     template <typename X, typename K, typename V, typename ...R>
-        struct read<CBOR<X>, std::map<K, V, R...>>                  : cbor::bits::map_reader<CBOR<X>, std::map<K, V, R...>> {};
+        struct read<CBOR<X>, std::map<K, V, R...>>                  : cbor::imp::map_reader<CBOR<X>, std::map<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct write<CBOR<X>, std::map<K, V, R...>>                 : cbor::bits::map_writer<CBOR<X>, std::map<K, V, R...>> {};
+        struct write<CBOR<X>, std::map<K, V, R...>>                 : cbor::imp::map_writer<CBOR<X>, std::map<K, V, R...>> {};
 
     template <typename X, typename K, typename V, typename ...R>
-        struct read<CBOR<X>, std::multimap<K, V, R...>>             : cbor::bits::map_reader<CBOR<X>, std::multimap<K, V, R...>> {};
+        struct read<CBOR<X>, std::multimap<K, V, R...>>             : cbor::imp::map_reader<CBOR<X>, std::multimap<K, V, R...>> {};
     template <typename X, typename K, typename V, typename ...R>
-        struct write<CBOR<X>, std::multimap<K, V, R...>>            : cbor::bits::map_writer<CBOR<X>, std::multimap<K, V, R...>> {};
+        struct write<CBOR<X>, std::multimap<K, V, R...>>            : cbor::imp::map_writer<CBOR<X>, std::multimap<K, V, R...>> {};
 
 }
 

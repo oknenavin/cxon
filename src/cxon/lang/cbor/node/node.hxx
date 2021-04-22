@@ -67,7 +67,7 @@ namespace cxon { namespace cbor { // node traits
 
 namespace cxon { namespace cbor { // node
 
-    namespace bits {
+    namespace imp {
 
         template <typename N, typename T>
             struct node_kind_t;
@@ -114,17 +114,17 @@ namespace cxon { namespace cbor { // node
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
                     template <template <typename C> class X, bool = false>
-                        struct msvc_map_override            : bits::is_nothrow_x<X, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple> {};
+                        struct msvc_map_override            : imp::is_nothrow_x<X, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple> {};
                     template <template <typename C> class X>
-                        struct msvc_map_override<X, true>   : bits::is_nothrow_x<X, sint, uint, bytes, text, array, /*map, */tag, boolean, null, undefined, real, simple> {};
+                        struct msvc_map_override<X, true>   : imp::is_nothrow_x<X, sint, uint, bytes, text, array, /*map, */tag, boolean, null, undefined, real, simple> {};
                     using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<map, std::map<basic_node, basic_node>>::value>;
                     using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<map, std::map<basic_node, basic_node>>::value>;
 #               else
-                    using is_nothrow_move_constructible = bits::is_nothrow_x<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
-                    using is_nothrow_move_assignable    = bits::is_nothrow_x<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_move_constructible = imp::is_nothrow_x<std::is_nothrow_move_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_move_assignable    = imp::is_nothrow_x<std::is_nothrow_move_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
 #               endif
-                    using is_nothrow_copy_constructible = bits::is_nothrow_x<std::is_nothrow_copy_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
-                    using is_nothrow_copy_assignable    = bits::is_nothrow_x<std::is_nothrow_copy_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_copy_constructible = imp::is_nothrow_x<std::is_nothrow_copy_constructible, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
+                    using is_nothrow_copy_assignable    = imp::is_nothrow_x<std::is_nothrow_copy_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
             public:
 
             basic_node() noexcept : kind_(node_kind::undefined) {}
@@ -273,12 +273,12 @@ namespace cxon { namespace cbor { // node
             node_kind kind() const noexcept { return kind_; }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == bits::node_kind_from<basic_node, T>();
+                return kind_ == imp::node_kind_from<basic_node, T>();
             }
 
             template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
                 if (!is<T>()) {
-                    reset(), kind_ = bits::node_kind_from<basic_node, T>();
+                    reset(), kind_ = imp::node_kind_from<basic_node, T>();
                     new (&value_) T();
                 }
                 return reinterpret_cast<T&>(value_);

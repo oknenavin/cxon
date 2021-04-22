@@ -52,7 +52,7 @@ namespace cxon { namespace cbor { namespace cls {
             return { name, f };
         }
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename S, typename F, typename II, typename Cx>
             inline auto read_field_(S& s, F f, II& i, II e, Cx& cx)
@@ -96,11 +96,11 @@ namespace cxon { namespace cbor { namespace cls {
     }
     template <typename X, typename S, typename F, typename II, typename Cx>
         inline bool read_field(S& s, F f, II& i, II e, Cx& cx) {
-            return bits::read_field_<X>(s, f, i, e, cx);
+            return imp::read_field_<X>(s, f, i, e, cx);
         }
     template <typename X, typename O, typename S, typename F, typename Cx>
         inline bool write_field(O& o, const S& s, F f, Cx& cx) {
-            return bits::write_field_<X>(o, s, f, cx);
+            return imp::write_field_<X>(o, s, f, cx);
         }
 
     // fields
@@ -110,7 +110,7 @@ namespace cxon { namespace cbor { namespace cls {
             return std::make_tuple(f...);
         }
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, size_t N, size_t L>
             struct read_ {
@@ -158,7 +158,7 @@ namespace cxon { namespace cbor { namespace cls {
                     {   II const o = i;
                         if (!read_value<X>(id, i, e, cx))
                             return false;
-                        if (!bits::read_<X, 0, std::tuple_size<fields<F...>>::value>::fields(s, id, f, i, e, cx))
+                        if (!imp::read_<X, 0, std::tuple_size<fields<F...>>::value>::fields(s, id, f, i, e, cx))
                             return cx && (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                     }
                 }
@@ -168,7 +168,7 @@ namespace cxon { namespace cbor { namespace cls {
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx) {
             return  cbor::cnt::write_size<X>(o, X::map, std::tuple_size<fields<F...>>::value, cx) &&
-                    bits::write_<X, 0, std::tuple_size<fields<F...>>::value>::fields(o, s, f, cx)
+                    imp::write_<X, 0, std::tuple_size<fields<F...>>::value>::fields(o, s, f, cx)
             ;
         }
 

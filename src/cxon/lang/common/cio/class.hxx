@@ -49,7 +49,7 @@ namespace cxon { namespace cio { namespace cls {
     template <typename F>
         constexpr field<F> make_field(const char* name, F f) { return { name, f }; }
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename S, typename F, typename II, typename Cx>
             inline auto read_field_(S& s, F f, II& i, II e, Cx& cx)
@@ -94,11 +94,11 @@ namespace cxon { namespace cio { namespace cls {
     }
     template <typename X, typename S, typename F, typename II, typename Cx>
         inline bool read_field(S& s, F f, II& i, II e, Cx& cx) {
-            return bits::read_field_<X>(s, f, i, e, cx);
+            return imp::read_field_<X>(s, f, i, e, cx);
         }
     template <typename X, typename O, typename S, typename F, typename Cx>
         inline bool write_field(O& o, const S& s, F f, Cx& cx) {
-            return bits::write_field_<X>(o, s, f, cx);
+            return imp::write_field_<X>(o, s, f, cx);
         }
 
     // fields
@@ -124,7 +124,7 @@ namespace cxon { namespace cio { namespace cls {
 
     // read
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename S, typename ...>
             struct read {
@@ -154,7 +154,7 @@ namespace cxon { namespace cio { namespace cls {
                 consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return false;
-                    if (!bits::read<X, S, F...>::fields(s, id, f, i, e, cx))
+                    if (!imp::read<X, S, F...>::fields(s, id, f, i, e, cx))
                         return cx && (rewind(i, o), cx/X::read_error::unexpected);
                     if (consume<X>(X::map::sep, i, e)) continue;
                 return consume<X>(X::map::end, i, e, cx);
@@ -164,7 +164,7 @@ namespace cxon { namespace cio { namespace cls {
 
     // write
 
-    namespace bits {
+    namespace imp {
 
         template <typename X, typename S, typename H, typename ...T>
             struct write {
@@ -188,7 +188,7 @@ namespace cxon { namespace cio { namespace cls {
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx) {
             return  poke<X>(o, X::map::beg, cx) &&
-                        bits::write<X, S, F...>::fields(o, s, f, cx) &&
+                        imp::write<X, S, F...>::fields(o, s, f, cx) &&
                     poke<X>(o, X::map::end, cx)
             ;
         }

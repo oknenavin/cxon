@@ -27,7 +27,7 @@ namespace cxon { namespace cio { namespace val { // value parsing
 
 namespace cxon { namespace cio { namespace val {
 
-    namespace bits {
+    namespace imp {
 
         template <typename X>
             struct value {
@@ -101,7 +101,7 @@ namespace cxon { namespace cio { namespace val {
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool sink_read(T& t, II& i, II e, Cx& cx) {
-            return bits::value<X>::skip(t, i, e) || cx/X::read_error::unexpected;
+            return imp::value<X>::skip(t, i, e) || cx/X::read_error::unexpected;
         }
 
     template <typename X, typename O, typename S, typename Cx>

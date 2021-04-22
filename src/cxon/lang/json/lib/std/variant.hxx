@@ -8,7 +8,7 @@
 
 namespace cxon {
 
-    namespace json { namespace bits {
+    namespace json { namespace imp {
 
         template <typename X, typename V, size_t Ndx, typename II, typename Cx>
             static bool variant_read(V& t, II& i, II e, Cx& cx) {
@@ -51,7 +51,7 @@ namespace cxon {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
                     return  cio::consume<J>(J::map::beg, i, e, cx) &&
-                                json::bits::variant<J, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
+                                json::imp::variant<J, std::variant<T...>, II, Cx>::read(t, i, e, cx) &&
                             cio::consume<J>(J::map::end, i, e, cx)
                     ;
                 }

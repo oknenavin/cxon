@@ -116,7 +116,7 @@ namespace cxon {
 
     // type traits
 
-    namespace bits {
+    namespace imp {
 
         template <typename T>   struct is_bool_ : std::false_type {};
         template <>             struct is_bool_<bool> : std::true_type {};
@@ -133,12 +133,12 @@ namespace cxon {
 
     template <typename T>
         struct is_bool {
-            static constexpr bool value = bits::is_bool_<typename std::remove_cv<T>::type>::value;
+            static constexpr bool value = imp::is_bool_<typename std::remove_cv<T>::type>::value;
         };
 
     template <typename T>
         struct is_char {
-            static constexpr bool value = bits::is_char_<typename std::remove_cv<T>::type>::value;
+            static constexpr bool value = imp::is_char_<typename std::remove_cv<T>::type>::value;
         };
 
     template <typename T>
@@ -223,7 +223,7 @@ namespace cxon {
 
 namespace cxon { namespace napa {
 
-    namespace bits {
+    namespace imp {
 
         template <typename Pk, std::size_t Ix>
             using tag = typename std::tuple_element<Ix, Pk>::type::tag;
@@ -328,32 +328,32 @@ namespace cxon { namespace napa {
             using type  = T;
 
             template <typename Pk>
-                using in = bits::has_tag<Tg, Pk>;
+                using in = imp::has_tag<Tg, Pk>;
 
-            static constexpr bits::var<Tg, T> set(T&& v)        { return bits::var<Tg, T>(std::forward<T>(v)); }
-            static constexpr bits::var<Tg, T> set(const T& v)   { return bits::var<Tg, T>(v); }
+            static constexpr imp::var<Tg, T> set(T&& v)         { return imp::var<Tg, T>(std::forward<T>(v)); }
+            static constexpr imp::var<Tg, T> set(const T& v)    { return imp::var<Tg, T>(v); }
 
             template <typename Pk>
                 static constexpr auto constant(T)
-                    -> enable_if_t< bits::has_tag<Tg, Pk>::value, T>
-                { return bits::get<Tg, Pk>(); }
+                    -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
+                { return imp::get<Tg, Pk>(); }
             template <typename Pk>
                 static constexpr auto constant(T dflt)
-                    -> enable_if_t<!bits::has_tag<Tg, Pk>::value, T>
+                    -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
                 { return dflt; }
 
             template <typename Pk>
-                static constexpr T& reference(Pk& p)    { return bits::get<Tg>(p); }
+                static constexpr T& reference(Pk& p)    { return imp::get<Tg>(p); }
             template <typename Pk>
-                static constexpr T value(const Pk& p)   { return bits::get<Tg>(p); }
+                static constexpr T value(const Pk& p)   { return imp::get<Tg>(p); }
 
             template <typename Pk>
                 static constexpr auto value(const Pk& p, T)
-                    -> enable_if_t< bits::has_tag<Tg, Pk>::value, T>
-                { return bits::get<Tg>(p); }
+                    -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
+                { return imp::get<Tg>(p); }
             template <typename Pk>
                 static constexpr auto value(const Pk&, T dflt)
-                    -> enable_if_t<!bits::has_tag<Tg, Pk>::value, T>
+                    -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
                 { return dflt; }
         };
     template <typename Tg, typename T>
@@ -364,7 +364,7 @@ namespace cxon { namespace napa {
             using parameter<Tg, T, false>::set;
 
             template <T c>
-                static constexpr bits::cst<Tg, T, c> set() { return {}; }
+                static constexpr imp::cst<Tg, T, c> set() { return {}; }
         };
 
 }}
