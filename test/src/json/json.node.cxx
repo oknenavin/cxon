@@ -11,6 +11,11 @@
 
 #include "cxon/lang/json/tidy.hxx"
 
+#ifdef COMPARE_WITH_BOOST_JSON
+#   define BOOST_JSON_STANDALONE
+#   include <boost/json/src.hpp>
+#endif
+
 #include <fstream>
 #include <memory>
 #include <chrono>
@@ -28,6 +33,8 @@ struct test_time {
     double write = 0;
     double tidy_itr = 0;
     double tidy_str = 0;
+    double boost_read = 0;
+    double boost_write = 0;
 };
 
 struct test_case {
@@ -93,6 +100,20 @@ static void cxon_json_test_time(test_case& test) {
             });
         }
     }
+#   ifdef COMPARE_WITH_BOOST_JSON
+    {   // boost
+        std::vector<boost::json::value> vj;
+        test.time.boost_read = measure(cxon_json_repeat, [&] {
+            vj.emplace_back();
+            boost::json::error_code ec;
+            vj.back() = boost::json::parse(json, ec);
+        });
+        boost::json::value j = vj.back(); vj.clear();
+        test.time.boost_write = measure(cxon_json_repeat, [&] {
+            std::string s = boost::json::serialize(j);
+        });
+    }
+#   endif
 }
 
 using cases = std::vector<test_case>;
@@ -788,7 +809,20 @@ int main(int argc, char *argv[]) {
                 return b;
             };
             {   // header
-                tab.push_back({"JSON/File", "Size", "Read", "MB/s", "Write", "MB/s", "Tidy/itr", "MB/s", "Tidy/str", "MB/s"});
+                tab.push_back({
+                    "json/file",
+                    "size",
+#                   ifdef COMPARE_WITH_BOOST_JSON
+                        "boost/r", "x",
+#                   endif
+                    "cxon/r",
+#                   ifdef COMPARE_WITH_BOOST_JSON
+                        "boost/w", "x",
+#                   endif
+                    "cxon/w",
+                    "tidy/itr",
+                    "tidy/str"
+                });
             }
             test_time total;
             {   // body
@@ -801,27 +835,41 @@ int main(int argc, char *argv[]) {
                     tab.push_back({
                         c.source,
                         fmt(size),
-                        fmt(c.time.read), fmt(size / (c.time.read / 1000)),
-                        fmt(c.time.write), fmt(size / (c.time.write/ 1000)),
-                        fmt(c.time.tidy_itr), fmt(size / (c.time.tidy_itr / 1000)),
-                        fmt(c.time.tidy_str), fmt(size / (c.time.tidy_str / 1000))
+#                       ifdef COMPARE_WITH_BOOST_JSON
+                            fmt(size / (c.time.boost_read / 1000)), fmt(c.time.boost_read / c.time.read),
+#                       endif
+                        fmt(size / (c.time.read / 1000)),
+#                       ifdef COMPARE_WITH_BOOST_JSON
+                            fmt(size / (c.time.boost_write/ 1000)), fmt(c.time.boost_write / c.time.write),
+#                       endif
+                        fmt(size / (c.time.write/ 1000)),
+                        fmt(size / (c.time.tidy_itr / 1000)),
+                        fmt(size / (c.time.tidy_str / 1000))
                     });
                     total.size += c.time.size,
                     total.read += c.time.read,
                     total.write += c.time.write,
                     total.tidy_itr += c.time.tidy_itr,
-                    total.tidy_str += c.time.tidy_str;
+                    total.tidy_str += c.time.tidy_str,
+                    total.boost_read += c.time.boost_read,
+                    total.boost_write += c.time.boost_write;
                 }
             }
             {   // average
                 double const size = double(total.size) / (1024. * 1024);
                 tab.push_back({
-                    "Average",
+                    "average",
                     "",
-                    "", fmt(size / (total.read / 1000)),
-                    "", fmt(size / (total.write/ 1000)),
-                    "", fmt(size / (total.tidy_itr / 1000)),
-                    "", fmt(size / (total.tidy_str / 1000))
+#                   ifdef COMPARE_WITH_BOOST_JSON
+                        fmt(size / (total.boost_read / 1000)), fmt(total.boost_read / total.read),
+#                   endif
+                    fmt(size / (total.read / 1000)),
+#                   ifdef COMPARE_WITH_BOOST_JSON
+                        fmt(size / (total.boost_write / 1000)), fmt(total.boost_write / total.write),
+#                   endif
+                    fmt(size / (total.write/ 1000)),
+                    fmt(size / (total.tidy_itr / 1000)),
+                    fmt(size / (total.tidy_str / 1000))
                 });
             }
         }
