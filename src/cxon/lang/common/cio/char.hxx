@@ -162,30 +162,16 @@ namespace cxon { namespace cio { namespace chr {
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> enable_if_t<is_char_8<T>::value, int>
         {
-            if (c32 < 0x80)  // 0XXX XXXX
-                return t[0] = char(c32), 1;
-            if (c32 < 0x800) { // 110XXXXX
-                t[0] = char(0xC0 | (c32 >> 6));
-                t[1] = char(0x80 | (0x3F & c32));
-                return 2;
-            }
-            if (c32 < 0x10000) { // 1110XXXX
-                // error: 0xFFFE || 0xFFFF // not a char?
-                    if (c32 >= 0xD800 && c32 <= 0xDBFF) return 0;
-                t[0] = char(0xE0 | (c32 >> 12));
-                t[1] = char(0x80 | (0x3F & (c32 >> 6)));
-                t[2] = char(0x80 | (0x3F & c32));
-                return 3;
-            }
-            if (c32 < 0x200000) { // 11110XXX
-                    if (c32 > 0x10FFFF) return 0;
-                t[0] = char(0xF0 | (c32 >> 18));
-                t[1] = char(0x80 | (0x3F & (c32 >> 12)));
-                t[2] = char(0x80 | (0x3F & (c32 >> 6)));
-                t[3] = char(0x80 | (0x3F & c32));
-                return 4;
-            }
-            return 0;
+            static constexpr int const ms[] = { 0xBF, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+                if (c32 >= 0xD800 && c32 <= 0xDBFF) return 0; // surrogate
+            int const bs = c32 >= 0x80 ? c32 >= 0x800 ? c32 >= 0x10000 ? c32 >= 0x110000 ? 0 : 4 : 3 : 2 : 1;
+                switch (bs) {
+                    case 4: t[3] = (T)((c32 | 0x80) & 0xBF); c32 >>= 6; CXON_FALLTHROUGH;
+                    case 3: t[2] = (T)((c32 | 0x80) & 0xBF); c32 >>= 6; CXON_FALLTHROUGH;
+                    case 2: t[1] = (T)((c32 | 0x80) & 0xBF); c32 >>= 6; CXON_FALLTHROUGH;
+                    case 1: t[0] = (T)( c32 | ms[bs]      );
+                }
+            return bs;
         }
 
 }}}
