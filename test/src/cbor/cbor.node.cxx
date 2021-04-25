@@ -803,13 +803,12 @@ namespace timing
                     auto const r = cxon::from_bytes(vn.back(), cbor);
                     if (!r) t.error = format_error(r, cbor.cbegin());
                 });
-
-                auto const& n = vn.back();
-                std::vector<std::string> vs;
-                t.write = measure(cxon_cbor_repeat, [&] {
-                    vs.emplace_back();
-                    cxon::to_bytes(vs.back(), n);
-                });
+                auto n = vn.back(); vn.clear();
+                {   std::string s;
+                    t.write = measure(cxon_cbor_repeat, [&] {
+                        s.clear(); cxon::to_bytes(s, n);
+                    });
+                }
             }
             time.push_back(t);
         }

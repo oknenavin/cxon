@@ -34,6 +34,12 @@
 #   define CXON_FALLTHROUGH [[fallthrough]]
 #endif
 
+#ifdef __cpp_if_constexpr
+#   define CXON_IF_CONSTEXPR(c) if constexpr (c)
+#else 
+#   define CXON_IF_CONSTEXPR(c) if (c)
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon {

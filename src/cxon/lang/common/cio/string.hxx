@@ -51,7 +51,7 @@ namespace cxon { namespace cio { namespace str {
             -> enable_if_t<chr::is_char_8<T>::value, bool>
         {
             II const o = i;
-                char32_t const c32 = chr::str_to_utf32<X>(i, ie, cx);
+                char32_t const c32 = chr::utf8_to_utf32<X>(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 T b[4]; int const n = chr::utf32_to_utf8(b, c32);
                     if (n == 0 || t + n > te) return cx/X::read_error::overflow;
@@ -63,7 +63,7 @@ namespace cxon { namespace cio { namespace str {
             -> enable_if_t<chr::is_char_16<T>::value, bool>
         {
             II const o = i;
-                char32_t c32 = chr::str_to_utf32<X>(i, ie, cx);
+                char32_t c32 = chr::utf8_to_utf32<X>(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
@@ -80,7 +80,7 @@ namespace cxon { namespace cio { namespace str {
             -> enable_if_t<chr::is_char_32<T>::value, bool>
         {
             II const o = i;
-                char32_t const c32 = chr::str_to_utf32<X>(i, ie, cx);
+                char32_t const c32 = chr::utf8_to_utf32<X>(i, ie, cx);
                     if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
             return *t = T(c32), ++t, true;
         }
@@ -145,13 +145,13 @@ namespace cxon { namespace cio { namespace str {
         inline bool array_write(O& o, const T* t, const T* te, Cx& cx) {
             if (!poke<X>(o, X::string::beg, cx)) return false;
                 if (*(te - 1) == T(0)) --te;
-            return chr::encode<X, T>::range(o, t, te, cx) && poke<X>(o, X::string::end, cx);
+            return chr::encode_range<X>(o, t, te, cx) && poke<X>(o, X::string::end, cx);
         }
 
     template <typename X, typename O, typename T, typename Cx>
         inline bool pointer_write(O& o, const T* t, size_t s, Cx& cx) {
             return  poke<X>(o, X::string::beg, cx) &&
-                        chr::encode<X, T>::range(o, t, t + s, cx) &&
+                        chr::encode_range<X>(o, t, t + s, cx) &&
                     poke<X>(o, X::string::end, cx)
             ;
         }

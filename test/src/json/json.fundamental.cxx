@@ -499,6 +499,7 @@ TEST_BEG(cxon::JSON<>) // json
         W_TEST(QS("\\u001e"), "\36");
         W_TEST(QS("\\u001f"), "\37");
         W_TEST(QS("\\\""), "\42");
+        W_TEST(QS("\\\\"), "\134");
 TEST_END()
 
 namespace cxon { namespace test {
