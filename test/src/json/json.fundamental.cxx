@@ -512,6 +512,8 @@ TEST_BEG(cxon::JSON<cxon::test::strict_js_traits>)
     W_TEST(QS("x"), "x");
     W_TEST(QS("\\u2028"), "\xE2\x80\xA8");
     W_TEST(QS("\\u2029"), "\xE2\x80\xA9");
+    W_TEST(QS("x\\u2028"), "x\xE2\x80\xA8");
+    W_TEST(QS("x\\u2029"), "x\xE2\x80\xA9");
     W_TEST(QS("x"), u8"x");
     W_TEST(QS("\\u2028"), u8"\u2028");
     W_TEST(QS("\\u2029"), u8"\u2029");
