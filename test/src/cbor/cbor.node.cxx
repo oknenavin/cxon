@@ -771,7 +771,7 @@ namespace timing
         for (auto& file: fixture.in) {
             test_time t;
 
-            std::vector<unsigned char> cbor;
+            std::string cbor;
             {   // JSON => CBOR
                 std::ifstream is(file);
                     if (!is) {

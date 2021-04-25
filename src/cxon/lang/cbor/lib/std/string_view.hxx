@@ -23,7 +23,7 @@ namespace cxon {
         struct write<CBOR<X>, std::basic_string_view<T, R...>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return cbor::cnt::write_array<Y>(o, t.begin(), t.end(), cx);
+                    return cbor::cnt::write_array<Y>(o, t, cx);
                 }
         };
 
