@@ -19,8 +19,8 @@ namespace cxon {
 
     template <typename T, size_t N>
         struct continuous<std::array<T, N>> {
-            static auto range(const std::array<T, N>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
-                return std::make_pair(&i[0], &i[0] + i.size());
+            static auto range(const std::array<T, N>& i) -> decltype(std::make_pair(i.data(), i.data() + i.size())) {
+                return std::make_pair(i.data(), i.data() + i.size());
             }
         };
 

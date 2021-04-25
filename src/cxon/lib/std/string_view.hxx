@@ -25,8 +25,8 @@
 
         template <typename T, typename ...R>
             struct continuous<std::basic_string_view<T, R...>> {
-                static auto range(const std::basic_string_view<T, R...>& i) -> decltype(std::make_pair(&i[0], &i[0] + i.size())) {
-                    return std::make_pair(&i[0], &i[0] + i.size());
+                static auto range(const std::basic_string_view<T, R...>& i) -> decltype(std::make_pair(i.data(), i.data() + i.size())) {
+                    return std::make_pair(i.data(), i.data() + i.size());
                 }
             };
 
