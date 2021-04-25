@@ -79,19 +79,21 @@ static void cxon_json_test_time(test_case& test) {
         test.time.size = json.size() - 1;
     }
     {   // cxon
-        std::vector<node> vj;
+        std::vector<node> vn;
         test.time.read = measure(cxon_json_repeat, [&] {
-            vj.emplace_back();
-            auto const r = cxon::from_bytes(vj.back(), json);
+            vn.emplace_back();
+            auto const r = cxon::from_bytes(vn.back(), json);
             if (!r) test.error = format_error(r, json.begin());
         });
-        node j = vj.back(); vj.clear();
-        test.time.write = measure(cxon_json_repeat, [&] {
-            std::string s; cxon::to_bytes(s, j);
-        });
+        auto n = vn.back(); vn.clear();
+        {   std::string s;
+            test.time.write = measure(cxon_json_repeat, [&] {
+                s.clear(); cxon::to_bytes(s, n);
+            });
+        }
         {   std::string s;
             test.time.tidy_itr = measure(cxon_json_repeat, [&] {
-                cxon::to_bytes(cxon::json::make_indenter(s), j);
+                s.clear(); cxon::to_bytes(cxon::json::make_indenter(s), n);
             });
         }
         {   std::string s;
@@ -109,9 +111,11 @@ static void cxon_json_test_time(test_case& test) {
             vj.back() = boost::json::parse(json, ec);
         });
         boost::json::value j = vj.back(); vj.clear();
-        test.time.boost_write = measure(cxon_json_repeat, [&] {
-            std::string s = boost::json::serialize(j);
-        });
+        {   std::string s;
+            test.time.boost_write = measure(cxon_json_repeat, [&] {
+                s = boost::json::serialize(j);
+            });
+        }
     }
 #   endif
 }
