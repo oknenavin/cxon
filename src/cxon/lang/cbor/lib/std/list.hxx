@@ -34,7 +34,7 @@ namespace cxon {
         struct write<CBOR<X>, std::list<T, R...>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::list<T, R...>& t, Cx& cx) {
-                    return cbor::cnt::write_array<Y>(o, t.begin(), t.end(), cx);
+                    return cbor::cnt::write_array<Y>(o, t, cx);
                 }
         };
 

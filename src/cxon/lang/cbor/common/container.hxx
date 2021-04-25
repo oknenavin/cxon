@@ -36,11 +36,13 @@ namespace cxon { namespace cbor { namespace cnt {
         inline bool read_array(T& t, size_t tag, II& i, II e, Cx& cx);
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, size_t tag, II& i, II e, Cx& cx);
-    
+
     template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx);
-    template <typename X, bio::byte M, typename T, typename O, typename Cx>
-        inline bool write_array(O& o, const T& t, Cx& cx);
+    template <typename X, typename Iterable, typename O, typename Cx>
+        inline auto write_array(O& o, const Iterable& i, Cx& cx) -> decltype(std::begin(i), bool());
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool write_map(O& o, const T& t, Cx& cx);
 
 }}}
 
@@ -304,10 +306,16 @@ namespace cxon { namespace cbor { namespace cnt {
             return imp::write_array_<X>(o, f, l, cx);
         }
 
-    template <typename X, bio::byte M, typename T, typename O, typename Cx>
-        inline bool write_array(O& o, const T& t, Cx& cx) {
+    template <typename X, typename I, typename O, typename Cx>
+        inline auto write_array(O& o, const I& i, Cx& cx) -> decltype(std::begin(i), bool()) {
+            auto const c = continuous<I>::range(i);
+            return imp::write_array_<X>(o, c.first, c.second, cx);
+        }
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool write_map(O& o, const T& t, Cx& cx) {
             auto f = std::begin(t), l = std::end(t);
-            if (write_size<X>(o, M, std::distance(f, l), cx))
+            if (write_size<X>(o, X::map, std::distance(f, l), cx))
                 for ( ; f != l && element_write<X, T>(o, *f, cx); ++f) ;
             return f == l;
         }

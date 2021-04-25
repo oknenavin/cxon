@@ -31,7 +31,7 @@ namespace cxon { namespace cbor { namespace imp {
         struct set_writer_ {
             template <typename O, typename Cx>
                 static bool value(O& o, const S& s, Cx& cx) {
-                    return cbor::cnt::write_array<X>(o, std::begin(s), std::end(s), cx);
+                    return cbor::cnt::write_array<X>(o, s, cx);
                 }
         };
 

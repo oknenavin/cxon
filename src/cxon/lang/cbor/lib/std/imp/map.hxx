@@ -42,7 +42,7 @@ namespace cxon { namespace cbor { namespace imp {
         struct map_writer_ {
             template <typename O, typename Cx>
                 static bool value(O& o, const M& m, Cx& cx) {
-                    return cbor::cnt::write_array<X, X::map>(o, m, cx);
+                    return cbor::cnt::write_map<X>(o, m, cx);
                 }
         };
 

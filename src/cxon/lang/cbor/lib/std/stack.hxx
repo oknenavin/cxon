@@ -24,7 +24,7 @@ namespace cxon {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::stack<T, R...>& t, Cx& cx) {
                     auto const& c = adaptor_container(t);
-                    return cbor::cnt::write_array<Y>(o, c.begin(), c.end(), cx);
+                    return cbor::cnt::write_array<Y>(o, c, cx);
                 }
         };
 

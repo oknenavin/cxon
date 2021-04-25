@@ -22,7 +22,7 @@ namespace cxon {
         struct write<CBOR<X>, std::forward_list<T, R...>> {
             template <typename O, typename Cx, typename J = CBOR<X>>
                 static bool value(O& o, const std::forward_list<T, R...>& t, Cx& cx) {
-                    return cbor::cnt::write_array<J>(o, t.begin(), t.end(), cx);
+                    return cbor::cnt::write_array<J>(o, t, cx);
                 }
         };
 

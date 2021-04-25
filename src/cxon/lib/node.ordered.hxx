@@ -133,7 +133,7 @@
             struct write<CBOR<X>, ordered::object<K, V, R...>> {
                 template <typename O, typename Cx, typename Y = CBOR<X>>
                     static bool value(O& o, const ordered::object<K, V, R...>& t, Cx& cx) {
-                        return cbor::cnt::write_array<Y, Y::map>(o, t, cx);
+                        return cbor::cnt::write_map<Y>(o, t, cx);
                     }
             };
 
