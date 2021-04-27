@@ -24,6 +24,14 @@ namespace cxon {
             }
         };
 
+    template <typename T, typename ...R>
+        struct container_traits<std::vector<T, R...>> {
+            template <typename II>
+                static bool append(std::vector<T, R...>& c, II f, II l) {
+                    return c.insert(c.end(), f, l), true;
+                }
+        };
+
 }
 
 #endif // CXON_LIB_STD_VECTOR_HXX_

@@ -150,6 +150,29 @@ namespace cxon { namespace cio { namespace chr {
                     case 1: t[0] = (T)( c32 | ms[bs]          );
                 }
             return bs;
+            //if (c32 < 0x80)  // 0XXX XXXX
+            //    return t[0] = char(c32), 1;
+            //if (c32 < 0x800) { // 110XXXXX
+            //    t[0] = char(0xC0 | (c32 >> 6));
+            //    t[1] = char(0x80 | (0x3F & c32));
+            //    return 2;
+            //}
+            //if (c32 < 0x10000) { // 1110XXXX
+            //    // error: 0xFFFE || 0xFFFF // not a char?
+            //        if (c32 >= 0xD800 && c32 <= 0xDBFF) return 0;
+            //    t[0] = char(0xE0 | (c32 >> 12));
+            //    t[1] = char(0x80 | (0x3F & (c32 >> 6)));
+            //    t[2] = char(0x80 | (0x3F & c32));
+            //    return 3;
+            //}
+            //if (c32 < 0x110000) { // 11110XXX
+            //    t[0] = char(0xF0 | (c32 >> 18));
+            //    t[1] = char(0x80 | (0x3F & (c32 >> 12)));
+            //    t[2] = char(0x80 | (0x3F & (c32 >> 6)));
+            //    t[3] = char(0x80 | (0x3F & c32));
+            //    return 4;
+            //}
+            //return 0;
         }
 
 }}}

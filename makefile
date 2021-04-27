@@ -163,6 +163,9 @@ time:
 time-json:
 	@$(MAKE) -C test time-json
 
+time-cbor:
+	@$(MAKE) -C test time-cbor
+
 install: install-lang
 
 install-cxon:

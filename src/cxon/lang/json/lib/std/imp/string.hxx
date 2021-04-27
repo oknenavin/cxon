@@ -11,51 +11,63 @@
 
 namespace cxon { namespace json { namespace imp { // std::basic_string read
 
-    template <typename X, typename T, typename ...R, typename II, typename Cx> // TODO: common with arrays?
-        inline auto basic_string_char_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<cio::chr::is_char_8<T>::value, bool>
-        {
-            II const o = i;
-                char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
-                T b[4]; t.append(b, cio::chr::utf32_to_utf8(b, c32));
-            return true;
-        }
-    template <typename X, typename T, typename ...R, typename II, typename Cx>
-        inline auto basic_string_char_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<cio::chr::is_char_16<T>::value, bool>
-        {
-            II const o = i;
-                char32_t c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
-                if (c32 > 0xFFFF) {
-                    c32 -= 0x10000;
-                    t.push_back(char16_t(0xD800 | (c32 >> 10)));
-                    t.push_back(char16_t(0xDC00 | (c32 & 0x3FF)));
-                }
-                else {
-                    t.push_back(char16_t(c32));
-                }
-            return true;
-        }
-    template <typename X, typename T, typename ...R, typename II, typename Cx>
-        inline auto basic_string_char_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
-            -> enable_if_t<cio::chr::is_char_32<T>::value, bool>
-        {
-            II const o = i;
-                char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
-                    if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), false;
-            return t.push_back(T(c32)), true;
+    template <typename II>
+        inline int validate_(II i, II e) {
+            auto const c0 = *i;
+            if ((c0 & 0x80) == 0)
+                return 0;
+            if ((c0 & 0xE0) == 0xC0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 1;
+            }
+            if ((c0 & 0xF0) == 0xE0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 2;
+            }
+            if ((c0 & 0xF8) == 0xF0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 3;
+            }
+            return 4;
         }
 
     template <typename X, typename T, typename ...R, typename II, typename Cx>
-        inline bool basic_string_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
+        inline auto basic_string_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
+            -> enable_if_t<!cio::chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
+        {
+            return cio::str::imp::string_read_<X>(t, i, e, cx);
+        }
+    template <typename X, typename T, typename ...R, typename II, typename Cx>
+        inline auto basic_string_read_(std::basic_string<T, R...>& t, II& i, II e, Cx& cx)
+            -> enable_if_t< cio::chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
+        {
             if (!cio::consume<X>(X::string::beg, i, e, cx))         return false;
-                for (char c = cio::peek(i, e); cio::chr::is<X>::real(c); c = cio::peek(i, e)) {
-                    if (c == X::string::end)                        return cio::consume<X>(X::string::end, i, e, cx);
-                    if (!basic_string_char_read_<X>(t, i, e, cx))   return false;
+            II b = i;
+            for ( ; i != e && *i != X::string::end; ++i) {
+                if (*i == '\\') {
+                    if (b != i)
+                        if (!container_append(t, b, i)) return cx/X::read_error::unexpected;
+                    {
+                        II const o = i;
+                        char32_t const c32 = cio::chr::imp::esc_to_utf32_<X>(++i, e);
+                            if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), cx/X::read_error::escape_invalid;
+                        T bf[4]; t.append(bf, cio::chr::utf32_to_utf8(bf, c32));
+                    }
+                    b = i, --i;
                 }
-            return cx/json::read_error::unexpected;
+                else CXON_IF_CONSTEXPR(X::validate) {
+                    II const o = i;
+                    auto const bs = validate_(i, e);
+                        if (bs > 3) return cio::rewind(i, o), cx/X::read_error::character_invalid;
+                    i += bs;
+                }
+            }
+            return  (b == i || container_append(t ,b, i) || cx/X::read_error::unexpected) &&
+                    cio::consume<X>(X::string::end, i, e, cx)
+            ;
         }
 
 }}}

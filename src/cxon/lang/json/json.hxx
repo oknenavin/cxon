@@ -21,6 +21,7 @@ namespace cxon { namespace json { // format traits
         using write_error = json::write_error;
 
         static constexpr bool strict_js = false; // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
+        static constexpr bool validate = true; // validate the input
     };
 
 }}

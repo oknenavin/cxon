@@ -10,18 +10,6 @@
 
 namespace cxon {
 
-    template <typename T, typename ...R>
-        struct container_traits<std::deque<T, R...>> {
-            template <typename II>
-                static bool append(std::deque<T, R...>& c, II f, II l) {
-                    return c.insert(c.end(), f, l), true;
-                }
-        };
-
-}
-
-namespace cxon {
-
     template <typename X, typename T, typename ...R>
         struct read<CBOR<X>, std::deque<T, R...>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
