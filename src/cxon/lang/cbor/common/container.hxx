@@ -231,34 +231,6 @@ namespace cxon { namespace cbor { namespace cnt {
             return imp::read_array_<X>(t, i, e, cx);
         }
 
-    namespace imp {
-
-        template <typename FI>
-            struct range_container_ {
-                using value_type = typename std::iterator_traits<FI>::value_type;
-                using reference = value_type&;
-
-                range_container_(FI f, FI l) : f_(f), l_(l), e_(f) {}
-
-                size_t size() const     { return std::distance(f_, e_); }
-                size_t max_size() const { return std::distance(f_, l_); }
-
-                FI begin()  { return f_; }
-                FI end()    { return e_; }
-
-                reference emplace_back()            { return *e_++; }
-                void push_back(const value_type& t) { *e_ = t, ++e_; }
-                void push_back(value_type&& t)      { *e_ = std::move(t), ++e_; }
-
-                private:
-                    FI f_, l_, e_;
-            };
-        template <typename FI>
-            range_container_<FI> make_range_container_(FI f, FI l) {
-                return {f, l};
-            }
-
-    }
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, II& i, II e, Cx& cx) {
             size_t tag;
@@ -269,7 +241,7 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, size_t/* tag*/, II& i, II e, Cx& cx) {
             // TODO: tags - e.g. typed-arrays (RFC8746)
-            auto c = imp::make_range_container_(f, l);
+            auto c = make_range_container(f, l);
             return read_array<X>(c, i, e, cx);
         }
 

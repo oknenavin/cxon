@@ -41,57 +41,6 @@ namespace cxon { // pointer/read
 
     namespace cbor { namespace imp {
 
-        template <typename T, typename A>
-            struct pointer_container_ {
-                using value_type = T;
-                using pointer = value_type*;
-                using reference = value_type&;
-
-                pointer_container_(const A& a)
-                :   a_(a), f_(), l_(), e_()
-                {
-                    // coverity[var_deref_model] - 'grow dereferences null this->f_' - it's about std::move(f_, e_, p), but in this case f_ == e_
-                    grow(8);
-                }
-
-                pointer release() { return f_; }
-
-                size_t size() const     { return std::distance(f_, e_); }
-                size_t max_size() const { return std::numeric_limits<size_t>::max(); }
-
-                pointer begin()  { return f_; }
-                pointer end()    { return e_; }
-
-                reference emplace_back()            { return grow(), *e_++; }
-                void push_back(const value_type& t) { grow(), *e_ = t, ++e_; }
-                void push_back(value_type&& t)      { grow(), *e_ = std::move(t), ++e_; }
-
-                void reserve(size_t n)              { n > size_t(l_ - f_) ? grow(n) : void(); }
-
-                private:
-                    void grow()                     { e_ == l_ ? grow((l_ - f_) * 2) : void(); }
-                    
-                    void grow(size_t n) {
-                        CXON_ASSERT(n > size_t(l_ - f_), "unexpected");
-                        auto const p = a_.create(n);
-                            std::move(f_, e_, p);
-                            a_.release(f_, l_ - f_);
-                        e_ = p + (e_ - f_), l_ = p + n, f_ = p;
-                    }
-
-                private:
-                    A a_;
-                    pointer f_, l_, e_;
-            };
-        template <typename X, typename T, typename Cx>
-            auto make_pointer_container_(Cx& cx) -> pointer_container_<T, decltype(make_context_allocator<X, T>(cx))> {
-                return { make_context_allocator<X, T>(cx) };
-            }
-
-    }}
-
-    namespace cbor { namespace imp {
-
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_pointer_t_(T*& t, II& i, II e, Cx& cx) {
                 if (bio::peek(i, e) == X::nil)
@@ -112,7 +61,7 @@ namespace cxon { // pointer/read
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::bstr: case X::tstr: case X::arr: {
-                                auto c = make_pointer_container_<X, T>(cx);
+                                auto c = make_pointer_container<X, T>(cx);
                                 return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
                     }
                     default:    return read_pointer_t_<X>(t, i, e, cx);
@@ -127,7 +76,7 @@ namespace cxon { // pointer/read
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::arr: {
-                                auto c = make_pointer_container_<X, T>(cx);
+                                auto c = make_pointer_container<X, T>(cx);
                                 return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
                     }
                     default:    return read_pointer_t_<X>(t, i, e, cx);

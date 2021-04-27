@@ -6,8 +6,11 @@
 #ifndef CXON_CONTAINER_HXX_
 #define CXON_CONTAINER_HXX_
 
-//#include "cxon/utility.hxx"
-#include <memory>
+#include "allocator.hxx"
+#include <utility>
+#include <type_traits>
+#include <iterator>
+#include <algorithm>
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -22,6 +25,8 @@ namespace cxon { // container mutation
         //  static auto emplace(C& c) -> typename C::reference;
         //  template <typename II>
         //      static bool append(C& c, II f, II l);
+        //template <typename C, typename T = typename C::value_type>
+        //    inline bool append(C& c, T&& t);
 
     template <typename C>
         inline bool container_reserve(C& c, size_t s);
@@ -29,6 +34,8 @@ namespace cxon { // container mutation
         inline auto container_emplace(C& c) -> typename C::reference;
     template <typename C, typename II>
         inline bool container_append(C& c, II f, II l);
+    template <typename C, typename T = typename C::value_type>
+        inline bool container_append(C& c, T&& t);
         
     template <typename C>
         inline auto adaptor_container(      C& c) ->       typename C::container_type&;
@@ -54,6 +61,20 @@ namespace cxon { // container element read/write
         };
     template <typename X, typename C, typename E, typename O, typename Cx>
         inline bool element_write(O& o, const E& e, Cx& cx);
+
+}
+
+namespace cxon { // adaptors
+
+    template <typename FI>
+        struct range_container;
+    template <typename FI>
+        inline range_container<FI> make_range_container(FI f, FI l) noexcept;
+
+    template <typename T, typename A>
+        struct pointer_container;
+    template <typename X, typename T, typename Cx>
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<X, T>(cx))>;
 
 }
 
@@ -130,10 +151,10 @@ namespace cxon {
             }
         template <typename C, typename II>
             inline auto append_(option<0>, C& c, II f, II l)
-                -> enable_if_t<std::is_same<decltype(container_emplace(c)), typename C::reference>::value, bool>
+                -> enable_if_t<std::is_same<decltype(container_append(c, *f)), bool>::value, bool>
             {
-                for ( ; f != l; ++f)
-                    container_emplace(c) = *f;
+                for ( ; f != l && container_append(c, *f); ++f)
+                    ;
                 return f == l;
             }
 
@@ -143,7 +164,27 @@ namespace cxon {
             return imp::append_(option<1>(), c, f, l);
         }
 
-    
+    namespace imp {
+
+        template <typename C, typename T = typename C::value_type>
+            inline auto append_(option<1>, C& c, T&& t)
+                -> enable_if_t<std::is_same<decltype(container_traits<C>::append(c, std::forward<T>(t))), bool>::value, bool>
+            {
+                return container_traits<C>::append(c, std::forward<T>(t));
+            }
+        template <typename C, typename T = typename C::value_type>
+            inline auto append_(option<0>, C& c, T&& t)
+                -> enable_if_t<std::is_same<decltype(container_emplace(c)), typename C::reference>::value, bool>
+            {
+                return container_emplace(c) = std::move(t), true;
+            }
+
+    }
+
+    template <typename C, typename T>
+        inline bool container_append(C& c, T&& t) {
+            return imp::append_(option<1>(), c, std::forward<T>(t));
+        }
 
     namespace imp {
 
@@ -185,6 +226,105 @@ namespace cxon { // container element read/write
     template <typename X, typename C, typename E, typename O, typename Cx>
         inline bool element_write(O& o, const E& e, Cx& cx) {
             return element_writer<X, C>::write(o, e, cx);
+        }
+
+}
+
+namespace cxon { // adaptors
+
+    template <typename FI>
+        struct range_container {
+            using value_type = typename std::iterator_traits<FI>::value_type;
+            using reference = value_type&;
+
+            range_container(FI f, FI l) noexcept : f_(f), l_(l), e_(f) {}
+
+            size_t size() const noexcept                    { return std::distance(f_, e_); }
+            size_t max_size() const noexcept                { return std::distance(f_, l_); }
+
+            FI begin() noexcept                             { return f_; }
+            FI end() noexcept                               { return e_; }
+
+            reference emplace_back() noexcept               { return *e_++; }
+            void push_back(const value_type& t) noexcept    { *e_ = t, ++e_; }
+            void push_back(value_type&& t) noexcept         { *e_ = std::move(t), ++e_; }
+            template <typename II>
+                auto append(II f, II l) noexcept
+                    -> enable_if_t<is_random_access_iterator<II>::value, bool>
+                {
+                    auto const s = std::distance(f, l);
+                    return s <= std::distance(e_, l_)  && (std::copy(f, l, e_), e_ += s, true);
+                }
+            bool append(value_type&& t) noexcept {
+                return e_ != l_ && (push_back(std::forward<value_type>(t)), true);
+            }
+
+            private:
+                FI f_, l_, e_;
+        };
+    template <typename FI>
+        inline range_container<FI> make_range_container(FI f, FI l) noexcept {
+            return {f, l};
+        }
+
+    template <typename FI>
+        struct container_traits<range_container<FI>> {
+            template <typename II>
+                static bool append(range_container<FI>& c, II f, II l) {
+                    return c.append(f, l);
+                }
+            template <typename T = typename range_container<FI>::value_type>
+                static bool append(range_container<FI>& c, T t) {
+                    return c.append(std::forward<T>(t));
+                }
+        };
+
+    template <typename T, typename A>
+        struct pointer_container {
+            using value_type = T;
+            using pointer = value_type*;
+            using reference = value_type&;
+
+            pointer_container(const A& a)
+            :   a_(a), f_(), l_(), e_()
+            {
+                // coverity[var_deref_model] - 'grow dereferences null this->f_' - it's about std::move(f_, e_, p), but in this case f_ == e_
+                grow(8);
+            }
+            ~pointer_container()                { a_.release(f_, l_ - f_); }
+
+            pointer release() noexcept          { pointer p = f_; return f_ = l_ = e_ = nullptr, p; }
+
+            size_t size() const noexcept        { return std::distance(f_, e_); }
+            size_t max_size() const noexcept    { return std::numeric_limits<size_t>::max(); }
+
+            pointer begin() noexcept            { return f_; }
+            pointer end() noexcept              { return e_; }
+
+            reference emplace_back()            { return grow(), *e_++; }
+            void push_back(const value_type& t) { grow(), *e_ = t, ++e_; }
+            void push_back(value_type&& t)      { grow(), *e_ = std::move(t), ++e_; }
+
+            void reserve(size_t n)              { n > size_t(l_ - f_) ? grow(n) : void(); }
+
+            private:
+                void grow()                     { e_ == l_ ? grow((l_ - f_) * 2) : void(); }
+                    
+                void grow(size_t n) {
+                    CXON_ASSERT(n > size_t(l_ - f_), "unexpected");
+                    auto const p = a_.create(n);
+                        std::move(f_, e_, p);
+                        a_.release(f_, l_ - f_);
+                    e_ = p + (e_ - f_), l_ = p + n, f_ = p;
+                }
+
+            private:
+                A a_;
+                pointer f_, l_, e_;
+        };
+    template <typename X, typename T, typename Cx>
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<X, T>(cx))> {
+            return { make_context_allocator<X, T>(cx) };
         }
 
 }

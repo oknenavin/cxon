@@ -24,6 +24,14 @@ namespace cxon {
             }
         };
 
+    template <typename T, typename ...R>
+        struct container_traits<std::basic_string<T, R...>> {
+            template <typename II>
+                static bool append(std::basic_string<T, R...>& c, II f, II l) {
+                    return c.append(f, l), true;
+                }
+        };
+
 }
 
 #endif // CXON_LIB_STD_STRING_HXX_

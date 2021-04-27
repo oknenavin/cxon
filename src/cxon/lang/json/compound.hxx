@@ -73,7 +73,7 @@ namespace cxon { // character pointer & array
         template <typename X, size_t N>\
             struct read<JSON<X>, T[N]> {\
                 template <typename II, typename Cx>\
-                    static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return cio::str::array<JSON<X>>::read(t, t + N, i, e, cx); }\
+                    static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return cio::str::array_read<JSON<X>>(t, t + N, i, e, cx); }\
             };
         CXON_ARRAY(char)
         CXON_ARRAY(wchar_t)
@@ -133,7 +133,7 @@ namespace cxon { // character pointer & array
         template <typename X>\
             struct write<JSON<X>, const T*> {\
                 template <typename O, typename Cx>\
-                    static bool value(O& o, const T* t, Cx& cx)         { return cio::str::pointer<JSON<X>>::write(o, t, cx); }\
+                    static bool value(O& o, const T* t, Cx& cx)         { return cio::str::pointer_write<JSON<X>>(o, t, cx); }\
             };
         CXON_POINTER(char)
         CXON_POINTER(wchar_t)

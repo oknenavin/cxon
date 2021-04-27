@@ -24,7 +24,11 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
         using is_char_32 = std::integral_constant<
             bool, std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t))
         >;
-    
+
+
+    template <typename X, typename II, typename Cx>
+        inline char32_t esc_to_utf32(II& i, II e, Cx& cx);
+
     template <typename X, typename II, typename Cx>
         inline auto utf8_to_utf32(II& i, II e, Cx& cx)
             -> enable_if_t<is_char<typename std::iterator_traits<II>::value_type>::value, char32_t>;
@@ -32,6 +36,9 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
     template <typename T>
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> enable_if_t<is_char_8<T>::value, int>;
+
+    template <typename II>
+        inline int utf8_check(II i, II e);
 
 }}}
 
@@ -91,20 +98,20 @@ namespace cxon { namespace cio { namespace chr {
                 }
 #       undef CXON_ASS_U
 
-        template <typename X, typename II, typename Cx>
-            inline char32_t esc_to_utf32_(II& i, II e, Cx& cx) {
-                char32_t const c32 = esc_to_utf32_<X>(i, e);
-                    if (c32 == 0xFFFFFFFF) return cx/X::read_error::escape_invalid, 0xFFFFFFFF;
-                if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
-                // surrogate
-                    if (peek(i, e) != '\\') return cx/X::read_error::surrogate_invalid, 0xFFFFFFFF;
-                char32_t const s32 = (++i, esc_to_utf32_<X>(i, e));
-                    if (s32 < 0xDC00 || s32 > 0xDFFF)
-                        return (s32 == 0xFFFFFFFF ? cx/X::read_error::escape_invalid : cx/X::read_error::surrogate_invalid), 0xFFFFFFFF;
-                return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
-            }
-
     }
+
+    template <typename X, typename II, typename Cx>
+        inline char32_t esc_to_utf32(II& i, II e, Cx& cx) {
+            char32_t const c32 = imp::esc_to_utf32_<X>(i, e);
+                if (c32 == 0xFFFFFFFF) return cx/X::read_error::escape_invalid, 0xFFFFFFFF;
+            if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
+            // surrogate
+                if (peek(i, e) != '\\') return cx/X::read_error::surrogate_invalid, 0xFFFFFFFF;
+            char32_t const s32 = (++i, imp::esc_to_utf32_<X>(i, e));
+                if (s32 < 0xDC00 || s32 > 0xDFFF)
+                    return (s32 == 0xFFFFFFFF ? cx/X::read_error::escape_invalid : cx/X::read_error::surrogate_invalid), 0xFFFFFFFF;
+            return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
+        }
 
 #   define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, 0xFFFFFFFF
         template <typename X, typename II, typename Cx>
@@ -132,7 +139,7 @@ namespace cxon { namespace cio { namespace chr {
                     }
                     CXON_EXPECT(false);
                 }
-                return imp::esc_to_utf32_<X>(++i, e, cx);
+                return esc_to_utf32<X>(++i, e, cx);
             }
 #   undef CXON_EXPECT
 
@@ -150,6 +157,52 @@ namespace cxon { namespace cio { namespace chr {
                     case 1: t[0] = (T)( c32 | ms[bs]          );
                 }
             return bs;
+            //if (c32 < 0x80)  // 0XXX XXXX
+            //    return t[0] = char(c32), 1;
+            //if (c32 < 0x800) { // 110XXXXX
+            //    t[0] = char(0xC0 | (c32 >> 6));
+            //    t[1] = char(0x80 | (0x3F & c32));
+            //    return 2;
+            //}
+            //if (c32 < 0x10000) { // 1110XXXX
+            //    // error: 0xFFFE || 0xFFFF // not a char?
+            //        if (c32 >= 0xD800 && c32 <= 0xDBFF) return 0;
+            //    t[0] = char(0xE0 | (c32 >> 12));
+            //    t[1] = char(0x80 | (0x3F & (c32 >> 6)));
+            //    t[2] = char(0x80 | (0x3F & c32));
+            //    return 3;
+            //}
+            //if (c32 < 0x110000) { // 11110XXX
+            //    t[0] = char(0xF0 | (c32 >> 18));
+            //    t[1] = char(0x80 | (0x3F & (c32 >> 12)));
+            //    t[2] = char(0x80 | (0x3F & (c32 >> 6)));
+            //    t[3] = char(0x80 | (0x3F & c32));
+            //    return 4;
+            //}
+            //return 0;
+        }
+
+    template <typename II>
+        inline int utf8_check(II i, II e) {
+            auto const c0 = *i;
+            if ((c0 & 0x80) == 0)
+                return 0;
+            if ((c0 & 0xE0) == 0xC0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 1;
+            }
+            if ((c0 & 0xF0) == 0xE0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 2;
+            }
+            if ((c0 & 0xF8) == 0xF0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 3;
+            }
+            return 4;
         }
 
 }}}
