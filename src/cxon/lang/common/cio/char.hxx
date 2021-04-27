@@ -33,6 +33,9 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> enable_if_t<is_char_8<T>::value, int>;
 
+    template <typename II>
+        inline int utf8_check(II i, II e);
+
 }}}
 
 namespace cxon { namespace cio { namespace chr { // character conversion: write
@@ -173,6 +176,29 @@ namespace cxon { namespace cio { namespace chr {
             //    return 4;
             //}
             //return 0;
+        }
+
+    template <typename II>
+        inline int utf8_check(II i, II e) {
+            auto const c0 = *i;
+            if ((c0 & 0x80) == 0)
+                return 0;
+            if ((c0 & 0xE0) == 0xC0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 1;
+            }
+            if ((c0 & 0xF0) == 0xE0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 2;
+            }
+            if ((c0 & 0xF8) == 0xF0) {
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
+                return 3;
+            }
+            return 4;
         }
 
 }}}

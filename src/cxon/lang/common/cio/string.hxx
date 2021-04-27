@@ -17,8 +17,11 @@
 
 namespace cxon { namespace cio { namespace str { // char arrays: read
 
+    template <typename X, typename C, typename II, typename Cx>
+        inline bool string_read(C& c, II& i, II e, Cx& cx);
+
     template <typename X, typename T, typename II, typename Cx>
-        inline bool array_read(T* t, T* te, II& i, II ie, Cx& cx);
+        inline bool array_read(T* f, T* l, II& i, II e, Cx& cx);
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool pointer_read(T*& t, II& i, II e, Cx& cx);
@@ -81,7 +84,9 @@ namespace cxon { namespace cio { namespace str {
             }
 
         template <typename X, typename C, typename II, typename Cx>
-            inline bool chars_read_(C& c, II& i, II e, Cx& cx) {
+            inline auto chars_read_(C& c, II& i, II e, Cx& cx)
+                -> enable_if_t<!cio::chr::is_char_8<typename C::value_type>::value || !is_forward_iterator<II>::value, bool>
+            {
                 while (i != e && *i != X::string::end) {
                     if (!chr::is<X>::real(*i))
                         return cx/X::read_error::unexpected;
@@ -90,23 +95,48 @@ namespace cxon { namespace cio { namespace str {
                 }
                 return true;
             }
-
-        template <typename X, typename C, typename II, typename Cx>
-            inline bool string_read_(C& c, II& i, II e, Cx& cx) {
-                II const o = i;
-                if (!consume<X>(X::string::beg, i, e, cx)) return false;
-                    if (!chars_read_<X>(c, i, e, cx))
-                        return cx.ec == X::read_error::overflow && (rewind(i, o), false);
-                return consume<X>(X::string::end, i, e, cx);
+        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
+            inline auto chars_read_(C& c, II& i, II e, Cx& cx)
+                -> enable_if_t< cio::chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
+            {
+                II const o = i; II b = i;
+                for ( ; i != e && *i != X::string::end; ++i) {
+                    if (*i == '\\') {
+                        if (b != i)
+                            if (!container_append(c, b, i)) return cx/X::read_error::overflow;
+                        {
+                            char32_t const c32 = cio::chr::imp::esc_to_utf32_<X>(++i, e);
+                                if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), cx/X::read_error::escape_invalid;
+                            T bf[4]; auto const n = cio::chr::utf32_to_utf8(bf, c32);
+                            if (!container_append(c, &bf[0], &bf[0] + n)) return cx/X::read_error::overflow;
+                        }
+                        b = i, --i;
+                    }
+                    else CXON_IF_CONSTEXPR(X::validate) {
+                        auto const bs = chr::utf8_check(i, e);
+                            if (bs > 3) return cio::rewind(i, o), cx/X::read_error::character_invalid;
+                        i += bs;
+                    }
+                }
+                return b == i || container_append(c ,b, i) || (cio::rewind(i, o), cx/X::read_error::overflow);
             }
 
     }
+
+    template <typename X, typename C, typename II, typename Cx>
+        inline bool string_read(C& c, II& i, II e, Cx& cx) {
+            II const o = i;
+            if (!consume<X>(X::string::beg, i, e, cx)) return false;
+                if (!imp::chars_read_<X>(c, i, e, cx))
+                    return cx.ec == X::read_error::overflow && (rewind(i, o), false);
+            return consume<X>(X::string::end, i, e, cx);
+        }
 
     template <typename X, typename T, typename II, typename Cx>
         inline bool array_read(T* f, T* l, II& i, II e, Cx& cx) {
             consume<X>(i, e);
             auto c = make_range_container(f, l);
-            return  imp::string_read_<X>(c, i, e, cx) &&
+            return  string_read<X>(c, i, e, cx) &&
                     ((c.size() < c.max_size() && (c.push_back({}), true)) || true)
             ;
         }
@@ -117,7 +147,7 @@ namespace cxon { namespace cio { namespace str {
             if (peek(i, e) == *X::id::nil && consume<X>(X::id::nil, i, e))
                 return true;
             auto c = make_pointer_container<X, T>(cx);
-            return imp::string_read_<X>(c, i, e, cx) && (c.push_back({}), t = c.release());
+            return string_read<X>(c, i, e, cx) && (c.push_back({}), t = c.release());
         }
 
 }}}

@@ -37,8 +37,7 @@ cxon-lang-json = \
 
 cxon-lang-json-lib-std-imp = \
     $(srcdir)/lang/json/lib/std/imp/map.hxx \
-    $(srcdir)/lang/json/lib/std/imp/set.hxx \
-    $(srcdir)/lang/json/lib/std/imp/string.hxx
+    $(srcdir)/lang/json/lib/std/imp/set.hxx
 
 cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/array.hxx \
