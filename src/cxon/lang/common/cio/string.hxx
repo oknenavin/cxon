@@ -85,7 +85,7 @@ namespace cxon { namespace cio { namespace str {
 
         template <typename X, typename C, typename II, typename Cx>
             inline auto chars_read_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t<!cio::chr::is_char_8<typename C::value_type>::value || !is_forward_iterator<II>::value, bool>
+                -> enable_if_t<!chr::is_char_8<typename C::value_type>::value || !is_forward_iterator<II>::value, bool>
             {
                 while (i != e && *i != X::string::end) {
                     if (!chr::is<X>::real(*i))
@@ -97,28 +97,28 @@ namespace cxon { namespace cio { namespace str {
             }
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto chars_read_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t< cio::chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
+                -> enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
             {
                 II const o = i; II b = i;
                 for ( ; i != e && *i != X::string::end; ++i) {
                     if (*i == '\\') {
                         if (b != i)
-                            if (!container_append(c, b, i)) return cx/X::read_error::overflow;
+                            if (!container_append(c, b, i)) return rewind(i, o), cx/X::read_error::overflow;
                         {
-                            char32_t const c32 = cio::chr::imp::esc_to_utf32_<X>(++i, e);
-                                if (c32 == 0xFFFFFFFF) return cio::rewind(i, o), cx/X::read_error::escape_invalid;
-                            T bf[4]; auto const n = cio::chr::utf32_to_utf8(bf, c32);
-                            if (!container_append(c, &bf[0], &bf[0] + n)) return cx/X::read_error::overflow;
+                            char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
+                                if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
+                            T bf[4]; auto const n = chr::utf32_to_utf8(bf, c32);
+                            if (!container_append(c, &bf[0], &bf[0] + n)) return rewind(i, o), cx/X::read_error::overflow;
                         }
                         b = i, --i;
                     }
                     else CXON_IF_CONSTEXPR(X::validate) {
                         auto const bs = chr::utf8_check(i, e);
-                            if (bs > 3) return cio::rewind(i, o), cx/X::read_error::character_invalid;
+                            if (bs > 3) return rewind(i, o), cx/X::read_error::character_invalid;
                         i += bs;
                     }
                 }
-                return b == i || container_append(c ,b, i) || (cio::rewind(i, o), cx/X::read_error::overflow);
+                return b == i || container_append(c ,b, i) || (rewind(i, o), cx/X::read_error::overflow);
             }
 
     }

@@ -24,7 +24,11 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
         using is_char_32 = std::integral_constant<
             bool, std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t))
         >;
-    
+
+
+    template <typename X, typename II, typename Cx>
+        inline char32_t esc_to_utf32(II& i, II e, Cx& cx);
+
     template <typename X, typename II, typename Cx>
         inline auto utf8_to_utf32(II& i, II e, Cx& cx)
             -> enable_if_t<is_char<typename std::iterator_traits<II>::value_type>::value, char32_t>;
@@ -94,20 +98,20 @@ namespace cxon { namespace cio { namespace chr {
                 }
 #       undef CXON_ASS_U
 
-        template <typename X, typename II, typename Cx>
-            inline char32_t esc_to_utf32_(II& i, II e, Cx& cx) {
-                char32_t const c32 = esc_to_utf32_<X>(i, e);
-                    if (c32 == 0xFFFFFFFF) return cx/X::read_error::escape_invalid, 0xFFFFFFFF;
-                if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
-                // surrogate
-                    if (peek(i, e) != '\\') return cx/X::read_error::surrogate_invalid, 0xFFFFFFFF;
-                char32_t const s32 = (++i, esc_to_utf32_<X>(i, e));
-                    if (s32 < 0xDC00 || s32 > 0xDFFF)
-                        return (s32 == 0xFFFFFFFF ? cx/X::read_error::escape_invalid : cx/X::read_error::surrogate_invalid), 0xFFFFFFFF;
-                return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
-            }
-
     }
+
+    template <typename X, typename II, typename Cx>
+        inline char32_t esc_to_utf32(II& i, II e, Cx& cx) {
+            char32_t const c32 = imp::esc_to_utf32_<X>(i, e);
+                if (c32 == 0xFFFFFFFF) return cx/X::read_error::escape_invalid, 0xFFFFFFFF;
+            if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
+            // surrogate
+                if (peek(i, e) != '\\') return cx/X::read_error::surrogate_invalid, 0xFFFFFFFF;
+            char32_t const s32 = (++i, imp::esc_to_utf32_<X>(i, e));
+                if (s32 < 0xDC00 || s32 > 0xDFFF)
+                    return (s32 == 0xFFFFFFFF ? cx/X::read_error::escape_invalid : cx/X::read_error::surrogate_invalid), 0xFFFFFFFF;
+            return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
+        }
 
 #   define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, 0xFFFFFFFF
         template <typename X, typename II, typename Cx>
@@ -135,7 +139,7 @@ namespace cxon { namespace cio { namespace chr {
                     }
                     CXON_EXPECT(false);
                 }
-                return imp::esc_to_utf32_<X>(++i, e, cx);
+                return esc_to_utf32<X>(++i, e, cx);
             }
 #   undef CXON_EXPECT
 
