@@ -136,9 +136,7 @@ namespace cxon { namespace cio { namespace str {
         inline bool array_read(T* f, T* l, II& i, II e, Cx& cx) {
             consume<X>(i, e);
             auto c = make_range_container(f, l);
-            return  string_read<X>(c, i, e, cx) &&
-                    ((c.size() < c.max_size() && (c.push_back({}), true)) || true)
-            ;
+            return string_read<X>(c, i, e, cx) && (c.append({}), true);
         }
 
     template <typename X, typename T, typename II, typename Cx>
