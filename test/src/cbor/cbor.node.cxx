@@ -838,18 +838,16 @@ namespace timing
                             fmt(size / (t.read / 1000)),
                             fmt(size / (t.write/ 1000))
                         });
-                        total.size += t.size,
-                        total.read += t.read,
-                        total.write += t.write;
+                        total.read += size / (t.read / 1000),
+                        total.write += size / (t.write / 1000);
                     }
                 }
                 {   // average
-                    double const size = double(total.size) / (1024. * 1024);
                     tab.push_back({
                         "average",
                         "",
-                        fmt(size / (total.read / 1000)),
-                        fmt(size / (total.write/ 1000))
+                        fmt(total.read / time.size()),
+                        fmt(total.write/ time.size())
                     });
                 }
             }

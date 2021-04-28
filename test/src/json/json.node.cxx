@@ -850,30 +850,28 @@ int main(int argc, char *argv[]) {
                         fmt(size / (c.time.tidy_itr / 1000)),
                         fmt(size / (c.time.tidy_str / 1000))
                     });
-                    total.size += c.time.size,
-                    total.read += c.time.read,
-                    total.write += c.time.write,
-                    total.tidy_itr += c.time.tidy_itr,
-                    total.tidy_str += c.time.tidy_str,
-                    total.boost_read += c.time.boost_read,
-                    total.boost_write += c.time.boost_write;
+                    total.read += size / (c.time.read / 1000),
+                    total.write += size / (c.time.write / 1000),
+                    total.tidy_itr += size / (c.time.tidy_itr / 1000),
+                    total.tidy_str += size / (c.time.tidy_str / 1000),
+                    total.boost_read += size / (c.time.boost_read / 1000),
+                    total.boost_write += size / (c.time.boost_write / 1000);
                 }
             }
             {   // average
-                double const size = double(total.size) / (1024. * 1024);
                 tab.push_back({
                     "average",
                     "",
 #                   ifdef COMPARE_WITH_BOOST_JSON
-                        fmt(size / (total.boost_read / 1000)), fmt(total.boost_read / total.read),
+                        fmt(total.boost_read / time.size()), fmt(total.read / total.boost_read),
 #                   endif
-                    fmt(size / (total.read / 1000)),
+                    fmt(total.read / time.size()),
 #                   ifdef COMPARE_WITH_BOOST_JSON
-                        fmt(size / (total.boost_write / 1000)), fmt(total.boost_write / total.write),
+                        fmt(total.boost_write / time.size()), fmt(total.write / total.boost_write),
 #                   endif
-                    fmt(size / (total.write/ 1000)),
-                    fmt(size / (total.tidy_itr / 1000)),
-                    fmt(size / (total.tidy_str / 1000))
+                    fmt(total.write/ time.size()),
+                    fmt(total.tidy_itr / time.size()),
+                    fmt(total.tidy_str / time.size())
                 });
             }
         }
