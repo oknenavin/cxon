@@ -16,6 +16,13 @@
 #   include <boost/json/src.hpp>
 #endif
 
+#ifdef COMPARE_WITH_RAPIDJSON
+#   include "rapidjson/document.h"
+#   include "rapidjson/writer.h"
+#   include "rapidjson/stringbuffer.h"
+#   include "rapidjson/error/en.h"
+#endif
+
 #include <fstream>
 #include <memory>
 #include <chrono>
@@ -33,8 +40,14 @@ struct test_time {
     double write = 0;
     double tidy_itr = 0;
     double tidy_str = 0;
-    double boost_read = 0;
-    double boost_write = 0;
+#   ifdef COMPARE_WITH_BOOST_JSON
+        double boostj_read = 0;
+        double boostj_write = 0;
+#   endif
+#   ifdef COMPARE_WITH_RAPIDJSON
+        double rapidj_read = 0;
+        double rapidj_write = 0;
+#   endif
 };
 
 struct test_case {
@@ -103,17 +116,37 @@ static void cxon_json_test_time(test_case& test) {
         }
     }
 #   ifdef COMPARE_WITH_BOOST_JSON
-    {   // boost
+    {   // Boost/JSON
         std::vector<boost::json::value> vj;
-        test.time.boost_read = measure(cxon_json_repeat, [&] {
+        test.time.boostj_read = measure(cxon_json_repeat, [&] {
             vj.emplace_back();
             boost::json::error_code ec;
             vj.back() = boost::json::parse(json, ec);
+            if (ec) test.error = std::string("Boost/JSON: ") + ec.category().name() + ": " + ec.message();
         });
         boost::json::value j = vj.back(); vj.clear();
         {   std::string s;
-            test.time.boost_write = measure(cxon_json_repeat, [&] {
+            test.time.boostj_write = measure(cxon_json_repeat, [&] {
                 s = boost::json::serialize(j);
+            });
+        }
+    }
+#   endif
+#   ifdef COMPARE_WITH_RAPIDJSON
+    {   // RapidJSON
+        std::vector<std::unique_ptr<rapidjson::Document>> vj;
+        test.time.rapidj_read = measure(cxon_json_repeat, [&] {
+            auto j = vj.emplace_back(std::make_unique<rapidjson::Document>()).get();
+            rapidjson::ParseResult r = j->Parse(json.c_str());
+            if (!r) test.error = std::string("RapidJSON error: ") + rapidjson::GetParseError_En(r.Code());
+        });
+        auto j = std::unique_ptr<rapidjson::Document>(vj.back().release()); vj.clear();
+        {   const char *s;
+            test.time.rapidj_write = measure(cxon_json_repeat, [&] {
+                rapidjson::StringBuffer buffer;
+                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                j->Accept(writer);
+                s = buffer.GetString();
             });
         }
     }
@@ -814,18 +847,24 @@ int main(int argc, char *argv[]) {
             };
             {   // header
                 tab.push_back({
-                    "json/file",
-                    "size",
+                    "CXON/JSON",
+                    "Size",
+                    "Read",
 #                   ifdef COMPARE_WITH_BOOST_JSON
-                        "boost/r", "x",
+                        "x", "Boost/JSON",
 #                   endif
-                    "cxon/r",
+#                   ifdef COMPARE_WITH_RAPIDJSON
+                        "x", "RapidJSON",
+#                   endif
+                    "Write",
 #                   ifdef COMPARE_WITH_BOOST_JSON
-                        "boost/w", "x",
+                        "x", "Boost/JSON",
 #                   endif
-                    "cxon/w",
-                    "tidy/itr",
-                    "tidy/str"
+#                   ifdef COMPARE_WITH_RAPIDJSON
+                        "x", "RapidJSON",
+#                   endif
+                    "Tidy/Itr",
+                    "Tidy/Str"
                 });
             }
             test_time total;
@@ -837,39 +876,57 @@ int main(int argc, char *argv[]) {
                     }
                     double const size = double(c.time.size) / (1024. * 1024);
                     tab.push_back({
-                        c.source,
+                        c.source.substr(c.source.rfind('/') + 1),
                         fmt(size),
-#                       ifdef COMPARE_WITH_BOOST_JSON
-                            fmt(size / (c.time.boost_read / 1000)), fmt(c.time.boost_read / c.time.read),
-#                       endif
                         fmt(size / (c.time.read / 1000)),
 #                       ifdef COMPARE_WITH_BOOST_JSON
-                            fmt(size / (c.time.boost_write/ 1000)), fmt(c.time.boost_write / c.time.write),
+                            fmt(c.time.boostj_read / c.time.read), fmt(size / (c.time.boostj_read / 1000)),
+#                       endif
+#                       ifdef COMPARE_WITH_RAPIDJSON
+                            fmt(c.time.rapidj_read / c.time.read), fmt(size / (c.time.rapidj_read / 1000)),
 #                       endif
                         fmt(size / (c.time.write/ 1000)),
+#                       ifdef COMPARE_WITH_BOOST_JSON
+                            fmt(c.time.boostj_write / c.time.write), fmt(size / (c.time.boostj_write/ 1000)),
+#                       endif
+#                       ifdef COMPARE_WITH_RAPIDJSON
+                            fmt(c.time.rapidj_write / c.time.write), fmt(size / (c.time.rapidj_write/ 1000)),
+#                       endif
                         fmt(size / (c.time.tidy_itr / 1000)),
                         fmt(size / (c.time.tidy_str / 1000))
                     });
-                    total.read += size / (c.time.read / 1000),
-                    total.write += size / (c.time.write / 1000),
-                    total.tidy_itr += size / (c.time.tidy_itr / 1000),
-                    total.tidy_str += size / (c.time.tidy_str / 1000),
-                    total.boost_read += size / (c.time.boost_read / 1000),
-                    total.boost_write += size / (c.time.boost_write / 1000);
+                    total.read += size / (c.time.read / 1000);
+                    total.write += size / (c.time.write / 1000);
+                    total.tidy_itr += size / (c.time.tidy_itr / 1000);
+                    total.tidy_str += size / (c.time.tidy_str / 1000);
+#                   ifdef COMPARE_WITH_BOOST_JSON
+                        total.boostj_read += size / (c.time.boostj_read / 1000);
+                        total.boostj_write += size / (c.time.boostj_write / 1000);
+#                   endif
+#                   ifdef COMPARE_WITH_RAPIDJSON
+                        total.rapidj_read += size / (c.time.rapidj_read / 1000);
+                        total.rapidj_write += size / (c.time.rapidj_write / 1000);
+#                   endif
                 }
             }
             {   // average
                 tab.push_back({
-                    "average",
+                    "Average",
                     "",
-#                   ifdef COMPARE_WITH_BOOST_JSON
-                        fmt(total.boost_read / time.size()), fmt(total.read / total.boost_read),
-#                   endif
                     fmt(total.read / time.size()),
 #                   ifdef COMPARE_WITH_BOOST_JSON
-                        fmt(total.boost_write / time.size()), fmt(total.write / total.boost_write),
+                        fmt(total.read / total.boostj_read), fmt(total.boostj_read / time.size()),
+#                   endif
+#                   ifdef COMPARE_WITH_RAPIDJSON
+                        fmt(total.read / total.rapidj_read), fmt(total.rapidj_read / time.size()),
 #                   endif
                     fmt(total.write/ time.size()),
+#                   ifdef COMPARE_WITH_BOOST_JSON
+                        fmt(total.write / total.boostj_write), fmt(total.boostj_write / time.size()),
+#                   endif
+#                   ifdef COMPARE_WITH_RAPIDJSON
+                        fmt(total.write / total.rapidj_write), fmt(total.rapidj_write / time.size()),
+#                   endif
                     fmt(total.tidy_itr / time.size()),
                     fmt(total.tidy_str / time.size())
                 });
