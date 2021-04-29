@@ -19,13 +19,17 @@ jobs:
         CXX: g++-5
         CXXFLAGS: -std=c++11
       run: make time
-    - name: Check Boost
-      run: sudo apt-get update -y && apt-cache search ^libboost1
 
   gcc-10:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
+    - name: Checkout Boost/JSON
+      uses: actions/checkout@v1
+      with:
+        repository: boostorg/json
+        ref: master
+        path: boost.json
     - name: Compiler setup
       run: |
         sudo apt-get update
@@ -33,10 +37,12 @@ jobs:
     - name: Time
       env:
         CXX: g++-10
-        CXXFLAGS: -std=c++20
+        CXXFLAGS: -I ../../boost.json/include -DCOMPARE_WITH_BOOST_JSON -std=c++20
       run: make time
-    - name: Check Boost
-      run: sudo apt-get update -y && apt-cache search ^libboost1
+    - name: Environment
+      run: |
+        pwd
+        ls -la ..
 
   # clang ######################################################################
 
@@ -53,8 +59,6 @@ jobs:
         CXX: clang++-3.5
         CXXFLAGS: -std=c++11
       run: make time
-    - name: Check Boost
-      run: sudo apt-get update -y && apt-cache search ^libboost1
 
   clang-11:
     runs-on: ubuntu-20.04
@@ -69,5 +73,3 @@ jobs:
         CXX: clang++-11
         CXXFLAGS: -std=c++20
       run: make time
-    - name: Check Boost
-      run: sudo apt-get update -y && apt-cache search ^libboost1
