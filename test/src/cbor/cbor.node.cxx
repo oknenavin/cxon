@@ -822,7 +822,7 @@ namespace timing
                     return b;
                 };
                 {   // header
-                    tab.push_back({"cbor/file", "size", "cxon/r", "cxon/w"});
+                    tab.push_back({"CBOR/File", "Size", "Read", "Write"});
                 }
                 test_time total;
                 {   // body
@@ -833,7 +833,7 @@ namespace timing
                         }
                         double const size = double(t.size) / (1024. * 1024);
                         tab.push_back({
-                            t.source,
+                            t.source.substr(t.source.rfind('/') + 1),
                             fmt(size),
                             fmt(size / (t.read / 1000)),
                             fmt(size / (t.write/ 1000))
@@ -844,7 +844,7 @@ namespace timing
                 }
                 {   // average
                     tab.push_back({
-                        "average",
+                        "Average",
                         "",
                         fmt(total.read / time.size()),
                         fmt(total.write/ time.size())

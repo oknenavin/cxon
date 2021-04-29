@@ -30,6 +30,12 @@ jobs:
         repository: boostorg/json
         ref: master
         path: boost.json
+    - name: Checkout RapidJSON
+      uses: actions/checkout@v1
+      with:
+        repository: tencent/rapidjson
+        ref: master
+        path: rapidjson
     - name: Compiler setup
       run: |
         sudo apt-get update
@@ -37,7 +43,7 @@ jobs:
     - name: Time
       env:
         CXX: g++-10
-        CXXFLAGS: -I ../../boost.json/include -DCOMPARE_WITH_BOOST_JSON -std=c++20
+        CXXFLAGS: -I ../../boost.json/include -DCOMPARE_WITH_BOOST_JSON -DCOMPARE_WITH_RAPIDJSON -std=c++20
       run: make time
 
   # clang ######################################################################
@@ -66,6 +72,12 @@ jobs:
         repository: boostorg/json
         ref: master
         path: boost.json
+    - name: Checkout RapidJSON
+      uses: actions/checkout@v1
+      with:
+        repository: tencent/rapidjson
+        ref: master
+        path: rapidjson
     - name: Compiler setup
       run: |
         sudo apt-get update
@@ -73,5 +85,5 @@ jobs:
     - name: Time
       env:
         CXX: clang++-11
-        CXXFLAGS: -I ../../boost.json/include -DCOMPARE_WITH_BOOST_JSON -std=c++20
+        CXXFLAGS: -I ../../boost.json/include -DCOMPARE_WITH_BOOST_JSON -DCOMPARE_WITH_RAPIDJSON -std=c++20
       run: make time

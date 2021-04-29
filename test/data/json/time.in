@@ -1,8 +1,5 @@
+../data/json/set.3/blns.json
 ../data/json/set.4/emoji.json
-
-# recursion depth limit exceeded
-#../data/json/json-test-suite/sample.json
-
 ../data/json/set.5/apache_builds.json
 ../data/json/set.5/canada.json
 ../data/json/set.5/citm_catalog.json
@@ -17,6 +14,3 @@
 ../data/json/set.5/twitter.json
 ../data/json/set.5/twitterescaped.json
 ../data/json/set.5/update-center.json
-../data/json/set.3/blns.json
-#../data/json/set.6/all_unicode.json
-#../data/json/set.6/all_unicode_ascii.json
