@@ -88,10 +88,8 @@ namespace cxon { namespace cio { namespace str {
                 -> enable_if_t<!chr::is_char_8<typename C::value_type>::value || !is_forward_iterator<II>::value, bool>
             {
                 while (i != e && *i != X::string::end) {
-                    if (!chr::is<X>::real(*i))
-                        return cx/X::read_error::unexpected;
-                    if (!char_read_<X>(c, i, e, cx))
-                        return false;
+                    if ( chr::is<X>::ctrl(*i))          return cx/X::read_error::unexpected;
+                    if (!char_read_<X>(c, i, e, cx))    return false;
                 }
                 return true;
             }
@@ -102,19 +100,21 @@ namespace cxon { namespace cio { namespace str {
                 II const o = i; II b = i;
                 for ( ; i != e && *i != X::string::end; ++i) {
                     if (*i == '\\') {
-                        if (b != i)
-                            if (!container_append(c, b, i)) return rewind(i, o), cx/X::read_error::overflow;
-                        {
-                            char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
-                                if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
-                            T bf[4]; auto const n = chr::utf32_to_utf8(bf, c32);
-                            if (!container_append(c, &bf[0], &bf[0] + n)) return rewind(i, o), cx/X::read_error::overflow;
-                        }
+                        if (b != i) if (!container_append(c, b, i))
+                            return rewind(i, o), cx/X::read_error::overflow;
+                        char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
+                            if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
+                        T bf[4]; auto const n = chr::utf32_to_utf8(bf, c32);
+                        if (!container_append(c, &bf[0], &bf[0] + n))
+                            return rewind(i, o), cx/X::read_error::overflow;
                         b = i, --i;
                     }
                     else CXON_IF_CONSTEXPR(X::validate) {
+                        if (chr::is<X>::ctrl(*i))
+                            return rewind(i, o), cx/X::read_error::unexpected;
                         auto const bs = chr::utf8_check(i, e);
-                            if (bs > 3) return rewind(i, o), cx/X::read_error::character_invalid;
+                        if (bs > 3)
+                            return rewind(i, o), cx/X::read_error::character_invalid;
                         i += bs;
                     }
                 }
