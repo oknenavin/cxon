@@ -755,8 +755,9 @@ int main(int argc, char *argv[]) {
                     continue;
                 }
             node result;
-            auto const e = std::istreambuf_iterator<char>();
-            if (auto r = cxon::from_bytes(result, std::istreambuf_iterator<char>(is), e)) {
+            std::string const s = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+            auto const e = s.end();
+            if (auto r = cxon::from_bytes(result, s.begin(), e)) {
                 cxon::cio::consume<cxon::JSON<>>(r.end, e);
                     if (r.end != e) continue; // trailing chars
                 std::string pass; cxon::to_bytes(pass, result);
