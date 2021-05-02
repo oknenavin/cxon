@@ -77,7 +77,7 @@ namespace cxon { namespace cio { namespace cnt {
         template <typename X, typename C, typename Xc, typename O, typename II, typename Cx>
             inline bool write_(O& o, II b, II e, Cx& cx) {
                 return write_<X, Xc>(o, b, e, cx, [&](const decltype(*b)& e) {
-                    return element_write<X, C>(o, e, cx);
+                    return cxon::cnt::element_write<X, C>(o, e, cx);
                 });
             }
 
@@ -86,7 +86,7 @@ namespace cxon { namespace cio { namespace cnt {
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_list(C& c, II& i, II e, Cx& cx) {
             return imp::read<X, typename X::list>(i, e, cx, [&] {
-                return element_read<X>(c, i, e, cx);
+                return cxon::cnt::element_read<X>(c, i, e, cx);
             });
         }
     template <typename X, typename II, typename Cx, typename EA>
@@ -97,7 +97,7 @@ namespace cxon { namespace cio { namespace cnt {
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_map(C& c, II& i, II e, Cx& cx) {
             return imp::read<X, typename X::map>(i, e, cx, [&] {
-                return element_read<X>(c, i, e, cx);
+                return cxon::cnt::element_read<X>(c, i, e, cx);
             });
         }
     template <typename X, typename II, typename Cx, typename EA>

@@ -54,13 +54,13 @@
 
 #ifdef CXON_JSON_DEFINED
 
-    namespace cxon {
+    namespace cxon { namespace cnt {
 
         template <typename X, typename K, typename V, typename ...R>
             struct element_reader<JSON<X>, ordered::object<K, V, R...>> {
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool read(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
-                        auto& o = container_emplace(t);
+                        auto& o = emplace(t);
                         return  cio::read_key<Y>(o.first, i, e, cx) &&
                                 read_value<Y>(o.second, i, e, cx)
                         ;
@@ -76,6 +76,10 @@
                         ;
                     }
             };
+
+    }}
+
+    namespace cxon {
 
         template <typename X, typename K, typename V, typename ...R>
             struct read<JSON<X>, ordered::object<K, V, R...>> {
@@ -99,13 +103,13 @@
 
 #ifdef CXON_CBOR_DEFINED
 
-    namespace cxon {
+    namespace cxon { namespace cnt {
 
         template <typename X, typename K, typename V, typename ...R>
             struct element_reader<CBOR<X>, ordered::object<K, V, R...>> {
                 template <typename II, typename Cx, typename Y = CBOR<X>>
                     static bool read(ordered::object<K, V, R...>& t, II& i, II e, Cx& cx) {
-                        auto& o = container_emplace(t);
+                        auto& o = emplace(t);
                         return  read_value<Y>(o.first, i, e, cx) &&
                                 read_value<Y>(o.second, i, e, cx)
                         ;
@@ -120,6 +124,10 @@
                     ;
                 }
             };
+
+    }}
+
+    namespace cxon {
 
         template <typename X, typename K, typename V, typename ...R>
             struct read<CBOR<X>, ordered::object<K, V, R...>> {

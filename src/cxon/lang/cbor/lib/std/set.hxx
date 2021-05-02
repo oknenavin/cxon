@@ -9,7 +9,7 @@
 #include "cxon/lang/cbor/common/container.hxx"
 #include "imp/set.hxx"
 
-namespace cxon {
+namespace cxon { namespace cnt {
 
     template <typename X, typename T, typename ...R>
         struct element_reader<CBOR<X>, std::set<T, R...>>       : cbor::imp::set_element_reader_<CBOR<X>, std::set<T, R...>> {};
@@ -17,7 +17,7 @@ namespace cxon {
     template <typename X, typename T, typename ...R>
         struct element_reader<CBOR<X>, std::multiset<T, R...>>  : cbor::imp::set_element_reader_<CBOR<X>, std::multiset<T, R...>> {};
 
-}
+}}
 
 namespace cxon {
 

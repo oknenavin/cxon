@@ -8,14 +8,14 @@
 
 #include "imp/set.hxx"
 
-namespace cxon {
+namespace cxon { namespace cnt {
 
     template <typename X, typename T, typename ...R>
         struct element_reader<JSON<X>, std::set<T, R...>>       : json::imp::set_element_reader_<JSON<X>, std::set<T, R...>> {};
     template <typename X, typename T, typename ...R>
         struct element_reader<JSON<X>, std::multiset<T, R...>>  : json::imp::set_element_reader_<JSON<X>, std::multiset<T, R...>> {};
 
-}
+}}
 
 namespace cxon {
 

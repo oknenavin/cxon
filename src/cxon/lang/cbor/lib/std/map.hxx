@@ -9,7 +9,7 @@
 #include "cxon/lang/cbor/common/container.hxx"
 #include "imp/map.hxx"
 
-namespace cxon {
+namespace cxon { namespace cnt {
 
     template <typename X, typename K, typename V, typename ...R>
         struct element_reader<CBOR<X>, std::map<K, V, R...>>        : cbor::imp::map_element_reader_<CBOR<X>, std::map<K, V, R...>> {};
@@ -21,7 +21,7 @@ namespace cxon {
     template <typename X, typename K, typename V, typename ...R>
         struct element_writer<CBOR<X>, std::multimap<K, V, R...>>   : cbor::imp::map_element_writer_<CBOR<X>, std::multimap<K, V, R...>> {};
 
-}
+}}
 
 namespace cxon {
 

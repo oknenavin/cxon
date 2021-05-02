@@ -286,7 +286,7 @@ namespace cxon { namespace cio { namespace num { // write
                 char s[std::numeric_limits<T>::digits10 + 3];
                 auto const r = charconv::to_chars(s, s + sizeof(s) / sizeof(char), t);
                 return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
-                        poke<X>(o, s, r.ptr - s, cx)
+                        poke<X>(o, s, r.ptr, cx)
                 ;
             }
 
@@ -305,7 +305,7 @@ namespace cxon { namespace cio { namespace num { // write
                     s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
                 );
                 return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
-                        poke<X>(o, s, r.ptr - s, cx)
+                        poke<X>(o, s, r.ptr, cx)
                 ;
             }
 

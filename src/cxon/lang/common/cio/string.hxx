@@ -46,7 +46,7 @@ namespace cxon { namespace cio { namespace str {
 
     namespace imp {
 
-        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type> // TODO: common with std::basic_string?
+        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto char_read_(C& c, II& i, II e, Cx& cx)
                 -> enable_if_t<chr::is_char_8<T>::value, bool>
             {
@@ -55,7 +55,7 @@ namespace cxon { namespace cio { namespace str {
                         if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                     T b[4]; int const n = chr::utf32_to_utf8(b, c32);
                         if (n == 0) return cx/X::read_error::character_invalid;
-                return container_append(c, &b[0], &b[0] + n) || cx/X::read_error::overflow;
+                return cnt::append(c, &b[0], &b[0] + n) || cx/X::read_error::overflow;
             }
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto char_read_(C& c, II& i, II e, Cx& cx)
@@ -66,12 +66,12 @@ namespace cxon { namespace cio { namespace str {
                         if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                     if (c32 > 0xFFFF) {
                         c32 -= 0x10000;
-                        return (container_append(c, T(0xD800 | (c32 >> 10))) && 
-                                container_append(c, T(0xDC00 | (c32 & 0x3FF)))) ||
+                        return (cnt::append(c, T(0xD800 | (c32 >> 10))) && 
+                                cnt::append(c, T(0xDC00 | (c32 & 0x3FF)))) ||
                                 cx/X::read_error::overflow
                         ;
                     }
-                return container_append(c, T(c32)) || cx/X::read_error::overflow;
+                return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
             }
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto char_read_(C& c, II& i, II e, Cx& cx)
@@ -80,7 +80,7 @@ namespace cxon { namespace cio { namespace str {
                 II const o = i;
                     char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
                         if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
-                return container_append(c, T(c32)) || cx/X::read_error::overflow;
+                return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
             }
 
         template <typename X, typename C, typename II, typename Cx>
@@ -97,17 +97,17 @@ namespace cxon { namespace cio { namespace str {
             inline auto chars_read_(C& c, II& i, II e, Cx& cx)
                 -> enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
             {
-                II const o = i; II b = i;
+                II const o = i; II a = i;
                 for ( ; i != e && *i != X::string::end; ++i) {
                     if (*i == '\\') {
-                        if (b != i) if (!container_append(c, b, i))
+                        if (a != i) if (!cnt::append(c, a, i))
                             return rewind(i, o), cx/X::read_error::overflow;
                         char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
                             if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                         T bf[4]; auto const n = chr::utf32_to_utf8(bf, c32);
-                        if (!container_append(c, &bf[0], &bf[0] + n))
+                        if (!cnt::append(c, &bf[0], &bf[0] + n))
                             return rewind(i, o), cx/X::read_error::overflow;
-                        b = i, --i;
+                        a = i, --i;
                     }
                     else CXON_IF_CONSTEXPR(X::validate) {
                         if (chr::is<X>::ctrl(*i))
@@ -118,7 +118,7 @@ namespace cxon { namespace cio { namespace str {
                         i += bs;
                     }
                 }
-                return b == i || container_append(c ,b, i) || (rewind(i, o), cx/X::read_error::overflow);
+                return a == i || cnt::append(c ,a, i) || (rewind(i, o), cx/X::read_error::overflow);
             }
 
     }
@@ -135,7 +135,7 @@ namespace cxon { namespace cio { namespace str {
     template <typename X, typename T, typename II, typename Cx>
         inline bool array_read(T* f, T* l, II& i, II e, Cx& cx) {
             consume<X>(i, e);
-            auto c = make_range_container(f, l);
+            auto c = cnt::make_range_container(f, l);
             return string_read<X>(c, i, e, cx) && (c.append({}), true);
         }
 
@@ -144,7 +144,7 @@ namespace cxon { namespace cio { namespace str {
             consume<X>(i, e);
             if (peek(i, e) == *X::id::nil && consume<X>(X::id::nil, i, e))
                 return true;
-            auto c = make_pointer_container<X, T>(cx);
+            auto c = cnt::make_pointer_container<X, T>(cx);
             return string_read<X>(c, i, e, cx) && (c.push_back({}), t = c.release());
         }
 
@@ -160,10 +160,10 @@ namespace cxon { namespace cio { namespace str {
         }
 
     template <typename X, typename O, typename T, typename Cx>
-        inline bool array_write(O& o, const T* t, const T* te, Cx& cx) {
+        inline bool array_write(O& o, const T* f, const T* l, Cx& cx) {
             if (!poke<X>(o, X::string::beg, cx)) return false;
-                if (*(te - 1) == T(0)) --te;
-            return chr::encode_range<X>(o, t, te, cx) && poke<X>(o, X::string::end, cx);
+                if (*(l - 1) == T(0)) --l;
+            return chr::encode_range<X>(o, f, l, cx) && poke<X>(o, X::string::end, cx);
         }
 
     template <typename X, typename O, typename T, typename Cx>

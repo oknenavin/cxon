@@ -105,14 +105,14 @@ namespace cxon { namespace cbor { namespace cnt {
             {
                 auto const m = std::min(n, static_cast<size_t>(std::distance(f, l)));
                 II e = f; std::advance(e, m);
-                return container_append(c, f, e) && (std::advance(f, m), m == n);
+                return cxon::cnt::append(c, f, e) && (std::advance(f, m), m == n);
             }
         template <typename X, typename C, typename II, typename Cx>
             inline auto elements_read_(C& c, size_t n, II& f, II l, Cx&)
                 -> enable_if_t<!is_forward_iterator<II>::value, bool>
             {
                 for ( ; n != 0 && f != l; --n, ++f)
-                    container_emplace(c) = *f;
+                    cxon::cnt::emplace(c) = *f;
                 return n == 0;
             }
 
@@ -127,7 +127,7 @@ namespace cxon { namespace cbor { namespace cnt {
             inline bool read_array_b_fix_(T& t, II& i, II e, Cx& cx) {
                 size_t n;
                 return  read_size_le<X>(n, t.max_size() - size_(t), i, e, cx) &&
-                        container_reserve(t, size_(t) + n) &&
+                        cxon::cnt::reserve(t, size_(t) + n) &&
                         read_bytes_<X>(t, n, i, e, cx)
                 ;
             }
@@ -158,7 +158,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
         template <typename X, typename T, typename II, typename Cx>
             inline bool read_elements_(T& t, size_t n, II& i, II e, Cx& cx) {
-                for ( ; n != 0 && element_read<X>(t, i, e, cx); --n) 
+                for ( ; n != 0 && cxon::cnt::element_read<X>(t, i, e, cx); --n) 
                     ;
                 return n == 0;
             }
@@ -167,7 +167,7 @@ namespace cxon { namespace cbor { namespace cnt {
             inline bool read_array_w_fix_(T& t, II& i, II e, Cx& cx) {
                 size_t n;
                 return  read_size_le<X>(n, t.max_size() - size_(t), i, e, cx) &&
-                        container_reserve(t, n) &&
+                        cxon::cnt::reserve(t, n) &&
                         read_elements_<X>(t, n, i, e, cx)
                 ;
             }
@@ -175,7 +175,7 @@ namespace cxon { namespace cbor { namespace cnt {
             inline bool read_array_w_var_(T& t, II& i, II e, Cx& cx) {
                 II const o = i;
                     for (bio::get(i, e); size_(t) < t.max_size() && bio::peek(i, e, 0) != X::brk; )
-                        if (!element_read<X>(t, i, e, cx))
+                        if (!cxon::cnt::element_read<X>(t, i, e, cx))
                             return false;
                 return  (bio::get(i, e, 0) == X::brk) ||
                         (bio::rewind(i, o), cx/cbor::read_error::size_invalid)
@@ -241,7 +241,7 @@ namespace cxon { namespace cbor { namespace cnt {
     template <typename X, typename FI, typename II, typename Cx>
         inline bool read_array(FI f, FI l, size_t/* tag*/, II& i, II e, Cx& cx) {
             // TODO: tags - e.g. typed-arrays (RFC8746)
-            auto c = make_range_container(f, l);
+            auto c = cxon::cnt::make_range_container(f, l);
             return read_array<X>(c, i, e, cx);
         }
 
@@ -253,16 +253,14 @@ namespace cxon { namespace cbor { namespace cnt {
 
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
             inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
-                size_t const n = std::distance(f, l);
-                return  write_size<X>(o, X::tstr, n, cx) &&
-                        bio::poke<X>(o, f, n, cx)
+                return  write_size<X>(o, X::tstr, std::distance(f, l), cx) &&
+                        bio::poke<X>(o, f, l, cx)
                 ;
             }
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
             inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 && !is_char<T>::value, bool> {
-                size_t const n = std::distance(f, l);
-                return  write_size<X>(o, X::bstr, n, cx) &&
-                        bio::poke<X>(o, f, n, cx)
+                return  write_size<X>(o, X::bstr, std::distance(f, l), cx) &&
+                        bio::poke<X>(o, f, l, cx)
                 ;
             }
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
@@ -280,7 +278,7 @@ namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename I, typename O, typename Cx>
         inline auto write_array(O& o, const I& i, Cx& cx) -> decltype(std::begin(i), bool()) {
-            auto const c = continuous<I>::range(i);
+            auto const c = cxon::cnt::continuous<I>::range(i);
             return imp::write_array_<X>(o, c.first, c.second, cx);
         }
 
@@ -288,7 +286,7 @@ namespace cxon { namespace cbor { namespace cnt {
         inline bool write_map(O& o, const T& t, Cx& cx) {
             auto f = std::begin(t), l = std::end(t);
             if (write_size<X>(o, X::map, std::distance(f, l), cx))
-                for ( ; f != l && element_write<X, T>(o, *f, cx); ++f) ;
+                for ( ; f != l && cxon::cnt::element_write<X, T>(o, *f, cx); ++f) ;
             return f == l;
         }
 
