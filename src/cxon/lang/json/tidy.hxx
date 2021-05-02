@@ -95,6 +95,15 @@ namespace cxon { namespace json {
                         }
                 }
             }
+
+            template <typename IV>
+                bool indent_value(IV indent_value) {
+                    return stt() == con ?
+                        (mut(grn), cio::poke(o_, '\n') && cio::poke(o_, lvl_ += tab_, pad_)) && indent_value(o_, lvl_, tab_, pad_) :
+                                                                                                indent_value(o_, lvl_, tab_, pad_)
+                    ;
+                }
+
             bool append(const char* f, const char* l) {
                 return indent_value([&](out_type o, ...) {
                     return cio::poke(o, f, l);
@@ -115,14 +124,6 @@ namespace cxon { namespace json {
                     return cio::poke(o, n, c);
                 });
             }
-
-            template <typename IV>
-                bool indent_value(IV indent_value) {
-                    return stt() == con ?
-                        (mut(grn), cio::poke(o_, '\n') && cio::poke(o_, lvl_ += tab_, pad_)) && indent_value(o_, lvl_, tab_, pad_) :
-                                                                                                indent_value(o_, lvl_, tab_, pad_)
-                    ;
-                }
 
             private:
                 enum { grn, con, quo, qes };
