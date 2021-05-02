@@ -15,16 +15,16 @@
 #       include "cxon/lang/cbor/lib/std/deque.hxx"
 #   endif
 
-namespace cxon {
+namespace cxon { namespace cnt {
 
     template <typename T, typename ...R>
-        struct container_traits<std::deque<T, R...>> {
+        struct traits<std::deque<T, R...>> {
             template <typename II>
                 static bool append(std::deque<T, R...>& c, II f, II l) {
                     return c.insert(c.end(), f, l), true;
                 }
         };
 
-}
+}}
 
 #endif // CXON_LIB_STD_DEQUE_

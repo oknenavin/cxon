@@ -61,7 +61,7 @@ namespace cxon { // pointer/read
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::bstr: case X::tstr: case X::arr: {
-                                auto c = make_pointer_container<X, T>(cx);
+                                auto c = cxon::cnt::make_pointer_container<X, T>(cx);
                                 return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
                     }
                     default:    return read_pointer_t_<X>(t, i, e, cx);
@@ -76,7 +76,7 @@ namespace cxon { // pointer/read
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::arr: {
-                                auto c = make_pointer_container<X, T>(cx);
+                                auto c = cxon::cnt::make_pointer_container<X, T>(cx);
                                 return cbor::cnt::read_array<X>(c, tag, i, e, cx) && (c.push_back({}), t = c.release());
                     }
                     default:    return read_pointer_t_<X>(t, i, e, cx);

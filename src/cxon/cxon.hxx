@@ -168,6 +168,10 @@ namespace cxon { // interface
 
     // read
 
+    namespace cnt {
+        template <typename C> struct continuous;
+    }
+
     namespace interface {
 
         template <typename X, typename T, typename II, typename ...NaPa>
@@ -178,7 +182,7 @@ namespace cxon { // interface
             }
         template <typename X, typename T, typename I, typename ...NaPa>
             inline auto from_bytes(T& t, const I& i, NaPa... p) -> from_bytes_result<decltype(std::begin(i))> {
-                auto const c = continuous<I>::range(i);
+                auto const c = cnt::continuous<I>::range(i);
                 auto const r = interface::from_bytes<X>(t, c.first, c.second, std::forward<NaPa>(p)...);
                 auto b = std::begin(i); std::advance(b, std::distance(c.first, r.end));
                 return { r.ec, b };
@@ -196,6 +200,11 @@ namespace cxon { // interface
         }
 
     // write
+
+    namespace cnt {
+        template <typename FI> struct range_container;
+        template <typename FI> inline range_container<FI> make_range_container(FI f, FI l) noexcept;
+    }
 
     namespace interface {
 
@@ -216,9 +225,9 @@ namespace cxon { // interface
         template <typename X, typename T, typename FI, typename ...NaPa>
             inline auto to_bytes(FI b, FI e, const T& t, NaPa... p) -> to_bytes_result<FI> {
                 write_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
-                    auto o = make_output_iterator(b, e);
-                    bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
-                return { cx.ec, o };
+                    auto c = cnt::make_range_container(b, e);
+                    bool const r = write_value<X>(c, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
+                return { cx.ec, c.end() };
             }
 
     }

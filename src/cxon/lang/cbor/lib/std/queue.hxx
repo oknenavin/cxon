@@ -14,7 +14,7 @@ namespace cxon {
         struct read<CBOR<X>, std::queue<T, R...>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::queue<T, R...>& t, II& i, II e, Cx& cx) {
-                    auto& c = adaptor_container(t);
+                    auto& c = cnt::container(t);
                     return cbor::cnt::read_array<Y>(c, i, e, cx);
                 }
         };
@@ -23,7 +23,7 @@ namespace cxon {
         struct write<CBOR<X>, std::queue<T, R...>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::queue<T, R...>& t, Cx& cx) {
-                    auto const& c = adaptor_container(t);
+                    auto const& c = cnt::container(t);
                     return cbor::cnt::write_array<Y>(o, c, cx);
                 }
         };
@@ -32,7 +32,7 @@ namespace cxon {
         struct read<CBOR<X>, std::priority_queue<T, R...>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::priority_queue<T, R...>& t, II& i, II e, Cx& cx) {
-                    auto& c = adaptor_container(t);
+                    auto& c = cnt::container(t);
                     return cbor::cnt::read_array<Y>(c, i, e, cx);
                 }
         };
@@ -41,7 +41,7 @@ namespace cxon {
         struct write<CBOR<X>, std::priority_queue<T, R...>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::priority_queue<T, R...>& t, Cx& cx) {
-                    auto const& c = adaptor_container(t);
+                    auto const& c = cnt::container(t);
                     return cbor::cnt::write_array<Y>(o, c, cx);
                 }
         };

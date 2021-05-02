@@ -8,7 +8,7 @@
 
 #include "imp/map.hxx"
 
-namespace cxon {
+namespace cxon { namespace cnt {
 
     template <typename X, typename K, typename V, typename ...R>
         struct element_reader<JSON<X>, std::map<K, V, R...>>        : json::imp::map_element_reader_<JSON<X>, std::map<K, V, R...>> {};
@@ -20,7 +20,7 @@ namespace cxon {
     template <typename X, typename K, typename V, typename ...R>
         struct element_writer<JSON<X>, std::multimap<K, V, R...>>   : json::imp::map_element_writer_<JSON<X>, std::multimap<K, V, R...>> {};
 
-}
+}}
 
 namespace cxon {
 

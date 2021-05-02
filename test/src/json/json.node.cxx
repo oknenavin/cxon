@@ -320,8 +320,7 @@ static unsigned self() {
             CHECK(!r && r.ec == cxon::json::write_error::output_failure);
         }
         {   char b[2];
-            auto o = cxon::make_output_iterator(std::begin(b), std::end(b));
-                cxon::json::tidy(o, "[1]");
+                cxon::json::tidy(std::begin(b), std::end(b), "[1]");
             CHECK(b[0] == '[' && b[1] == '\n');
         }
         {   node n;

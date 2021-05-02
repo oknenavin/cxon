@@ -238,28 +238,28 @@ namespace cxon { namespace cio { namespace chr {
                     }
                 template <typename O, typename Cx>
                     static bool range(O& o, const char* f, const char* l, Cx& cx) {
-                        char const* b = f;
+                        char const* a = f;
                         for ( ; f != l; ++f) {
                             if (should_escape_(*f)) {
-                                if (b != f)
-                                    if (!poke<X>(o, b, f - b, cx)) return false;
+                                if (a != f)
+                                    if (!poke<X>(o, a, f, cx)) return false;
                                 if (!value(o, *f, cx)) return false;
-                                b = f + 1;
+                                a = f + 1;
                             }
                             else CXON_IF_CONSTEXPR (X::strict_js) {
                                 if (*f == '\xE2' && l - f > 2) {
                                     if (f[1] == '\x80') {
                                         if (f[2] == '\xA8' || f[2] == '\xA9') {
-                                            if (b != f)
-                                                if (!poke<X>(o, b, f - b, cx)) return false;
+                                            if (a != f)
+                                                if (!poke<X>(o, a, f, cx)) return false;
                                             if (!poke<X>(o, f[2] == '\xA8' ? "\\u2028" : "\\u2029", 6, cx)) return false;
-                                            f += 2, b = f + 1;
+                                            f += 2, a = f + 1;
                                         }
                                     }
                                 }
                             }
                         }
-                        return b == f || poke<X>(o, b, f - b, cx);
+                        return a == f || poke<X>(o, a, f, cx);
                     }
                 private:
                     static bool should_escape_(char c) noexcept {

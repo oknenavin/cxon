@@ -53,9 +53,12 @@ namespace cxon { namespace bio {
         inline auto poke(O& o, T t, unsigned n)
             -> enable_if_t<std::is_integral<T>::value, bool>;
 
-    template <typename O, typename FI, typename T = typename std::iterator_traits<FI>::value_type>
+    template <typename O, typename FI>
+        inline auto poke(O& o, FI f, FI l )
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>;
+    template <typename O, typename FI>
         inline auto poke(O& o, FI i, size_t n)
-            -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>;
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>;
 
     template <typename O, typename T>
         inline auto poke(O& o, T t)
@@ -68,9 +71,12 @@ namespace cxon { namespace bio {
         inline auto poke(O& o, T t, unsigned n, Cx& cx)
             -> enable_if_t<std::is_integral<T>::value, bool>;
 
-    template <typename X, typename O, typename FI, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
+    template <typename X, typename O, typename FI, typename Cx>
+        inline auto poke(O& o, FI f, FI l, Cx& cx)
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>;
+    template <typename X, typename O, typename FI, typename Cx>
         inline auto poke(O& o, FI i, size_t n, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>;
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>;
 
     template <typename X, typename O, typename T, typename Cx>
         inline auto poke(O& o, T t, Cx& cx)
@@ -292,6 +298,19 @@ namespace cxon { namespace bio {
             }
 
         template <typename O, typename FI>
+            inline auto push_(option<1>, O& o, FI f, FI l) -> decltype(o.append(f, l), void()) {
+                o.append(f, l);
+            }
+        template <typename O, typename FI>
+            inline void push_(option<0>, O& o, FI f, FI l) {
+                for ( ; f != l; ++f) push_(o, *f);
+            }
+        template <typename O, typename FI>
+            inline void push_(O& o, FI f, FI l) {
+                push_(option<1>(), o, f, l);
+            }
+
+        template <typename O, typename FI>
             inline auto push_(option<1>, O& o, FI i, size_t n) -> decltype(o.append(i, n), void()) {
                 o.append(i, n);
             }
@@ -303,10 +322,10 @@ namespace cxon { namespace bio {
             inline void push_(O& o, FI i, size_t n) {
                 push_(option<1>(), o, i, n);
             }
-
+            
         template <typename O, typename ...P>
-            inline auto poke_(option<2>, O& o, P... p) -> decltype((bool)o) {
-                return push_(o, p...), o;
+            inline auto poke_(option<2>, O& o, P... p) -> enable_if_t<std::is_same<decltype(o.append(p...)), bool>::value, bool> {
+                return o.append(p...);
             }
         template <typename O, typename ...P>
             inline auto poke_(option<1>, O& o, P... p) -> decltype(o.good()) {
@@ -328,7 +347,7 @@ namespace cxon { namespace bio {
             inline auto put_(O& o, T t, unsigned  )
                 -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
             {
-                return imp::poke_(o, t);
+                return poke_(o, t);
             }
         template <typename T, typename O>
             inline auto put_(O& o, T t, unsigned n)
@@ -339,7 +358,7 @@ namespace cxon { namespace bio {
                         case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
                         case 1: bs[n - 1] = byte(t >>  0);
                     }
-                return imp::poke_(o, bs, n);
+                return poke_(o, bs, n);
             }
         template <typename T, typename O>
             inline auto put_(O& o, T t, unsigned n)
@@ -352,7 +371,7 @@ namespace cxon { namespace bio {
                         case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
                         case 1: bs[n - 1] = byte(t >>  0);
                     }
-                return imp::poke_(o, bs, n);
+                return poke_(o, bs, n);
             }
         template <typename T, typename O>
             inline auto put_(O& o, T t, unsigned n)
@@ -369,14 +388,20 @@ namespace cxon { namespace bio {
                         case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
                         case 1: bs[n - 1] = byte(t >>  0);
                     }
-                return imp::poke_(o, bs, n);
+                return poke_(o, bs, n);
             }
 
-        template <typename O, typename FI, typename T = typename std::iterator_traits<FI>::value_type>
-            inline auto put_(O& o, FI i, size_t n)
-                -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
+        template <typename O, typename FI>
+            inline auto put_(O& o, FI f, FI l)
+                -> enable_if_t<is_forward_iterator<FI>::value, bool>
             {
-                return imp::poke_(o, i, n);
+                return poke_(o, f, l);
+            }
+        template <typename O, typename FI>
+            inline auto put_(O& o, FI i, size_t n)
+                -> enable_if_t<is_forward_iterator<FI>::value, bool>
+            {
+                return poke_(o, i, n);
             }
 
         template <typename O>
@@ -385,7 +410,7 @@ namespace cxon { namespace bio {
                 byte bs[sizeof(float)];
                     bs[0] = byte(u.i >> 24), bs[1] = byte(u.i >> 16),
                     bs[2] = byte(u.i >>  8), bs[3] = byte(u.i >>  0);
-                return imp::poke_(o, bs, sizeof(bs));
+                return poke_(o, bs, sizeof(bs));
             }
         template <typename O>
             inline bool put_(O& o, double t) {
@@ -395,7 +420,7 @@ namespace cxon { namespace bio {
                     bs[2] = byte(u.i >> 40), bs[3] = byte(u.i >> 32),
                     bs[4] = byte(u.i >> 24), bs[5] = byte(u.i >> 16),
                     bs[6] = byte(u.i >>  8), bs[7] = byte(u.i >>  0);
-                return imp::poke_(o, bs, sizeof(bs));
+                return poke_(o, bs, sizeof(bs));
             }
 
     }
@@ -412,9 +437,15 @@ namespace cxon { namespace bio {
             return imp::put_(o, t, n);
         }
 
-    template <typename O, typename FI, typename T>
+    template <typename O, typename FI>
+        inline auto poke(O& o, FI f, FI l)
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>
+        {
+            return imp::put_(o, f, l);
+        }
+    template <typename O, typename FI>
         inline auto poke(O& o, FI i, size_t n)
-            -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>
         {
             return imp::put_(o, i, n);
         }
@@ -438,9 +469,15 @@ namespace cxon { namespace bio {
             return imp::put_(o, t, n) || cx/X::write_error::output_failure;
         }
 
-    template <typename X, typename O, typename FI, typename Cx, typename T>
+    template <typename X, typename O, typename FI, typename Cx>
+        inline auto poke(O& o, FI f, FI l, Cx& cx)
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>
+        {
+            return imp::put_(o, f, l) || cx/X::write_error::output_failure;
+        }
+    template <typename X, typename O, typename FI, typename Cx>
         inline auto poke(O& o, FI i, size_t n, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 1, bool>
+            -> enable_if_t<is_forward_iterator<FI>::value, bool>
         {
             return imp::put_(o, i, n) || cx/X::write_error::output_failure;
         }

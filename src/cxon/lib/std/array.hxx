@@ -15,7 +15,7 @@
 #       include "cxon/lang/cbor/lib/std/array.hxx"
 #   endif
 
-namespace cxon {
+namespace cxon { namespace cnt {
 
     template <typename T, size_t N>
         struct continuous<std::array<T, N>> {
@@ -24,6 +24,6 @@ namespace cxon {
             }
         };
 
-}
+}}
 
 #endif // CXON_LIB_STD_ARRAY_

@@ -10,24 +10,28 @@
 
 namespace cxon { namespace json { // interface
 
-    template <typename X, typename Out>
-        struct indent_iterator;
+    template <typename Tr, typename Out>
+        struct indenter;
 
-    template <typename X = CXON_DEFAULT_FORMAT, typename OutIt>
-        constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t')        -> enable_if_t<is_output_iterator<OutIt>::value, indent_iterator<X, OutIt>>;
-    template <typename X = CXON_DEFAULT_FORMAT, typename Insertable>
-        constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<Insertable>::value, indent_iterator<X, Insertable&>>;
-    template <typename X = CXON_DEFAULT_FORMAT, typename FwIt>
-        constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indent_iterator<X, range_output_iterator<FwIt>>;
+    template <typename Tr = format_traits, typename OutIt>
+        constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t')        -> enable_if_t<is_output_iterator<OutIt>::value, indenter<JSON<Tr>, OutIt>>;
+    template <typename Tr = format_traits, typename Insertable>
+        constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<Insertable>::value, indenter<JSON<Tr>, Insertable&>>;
+    template <typename Tr = format_traits, typename FwIt>
+        constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indenter<JSON<Tr>, cnt::range_container<FwIt>>;
 
-    template <typename X = CXON_DEFAULT_FORMAT, typename OutIt, typename InIt>
-        inline auto tidy(OutIt o, InIt b, InIt e, unsigned tab = 1, char pad = '\t')    -> enable_if_t<is_output_iterator<OutIt>::value, void>;
-    template <typename X = CXON_DEFAULT_FORMAT, typename OutIt, typename Iterable>
-        inline auto tidy(OutIt o, const Iterable& i, unsigned tab = 1, char pad = '\t') -> enable_if_t<is_output_iterator<OutIt>::value, void>;
-    template <typename X = CXON_DEFAULT_FORMAT, typename Result = std::string, typename InIt>
+    template <typename Tr = format_traits, typename OutIt, typename InIt>
+        inline auto tidy(OutIt o, InIt b, InIt e, unsigned tab = 1, char pad = '\t')    -> enable_if_t<is_output_iterator<OutIt>::value, bool>;
+    template <typename Tr = format_traits, typename OutIt, typename Iterable>
+        inline auto tidy(OutIt o, const Iterable& i, unsigned tab = 1, char pad = '\t') -> enable_if_t<is_output_iterator<OutIt>::value, bool>;
+    template <typename Tr = format_traits, typename Result = std::string, typename InIt>
         inline auto tidy(InIt b, InIt e, unsigned tab = 1, char pad = '\t')             -> enable_if_t<is_back_insertable<Result>::value, Result>;
-    template <typename X = CXON_DEFAULT_FORMAT, typename Result = std::string, typename Iterable>
+    template <typename Tr = format_traits, typename Result = std::string, typename Iterable>
         inline auto tidy(const Iterable& i, unsigned tab = 1, char pad = '\t')          -> enable_if_t<is_back_insertable<Result>::value, Result>;
+    template <typename Tr = format_traits, typename FwIt, typename InIt>
+        inline auto tidy(FwIt f, FwIt l, InIt b, InIt e, unsigned tab = 1, char pad = '\t')    -> bool;
+    template <typename Tr = format_traits, typename FwIt, typename Iterable>
+        inline auto tidy(FwIt f, FwIt l, const Iterable& i, unsigned tab = 1, char pad = '\t') -> bool;
 
 }}
 
@@ -35,100 +39,91 @@ namespace cxon { namespace json { // interface
 
 namespace cxon { namespace json {
 
-    template <typename X, typename O>
-        struct indent_iterator {
+    template <typename Tr, typename O>
+        struct indenter<JSON<Tr>, O> {
+            // pretend to be an iterator to satisfy the to_bytes interface
             using iterator_category = std::output_iterator_tag;
             using value_type        = char;
             using difference_type   = void;
             using pointer           = void;
             using reference         = void;
+            using out_type = O;
 
-            using out_type          = O;
-
-            constexpr indent_iterator(out_type o, unsigned tab = 1, char pad = '\t')
+            constexpr indenter(out_type o, unsigned tab = 1, char pad = '\t')
             :   o_(o), stt_(grn), lvl_(), tab_(tab), pad_(pad)
             {}
 
-            indent_iterator& operator ++() noexcept { return *this; }
-            indent_iterator& operator *() noexcept  { return *this; }
-
-            indent_iterator& operator =(char c) {
+            bool append(char c) {
                 using cio::poke;
                 switch (stt()) {
                     case quo:
-                        poke(o_, c);
                         switch (c) {
                             case '"':   mut(grn); break;
                             case '\\':  mut(qes); break;
                         }
-                        break;
+                        return poke(o_, c);
                     case qes:
-                        mut(quo), poke(o_, c);
-                        break;
+                        return mut(quo), poke(o_, c);
                     case con:
                         switch (c) {
                             case 0x09: case 0x0A: case 0x0D: case 0x20:
-                                goto ret;
+                                return true;
                             case '}': case ']':
-                                mut(grn), poke(o_, c);
-                                goto ret;
+                                return mut(grn), poke(o_, c);
                             default:
                                 mut(grn);
                                 if (!poke(o_, '\n') || !poke(o_, lvl_ += tab_, pad_))
-                                    goto ret;
+                                    return false;
                         }
                         CXON_FALLTHROUGH;
                     default:
                         switch (c) {
                             case '{': case '[':
-                                mut(con), poke(o_, c);
-                                break;
+                                return mut(con), poke(o_, c);
                             case '}': case ']':
-                                poke(o_, '\n') && poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && poke(o_, c);
-                                break;
+                                return poke(o_, '\n') && poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && poke(o_, c);
                             case ',':
-                                poke(o_, c) && poke(o_, '\n') && poke(o_, lvl_, pad_);
-                                break;
+                                return poke(o_, c) && poke(o_, '\n') && poke(o_, lvl_, pad_);
                             case ':':
-                                poke(o_, c) && poke(o_, ' ');
-                                break;
+                                return poke(o_, c) && poke(o_, ' ');
                             case '"':
-                                mut(quo), poke(o_, c);
-                                break;
+                                return mut(quo), poke(o_, c);
                             case 0x09: case 0x0A: case 0x0D: case 0x20:
-                                break;
+                                return true;
                             default:
-                                poke(o_, c);
+                                return poke(o_, c);
                         }
                 }
-                ret: return *this;
             }
 
-            template <typename VI>
-                bool indent_value(VI indent_value) {
+            template <typename IV>
+                bool indent_value(IV indent_value) {
                     return stt() == con ?
                         (mut(grn), cio::poke(o_, '\n') && cio::poke(o_, lvl_ += tab_, pad_)) && indent_value(o_, lvl_, tab_, pad_) :
                                                                                                 indent_value(o_, lvl_, tab_, pad_)
                     ;
                 }
 
-            template <typename S = out_type>
-                auto append(const char* s, size_t n)    -> decltype(std::declval<S>().append(s, n), void()) {
-                    indent_value([&](out_type out, ...) {
-                        return cio::poke(out, s, n);
-                    });
-                }
-            template <typename S = out_type>
-                auto append(const char* s)              -> decltype(std::declval<S>().append(s), void()) {
-                    indent_value([&](out_type out, ...) {
-                        return cio::poke(out, s);
-                    });
-                }
-
-            template <typename S = out_type>
-                auto good() const noexcept -> decltype(std::declval<S>().good(), bool())            { return o_.good(); }
-            template <typename S = out_type>
-                auto good() const noexcept -> decltype(std::declval<S>().operator bool(), bool())   { return o_; }
+            bool append(const char* f, const char* l) {
+                return indent_value([&](out_type o, ...) {
+                    return cio::poke(o, f, l);
+                });
+            }
+            bool append(const char* s, size_t n) {
+                return indent_value([&](out_type o, ...) {
+                    return cio::poke(o, s, n);
+                });
+            }
+            bool append(const char* s) {
+                return indent_value([&](out_type o, ...) {
+                    return cio::poke(o, s);
+                });
+            }
+            bool append(unsigned n, char c) {
+                return indent_value([&](out_type o, ...) {
+                    return cio::poke(o, n, c);
+                });
+            }
 
             private:
                 enum { grn, con, quo, qes };
@@ -143,41 +138,55 @@ namespace cxon { namespace json {
                 char const      pad_;
         };
 
-    template <typename X, typename OI>
-        constexpr auto make_indenter(OI o, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, indent_iterator<X, OI>> {
-            return indent_iterator<X, OI>{o, tab, pad};
+    template <typename Tr, typename OI>
+        constexpr auto make_indenter(OI o, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, indenter<JSON<Tr>, OI>> {
+            return indenter<JSON<Tr>, OI>{o, tab, pad};
         }
-    template <typename X, typename I>
-        constexpr auto make_indenter(I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<I>::value, indent_iterator<X, I&>> {
-            return indent_iterator<X, I&>{i, tab, pad};
+    template <typename Tr, typename I>
+        constexpr auto make_indenter(I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<I>::value, indenter<JSON<Tr>, I&>> {
+            return indenter<JSON<Tr>, I&>{i, tab, pad};
         }
-    template <typename X, typename FI>
-        constexpr auto make_indenter(FI b, FI e, unsigned tab, char pad) -> indent_iterator<X, range_output_iterator<FI>> {
-            using O = range_output_iterator<FI>;
-            return indent_iterator<X, O>{make_output_iterator(b, e), tab, pad};
+    template <typename Tr, typename FI>
+        constexpr auto make_indenter(FI b, FI e, unsigned tab, char pad) -> indenter<JSON<Tr>, cnt::range_container<FI>> {
+            using O = cnt::range_container<FI>;
+            return indenter<JSON<Tr>, O>{cnt::make_range_container(b, e), tab, pad};
         }
 
-    template <typename X, typename OI, typename II>
-        inline auto tidy(OI o, II b, II e, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, void> {
-            auto i = make_indenter<X>(o, tab, pad);
+    template <typename Tr, typename OI, typename II>
+        inline auto tidy(OI o, II b, II e, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, bool> {
+            auto i = make_indenter<JSON<Tr>>(o, tab, pad);
             for ( ; b != e && cio::poke(i, *b); ++b)
                 ;
+            return b == e;
         }
-    template <typename X, typename OI, typename I>
-        inline auto tidy(OI o, const I& i, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, void> {
-            tidy<X>(o, std::begin(i), std::end(i), tab, pad);
+    template <typename Tr, typename OI, typename I>
+        inline auto tidy(OI o, const I& i, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, bool> {
+            return tidy<Tr>(o, std::begin(i), std::end(i), tab, pad);
         }
-    template <typename X, typename R, typename II>
+
+    template <typename Tr, typename R, typename II>
         inline auto tidy(II b, II e, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
             R r;
-                auto i = make_indenter<X>(r, tab, pad);
+                auto i = make_indenter<Tr>(r, tab, pad);
                 for ( ; b != e && cio::poke(i, *b); ++b)
                     ;
             return r;
         }
-    template <typename X, typename R, typename I>
+    template <typename Tr, typename R, typename I>
         inline auto tidy(const I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
-            return tidy<X, R>(std::begin(i), std::end(i), tab, pad);
+            return tidy<Tr, R>(std::begin(i), std::end(i), tab, pad);
+        }
+        
+    template <typename Tr, typename FwIt, typename InIt>
+        inline bool tidy(FwIt f, FwIt l, InIt b, InIt e, unsigned tab, char pad) {
+            auto i = make_indenter<Tr>(f, l, tab, pad);
+            for ( ; b != e && cio::poke(i, *b); ++b)
+                ;
+            return b == e;
+        }
+    template <typename Tr, typename FwIt, typename Iterable>
+        inline bool tidy(FwIt f, FwIt l, const Iterable& i, unsigned tab, char pad) {
+            return tidy<Tr>(f, l, std::begin(i), std::end(i), tab, pad);
         }
 
 }}
@@ -192,8 +201,8 @@ namespace cxon { namespace json {
 #       define CXON_JSON_NODE_CHECK(e) if (!(e)) return false
 
         template <typename X, typename Tr, typename O, typename Cx> // indented write
-            static bool write_value(json::indent_iterator<X, O>& o, const json::basic_node<Tr>& t, Cx& cx) {
-                return o.indent_value([&](typename json::indent_iterator<X, O>::out_type out, unsigned& lvl, unsigned tab, char pad) {
+            static bool write_value(json::indenter<X, O>& o, const json::basic_node<Tr>& t, Cx& cx) {
+                return o.indent_value([&](typename json::indenter<X, O>::out_type out, unsigned& lvl, unsigned tab, char pad) {
                     using node = json::basic_node<Tr>;
                     switch (t.kind()) {
                         case json::node_kind::object: {
