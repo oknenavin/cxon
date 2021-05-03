@@ -20,9 +20,10 @@ namespace cxon { namespace json { // format traits
         using read_error = json::read_error;
         using write_error = json::write_error;
 
-        static constexpr bool write_strict_js = false; // escape, U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
         static constexpr bool read_validate_string_utf8 = true; // validate input strings (utf-8)
         static constexpr bool read_validate_string_ctrl = true; // validate input strings (unescaped control characters)
+
+        static constexpr bool write_strict_js = false;          // escape, U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
     };
 
 }}
