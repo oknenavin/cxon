@@ -109,13 +109,19 @@ namespace cxon { namespace cio { namespace str {
                             return rewind(i, o), cx/X::read_error::overflow;
                         a = i, --i;
                     }
-                    else CXON_IF_CONSTEXPR(X::validate) {
-                        if (chr::is<X>::ctrl(*i))
-                            return rewind(i, o), cx/X::read_error::unexpected;
-                        auto const bs = chr::utf8_check(i, e);
-                        if (bs > 3)
-                            return rewind(i, o), cx/X::read_error::character_invalid;
-                        i += bs;
+                    else {
+                        CXON_IF_CONSTEXPR(X::read_validate_string_utf8) {
+                            if ((unsigned char)*i > 0x7F) {
+                                auto const bs = chr::utf8_check(i, e);
+                                if (bs > 3)
+                                    return rewind(i, o), cx/X::read_error::character_invalid;
+                                i += bs;
+                            }
+                        }
+                        CXON_IF_CONSTEXPR(X::read_validate_string_ctrl) {
+                            if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
+                                return rewind(i, o), cx/X::read_error::unexpected;
+                        }
                     }
                 }
                 return a == i || cnt::append(c ,a, i) || (rewind(i, o), cx/X::read_error::overflow);

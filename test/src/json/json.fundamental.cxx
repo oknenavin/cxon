@@ -503,12 +503,12 @@ TEST_BEG(cxon::JSON<>) // json
 TEST_END()
 
 namespace cxon { namespace test {
-    struct strict_js_traits : cxon::json::format_traits {
-        static constexpr bool strict_js = true;
+    struct write_strict_js_traits : cxon::json::format_traits {
+        static constexpr bool write_strict_js = true;
     };
 }}
 
-TEST_BEG(cxon::JSON<cxon::test::strict_js_traits>)
+TEST_BEG(cxon::JSON<cxon::test::write_strict_js_traits>)
     W_TEST(QS("x"), "x");
     W_TEST(QS("\\u2028"), "\xE2\x80\xA8");
     W_TEST(QS("\\u2029"), "\xE2\x80\xA9");

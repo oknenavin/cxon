@@ -184,23 +184,54 @@ namespace cxon { namespace cio { namespace chr {
 
     template <typename II>
         inline int utf8_check(II i, II e) {
-            auto const c0 = *i;
-            if ((c0 & 0x80) == 0)
-                return 0;
-            if ((c0 & 0xE0) == 0xC0) {
-                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
-                return 1;
+            // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
+            // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
+            unsigned char c0 = *i, c1, c2, c3;
+            // 1
+            //if (c0 <= 0x7F)
+            //    return 0;
+            // 2
+            if (c0 >= 0xC2 && c0 <= 0xDF) {
+                c1 = cio::next(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF)
+                    return 1;
             }
-            if ((c0 & 0xF0) == 0xE0) {
-                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
-                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
-                return 2;
+            // 3
+            if (c0 == 0xE0) {
+                c1 = cio::next(i, e), c2 = cio::next(i, e);
+                if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                    return 2;
             }
-            if ((c0 & 0xF8) == 0xF0) {
-                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
-                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
-                if ((cio::next(i, e) & 0xC0) != 0x80) return 4;
-                return 3;
+            if (c0 >= 0xE1 && c0 <= 0xEC) {
+                c1 = cio::next(i, e), c2 = cio::next(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                    return 2;
+            }
+            if (c0 == 0xED) {
+                c1 = cio::next(i, e), c2 = cio::next(i, e);
+                if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
+                    return 2;
+            }
+            if (c0 >= 0xEE && c0 <= 0xEF) {
+                c1 = cio::next(i, e), c2 = cio::next(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                    return 2;
+            }
+            // 4
+            if (c0 == 0xF0) {
+                c1 = cio::next(i, e), c2 = cio::next(i, e), c3 = cio::next(i, e);
+                if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                    return 3;
+            }
+            if (c0 >= 0xF1 && c0 <= 0xF3) {
+                c1 = cio::next(i, e), c2 = cio::next(i, e), c3 = cio::next(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                    return 3;
+            }
+            if (c0 == 0xF4) {
+                c1 = cio::next(i, e), c2 = cio::next(i, e), c3 = cio::next(i, e);
+                if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                    return 3;
             }
             return 4;
         }
@@ -246,7 +277,7 @@ namespace cxon { namespace cio { namespace chr {
                                 if (!value(o, *f, cx)) return false;
                                 a = f + 1;
                             }
-                            else CXON_IF_CONSTEXPR (X::strict_js) {
+                            else CXON_IF_CONSTEXPR (X::write_strict_js) {
                                 if (*f == '\xE2' && l - f > 2) {
                                     if (f[1] == '\x80') {
                                         if (f[2] == '\xA8' || f[2] == '\xA9') {
@@ -340,7 +371,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X>
             struct encode_<X, char32_t> {
                 template <typename O, typename Cx, typename S = X>
-                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t<!S::strict_js, bool> {
+                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t<!S::write_strict_js, bool> {
                         if (c > 0x7F) {
                                 char b[4]; int const n = utf32_to_utf8(b, c);
                                 return poke<X>(o, b, n, cx);
@@ -348,7 +379,7 @@ namespace cxon { namespace cio { namespace chr {
                         else    return encode_<X, char>::value(o, char(c), cx);
                     }
                 template <typename O, typename Cx, typename S = X>
-                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t< S::strict_js, bool> {
+                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t< S::write_strict_js, bool> {
                         if (c > 0x7F) {
                                 if (c == 0x2028) return poke<X>(o, "\\u2028", 6, cx);
                                 if (c == 0x2029) return poke<X>(o, "\\u2029", 6, cx);
