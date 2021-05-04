@@ -27,7 +27,7 @@
 
         CXON_PARAMETER(recursion_guard, unsigned);  // read/write
         CXON_PARAMETER(recursion_depth, unsigned);  // read/write: constexpr
-        
+
     }}
 
 #endif
@@ -40,7 +40,7 @@
 
         CXON_PARAMETER(arbitrary_keys, bool);   // read/write: constexpr
         CXON_PARAMETER(extract_nans, bool);      // read/write: constexpr
-        
+
     }}}
 
     namespace cxon {
@@ -171,22 +171,201 @@
 
     namespace cxon {
 
+        namespace imp {
+
+            template <unsigned N, typename II, bool E = is_random_access_iterator<II>::value>
+                struct buffer_;
+            template <unsigned N, typename II>
+                struct buffer_<N, II, false> {
+                    buffer_(II) : b_(std::begin(s)), e_(std::end(s)) {}
+                    bool put(char c)            { return b_ != e_ && (*b_ = c, ++b_); }
+                    char*& begin() noexcept     { e_ = b_, b_ = std::begin(s); return b_; }
+                    char* end() const noexcept  { return e_; }
+                    char s[N];
+                    char *b_, *e_;
+                };
+            template <unsigned N, typename II>
+                struct buffer_<N, II, true> {
+                    buffer_(II& b) : b_(b), e_(b) {}
+                    constexpr bool put(char) const  { return true; }
+                    II& begin() noexcept            { return b_; }
+                    II end() const noexcept         { return e_; }
+                    II b_; II& e_;
+                };
+
+            template <typename X, typename Tr, typename II, typename Cx>
+                inline bool read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& v, II& i, II e, Cx& cx) {
+                    unsigned u = 0;
+                    unsigned long long U = 0;
+                    unsigned d = 0;
+                    buffer_<json::num_len_max::constant<napa_type<Cx>>(64), II> bf(i);
+                    auto c = cio::peek(i, e);
+
+                    bool s = c == '-';
+                    if (s) {
+                        if (!bf.put('-')) return cx/X::read_error::overflow;
+                        c = cio::next(i, e);
+                    }
+
+                    if (c == '0') {
+                        if (!bf.put('0')) return cx/X::read_error::overflow;
+                        c = cio::next(i, e);
+                    }
+                    else if (c >= '1' && c <='9') {
+                        if (!bf.put(c)) return cx/X::read_error::overflow;
+                        u = static_cast<unsigned>(c - '0');
+                        if (s)
+                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                if (u >= 214748364) // 2^31 = 2147483648
+                                    if (u != 214748364 || cio::next(i, e) > '8') {
+                                        U = u; break;
+                                    }
+                                u = u * 10 + static_cast<unsigned>(c - '0');
+                                if (!bf.put(c)) return cx/X::read_error::overflow;
+                            }
+                        else
+                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                if (u >= 429496729) // 2^32 - 1 = 4294967295
+                                    if (u != 429496729 || cio::next(i, e) > '5') {
+                                        U = u; break;
+                                    }
+                                u = u * 10 + static_cast<unsigned>(c - '0');
+                                if (!bf.put(c)) return cx/X::read_error::overflow;
+                            }
+                    }
+                    else
+                        return cx/X::read_error::floating_point_invalid;
+
+                    if (U) {
+                        if (s)
+                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                if (U >= 922337203685477580ULL) // 2^63 = 9223372036854775808
+                                    if (U != 922337203685477580ULL || cio::next(i, e) > '8') {
+                                        d = 1; break;
+                                    }
+                                U = U * 10 + static_cast<unsigned>(c - '0');
+                                if (!bf.put(c)) return cx/X::read_error::overflow;
+                            }
+                        else
+                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                if (U >= 1844674407370955161ULL) // 2^64 - 1 = 18446744073709551615
+                                    if (U != 1844674407370955161ULL || cio::next(i, e) > '5') {
+                                        d = 1; break;
+                                    }
+                                U = U * 10 + static_cast<unsigned>(c - '0');
+                                if (!bf.put(c)) return cx/X::read_error::overflow;
+                            }
+                    }
+
+                    if (d) {
+                        for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                            if (!bf.put(c)) return cx/X::read_error::overflow;
+                    }
+                    if (cio::peek(i, e) == '.') {
+                        if (!bf.put('.')) return cx/X::read_error::overflow;
+                        d = 1;
+                        for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                            if (!bf.put(c)) return cx/X::read_error::overflow;
+                    }
+
+                    c = cio::peek(i, e);
+                    if (c == 'e' || c == 'E') {
+                        if (!bf.put('e')) return cx/X::read_error::overflow;
+                        d = 1, c = cio::next(i, e);
+                        if (c == '-' || c == '+') {
+                            if (!bf.put(c)) return cx/X::read_error::overflow;
+                            c = cio::next(i, e);
+                        }
+                        for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                            if (!bf.put(c)) return cx/X::read_error::overflow;
+                    }
+
+                    if (d)
+                        return read_value<X>(v, bf.begin(), bf.end(), cx);
+
+                    using sint = typename json::basic_node<Tr>::sint;
+                    using uint = typename json::basic_node<Tr>::uint;
+                    U ?
+                        s ? n.template imbue<sint>() = U, n.template get<sint>() = -n.template get<sint>() :
+                            n.template imbue<uint>() = U :
+                        s ? n.template imbue<sint>() = u, n.template get<sint>() = -n.template get<sint>() :
+                            n.template imbue<uint>() = u
+                    ;
+                    return true;
+                }
+
+            template <typename C>
+                struct nmst_;
+            template <>
+                struct nmst_<char> {
+                    static constexpr char const*        pinf =  "inf";
+                    static constexpr char const*        ninf = "-inf";
+                    static constexpr char const*        nan =   "nan";
+                };
+#           if __cplusplus > 201703L /* C++20 */
+                template <>
+                    struct nmst_<char8_t> {
+                        static constexpr char8_t const* pinf =  u8"inf";
+                        static constexpr char8_t const* ninf = u8"-inf";
+                        static constexpr char8_t const* nan =   u8"nan";
+                    };
+#           endif
+            template <>
+                struct nmst_<char16_t> {
+                    static constexpr char16_t const*    pinf =  u"inf";
+                    static constexpr char16_t const*    ninf = u"-inf";
+                    static constexpr char16_t const*    nan =   u"nan";
+                };
+            template <>
+                struct nmst_<char32_t> {
+                    static constexpr char32_t const*    pinf =  U"inf";
+                    static constexpr char32_t const*    ninf = U"-inf";
+                    static constexpr char32_t const*    nan =   U"nan";
+                };
+            template <>
+                struct nmst_<wchar_t> {
+                    static constexpr wchar_t const*     pinf =  L"inf";
+                    static constexpr wchar_t const*     ninf = L"-inf";
+                    static constexpr wchar_t const*     nan =   L"nan";
+                };
+        }
+
         namespace cio { namespace key { // keys
 
             template <typename X, typename Tr>
                 struct read<JSON<X>, json::basic_node<Tr>> {
+                    template <typename V, typename II, typename Cx, typename Y = JSON<X>>
+                        static bool read_key_(json::basic_node<Tr>&, V& k, II& i, II e, Cx& cx) {
+                            return read_value<Y>(k, i, e, cx);
+                        }
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static auto read_key_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::string& k, II& i, II e, Cx& cx)
+                            -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
+                        {
+                            bool const r = read_value<Y>(k, i, e, cx);
+                                using real = typename json::basic_node<Tr>::real;
+                                using symbol = typename json::basic_node<Tr>::string::value_type;
+                                     if (k == cxon::imp::nmst_<symbol>::pinf) n.template imbue<real>() =  std::numeric_limits<real>::infinity();
+                                else if (k == cxon::imp::nmst_<symbol>::ninf) n.template imbue<real>() = -std::numeric_limits<real>::infinity();
+                                else if (k == cxon::imp::nmst_<symbol>::nan ) n.template imbue<real>() =  std::numeric_limits<real>::quiet_NaN();
+                            return r;
+                        }
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static bool read_key_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& k, II& i, II e, Cx& cx) {
+                            return cxon::imp::read_value_<Y>(n, k, i, e, cx);
+                        }
                     template <typename II, typename Cx, typename Y = JSON<X>>
                         static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
                             -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
                         {
                             cio::consume<Y>(i, e);
                             switch (cio::peek(i, e)) {
-#                               define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
+#                               define CXON_READ(T) read_key_(t, t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
                                     case '{'                : { CXON_NODE_RG();     return CXON_READ(object); }
                                     case '['                : { CXON_NODE_RG();     return CXON_READ(array);  }
                                     case '\"'               :                       return CXON_READ(string);
                                     case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
-                                                            :                       return CXON_READ(number);
+                                                            :                       return CXON_READ(real);
                                     case 't': case 'f'      :                       return CXON_READ(boolean);
                                     case 'n'                :                       return CXON_READ(null);
 #                               undef CXON_READ
@@ -223,7 +402,9 @@
                                     case node_kind::object  :                       return CXON_WRITE(object);
                                     case node_kind::array   :                       return CXON_WRITE(array);
                                     case node_kind::string  :                       return CXON_WRITE(string);
-                                    case node_kind::number  :                       return CXON_WRITE(number);
+                                    case node_kind::sint    :                       return CXON_WRITE(sint);
+                                    case node_kind::uint    :                       return CXON_WRITE(uint);
+                                    case node_kind::real    :                       return CXON_WRITE(real);
                                     case node_kind::boolean : { CXON_NODE_RG();     return CXON_WRITE(boolean); }
                                     case node_kind::null    : { CXON_NODE_RG();     return CXON_WRITE(null);   }
 #                               undef CXON_WRITE
@@ -233,45 +414,6 @@
                 };
 
         }}
-
-        namespace imp {
-
-            template <typename C>
-                struct nmst_;
-            template <>
-                struct nmst_<char> {
-                    static constexpr char const*        pinf =  "inf";
-                    static constexpr char const*        ninf = "-inf";
-                    static constexpr char const*        nan =   "nan";
-                };
-#           if __cplusplus > 201703L /* C++20 */
-                template <>
-                    struct nmst_<char8_t> {
-                        static constexpr char8_t const* pinf =  u8"inf";
-                        static constexpr char8_t const* ninf = u8"-inf";
-                        static constexpr char8_t const* nan =   u8"nan";
-                    };
-#           endif
-            template <>
-                struct nmst_<char16_t> {
-                    static constexpr char16_t const*    pinf =  u"inf";
-                    static constexpr char16_t const*    ninf = u"-inf";
-                    static constexpr char16_t const*    nan =   u"nan";
-                };
-            template <>
-                struct nmst_<char32_t> {
-                    static constexpr char32_t const*    pinf =  U"inf";
-                    static constexpr char32_t const*    ninf = U"-inf";
-                    static constexpr char32_t const*    nan =   U"nan";
-                };
-            template <>
-                struct nmst_<wchar_t> {
-                    static constexpr wchar_t const*     pinf =  L"inf";
-                    static constexpr wchar_t const*     ninf = L"-inf";
-                    static constexpr wchar_t const*     nan =   L"nan";
-                };
-
-        }
 
         template <typename X, typename Tr>
             struct read<JSON<X>, json::basic_node<Tr>> {
@@ -284,12 +426,16 @@
                         -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
                     {
                         bool const r = read_value<Y>(v, i, e, cx);
-                            using number = typename json::basic_node<Tr>::number;
+                            using real = typename json::basic_node<Tr>::real;
                             using symbol = typename json::basic_node<Tr>::string::value_type;
-                                 if (v == imp::nmst_<symbol>::pinf) n.template imbue<number>() =  std::numeric_limits<number>::infinity();
-                            else if (v == imp::nmst_<symbol>::ninf) n.template imbue<number>() = -std::numeric_limits<number>::infinity();
-                            else if (v == imp::nmst_<symbol>::nan ) n.template imbue<number>() =  std::numeric_limits<number>::quiet_NaN();
+                                 if (v == imp::nmst_<symbol>::pinf) n.template imbue<real>() =  std::numeric_limits<real>::infinity();
+                            else if (v == imp::nmst_<symbol>::ninf) n.template imbue<real>() = -std::numeric_limits<real>::infinity();
+                            else if (v == imp::nmst_<symbol>::nan ) n.template imbue<real>() =  std::numeric_limits<real>::quiet_NaN();
                         return r;
+                    }
+                template <typename II, typename Cx, typename Y = JSON<X>>
+                    static bool read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& v, II& i, II e, Cx& cx) {
+                        return imp::read_value_<Y>(n, v, i, e, cx);
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
@@ -300,7 +446,7 @@
                                 case '['                : { CXON_NODE_RG();     return CXON_READ(array);  }
                                 case '\"'               :                       return CXON_READ(string);
                                 case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
-                                                        :                       return CXON_READ(number);
+                                                        :                       return CXON_READ(real);
                                 case 't': case 'f'      :                       return CXON_READ(boolean);
                                 case 'n'                :                       return CXON_READ(null);
 #                           undef CXON_READ
@@ -319,7 +465,9 @@
                                 case node_kind::object  : { CXON_NODE_RG();     return CXON_WRITE(object); }
                                 case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array);  }
                                 case node_kind::string  :                       return CXON_WRITE(string);
-                                case node_kind::number  :                       return CXON_WRITE(number);
+                                case node_kind::sint    :                       return CXON_WRITE(sint);
+                                case node_kind::uint    :                       return CXON_WRITE(uint);
+                                case node_kind::real    :                       return CXON_WRITE(real);
                                 case node_kind::boolean :                       return CXON_WRITE(boolean);
                                 case node_kind::null    :                       return CXON_WRITE(null);
 #                           undef CXON_WRITE
@@ -642,8 +790,8 @@
                             bio::byte const b = bio::peek(i, e);
                             switch (b & X::mjr) {
 #                               define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
-                                    case X::pint            :                       return CXON_READ(number);
-                                    case X::nint            :                       return CXON_READ(number);
+                                    case X::pint            :                       return CXON_READ(uint);
+                                    case X::nint            :                       return CXON_READ(sint);
                                     case X::bstr            :                       return CXON_READ(array);
                                     case X::tstr            :                       return CXON_READ(string);
                                     case X::arr             : { CXON_NODE_RG();     return CXON_READ(array); }
@@ -661,11 +809,11 @@
                                                                                     ;
                                             }
                                             case X::fp16: case X::fp32: case X::fp64
-                                                            :                       return CXON_READ(number);
+                                                            :                       return CXON_READ(real);
                                             default         : {
                                                 typename cbor::node::simple s;
                                                                                     return  (read_value<Y>(s, i, e, cx)) &&
-                                                                                            (t.template imbue<typename json::basic_node<Tr>::number>() = s, true)
+                                                                                            (t.template imbue<typename json::basic_node<Tr>::uint>() = s, true)
                                                                                     ;
                                             }
                                         }
@@ -685,7 +833,9 @@
                                     case node_kind::object  : { CXON_NODE_RG();     return CXON_WRITE(object); }
                                     case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array);  }
                                     case node_kind::string  :                       return CXON_WRITE(string);
-                                    case node_kind::number  :                       return CXON_WRITE(number);
+                                    case node_kind::sint    :                       return CXON_WRITE(sint);
+                                    case node_kind::uint    :                       return CXON_WRITE(uint);
+                                    case node_kind::real    :                       return CXON_WRITE(real);
                                     case node_kind::boolean :                       return CXON_WRITE(boolean);
                                     case node_kind::null    :                       return CXON_WRITE(null);
 #                               undef CXON_WRITE

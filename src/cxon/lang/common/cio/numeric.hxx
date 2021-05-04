@@ -284,7 +284,7 @@ namespace cxon { namespace cio { namespace num { // write
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
                 char s[std::numeric_limits<T>::digits10 + 3];
-                auto const r = charconv::to_chars(s, s + sizeof(s) / sizeof(char), t);
+                auto const r = charconv::to_chars(std::begin(s), std::end(s), t);
                 return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
                         poke<X>(o, s, r.ptr, cx)
                 ;
@@ -302,7 +302,7 @@ namespace cxon { namespace cio { namespace num { // write
                 CXON_ASSERT(std::isfinite(t), "unexpected");
                 char s[std::numeric_limits<T>::max_digits10 * 2];
                 auto const r = charconv::to_chars(
-                    s, s + sizeof(s) / sizeof(char), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
+                    std::begin(s), std::end(s), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
                 );
                 return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
                         poke<X>(o, s, r.ptr, cx)

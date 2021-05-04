@@ -227,7 +227,7 @@ namespace cxon { namespace cbor { // node
 
             // handle literals
             private:
-                template <typename T, bool E = std::is_signed<T>::value>
+                template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
                     struct int_type             { using type = sint; };
                 template <typename T>
                     struct int_type<T, false>   { using type = uint; };
