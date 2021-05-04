@@ -32,12 +32,14 @@ namespace cxon { namespace json { // node
 
 namespace cxon { namespace json { // node traits
 
-    enum class node_kind { object, array, string, number, boolean, null };
+    enum class node_kind { object, array, string, sint, uint, real, boolean, null };
 
     struct node_traits {
         using                                       null_type       = std::nullptr_t;
         using                                       boolean_type    = bool;
-        using                                       number_type     = double;
+        using                                       sint_type       = long long;
+        using                                       uint_type       = unsigned long long;
+        using                                       real_type       = double;
         using                                       string_type     = std::basic_string<char>;
         template <typename T> using                 array_type      = std::vector<T>;
         template <typename K, typename V> using     object_type     = std::map<K, V>;
@@ -57,7 +59,9 @@ namespace cxon { namespace json { // node
             struct node_kind_;
         template <typename N> struct node_kind_<N, typename N::null>        { static constexpr node_kind value = node_kind::null; };
         template <typename N> struct node_kind_<N, typename N::boolean>     { static constexpr node_kind value = node_kind::boolean; };
-        template <typename N> struct node_kind_<N, typename N::number>      { static constexpr node_kind value = node_kind::number; };
+        template <typename N> struct node_kind_<N, typename N::sint>        { static constexpr node_kind value = node_kind::sint; };
+        template <typename N> struct node_kind_<N, typename N::uint>        { static constexpr node_kind value = node_kind::uint; };
+        template <typename N> struct node_kind_<N, typename N::real>        { static constexpr node_kind value = node_kind::real; };
         template <typename N> struct node_kind_<N, typename N::string>      { static constexpr node_kind value = node_kind::string; };
         template <typename N> struct node_kind_<N, typename N::array>       { static constexpr node_kind value = node_kind::array; };
         template <typename N> struct node_kind_<N, typename N::object>      { static constexpr node_kind value = node_kind::object; };
@@ -78,7 +82,9 @@ namespace cxon { namespace json { // node
         struct basic_node {
             using null      = typename Tr::null_type;
             using boolean   = typename Tr::boolean_type;
-            using number    = typename Tr::number_type;
+            using sint      = typename Tr::sint_type;
+            using uint      = typename Tr::uint_type;
+            using real      = typename Tr::real_type;
             using string    = typename Tr::string_type;
             using array     = typename Tr::template array_type<basic_node>;
             using object    = typename Tr::template object_type<basic_node, basic_node>;
@@ -86,17 +92,17 @@ namespace cxon { namespace json { // node
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
                     template <template <typename C> class X, bool = false>
-                        struct msvc_map_override            : imp::is_nothrow_x_<X, object, array, string, number, boolean, null> {};
+                        struct msvc_map_override            : imp::is_nothrow_x_<X, object, array, string, sint, uint, real, boolean, null> {};
                     template <template <typename C> class X>
-                        struct msvc_map_override<X, true>   : imp::is_nothrow_x_<X, /*object, */array, string, number, boolean, null> {};
+                        struct msvc_map_override<X, true>   : imp::is_nothrow_x_<X, /*object, */array, string, sint, uint, real, boolean, null> {};
                     using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<basic_node, basic_node>>::value>;
                     using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<basic_node, basic_node>>::value>;
 #               else
-                    using is_nothrow_move_constructible = imp::is_nothrow_x_<std::is_nothrow_move_constructible, object, array, string, number, boolean, null>;
-                    using is_nothrow_move_assignable    = imp::is_nothrow_x_<std::is_nothrow_move_assignable, object, array, string, number, boolean, null>;
+                    using is_nothrow_move_constructible = imp::is_nothrow_x_<std::is_nothrow_move_constructible, object, array, string, sint, uint, real, boolean, null>;
+                    using is_nothrow_move_assignable    = imp::is_nothrow_x_<std::is_nothrow_move_assignable, object, array, string, sint, uint, real, boolean, null>;
 #               endif
-                    using is_nothrow_copy_constructible = imp::is_nothrow_x_<std::is_nothrow_copy_constructible, object, array, string, number, boolean, null>;
-                    using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, object, array, string, number, boolean, null>;
+                    using is_nothrow_copy_constructible = imp::is_nothrow_x_<std::is_nothrow_copy_constructible, object, array, string, sint, uint, real, boolean, null>;
+                    using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, object, array, string, sint, uint, real, boolean, null>;
             public:
 
             basic_node() noexcept : kind_(node_kind::null)  { get<null>() = nullptr; }
@@ -108,7 +114,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(number);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -120,7 +128,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(number);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -134,7 +144,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(number);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -146,7 +158,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(number);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -162,26 +176,33 @@ namespace cxon { namespace json { // node
                 CXON_JSON_TYPE_DEF(object)
                 CXON_JSON_TYPE_DEF(array)
                 CXON_JSON_TYPE_DEF(string)
-                CXON_JSON_TYPE_DEF(number)
+                CXON_JSON_TYPE_DEF(sint)
+                CXON_JSON_TYPE_DEF(uint)
+                CXON_JSON_TYPE_DEF(real)
                 CXON_JSON_TYPE_DEF(boolean)
                 CXON_JSON_TYPE_DEF(null)
 #           undef CXON_JSON_TYPE_DEF
 
             // handle literals
             private:
+                template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
+                    struct int_type             { using type = sint; };
                 template <typename T>
-                    struct is_number_unique {
-                        static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, number>::value;
+                    struct int_type<T, false>   { using type = uint; };
+
+                template <typename T>
+                    struct is_int_unique {
+                        static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, typename int_type<T>::type>::value;
                     };
             public:
                 // numeric
-                template <typename T, typename = enable_if_t<is_number_unique<T>::value>>
+                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
                     basic_node(T t) : kind_(node_kind::null) {
-                        imbue<number>() = t;
+                        imbue<typename int_type<T>::type>() = t;
                     }
-                template <typename T, typename = enable_if_t<is_number_unique<T>::value>>
+                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
                     basic_node& operator =(T t) {
-                        imbue<number>() = t; return *this;
+                        imbue<typename int_type<T>::type>() = t; return *this;
                     }
                 // string
                 basic_node(const typename string::value_type* s) : kind_(node_kind::null)   { imbue<string>() = s; }
@@ -193,7 +214,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(number);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -238,7 +261,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(number);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -253,20 +278,22 @@ namespace cxon { namespace json { // node
                 if (kind() != n.kind())
                     return kind() < n.kind();
                 switch (kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return get<T>() < n.get<T>()
-                        CXON_CBOR_TYPE_DEF(object);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(string);
-                        CXON_CBOR_TYPE_DEF(number);
-                        CXON_CBOR_TYPE_DEF(boolean);
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return get<T>() < n.get<T>()
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
                         case node_kind::null: return false;
-#                   undef CXON_CBOR_TYPE_DEF
+#                   undef CXON_JSON_TYPE_DEF
                 }
                 return false; // LCOV_EXCL_LINE
             }
 
             private:
-                using value_type = typename std::aligned_union<0, object, array, string, number, boolean, null>::type;
+                using value_type = typename std::aligned_union<0, object, array, string, sint, uint, real, boolean, null>::type;
                 value_type  value_;
                 node_kind   kind_;
         };

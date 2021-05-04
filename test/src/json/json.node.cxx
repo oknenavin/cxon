@@ -230,7 +230,7 @@ static unsigned self() {
     }
     {   //using node = cxon::json::node;
 
-        char const s[] = "{\"array0\":[{\"1\":1},{\"2\":2}],\"array1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"number\":4}";
+        char const s[] = "{\"array0\":[{\"1\":1},{\"2\":2}],\"array1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"real\":4}";
         node jns;
         {   // from/to string
             cxon::from_bytes(jns, s);
@@ -253,7 +253,7 @@ static unsigned self() {
                     },
                     nullptr
                 }},
-                {"number", 4}
+                {"real", 4}
             };
             std::string r; cxon::to_bytes(r, jno);
             CHECK(r == s);
@@ -397,8 +397,8 @@ static unsigned self() {
     
         char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
         node const n0 = node::object {
-            { "even", node::array { 2, 4, 6 } },
-            { "odd", node::array { 1, 3, 5 } }
+            { "even", node::array { 2U, 4U, 6U } },
+            { "odd", node::array { 1U, 3U, 5U } }
         };
 
         node n1; // read
@@ -419,13 +419,17 @@ static unsigned self() {
                     node::object { {"object", 0} }, // objects and
                     node::array { 1, 2, 3 },        // arrays must be explicit
                     "4",        // string
-                    5,          // number
+                    3,          // signed
+                    14U,        // unsigned
+                    3.14,       // real
                     true,       // boolean
                     nullptr     // null
                 }
             },
             { "string", "string" }, // "key": value
-            { "number", 3.14 },
+            { "sint", 3 },
+            { "uint", 14U },
+            { "real", 3.14 },
             { "boolean", false },
             { "null", nullptr }
         };
@@ -438,7 +442,9 @@ static unsigned self() {
                 o["object"] = node::object {};      CHECK(o["object"].is<node::object>());
                 o["array"] = node::array {};        CHECK(o["array"].is<node::array>());
                 o["string"] = "string";             CHECK(o["string"].is<node::string>());
-                o["number"] = 3.14;                 CHECK(o["number"].is<node::number>());
+                o["sint"] = 3;                      CHECK(o["sint"].is<node::sint>());
+                o["uint"] = 14U;                    CHECK(o["uint"].is<node::uint>());
+                o["real"] = 3.14;                   CHECK(o["real"].is<node::real>());
                 o["boolean"] = false;               CHECK(o["boolean"].is<node::boolean>());
                 o["null"] = nullptr;                CHECK(o["null"].is<node::null>());
             auto& o1 = o["object"].get<node::object>(); // get value reference, the type is known
@@ -447,7 +453,9 @@ static unsigned self() {
                 a.push_back(node::object {});       CHECK(a.back().is<node::object>());
                 a.push_back(node::array {1, 2, 3}); CHECK(a.back().is<node::array>());
                 a.push_back("4");                   CHECK(a.back().is<node::string>());
-                a.push_back(5);                     CHECK(a.back().is<node::number>());
+                a.push_back(3);                     CHECK(a.back().is<node::sint>());
+                a.push_back(14U);                    CHECK(a.back().is<node::uint>());
+                a.push_back(3.14);                  CHECK(a.back().is<node::real>());
                 a.push_back(true);                  CHECK(a.back().is<node::boolean>());
                 a.push_back(nullptr);               CHECK(a.back().is<node::null>());
             auto* o2 = a[0].get_if<node::object>(); // get value pointer if the type match
@@ -463,32 +471,24 @@ static unsigned self() {
         std::string const tidy_json = cxon::json::tidy(s1);
     }
     {
-        node n1(1);     CHECK(n1.is<node::number>() && n1.get<node::number>() == 1);
-        node n2(1L);    CHECK(n2.is<node::number>() && n2.get<node::number>() == 1);
-#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
-            node n3(1LL);   CHECK(n3.is<node::number>() && n3.get<node::number>() == 1);
-#       endif
-        node n4(1U);    CHECK(n4.is<node::number>() && n4.get<node::number>() == 1);
-        node n5(1UL);   CHECK(n5.is<node::number>() && n5.get<node::number>() == 1);
-#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
-            node n6(1ULL);  CHECK(n6.is<node::number>() && n6.get<node::number>() == 1);
-#       endif
-        node n7(1.);    CHECK(n7.is<node::number>() && n7.get<node::number>() == 1.);
-        node n8(1.F);   CHECK(n8.is<node::number>() && n8.get<node::number>() == 1.F);
+        node n1(1);     CHECK(n1.is<node::sint>() && n1.get<node::sint>() == 1);
+        node n2(1L);    CHECK(n2.is<node::sint>() && n2.get<node::sint>() == 1);
+        node n3(1LL);   CHECK(n3.is<node::sint>() && n3.get<node::sint>() == 1);
+        node n4(1U);    CHECK(n4.is<node::uint>() && n4.get<node::uint>() == 1);
+        node n5(1UL);   CHECK(n5.is<node::uint>() && n5.get<node::uint>() == 1);
+        node n6(1ULL);  CHECK(n6.is<node::uint>() && n6.get<node::uint>() == 1);
+        node n7(1.);    CHECK(n7.is<node::real>() && n7.get<node::real>() == 1.);
+        node n8(1.F);   CHECK(n8.is<node::real>() && n8.get<node::real>() == 1.F);
     }
     {
-        node n1; n1 = 1;    CHECK(n1.is<node::number>() && n1.get<node::number>() == 1);
-        node n2; n2 = 1L;   CHECK(n2.is<node::number>() && n2.get<node::number>() == 1);
-#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
-            node n3; n3 = 1LL;  CHECK(n3.is<node::number>() && n3.get<node::number>() == 1);
-#       endif
-        node n4; n4 = 1U;   CHECK(n4.is<node::number>() && n4.get<node::number>() == 1);
-        node n5; n5 = 1UL;  CHECK(n5.is<node::number>() && n5.get<node::number>() == 1);
-#       ifndef _MSC_VER // warning C4244: '=': conversion from 'T' to 'T', possible loss of data
-            node n6; n6 = 1ULL; CHECK(n6.is<node::number>() && n6.get<node::number>() == 1);
-#       endif
-        node n7; n7 = 1.;   CHECK(n7.is<node::number>() && n7.get<node::number>() == 1.);
-        node n8; n8 = 1.F;  CHECK(n8.is<node::number>() && n8.get<node::number>() == 1.F);
+        node n1; n1 = 1;    CHECK(n1.is<node::sint>() && n1.get<node::sint>() == 1);
+        node n2; n2 = 1L;   CHECK(n2.is<node::sint>() && n2.get<node::sint>() == 1);
+        node n3; n3 = 1LL;  CHECK(n3.is<node::sint>() && n3.get<node::sint>() == 1);
+        node n4; n4 = 1U;   CHECK(n4.is<node::uint>() && n4.get<node::uint>() == 1);
+        node n5; n5 = 1UL;  CHECK(n5.is<node::uint>() && n5.get<node::uint>() == 1);
+        node n6; n6 = 1ULL; CHECK(n6.is<node::uint>() && n6.get<node::uint>() == 1);
+        node n7; n7 = 1.;   CHECK(n7.is<node::real>() && n7.get<node::real>() == 1.);
+        node n8; n8 = 1.F;  CHECK(n8.is<node::real>() && n8.get<node::real>() == 1.F);
     }
     {   // ex5
         using node = cxon::json::node;
@@ -500,7 +500,7 @@ static unsigned self() {
             node n(o); CHECK(n.is<node::boolean>() && n.get<node::boolean>());
         }
         {   // (3)
-            node n(42.0); CHECK(n.is<node::number>() && n.get<node::number>() == 42.0);
+            node n(42.0); CHECK(n.is<node::real>() && n.get<node::real>() == 42.0);
         }
         {   // (3)
             node::object const o = { {"key", "value"} };
@@ -511,7 +511,13 @@ static unsigned self() {
             node n(a); CHECK(n.is<node::array>() && n.get<node::array>() == a);
         }
         {   // (4)
-            node n(42); CHECK(n.is<node::number>() && n.get<node::number>() == 42);
+            node n(3); CHECK(n.is<node::sint>() && n.get<node::sint>() == 3);
+        }
+        {   // (4)
+            node n(14U); CHECK(n.is<node::uint>() && n.get<node::uint>() == 14U);
+        }
+        {   // (4)
+            node n(3.14); CHECK(n.is<node::real>() && n.get<node::real>() == 3.14);
         }
         {   // (4)
             node n("string"); CHECK(n.is<node::string>() && n.get<node::string>() == "string");
@@ -524,7 +530,7 @@ static unsigned self() {
         }
         {   // T is not the same
             cxon::json::node n = "string";
-            cxon::json::node::number& v = n.imbue<cxon::json::node::number>(); CHECK(v == 0.0);
+            cxon::json::node::real& v = n.imbue<cxon::json::node::real>(); CHECK(v == 0.0);
         }
     }
     {   // ex7
@@ -550,6 +556,12 @@ static unsigned self() {
         {   node a = 42, b;
             b = a; CHECK(a == b);
         }
+        {   node a = 42U, b;
+            b = a; CHECK(a == b);
+        }
+        {   node a = 42.0, b;
+            b = a; CHECK(a == b);
+        }
         {   node a = "blah", b;
             b = a; CHECK(a == b);
         }
@@ -571,6 +583,12 @@ static unsigned self() {
         {   node a = 42, b;
             b = a; CHECK(a == b);
         }
+        {   node a = 42U, b;
+            b = a; CHECK(a == b);
+        }
+        {   node a = 42.0, b;
+            b = a; CHECK(a == b);
+        }
         {   node a = "blah", b;
             b = a; CHECK(a == b);
         }
@@ -583,7 +601,13 @@ static unsigned self() {
     }
     {   // move assignment
         {   node a;
-            a = node(42); CHECK(a.is<node::number>() && a.get<node::number>() == 42);
+            a = node(42); CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+        }
+        {   node a;
+            a = node(42U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 42U);
+        }
+        {   node a;
+            a = node(42.0); CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
         }
         {   node a;
             a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
@@ -609,6 +633,8 @@ static unsigned self() {
         CHECK(node("A") < node("a"));
         CHECK(node("a") < node("aa"));
         CHECK(node(1) < node(2));
+        CHECK(node(1U) < node(2U));
+        CHECK(node(1.0) < node(2.0));
         CHECK(node(false) < node(true));
         CHECK(!(node(nullptr) < node(nullptr)));
     }
@@ -619,8 +645,8 @@ static unsigned self() {
     }
     {   // node::json::arbitrary_keys
         using node = cxon::json::node;
-        {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, 8: 9, true: 10, null: 11}";
-            node const out = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+        {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15}";
+            node const out = node::object {{node::object {{1U, 2U}}, 3U}, {node::array {4U}, 5U}, {"6", 7U}, {-8, 9U}, {10U, 11U}, {12.0, 13U}, {true, 14U}, {nullptr, 15U}};
             node n;
                 cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, in, cxon::node::json::arbitrary_keys::set<true>());
             CHECK(n == out);

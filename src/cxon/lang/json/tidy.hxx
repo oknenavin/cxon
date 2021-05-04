@@ -253,8 +253,12 @@ namespace cxon { namespace json {
                         }
                         case json::node_kind::string:
                             return write_value<X>(out, json::get<typename node::string>(t), cx);
-                        case json::node_kind::number:
-                            return write_value<X>(out, json::get<typename node::number>(t), cx);
+                        case json::node_kind::sint:
+                            return write_value<X>(out, json::get<typename node::sint>(t), cx);
+                        case json::node_kind::uint:
+                            return write_value<X>(out, json::get<typename node::uint>(t), cx);
+                        case json::node_kind::real:
+                            return write_value<X>(out, json::get<typename node::real>(t), cx);
                         case json::node_kind::boolean:
                             return write_value<X>(out, json::get<typename node::boolean>(t), cx);
                         case json::node_kind::null:

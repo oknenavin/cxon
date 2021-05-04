@@ -394,7 +394,7 @@ static unsigned execute_self() {
         }
         {   node n1;
                 cxon::from_bytes(n1, "\x9F\x01\x21\x41\x03\x61\x34\x81\x05\xA1\x61\x36\x07\xC1\x08\xF5\xF6\xF7\xFA\x00\x00\x00\x00\x09\xFF");
-            node n2 = node::array {1, -2, node::array {3}, "4", node::array {5}, node::object{{"6", 7}}, 8, true, nullptr, nullptr, 0, 9 };
+            node n2 = node::array {1U, -2, node::array {3U}, "4", node::array {5U}, node::object{{"6", 7U}}, 8U, true, nullptr, nullptr, 0.0, 9U };
             CHECK(n2 == n1);
         }
         {   node n;
@@ -405,7 +405,7 @@ static unsigned execute_self() {
                 auto r = cxon::from_bytes(n, "\xFF");
             CHECK(!r && r.ec == cxon::cbor::read_error::unexpected);
         }
-        {   node n = node::array { node::object {{"1", 2}}, node::array {3}, "4", 5, true, nullptr };
+        {   node n = node::array { node::object {{"1", 2.0}}, node::array {3.0}, "4", 5.0, true, nullptr };
             std::string s1;
                 cxon::to_bytes(s1, n);
             char const s2[] = "\x86\xA1\x61\x31\xFB\x40\x00\x00\x00\x00\x00\x00\x00\x81\xFB\x40\x08\x00\x00\x00\x00\x00\x00\x61\x34\xFB\x40\x14\x00\x00\x00\x00\x00\x00\xF5\xF6";
@@ -413,7 +413,7 @@ static unsigned execute_self() {
         }
         {   node n1;
                 cxon::from_bytes(n1, "\xA1\x01\x02");
-            node n2 = node::object{{1, 2}};
+            node n2 = node::object{{1U, 2U}};
             CHECK(n2 == n1);
         }
     }
@@ -421,7 +421,7 @@ static unsigned execute_self() {
         using node = cxon::json::node;
         {   // json::node => cbor => json::node
             node const fr = node::array { node::object {{"1", 2}, {3, 4}}, node::array {5, 6}, "7, 8", 9, true, nullptr };
-            node const to = node::array { node::object {{"1", 2}, {3, 4}}, node::array {5, 6}, "7, 8", 9, true, nullptr };
+            node const to = node::array { node::object {{"1", 2U}, {3U, 4U}}, node::array {5U, 6U}, "7, 8", 9U, true, nullptr };
             std::vector<unsigned char> s;
                 cxon::to_bytes(s, fr);
             node n;
@@ -457,18 +457,18 @@ static unsigned execute_self() {
                                 "\xFB\x40\x2E\x00\x00\x00\x00\x00\x00"
                                 "\xE0";
             char const to[] =   "\x8C"
-                                "\xFB\xBF\xF0\x00\x00\x00\x00\x00\x00"
-                                "\xFB\x40\x00\x00\x00\x00\x00\x00\x00"
-                                "\x82\xFB\x40\x08\x00\x00\x00\x00\x00\x00\xFB\x40\x10\x00\x00\x00\x00\x00\x00"
+                                "\x20"
+                                "\x02"
+                                "\x82\x03\x04"
                                 "\x64\x35\x2C\x20\x36"
-                                "\x82\xFB\x40\x1C\x00\x00\x00\x00\x00\x00\xFB\x40\x20\x00\x00\x00\x00\x00\x00"
-                                "\xA2\x62\x31\x31\xFB\x40\x28\x00\x00\x00\x00\x00\x00\xFB\x40\x22\x00\x00\x00\x00\x00\x00\xFB\x40\x24\x00\x00\x00\x00\x00\x00"
-                                "\xFB\x40\x2C\x00\x00\x00\x00\x00\x00"
+                                "\x82\x07\x08"
+                                "\xA2\x62\x31\x31\x0C\x09\x0A"
+                                "\x0E"
                                 "\xF5"
                                 "\xF6"
                                 "\xF6"
                                 "\xFB\x40\x2E\x00\x00\x00\x00\x00\x00"
-                                "\xFB\x00\x00\x00\x00\x00\x00\x00\x00";
+                                "\x00";
             node n;
                 cxon::from_bytes(n, fr);
             std::vector<unsigned char> s;
