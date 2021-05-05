@@ -1,5 +1,3 @@
-
-
 // Copyright (c) 2017-2021 oknenavin.
 // Licensed under the MIT license. See LICENSE file in the library root for full license information.
 //
@@ -573,7 +571,7 @@ namespace test_vector
                 auto const r = cxon::from_bytes<cxon::JSON<>>(vector, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
                 if (!r) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, fprintf(stderr, "error: test-vector invalid: '%s'\n", file.c_str());
+                    ++res.err, fprintf(stderr, "error: test-vector invalid: '%s': %s\n", file.c_str(), r.ec.message().c_str());
                     continue;
                 }
 
@@ -922,7 +920,7 @@ int main(int argc, char *argv[]) {
             auto const r = cxon::from_bytes<cxon::JSON<>>(fixture, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
             if (!r) {
                 CXON_ASSERT(0, "unexpected");
-                ++res.err, fprintf(stderr, "error: fixture invalid: '%s'\n", argv[i]);
+                ++res.err, fprintf(stderr, "error: fixture invalid: '%s': %s\n", argv[i], r.ec.message().c_str());
                 continue;
             }
 

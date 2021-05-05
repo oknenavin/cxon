@@ -23,6 +23,10 @@
 #   include "rapidjson/error/en.h"
 #endif
 
+#ifdef COMPARE_WITH_NLOHMANN
+#   include "nlohmann/json.hpp"
+#endif
+
 #include <fstream>
 #include <memory>
 #include <chrono>
@@ -47,6 +51,10 @@ struct test_time {
 #   ifdef COMPARE_WITH_RAPIDJSON
         double rapidj_read = 0;
         double rapidj_write = 0;
+#   endif
+#   ifdef COMPARE_WITH_NLOHMANN
+        double nlohmann_read = 0;
+        double nlohmann_write = 0;
 #   endif
 };
 
@@ -92,13 +100,13 @@ static void cxon_json_test_time(test_case& test) {
         test.time.size = json.size() - 1;
     }
     {   // cxon
-        std::vector<node> vn;
+        std::vector<node> vj;
         test.time.read = measure(cxon_json_repeat, [&] {
-            vn.emplace_back();
-            auto const r = cxon::from_bytes(vn.back(), json);
+            vj.emplace_back();
+            auto const r = cxon::from_bytes(vj.back(), json);
             if (!r) test.error = format_error(r, json.begin());
         });
-        auto n = vn.back(); vn.clear();
+        auto n = vj.back(); vj.clear();
         {   std::string s;
             test.time.write = measure(cxon_json_repeat, [&] {
                 s.clear(); cxon::to_bytes(s, n);
@@ -119,9 +127,9 @@ static void cxon_json_test_time(test_case& test) {
     {   // Boost/JSON
         std::vector<boost::json::value> vj;
         test.time.boostj_read = measure(cxon_json_repeat, [&] {
-            vj.emplace_back();
+            auto& j = vj.emplace_back();
             boost::json::error_code ec;
-            vj.back() = boost::json::parse(json, ec);
+            j = boost::json::parse(json, ec);
             if (ec) test.error = std::string("Boost/JSON: ") + ec.category().name() + ": " + ec.message();
         });
         boost::json::value j = vj.back(); vj.clear();
@@ -147,6 +155,21 @@ static void cxon_json_test_time(test_case& test) {
                 rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
                 j->Accept(writer);
                 s = buffer.GetString();
+            });
+        }
+    }
+#   endif
+#   ifdef COMPARE_WITH_NLOHMANN
+    {   // nlohmann/json
+        std::vector<nlohmann::json> vj;
+        test.time.nlohmann_read = measure(cxon_json_repeat, [&] {
+            vj.emplace_back();
+            vj.back() = nlohmann::json::parse(json);
+        });
+        auto j = vj.back(); vj.clear();
+        {   std::string s;
+            test.time.nlohmann_write = measure(cxon_json_repeat, [&] {
+                s = j.dump();
             });
         }
     }
@@ -882,12 +905,18 @@ int main(int argc, char *argv[]) {
 #                   ifdef COMPARE_WITH_RAPIDJSON
                         "x", "RapidJSON",
 #                   endif
+#                   ifdef COMPARE_WITH_NLOHMANN
+                        "x", "nlohmann/json",
+#                   endif
                     "Write",
 #                   ifdef COMPARE_WITH_BOOST_JSON
                         "x", "Boost/JSON",
 #                   endif
 #                   ifdef COMPARE_WITH_RAPIDJSON
                         "x", "RapidJSON",
+#                   endif
+#                   ifdef COMPARE_WITH_NLOHMANN
+                        "x", "nlohmann/JSON",
 #                   endif
                     "Tidy/Itr",
                     "Tidy/Str"
@@ -911,12 +940,18 @@ int main(int argc, char *argv[]) {
 #                       ifdef COMPARE_WITH_RAPIDJSON
                             fmt(c.time.rapidj_read / c.time.read), fmt(size / (c.time.rapidj_read / 1000)),
 #                       endif
+#                       ifdef COMPARE_WITH_NLOHMANN
+                            fmt(c.time.nlohmann_read / c.time.read), fmt(size / (c.time.nlohmann_read / 1000)),
+#                       endif
                         fmt(size / (c.time.write/ 1000)),
 #                       ifdef COMPARE_WITH_BOOST_JSON
                             fmt(c.time.boostj_write / c.time.write), fmt(size / (c.time.boostj_write/ 1000)),
 #                       endif
 #                       ifdef COMPARE_WITH_RAPIDJSON
                             fmt(c.time.rapidj_write / c.time.write), fmt(size / (c.time.rapidj_write/ 1000)),
+#                       endif
+#                       ifdef COMPARE_WITH_NLOHMANN
+                            fmt(c.time.nlohmann_write / c.time.write), fmt(size / (c.time.nlohmann_write/ 1000)),
 #                       endif
                         fmt(size / (c.time.tidy_itr / 1000)),
                         fmt(size / (c.time.tidy_str / 1000))
@@ -933,6 +968,10 @@ int main(int argc, char *argv[]) {
                         total.rapidj_read += size / (c.time.rapidj_read / 1000);
                         total.rapidj_write += size / (c.time.rapidj_write / 1000);
 #                   endif
+#                   ifdef COMPARE_WITH_NLOHMANN
+                        total.nlohmann_read += size / (c.time.nlohmann_read / 1000);
+                        total.nlohmann_write += size / (c.time.nlohmann_write / 1000);
+#                   endif
                 }
             }
             {   // average
@@ -946,12 +985,18 @@ int main(int argc, char *argv[]) {
 #                   ifdef COMPARE_WITH_RAPIDJSON
                         fmt(total.read / total.rapidj_read), fmt(total.rapidj_read / time.size()),
 #                   endif
+#                   ifdef COMPARE_WITH_NLOHMANN
+                        fmt(total.read / total.nlohmann_read), fmt(total.nlohmann_read / time.size()),
+#                   endif
                     fmt(total.write/ time.size()),
 #                   ifdef COMPARE_WITH_BOOST_JSON
                         fmt(total.write / total.boostj_write), fmt(total.boostj_write / time.size()),
 #                   endif
 #                   ifdef COMPARE_WITH_RAPIDJSON
                         fmt(total.write / total.rapidj_write), fmt(total.rapidj_write / time.size()),
+#                   endif
+#                   ifdef COMPARE_WITH_NLOHMANN
+                        fmt(total.write / total.nlohmann_write), fmt(total.nlohmann_write / time.size()),
 #                   endif
                     fmt(total.tidy_itr / time.size()),
                     fmt(total.tidy_str / time.size())
