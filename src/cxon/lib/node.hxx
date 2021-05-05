@@ -216,7 +216,7 @@
 
                         if (c == '0') {
                             CXON_STORE('0');
-                            c = cio::next(i, e);
+                            /*c = */cio::next(i, e);
                         }
                         else if (c >= '1' && c <='9') {
                             CXON_STORE(c);
