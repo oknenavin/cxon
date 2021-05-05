@@ -177,122 +177,132 @@
                 struct buffer_;
             template <unsigned N, typename II>
                 struct buffer_<N, II, false> {
-                    buffer_(II) : b_(std::begin(s)), e_(std::end(s)) {}
-                    bool put(char c)            { return b_ != e_ && (*b_ = c, ++b_); }
-                    char*& begin() noexcept     { e_ = b_, b_ = std::begin(s); return b_; }
-                    char* end() const noexcept  { return e_; }
-                    char s[N];
-                    char *b_, *e_;
+                    constexpr explicit buffer_(II) : c_(std::begin(s_)), e_(std::end(s_)) {}
+                              bool        put(char c) noexcept  { return c_ != e_ && (*c_ = c, ++c_); }
+                    constexpr const char* beg() const noexcept  { return std::begin(s_); }
+                    constexpr const char* end() const noexcept  { return c_; }
+                    private:
+                        char s_[N]; char *c_, *e_;
                 };
             template <unsigned N, typename II>
                 struct buffer_<N, II, true> {
-                    buffer_(II& b) : b_(b), e_(b) {}
-                    constexpr bool put(char) const  { return true; }
-                    II& begin() noexcept            { return b_; }
-                    II end() const noexcept         { return e_; }
-                    II b_; II& e_;
+                    constexpr explicit buffer_(II& b) : b_(b), e_(b) {}
+                    constexpr bool put(char) const noexcept { return true; }
+                    constexpr II   beg() const noexcept     { return b_; }
+                    constexpr II   end() const noexcept     { return e_; }
+                    private:
+                        II b_; II& e_;
                 };
 
-            template <typename X, typename Tr, typename II, typename Cx>
-                inline bool read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& v, II& i, II e, Cx& cx) {
-                    unsigned u = 0;
-                    unsigned long long U = 0;
-                    unsigned d = 0;
-                    buffer_<json::num_len_max::constant<napa_type<Cx>>(64), II> bf(i);
-                    auto c = cio::peek(i, e);
+            template <typename X, typename T, typename II, typename Cx>
+                inline bool read_value_(T& t, II i, II e, Cx& cx) {
+                    return read_value<X>(t, i, e, cx);
+                }
 
-                    bool s = c == '-';
-                    if (s) {
-                        if (!bf.put('-')) return cx/X::read_error::overflow;
-                        c = cio::next(i, e);
-                    }
+#           define CXON_STORE(c) if (!bf.put(c)) return cx/X::read_error::overflow
+                template <typename X, typename Tr, typename II, typename Cx>
+                    inline bool read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& v, II& i, II e, Cx& cx) {
+                        unsigned u = 0;
+                        unsigned long long U = 0;
+                        unsigned d = 0;
+                        buffer_<json::num_len_max::constant<napa_type<Cx>>(64), II> bf(i);
+                        auto c = cio::peek(i, e);
 
-                    if (c == '0') {
-                        if (!bf.put('0')) return cx/X::read_error::overflow;
-                        c = cio::next(i, e);
-                    }
-                    else if (c >= '1' && c <='9') {
-                        if (!bf.put(c)) return cx/X::read_error::overflow;
-                        u = static_cast<unsigned>(c - '0');
-                        if (s)
-                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (u >= 214748364) // 2^31 = 2147483648
-                                    if (u != 214748364 || cio::next(i, e) > '8') {
-                                        U = u; break;
-                                    }
-                                u = u * 10 + static_cast<unsigned>(c - '0');
-                                if (!bf.put(c)) return cx/X::read_error::overflow;
-                            }
-                        else
-                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (u >= 429496729) // 2^32 - 1 = 4294967295
-                                    if (u != 429496729 || cio::next(i, e) > '5') {
-                                        U = u; break;
-                                    }
-                                u = u * 10 + static_cast<unsigned>(c - '0');
-                                if (!bf.put(c)) return cx/X::read_error::overflow;
-                            }
-                    }
-                    else
-                        return cx/X::read_error::floating_point_invalid;
-
-                    if (U) {
-                        if (s)
-                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (U >= 922337203685477580ULL) // 2^63 = 9223372036854775808
-                                    if (U != 922337203685477580ULL || cio::next(i, e) > '8') {
-                                        d = 1; break;
-                                    }
-                                U = U * 10 + static_cast<unsigned>(c - '0');
-                                if (!bf.put(c)) return cx/X::read_error::overflow;
-                            }
-                        else
-                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (U >= 1844674407370955161ULL) // 2^64 - 1 = 18446744073709551615
-                                    if (U != 1844674407370955161ULL || cio::next(i, e) > '5') {
-                                        d = 1; break;
-                                    }
-                                U = U * 10 + static_cast<unsigned>(c - '0');
-                                if (!bf.put(c)) return cx/X::read_error::overflow;
-                            }
-                    }
-
-                    if (d) {
-                        for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
-                            if (!bf.put(c)) return cx/X::read_error::overflow;
-                    }
-                    if (cio::peek(i, e) == '.') {
-                        if (!bf.put('.')) return cx/X::read_error::overflow;
-                        d = 1;
-                        for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
-                            if (!bf.put(c)) return cx/X::read_error::overflow;
-                    }
-
-                    c = cio::peek(i, e);
-                    if (c == 'e' || c == 'E') {
-                        if (!bf.put('e')) return cx/X::read_error::overflow;
-                        d = 1, c = cio::next(i, e);
-                        if (c == '-' || c == '+') {
-                            if (!bf.put(c)) return cx/X::read_error::overflow;
+                        bool s = c == '-';
+                        if (s) {
+                            CXON_STORE('-');
                             c = cio::next(i, e);
                         }
-                        for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
-                            if (!bf.put(c)) return cx/X::read_error::overflow;
+
+                        if (c == '0') {
+                            CXON_STORE('0');
+                            c = cio::next(i, e);
+                        }
+                        else if (c >= '1' && c <='9') {
+                            CXON_STORE(c);
+                            u = static_cast<unsigned>(c - '0');
+                            if (s)
+                                for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                    if (u >= 214748364) // 2^31 = 2147483648
+                                        if (u != 214748364 || cio::next(i, e) > '8') {
+                                            U = u; break;
+                                        }
+                                    u = u * 10 + static_cast<unsigned>(c - '0');
+                                    CXON_STORE(c);
+                                }
+                            else
+                                for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                    if (u >= 429496729) // 2^32 - 1 = 4294967295
+                                        if (u != 429496729 || cio::next(i, e) > '5') {
+                                            U = u; break;
+                                        }
+                                    u = u * 10 + static_cast<unsigned>(c - '0');
+                                    CXON_STORE(c);
+                                }
+                        }
+                        else
+                            return cx/X::read_error::floating_point_invalid;
+
+                        if (U) {
+                            if (s)
+                                for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                    if (U >= 922337203685477580ULL) // 2^63 = 9223372036854775808
+                                        if (U != 922337203685477580ULL || cio::next(i, e) > '8') {
+                                            d = 1; break;
+                                        }
+                                    U = U * 10 + static_cast<unsigned>(c - '0');
+                                    CXON_STORE(c);
+                                }
+                            else
+                                for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                    if (U >= 1844674407370955161ULL) // 2^64 - 1 = 18446744073709551615
+                                        if (U != 1844674407370955161ULL || cio::next(i, e) > '5') {
+                                            d = 1; break;
+                                        }
+                                    U = U * 10 + static_cast<unsigned>(c - '0');
+                                    CXON_STORE(c);
+                                }
+                        }
+
+                        if (d) {
+                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                                CXON_STORE(c);
+                        }
+                        if (cio::peek(i, e) == '.') {
+                            CXON_STORE('.');
+                            d = 1;
+                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                                CXON_STORE(c);
+                        }
+
+                        c = cio::peek(i, e);
+                        if (c == 'e' || c == 'E') {
+                            CXON_STORE('e');
+                            d = 1, c = cio::next(i, e);
+                            if (c == '-' || c == '+') {
+                                CXON_STORE(c);
+                                c = cio::next(i, e);
+                            }
+                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                                CXON_STORE(c);
+                        }
+
+                        if (d) {
+                            CXON_STORE('\0');
+                            return read_value_<X>(v, bf.beg(), bf.end(), cx);
+                        }
+
+                        using sint = typename json::basic_node<Tr>::sint;
+                        using uint = typename json::basic_node<Tr>::uint;
+                        U ?
+                            s ? n.template imbue<sint>() = U, n.template get<sint>() = -n.template get<sint>() :
+                                n.template imbue<uint>() = U :
+                            s ? n.template imbue<sint>() = u, n.template get<sint>() = -n.template get<sint>() :
+                                n.template imbue<uint>() = u
+                        ;
+                        return true;
                     }
-
-                    if (d)
-                        return read_value<X>(v, bf.begin(), bf.end(), cx);
-
-                    using sint = typename json::basic_node<Tr>::sint;
-                    using uint = typename json::basic_node<Tr>::uint;
-                    U ?
-                        s ? n.template imbue<sint>() = U, n.template get<sint>() = -n.template get<sint>() :
-                            n.template imbue<uint>() = U :
-                        s ? n.template imbue<sint>() = u, n.template get<sint>() = -n.template get<sint>() :
-                            n.template imbue<uint>() = u
-                    ;
-                    return true;
-                }
+#           undef CXON_STORE
 
             template <typename C>
                 struct nmst_;

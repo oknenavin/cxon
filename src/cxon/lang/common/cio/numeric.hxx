@@ -184,10 +184,10 @@ namespace cxon { namespace cio { namespace num { // read
             {
                 II const o = i;
                     char s[num_len_max::constant<napa_type<Cx>>(32)];
-                    int const b = number_consume_<X, T>(s, s + sizeof(s), i, e);
-                    return  (b != -1                                                        || (rewind(i, o), cx/X::read_error::overflow)) &&
-                            (b !=  0                                                        || (rewind(i, o), cx/X::read_error::integral_invalid)) &&
-                            (charconv::from_chars(s, s + sizeof(s), t).ec == std::errc()    || (rewind(i, o), cx/X::read_error::integral_invalid))
+                    int const b = number_consume_<X, T>(std::begin(s), std::end(s), i, e);
+                    return  (b != -1                                                                || (rewind(i, o), cx/X::read_error::overflow)) &&
+                            (b !=  0                                                                || (rewind(i, o), cx/X::read_error::integral_invalid)) &&
+                            (charconv::from_chars(std::begin(s), std::end(s), t).ec == std::errc()  || (rewind(i, o), cx/X::read_error::integral_invalid))
                     ;
             }
         template <typename X, typename T, typename Cx>
@@ -239,11 +239,11 @@ namespace cxon { namespace cio { namespace num { // read
             {
                 II const o = i;
                     char s[num_len_max::constant<napa_type<Cx>>(64)];
-                    int const b = number_consume_<X, T>(s, s + sizeof(s), i, e);
+                    int const b = number_consume_<X, T>(std::begin(s), std::end(s), i, e);
                         // coverity[overrun-buffer-val] - if b > 0 and the input is a string, the possible values are \"nan\", \"inf\" and \"-inf\" (see [&1])
-                        return  (b != -1                                            || (rewind(i, o), cx/X::read_error::overflow)) &&
-                                (b !=  0                                            || (rewind(i, o), cx/X::read_error::floating_point_invalid)) &&
-                                (from_chars_(s, s + sizeof(s), t).ec == std::errc() || (rewind(i, o), cx/X::read_error::floating_point_invalid))
+                        return  (b != -1                                                        || (rewind(i, o), cx/X::read_error::overflow)) &&
+                                (b !=  0                                                        || (rewind(i, o), cx/X::read_error::floating_point_invalid)) &&
+                                (from_chars_(std::begin(s), std::end(s), t).ec == std::errc()   || (rewind(i, o), cx/X::read_error::floating_point_invalid))
                         ;
             }
         template <typename X, typename T, typename Cx>
