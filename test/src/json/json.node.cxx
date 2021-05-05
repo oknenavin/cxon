@@ -477,7 +477,7 @@ static unsigned self() {
                 a.push_back(node::array {1, 2, 3}); CHECK(a.back().is<node::array>());
                 a.push_back("4");                   CHECK(a.back().is<node::string>());
                 a.push_back(3);                     CHECK(a.back().is<node::sint>());
-                a.push_back(14U);                    CHECK(a.back().is<node::uint>());
+                a.push_back(14U);                   CHECK(a.back().is<node::uint>());
                 a.push_back(3.14);                  CHECK(a.back().is<node::real>());
                 a.push_back(true);                  CHECK(a.back().is<node::boolean>());
                 a.push_back(nullptr);               CHECK(a.back().is<node::null>());
