@@ -20,11 +20,11 @@
 `JSON` value type mapping is configurable with the following defaults:
 
 Type         | Default binding
--------------|------------------------------
+-------------|-------------------------------------------------------------------------------------
 `object`     | [`std::map`][cpp-map]
 `array`      | [`std::vector`][cpp-vect]
 `string`     | [`std::string`][cpp-bstr]
-`number`     | [`double`][cpp-types]
+`number`     | [`long long`][cpp-types], [`unsigned long long`][cpp-types] or [`double`][cpp-types]
 `true`       | [`bool`][cpp-types]
 `false`      | [`bool`][cpp-types]
 `null`       | [`std::nullptr_t`][cpp-types]
@@ -43,8 +43,8 @@ int main() {
         
     char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
     node const n0 = node::object {
-        { "even", node::array { 2, 4, 6 } },
-        { "odd", node::array { 1, 3, 5 } }
+        { "even", node::array { 2U, 4U, 6U } },
+        { "odd", node::array { 1U, 3U, 5U } }
     };
 
     node n1; // read
@@ -76,35 +76,43 @@ int main() {
                 node::object { {"object", 0} }, // objects and
                 node::array { 1, 2, 3 },        // arrays must be explicit
                 "4",        // string
-                5,          // number
+                3,          // signed
+                14U,        // unsigned
+                3.14,       // real
                 true,       // boolean
                 nullptr     // null
             }
         },
         { "string", "string" }, // "key": value
-        { "number", 3.14 },
+        { "sint", 3 },
+        { "uint", 14U },
+        { "real", 3.14 },
         { "boolean", false },
         { "null", nullptr }
     };
 
     // build using node's methods
     node n2;
-        assert(n2.is<node::null>()); // default node type is node::null
-        auto& o = n2.imbue<node::object>(); // change the type and return reference of the value
+        assert(n2.is<node::null>()); // default node type is node_kind::null
+        auto& o = n2.imbue<node::object>(); // change the type and return its value
             assert(n2.is<node::object>());
             o["object"] = node::object {};      assert(o["object"].is<node::object>());
             o["array"] = node::array {};        assert(o["array"].is<node::array>());
             o["string"] = "string";             assert(o["string"].is<node::string>());
-            o["number"] = 3.14;                 assert(o["number"].is<node::number>());
+            o["sint"] = 3;                      assert(o["sint"].is<node::sint>());
+            o["uint"] = 14U;                    assert(o["uint"].is<node::uint>());
+            o["real"] = 3.14;                   assert(o["real"].is<node::real>());
             o["boolean"] = false;               assert(o["boolean"].is<node::boolean>());
             o["null"] = nullptr;                assert(o["null"].is<node::null>());
         auto& o1 = o["object"].get<node::object>(); // get value reference, the type is known
             o1["object"] = 0;
-        auto& a = o["array"].get<node::array>(); // get value reference, the type is known
+        auto& a = o["array"].get<node::array>();    // get value reference, the type is known
             a.push_back(node::object {});       assert(a.back().is<node::object>());
             a.push_back(node::array {1, 2, 3}); assert(a.back().is<node::array>());
             a.push_back("4");                   assert(a.back().is<node::string>());
-            a.push_back(5);                     assert(a.back().is<node::number>());
+            a.push_back(3);                     assert(a.back().is<node::sint>());
+            a.push_back(14U);                   assert(a.back().is<node::uint>());
+            a.push_back(3.14);                  assert(a.back().is<node::real>());
             a.push_back(true);                  assert(a.back().is<node::boolean>());
             a.push_back(nullptr);               assert(a.back().is<node::null>());
         auto* o2 = a[0].get_if<node::object>(); // get value pointer if the type match
@@ -116,26 +124,32 @@ int main() {
     std::string s2;
         cxon::to_bytes(s2, n2);
     assert(s1 == s2);
+
+    std::string const tidy_json = cxon::json::tidy(s1);
 }
 ```
 
-The resulting `JSON` is (*note, that the default number type is `double`*):
+The resulting `JSON` is (*note, that the default `real` type is `double`*):
 
 ``` json
 {
-    "object": {"object": 0},
     "array": [
-        {"object": 0},
-        [1, 2, 3],
+        { "object": 0 },
+        [ 1, 2, 3 ],
         "4",
-        5,
+        3,
+        14,
+        3.1400000000000001,
         true,
         null
     ],
-    "string": "string",
-    "number": 3.1400000000000001,
     "boolean": false,
-    "null": null
+    "null": null,
+    "object": { "object": 0 },
+    "real": 3.1400000000000001,
+    "sint": 3,
+    "string": "string",
+    "uint": 14
 }
 ```
 
@@ -167,7 +181,7 @@ Type            | Definition
 ###### Non-member types
 
 ```c++
-enum class node_kind { object, array, string, number, boolean, null };
+enum class node_kind { object, array, string, sint, uint, real, boolean, null };
 ```
 
 ###### Member types
@@ -176,7 +190,9 @@ Member type | Definition
 ------------|------------------------------------------
 `null`      | `Traits::null_type`
 `boolean`   | `Traits::boolean_type`
-`number`    | `Traits::number_type`
+`sint`      | `Traits::sint_type`
+`uint`      | `Traits::uint_type`
+`real`      | `Traits::real_type`
 `string`    | `Traits::string_type`
 `array`     | `Traits::array_type<basic_node>`
 `object`    | `Traits::object_type<basic_node, basic_node>`
@@ -240,8 +256,12 @@ basic_node(array&& v);
 basic_node(const array& v);
 basic_node(string&& v);
 basic_node(const string& v);
-basic_node(number&& v);
-basic_node(const number& v);
+basic_node(sint&& v);
+basic_node(const sint& v);
+basic_node(uint&& v);
+basic_node(const uint& v);
+basic_node(real&& v);
+basic_node(const real& v);
 basic_node(boolean&& v);
 basic_node(const boolean& v);
 basic_node(null&& v);
@@ -255,7 +275,7 @@ Construct new node from a variety of data sources.
   - `(1)` Default constructor. Constructs node with `null` value type.
   - `(2)` Move and copy constructors
   - `(3)` Move and copy constructors for each value type
-  - `(4)` Constructors for `string` and `number` value types
+  - `(4)` Constructors for `string` and `integral` value types
 
 ###### Example
 
@@ -269,7 +289,7 @@ using namespace cxon::json;
     node n(o); assert(n.is<node::boolean>() && n.get<node::boolean>());
 }
 {   // (3)
-    node n(42.0); assert(n.is<node::number>() && n.get<node::number>() == 42.0);
+    node n(42.0); assert(n.is<node::real>() && n.get<node::real>() == 42.0); // floating-point
 }
 {   // (3)
     node::object const o = { {"key", "value"} };
@@ -280,7 +300,10 @@ using namespace cxon::json;
     node n(a); assert(n.is<node::array>() && n.get<node::array>() == a);
 }
 {   // (4)
-    node n(42); assert(n.is<node::number>() && n.get<node::number>() == 42);
+    node n(42); assert(n.is<node::sint>() && n.get<node::sint>() == 42); // signed
+}
+{   // (4)
+    node n(42U); assert(n.is<node::uint>() && n.get<node::uint>() == 42); // unsigned
 }
 {   // (4)
     node n("string"); assert(n.is<node::string>() && n.get<node::string>() == "string");
@@ -302,8 +325,12 @@ basic_node& operator =(array&& v);
 basic_node& operator =(const array& v);
 basic_node& operator =(string&& v);
 basic_node& operator =(const string& v);
-basic_node& operator =(number&& v);
-basic_node& operator =(const number& v);
+basic_node& operator =(sint&& v);
+basic_node& operator =(const sint& v);
+basic_node& operator =(uint&& v);
+basic_node& operator =(const uint& v);
+basic_node& operator =(real&& v);
+basic_node& operator =(const real& v);
 basic_node& operator =(boolean&& v);
 basic_node& operator =(const boolean& v);
 basic_node& operator =(null&& v);
@@ -396,7 +423,7 @@ using namespace cxon::json;
 }
 {   // T is not the same
     node n = "string";
-    node::number& v = n.imbue<node::number>(); assert(v == 0);
+    node::real& v = n.imbue<node::real>(); assert(v == 0);
 }
 ```
 
@@ -486,7 +513,7 @@ bool operator != (const basic_node& n) const; (2)
       `node::recursion_guard`      | read/write | `unsigned` | 0 (N/A) | recursion guard state
       `node::recursion_depth`      | read/write | `unsigned` | 64      | max recursion depth
       `node::json::arbitrary_keys` | read/write | `bool`     | false   | allow `node` as object key
-      `node::json::extract_nans`   | read       | `bool`     | false   | convert `inf`/`nan` strings to `node::number`
+      `node::json::extract_nans`   | read       | `bool`     | false   | convert `inf`/`nan` strings to `node::real`
   
       *Note: The interface is overloaded for `cxon::json::basic_node` and the overload
        passes the `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type

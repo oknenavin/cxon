@@ -224,7 +224,7 @@
                             if (s)
                                 for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
                                     if (u >= 214748364) // 2^31 = 2147483648
-                                        if (u != 214748364 || cio::next(i, e) > '8') {
+                                        if (u != 214748364 || c > '8') {
                                             U = u; break;
                                         }
                                     u = u * 10 + static_cast<unsigned>(c - '0');
@@ -233,7 +233,7 @@
                             else
                                 for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
                                     if (u >= 429496729) // 2^32 - 1 = 4294967295
-                                        if (u != 429496729 || cio::next(i, e) > '5') {
+                                        if (u != 429496729 || c > '5') {
                                             U = u; break;
                                         }
                                     u = u * 10 + static_cast<unsigned>(c - '0');
@@ -247,7 +247,7 @@
                             if (s)
                                 for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
                                     if (U >= 922337203685477580ULL) // 2^63 = 9223372036854775808
-                                        if (U != 922337203685477580ULL || cio::next(i, e) > '8') {
+                                        if (U != 922337203685477580ULL || c > '8') {
                                             d = 1; break;
                                         }
                                     U = U * 10 + static_cast<unsigned>(c - '0');
@@ -256,7 +256,7 @@
                             else
                                 for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
                                     if (U >= 1844674407370955161ULL) // 2^64 - 1 = 18446744073709551615
-                                        if (U != 1844674407370955161ULL || cio::next(i, e) > '5') {
+                                        if (U != 1844674407370955161ULL || c > '5') {
                                             d = 1; break;
                                         }
                                     U = U * 10 + static_cast<unsigned>(c - '0');
@@ -400,8 +400,20 @@
                         }
                     template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                         static auto write_key_(O& o, const T& t, Cx& cx)
-                            -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                            -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value && !std::is_floating_point<T>::value, bool>
                         {
+                            return cio::key::write_key<Y>(o, t, cx);
+                        }
+                    template <typename O, typename T, typename Cx, typename Y = JSON<X>>
+                        static auto write_key_(O& o, const T& t, Cx& cx)
+                            -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value &&  std::is_floating_point<T>::value, bool>
+                        {
+                            if (std::isinf(t))
+                                return std::signbit(t) ?
+                                    write_value<Y>(o, "-inf", cx) : write_value<Y>(o, "inf", cx)
+                                ;
+                            if (std::isnan(t))
+                                return write_value<Y>(o, "nan", cx);
                             return cio::key::write_key<Y>(o, t, cx);
                         }
                     template <typename O, typename Cx, typename Y = JSON<X>>

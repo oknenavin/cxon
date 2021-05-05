@@ -477,7 +477,7 @@ static unsigned self() {
                 a.push_back(node::array {1, 2, 3}); CHECK(a.back().is<node::array>());
                 a.push_back("4");                   CHECK(a.back().is<node::string>());
                 a.push_back(3);                     CHECK(a.back().is<node::sint>());
-                a.push_back(14U);                    CHECK(a.back().is<node::uint>());
+                a.push_back(14U);                   CHECK(a.back().is<node::uint>());
                 a.push_back(3.14);                  CHECK(a.back().is<node::real>());
                 a.push_back(true);                  CHECK(a.back().is<node::boolean>());
                 a.push_back(nullptr);               CHECK(a.back().is<node::null>());
@@ -661,17 +661,61 @@ static unsigned self() {
         CHECK(node(false) < node(true));
         CHECK(!(node(nullptr) < node(nullptr)));
     }
-    {   node n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
+    {   // numbers
+        node n; cxon::from_bytes_result<const char*> r;
+            r = cxon::from_bytes(n, "2147483648"); // 2^31 = 2147483648
+        CHECK(r && n.is<node::uint>() && n.get<node::uint>() == 2147483648);
+            r = cxon::from_bytes(n, "2147483649"); // 2^31 = 2147483648
+        CHECK(r && n.is<node::uint>() && n.get<node::uint>() == 2147483649);
+            r = cxon::from_bytes(n, "-4294967295"); // 2^32 - 1 = 4294967295
+        CHECK(r && n.is<node::sint>() && n.get<node::sint>() == -4294967295);
+            r = cxon::from_bytes(n, "-4294967296"); // 2^32 - 1 = 4294967295
+        CHECK(r && n.is<node::sint>() && n.get<node::sint>() == -4294967296);
+
+            r = cxon::from_bytes(n, "18446744073709551615"); // 2^64 - 1 = 18446744073709551615
+        CHECK(r && n.is<node::uint>() && n.get<node::uint>() == std::numeric_limits<node::uint>::max());
+            r = cxon::from_bytes(n, "18446744073709551616"); // 2^64 - 1 = 18446744073709551615
+        CHECK(r && n.is<node::real>() && n.get<node::real>() == 1.8446744073709552e19);
+            r = cxon::from_bytes(n, "-9223372036854775808"); // 2^63 = 9223372036854775808
+        CHECK(r && n.is<node::sint>() && n.get<node::sint>() == std::numeric_limits<node::sint>::min());
+            r = cxon::from_bytes(n, "-9223372036854775809"); // 2^63 = 9223372036854775808
+        CHECK(r && n.is<node::real>() && n.get<node::real>() == -9.2233720368547758e18);
+    }
+    {   node n = node::object {
+            {node::object {{1, 2}}, 3},
+            {node::array {4}, 5},
+            {"6", 7},
+            {8, 9},
+            {10U, 11},
+            {12.0, 13},
+            {true, 14},
+            {nullptr, 15},
+            {std::numeric_limits<node::real>::infinity(), 16},
+            {-std::numeric_limits<node::real>::infinity(), 17},
+            {std::numeric_limits<node::real>::quiet_NaN(), 18}
+        };
         std::string s;
             cxon::to_bytes(s, n);
-        CHECK(s == "{\"{\\\"1\\\":2}\":3,\"[4]\":5,\"6\":7,\"8\":9,\"true\":10,\"null\":11}");
+        CHECK(s == "{\"{\\\"1\\\":2}\":3,\"[4]\":5,\"6\":7,\"8\":9,\"10\":11,\"12\":13,\"true\":14,\"null\":15,\"inf\":16,\"-inf\":17,\"nan\":18}");
     }
     {   // node::json::arbitrary_keys
         using node = cxon::json::node;
-        {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15}";
-            node const out = node::object {{node::object {{1U, 2U}}, 3U}, {node::array {4U}, 5U}, {"6", 7U}, {-8, 9U}, {10U, 11U}, {12.0, 13U}, {true, 14U}, {nullptr, 15U}};
+        {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, \"inf\": 16, \"-inf\": 17, \"nan\": 18}";
+            node const out = node::object {
+                {node::object {{1U, 2U}}, 3U},
+                {node::array {4U}, 5U},
+                {"6", 7U},
+                {-8, 9U},
+                {10U, 11U},
+                {12.0, 13U},
+                {true, 14U},
+                {nullptr, 15U},
+                {std::numeric_limits<node::real>::infinity(), 16U},
+                {-std::numeric_limits<node::real>::infinity(), 17U},
+                {std::numeric_limits<node::real>::quiet_NaN(), 18U}
+            };
             node n;
-                cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, in, cxon::node::json::arbitrary_keys::set<true>());
+                cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, in, cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
             CHECK(n == out);
         }
         {   node n;
