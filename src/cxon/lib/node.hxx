@@ -265,14 +265,16 @@
                         }
 
                         if (d) {
-                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
                                 CXON_STORE(c);
+                            }
                         }
                         if (cio::peek(i, e) == '.') {
                             CXON_STORE('.');
                             d = 1;
-                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
                                 CXON_STORE(c);
+                            }
                         }
 
                         c = cio::peek(i, e);
@@ -283,8 +285,9 @@
                                 CXON_STORE(c);
                                 c = cio::next(i, e);
                             }
-                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e))
+                            for ( ; c >= '0' && c <= '9'; c = cio::next(i, e)) {
                                 CXON_STORE(c);
+                            }
                         }
 
                         if (d) {
