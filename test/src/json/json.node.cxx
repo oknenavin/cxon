@@ -547,6 +547,12 @@ CXON_JSON_CLS(my_type,
             {   // (4)
                 node n("string"); CHECK(n.is<node::string>() && n.get<node::string>() == "string");
             }
+            {   // (5)
+                node n({{1, 2}, {3, 4}}); CHECK(n.is<node::object>() && n.get<node::object>() == (node::object {{1, 2}, {3, 4}}));
+            }
+            {   // (5)
+                node n({1, 2, 3, 4}); CHECK(n.is<node::array>() && n.get<node::array>() == (node::array {1, 2, 3, 4}));
+            }
         }
         {   // ex6
             {   // T is the same
@@ -644,10 +650,10 @@ CXON_JSON_CLS(my_type,
                 a = node(""); CHECK(a.is<node::string>() && a.get<node::string>() == "");
             }
             {   node a;
-                a = node(node::array {1}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1}));
+                a = {1, 2}; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1, 2}));
             }
             {   node a;
-                a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
+                a = {{1, 2}}; CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{1, 2}}));
             }
         }
         {   // less than

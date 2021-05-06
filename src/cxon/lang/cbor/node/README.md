@@ -58,9 +58,9 @@ int main() {
     using node = cxon::cbor::node;
 
     unsigned char const b0[] = "\xA2\144even\x82\x02\x04\x63odd\x82\x01\x03";
-    node const n0 = node::map {
-        { "even", node::array { 2U, 4U } },
-        { "odd", node::array { 1U, 3U } }
+    node const n0 = {
+        { "even", { 2U, 4U } },
+        { "odd", { 1U, 3U } }
     };
 
     node n1; // read
@@ -86,19 +86,19 @@ int main() {
     using node = cxon::cbor::node;
 
     // build using initializer lists
-    node n1 = node::array {
+    node n1 = {
         -1,                         // sint
-        node::uint(1),              // uint
+        1U,                         // uint
         node::bytes {0x01, 0x02},   // bytes
         "text",                     // text
-        node::array {1, 2, 3},      // array
-        node::map {                 // map
+        {1, 2, 3},                  // array
+        {                           // map
             { 1, 1 }, // { key, value }
-            { node::uint(1), 1 },
+            { 1U, 1 },
             { node::bytes {0x01, 0x02}, 1 },
             { "text", 1 },
-            { node::array {1, 2, 3}, 1 },
-            { node::map {{1, 2}, {3, 4}}, 1 },
+            { {1, 2, 3}, 1 },
+            { {{1, 2}, {3, 4}}, 1 },
             { node::tag {1, 2}, 1 },
             { false, 1 },
             { nullptr, 1 },
@@ -117,11 +117,11 @@ int main() {
 
     // build using node's methods
     node n2;
-        assert(n2.is<node::null>()); // default node type is node_kind::null
+        assert(n2.is<node::undefined>()); // default node type is node_kind::undefined
         auto& a = n2.imbue<node::array>(); // change the type and return its value
             assert(n2.is<node::array>());
             a.push_back(-1);                        assert(a.back().is<node::sint>());
-            a.push_back(node::uint(1));             assert(a.back().is<node::uint>());
+            a.push_back(1U);                        assert(a.back().is<node::uint>());
             a.push_back(node::bytes {0x01, 0x02});  assert(a.back().is<node::bytes>());
             a.push_back("text");                    assert(a.back().is<node::text>());
             a.push_back(node:: array {});           assert(a.back().is<node::array>());
@@ -129,14 +129,15 @@ int main() {
                 a1->push_back(1);                   assert(a1->back().is<node::sint>());
                 a1->push_back(2);                   assert(a1->back().is<node::sint>());
                 a1->push_back(3);                   assert(a1->back().is<node::sint>());
-            a.push_back(node:: map {});             assert(a.back().is<node::map>());
+                //a.push_back(node::map {});
+                a.push_back(node({}));              assert(a.back().is<node::map>());
             auto& m = a.back().get<node::map>();
                 m[1] = 1;                           assert(m.find(node::sint(1)) != m.end());
-                m[node::uint(1)] = 1;               assert(m.find(node::uint(1)) != m.end());
+                m[1U] = 1;                          assert(m.find(node::uint(1)) != m.end());
                 m[node::bytes {0x01, 0x02}] = 1;    assert(m.find(node::bytes {0x01, 0x02}) != m.end());
                 m["text"] = 1;                      assert(m.find(node::text("text")) != m.end());
-                m[node::array {1, 2, 3}] = 1;       assert(m.find(node::array({1, 2, 3})) != m.end());
-                m[node::map {{1, 2}, {3, 4}}] = 1;  assert(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
+                m[{1, 2, 3}] = 1;                   assert(m.find(node::array({1, 2, 3})) != m.end());
+                m[{{1, 2}, {3, 4}}] = 1;            assert(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
                 m[node::tag {1, 2}] = 1;            assert(m.find(node::tag(1, 2)) != m.end());
                 m[false] = 1;                       assert(m.find(node::boolean(false)) != m.end());
                 m[nullptr] = 1;                     assert(m.find(node::null(nullptr)) != m.end());
@@ -264,13 +265,13 @@ assert(n.is<node::map>() && n.get<node::map>().count("key") == 2);
 ##### Constructors
 
 ``` c++
-basic_node();                       (1)
+basic_node();                           (1)
 
-basic_node(basic_node&& o);         (2)
+basic_node(basic_node&& o);             (2)
 basic_node(const basic_node& o);
 
 
-basic_node(sint&& v);               (3)
+basic_node(sint&& v);                   (3)
 basic_node(const sint& v);
 basic_node(uint&& v);
 basic_node(const uint& v);
@@ -289,8 +290,10 @@ basic_node(const null& v);
 basic_node(real&& v);
 basic_node(const real& v);
 
-basic_node(<integral> v);           (4)
+basic_node(<integral> v);               (4)
 basic_node(const char* v);
+
+basic_node(std::initializer_list l);    (5)
 ```
 
 Construct new node from a variety of data sources.
@@ -298,6 +301,8 @@ Construct new node from a variety of data sources.
   - `(2)` Move and copy constructors
   - `(3)` Move and copy constructors for each value type
   - `(4)` Constructors for `integral` and `string` value types
+  - `(5)` Constructors from initializer list. Will create an object if empty
+          or array(s) of two elements, array otherwise
 
 ###### Example
 
@@ -330,6 +335,12 @@ using namespace cxon::cbor;
 {   // (4)
     node n("string"); assert(n.is<node::text>() && n.get<node::text>() == "string");
 }
+{   // (5)
+    node n({{1, 2}, {3, 4}}); CHECK(n.is<node::map>() && n.get<node::map>() == (node::map {{1, 2}, {3, 4}}));
+}
+{   // (5)
+    node n({1, 2, 3, 4}); CHECK(n.is<node::array>() && n.get<node::array>() == (node::array {1, 2, 3, 4}));
+}
 ```
 
 
@@ -338,10 +349,10 @@ using namespace cxon::cbor;
 ##### Assignment operators
 
 ``` c++
-basic_node& operator =(basic_node&& o);         (1)
+basic_node& operator =(basic_node&& o);             (1)
 basic_node& operator =(const basic_node& o);
 
-basic_node& operator =(sint&& v);               (2)
+basic_node& operator =(sint&& v);                   (2)
 basic_node& operator =(const sint& v);
 basic_node& operator =(uint&& v);
 basic_node& operator =(const uint& v);
@@ -360,14 +371,18 @@ basic_node& operator =(const null& v);
 basic_node& operator =(real&& v);
 basic_node& operator =(const real& v);
 
-basic_node& operator =(<integral> v);           (3)
+basic_node& operator =(<integral> v);               (3)
 basic_node& operator =(const char* v);
+
+basic_node& operator =(std::initializer_list l);    (4)
 ```
 
 Replaces the content of the node: 
   - `(1)` Move or copy of `o`
   - `(2)` Move or copy of `v`
   - `(3)` Copy of `v`
+  - `(4)` From initializer list. Object if empty or array(s) of two elements,
+          array otherwise
 
 ###### Return value
 
