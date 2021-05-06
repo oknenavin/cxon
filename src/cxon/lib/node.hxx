@@ -195,13 +195,13 @@
                 };
 
             template <typename X, typename T, typename II, typename Cx>
-                inline bool read_value_(T& t, II i, II e, Cx& cx) {
+                inline bool read_number_value_(T& t, II i, II e, Cx& cx) {
                     return read_value<X>(t, i, e, cx);
                 }
 
 #           define CXON_STORE(c) if (!bf.put(c)) return cx/X::read_error::overflow
-                template <typename X, typename Tr, typename II, typename Cx>
-                    inline bool read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& v, II& i, II e, Cx& cx) {
+                template <typename X, typename N, typename II, typename Cx>
+                    inline bool read_number_value_(N& n, typename N::real& v, II& i, II e, Cx& cx) {
                         unsigned u = 0;
                         unsigned long long U = 0;
                         unsigned d = 0;
@@ -292,11 +292,11 @@
 
                         if (d) {
                             CXON_STORE('\0');
-                            return read_value_<X>(v, bf.beg(), bf.end(), cx);
+                            return read_number_value_<X>(v, bf.beg(), bf.end(), cx);
                         }
 
-                        using sint = typename json::basic_node<Tr>::sint;
-                        using uint = typename json::basic_node<Tr>::uint;
+                        using sint = typename N::sint;
+                        using uint = typename N::uint;
                         U ?
                             s ? n.template imbue<sint>() = U, n.template get<sint>() = -n.template get<sint>() :
                                 n.template imbue<uint>() = U :
@@ -341,6 +341,31 @@
                     static constexpr wchar_t const*     ninf = L"-inf";
                     static constexpr wchar_t const*     nan =   L"nan";
                 };
+
+            template <typename X, typename N, typename S, typename II, typename Cx>
+                static bool read_string_value_extract_nans_(N& n, S& s, II& i, II e, Cx& cx) {
+                    if (read_value<X>(s, i, e, cx)) {
+                        using real = typename N::real;
+                        using symbol = typename S::value_type;
+                             if (s == nmst_<symbol>::pinf) n.template imbue<real>() =  std::numeric_limits<real>::infinity();
+                        else if (s == nmst_<symbol>::ninf) n.template imbue<real>() = -std::numeric_limits<real>::infinity();
+                        else if (s == nmst_<symbol>::nan ) n.template imbue<real>() =  std::numeric_limits<real>::quiet_NaN();
+                        return true;
+                    }
+                    return false;
+                }
+
+            template <typename X, typename O, typename T, typename Cx>
+                static bool write_number_key_(O& o, const T& t, Cx& cx) {
+                    if (std::isinf(t))
+                        return std::signbit(t) ?
+                                write_value<X>(o, "-inf", cx) : write_value<X>(o, "inf", cx)
+                        ;
+                    if (std::isnan(t))
+                        return  write_value<X>(o, "nan", cx);
+                    return cio::key::write_key<X>(o, t, cx);
+                }
+
         }
 
         namespace cio { namespace key { // keys
@@ -355,17 +380,11 @@
                         static auto read_key_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::string& k, II& i, II e, Cx& cx)
                             -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
                         {
-                            bool const r = read_value<Y>(k, i, e, cx);
-                                using real = typename json::basic_node<Tr>::real;
-                                using symbol = typename json::basic_node<Tr>::string::value_type;
-                                     if (k == cxon::imp::nmst_<symbol>::pinf) n.template imbue<real>() =  std::numeric_limits<real>::infinity();
-                                else if (k == cxon::imp::nmst_<symbol>::ninf) n.template imbue<real>() = -std::numeric_limits<real>::infinity();
-                                else if (k == cxon::imp::nmst_<symbol>::nan ) n.template imbue<real>() =  std::numeric_limits<real>::quiet_NaN();
-                            return r;
+                            return cxon::imp::read_string_value_extract_nans_<Y>(n, k, i, e, cx);
                         }
                     template <typename II, typename Cx, typename Y = JSON<X>>
                         static bool read_key_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& k, II& i, II e, Cx& cx) {
-                            return cxon::imp::read_value_<Y>(n, k, i, e, cx);
+                            return cxon::imp::read_number_value_<Y>(n, k, i, e, cx);
                         }
                     template <typename II, typename Cx, typename Y = JSON<X>>
                         static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
@@ -411,13 +430,7 @@
                         static auto write_key_(O& o, const T& t, Cx& cx)
                             -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value &&  std::is_floating_point<T>::value, bool>
                         {
-                            if (std::isinf(t))
-                                return std::signbit(t) ?
-                                    write_value<Y>(o, "-inf", cx) : write_value<Y>(o, "inf", cx)
-                                ;
-                            if (std::isnan(t))
-                                return write_value<Y>(o, "nan", cx);
-                            return cio::key::write_key<Y>(o, t, cx);
+                            return cxon::imp::write_number_key_<Y>(o, t, cx);
                         }
                     template <typename O, typename Cx, typename Y = JSON<X>>
                         static bool key(O& o, const json::basic_node<Tr>& t, Cx& cx) {
@@ -450,17 +463,11 @@
                     static auto read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::string& v, II& i, II e, Cx& cx)
                         -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
                     {
-                        bool const r = read_value<Y>(v, i, e, cx);
-                            using real = typename json::basic_node<Tr>::real;
-                            using symbol = typename json::basic_node<Tr>::string::value_type;
-                                 if (v == imp::nmst_<symbol>::pinf) n.template imbue<real>() =  std::numeric_limits<real>::infinity();
-                            else if (v == imp::nmst_<symbol>::ninf) n.template imbue<real>() = -std::numeric_limits<real>::infinity();
-                            else if (v == imp::nmst_<symbol>::nan ) n.template imbue<real>() =  std::numeric_limits<real>::quiet_NaN();
-                        return r;
+                        return imp::read_string_value_extract_nans_<Y>(n, v, i, e, cx);
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::real& v, II& i, II e, Cx& cx) {
-                        return imp::read_value_<Y>(n, v, i, e, cx);
+                        return imp::read_number_value_<Y>(n, v, i, e, cx);
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
@@ -509,11 +516,29 @@
 
                 template <typename X, typename Tr>
                     struct write<JSON<X>, cbor::basic_node<Tr>> {
+                        template <typename O, typename T, typename Cx, typename Y = JSON<X>>
+                            static auto write_key_(O& o, const T& t, Cx& cx)
+                                -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                            {
+                                return write_value<Y>(o, t, cx);
+                            }
+                        template <typename O, typename T, typename Cx, typename Y = JSON<X>>
+                            static auto write_key_(O& o, const T& t, Cx& cx)
+                                -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value && !std::is_floating_point<T>::value, bool>
+                            {
+                                return cio::key::write_key<Y>(o, t, cx);
+                            }
+                        template <typename O, typename T, typename Cx, typename Y = JSON<X>>
+                            static auto write_key_(O& o, const T& t, Cx& cx)
+                                -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value &&  std::is_floating_point<T>::value, bool>
+                            {
+                                return cxon::imp::write_number_key_<Y>(o, t, cx);
+                            }
                         template <typename O, typename Cx, typename Y = JSON<X>>
                             static bool key(O& o, const cbor::basic_node<Tr>& t, Cx& cx) {
                                 using cbor::node_kind;
                                 switch (t.kind()) {
-#                                   define CXON_WRITE(T) cio::key::write_key<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
+#                                   define CXON_WRITE(T) write_key_(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
                                         case node_kind::sint        :                       return CXON_WRITE(sint);
                                         case node_kind::uint        :                       return CXON_WRITE(uint);
                                         case node_kind::bytes       :                       return CXON_WRITE(bytes);
@@ -536,11 +561,25 @@
 
             template <typename X, typename Tr>
                 struct read<JSON<X>, cbor::basic_node<Tr>> {
+                    template <typename V, typename II, typename Cx, typename Y = JSON<X>>
+                        static bool read_value_(cbor::basic_node<Tr>&, V& v, II& i, II e, Cx& cx) {
+                            return read_value<Y>(v, i, e, cx);
+                        }
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static auto read_value_(cbor::basic_node<Tr>& n, typename cbor::basic_node<Tr>::text& v, II& i, II e, Cx& cx)
+                            -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
+                        {
+                            return imp::read_string_value_extract_nans_<Y>(n, v, i, e, cx);
+                        }
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static bool read_value_(cbor::basic_node<Tr>& n, typename cbor::basic_node<Tr>::real& v, II& i, II e, Cx& cx) {
+                            return imp::read_number_value_<Y>(n, v, i, e, cx);
+                        }
                     template <typename II, typename Cx, typename Y = JSON<X>>
                         static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
                             cio::consume<Y>(i, e);
                             switch (cio::peek(i, e)) {
-#                               define CXON_READ(T) read_value<Y>(t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
+#                               define CXON_READ(T) read_value_(t, t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
                                     case '{'                    : { CXON_NODE_RG();     return CXON_READ(map); }
                                     case '['                    : { CXON_NODE_RG();     return CXON_READ(array);  }
                                     case '\"'                   :                       return CXON_READ(text);
@@ -579,63 +618,63 @@
                         }
                 };
 
-        template <typename X>
-            struct read<JSON<X>, cbor::undefined> {
-                template <typename II, typename Cx, typename Y = JSON<X>>
-                    static bool value(cbor::undefined&, II& i, II e, Cx& cx) {
-                        II const o = i;
-                        cio::consume<Y>(i, e);
-                        return  (cio::consume<Y>(Y::id::nil, i, e) ||
-                                (cio::rewind(i, o), cx/json::read_error::unexpected))
-                        ;
-                    }
-            };
+            template <typename X>
+                struct read<JSON<X>, cbor::undefined> {
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static bool value(cbor::undefined&, II& i, II e, Cx& cx) {
+                            II const o = i;
+                            cio::consume<Y>(i, e);
+                            return  (cio::consume<Y>(Y::id::nil, i, e) ||
+                                    (cio::rewind(i, o), cx/json::read_error::unexpected))
+                            ;
+                        }
+                };
 
-        template <typename X>
-            struct write<JSON<X>, cbor::undefined> {
-                template <typename O, typename Cx, typename Y = JSON<X>>
-                    static bool value(O& o, const cbor::undefined&, Cx& cx) {
-                        return cio::poke<Y>(o, Y::id::nil, cx);
-                    }
-            };
+            template <typename X>
+                struct write<JSON<X>, cbor::undefined> {
+                    template <typename O, typename Cx, typename Y = JSON<X>>
+                        static bool value(O& o, const cbor::undefined&, Cx& cx) {
+                            return cio::poke<Y>(o, Y::id::nil, cx);
+                        }
+                };
 
-        template <typename X, typename T>
-            struct read<JSON<X>, cbor::simple<T>> {
-                template <typename II, typename Cx, typename Y = JSON<X>>
-                    static bool value(cbor::simple<T>& t, II& i, II e, Cx& cx) {
-                        II const o = i;
-                        return  (read_value<Y>(t.value, i, e) || // TODO: check simple-value values
-                                (cio::rewind(i, o), cx/json::read_error::unexpected))
-                        ;
-                    }
-            };
+            template <typename X, typename T>
+                struct read<JSON<X>, cbor::simple<T>> {
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static bool value(cbor::simple<T>& t, II& i, II e, Cx& cx) {
+                            II const o = i;
+                            return  (read_value<Y>(t.value, i, e) || // TODO: check simple-value values
+                                    (cio::rewind(i, o), cx/json::read_error::unexpected))
+                            ;
+                        }
+                };
 
-        template <typename X, typename T>
-            struct write<JSON<X>, cbor::simple<T>> {
-                template <typename O, typename Cx, typename Y = JSON<X>>
-                    static bool value(O& o, const cbor::simple<T>& t, Cx& cx) {
-                        return write_value<Y>(o, t.value, cx); // TODO: check simple-value values
-                    }
-            };
+            template <typename X, typename T>
+                struct write<JSON<X>, cbor::simple<T>> {
+                    template <typename O, typename Cx, typename Y = JSON<X>>
+                        static bool value(O& o, const cbor::simple<T>& t, Cx& cx) {
+                            return write_value<Y>(o, t.value, cx); // TODO: check simple-value values
+                        }
+                };
 
-        template <typename X, typename N, typename T, typename A>
-            struct read<JSON<X>, cbor::taggle<N, T, A>> {
-                template <typename II, typename Cx, typename Y = JSON<X>>
-                    static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
-                        II const o = i;
-                        return  (/*read_value<Y>(t.tag, i, e) && */read_value<Y>(t.value, i, e)) || // TODO: keep as an object?
-                                (cio::rewind(i, o), cx/json::read_error::unexpected)
-                        ;
-                    }
-            };
+            template <typename X, typename N, typename T, typename A>
+                struct read<JSON<X>, cbor::taggle<N, T, A>> {
+                    template <typename II, typename Cx, typename Y = JSON<X>>
+                        static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
+                            II const o = i;
+                            return  (/*read_value<Y>(t.tag, i, e) && */read_value<Y>(t.value, i, e)) || // TODO: keep as an object?
+                                    (cio::rewind(i, o), cx/json::read_error::unexpected)
+                            ;
+                        }
+                };
 
-        template <typename X, typename N, typename T, typename A>
-            struct write<JSON<X>, cbor::taggle<N, T, A>> {
-                template <typename O, typename Cx, typename Y = JSON<X>>
-                    static bool value(O& o, const cbor::taggle<N, T, A>& t, Cx& cx) {
-                        return /*write_value<Y>(o, t.tag, cx) && */write_value<Y>(o, t.value, cx); // TODO: keep as an object?
-                    }
-            };
+            template <typename X, typename N, typename T, typename A>
+                struct write<JSON<X>, cbor::taggle<N, T, A>> {
+                    template <typename O, typename Cx, typename Y = JSON<X>>
+                        static bool value(O& o, const cbor::taggle<N, T, A>& t, Cx& cx) {
+                            return /*write_value<Y>(o, t.tag, cx) && */write_value<Y>(o, t.value, cx); // TODO: keep as an object?
+                        }
+                };
 
 #       endif
 

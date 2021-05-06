@@ -170,10 +170,22 @@ namespace cxon { namespace cnt {
     namespace imp {
 
         template <typename C, typename T = typename C::value_type>
-            inline auto append_(option<1>, C& c, T&& t)
+            inline auto append_(option<3>, C& c, T&& t)
                 -> enable_if_t<std::is_same<decltype(traits<C>::append(c, std::forward<T>(t))), bool>::value, bool>
             {
                 return traits<C>::append(c, std::forward<T>(t));
+            }
+        template <typename C, typename T = typename C::value_type>
+            inline auto append_(option<2>, C& c, T&& t)
+                -> decltype(c.emplace(std::forward<T>(t)), bool())
+            {
+                return c.emplace(std::forward<T>(t)), true;
+            }
+        template <typename C, typename T = typename C::value_type>
+            inline auto append_(option<1>, C& c, T&& t)
+                -> decltype(c.push_back(std::forward<T>(t)), bool())
+            {
+                return c.push_back(std::forward<T>(t)), true;
             }
         template <typename C, typename T = typename C::value_type>
             inline auto append_(option<0>, C& c, T&& t)
@@ -183,10 +195,9 @@ namespace cxon { namespace cnt {
             }
 
     }
-
     template <typename C, typename T>
         inline bool append(C& c, T&& t) {
-            return imp::append_(option<1>(), c, std::forward<T>(t));
+            return imp::append_(option<3>(), c, std::forward<T>(t));
         }
 
     namespace imp {
@@ -205,7 +216,6 @@ namespace cxon { namespace cnt {
             }
 
     }
-
     template <typename C, typename T>
         inline bool append(C& c, const T& t) {
             return imp::append_(option<1>(), c, t);

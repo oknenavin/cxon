@@ -253,30 +253,31 @@ static unsigned self() {
     }
     {   //using node = cxon::json::node;
 
-        char const s[] = "{\"array0\":[{\"1\":1},{\"2\":2}],\"array1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"real\":4}";
+        char const s[] = "{\"key0\":[{\"1\":1},{\"2\":2}],\"key1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"key2\":4}";
         node jns;
         {   // from/to string
-            cxon::from_bytes(jns, s);
-            std::string r; cxon::to_bytes(std::back_inserter(r), jns);
+                cxon::from_bytes(jns, s);
+            std::string r;
+                cxon::to_bytes(std::back_inserter(r), jns);
             CHECK(r == s);
         }
         node jno;
         {   // from object
-            jno = node::object {
-                {"array0", node::array {
-                    node::object {{"1", 1}},
-                    node::object {{"2", 2}}
-                }},
-                {"array1", node::array {
+            jno = {
+                { "key0", {
+                    { {"1", 1} },
+                    { {"2", 2} }
+                } },
+                { "key1", {
                     "string",
                     3,
-                    node::object {
+                    {
                         {"bool", true},
                         {"null", nullptr}
                     },
                     nullptr
-                }},
-                {"real", 4}
+                } },
+                { "key2", 4 }
             };
             std::string r; cxon::to_bytes(r, jno);
             CHECK(r == s);
@@ -419,9 +420,9 @@ static unsigned self() {
         using node = cxon::json::node;
     
         char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
-        node const n0 = node::object {
-            { "even", node::array { 2U, 4U, 6U } },
-            { "odd", node::array { 1U, 3U, 5U } }
+        node const n0 = {
+            { "even", { 2U, 4U, 6U } },
+            { "odd", { 1U, 3U, 5U } }
         };
 
         node n1; // read
@@ -436,11 +437,11 @@ static unsigned self() {
         using node = cxon::json::node;
 
         // build using initializer lists
-        node n1 = node::object {
-            { "object", node::object { {"object", 0} } },
-            { "array", node::array {
-                    node::object { {"object", 0} }, // objects and
-                    node::array { 1, 2, 3 },        // arrays must be explicit
+        node n1 = {
+            { "object", { {"object", 0} } },
+            { "array", {
+                    { {"object", 0} }, // objects and
+                    { 1, 2, 3 },        // arrays must be explicit
                     "4",        // string
                     3,          // signed
                     14U,        // unsigned
@@ -681,9 +682,9 @@ static unsigned self() {
             r = cxon::from_bytes(n, "-9223372036854775809"); // 2^63 = 9223372036854775808
         CHECK(r && n.is<node::real>() && n.get<node::real>() == -9.2233720368547758e18);
     }
-    {   node n = node::object {
-            {node::object {{1, 2}}, 3},
-            {node::array {4}, 5},
+    {   node n = {
+            {{{1, 2}}, 3},
+            {{4}, 5},
             {"6", 7},
             {8, 9},
             {10U, 11},
@@ -696,14 +697,14 @@ static unsigned self() {
         };
         std::string s;
             cxon::to_bytes(s, n);
-        CHECK(s == "{\"{\\\"1\\\":2}\":3,\"[4]\":5,\"6\":7,\"8\":9,\"10\":11,\"12\":13,\"true\":14,\"null\":15,\"inf\":16,\"-inf\":17,\"nan\":18}");
+        CHECK(s == R"({"{\"1\":2}":3,"[4]":5,"6":7,"8":9,"10":11,"12":13,"true":14,"null":15,"inf":16,"-inf":17,"nan":18})");
     }
     {   // node::json::arbitrary_keys
         using node = cxon::json::node;
         {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, \"inf\": 16, \"-inf\": 17, \"nan\": 18}";
-            node const out = node::object {
-                {node::object {{1U, 2U}}, 3U},
-                {node::array {4U}, 5U},
+            node const out = {
+                {{{1U, 2U}}, 3U},
+                {{4U}, 5U},
                 {"6", 7U},
                 {-8, 9U},
                 {10U, 11U},
@@ -752,18 +753,18 @@ static unsigned self() {
                 auto r = cxon::from_bytes(n, in);
             CHECK(!r && r.ec == cxon::node::error::invalid);
         }
-        {   node n = node::array { 1, 2U, node::bytes {3}, "text", node::array {4}, node::map {{"5", 6}}, true, nullptr, node::undefined(), 7.0, node::simple(8) };
+        {   node n = { 1, 2U, node::bytes {3}, "text", {4}, {{"5", 6}}, true, nullptr, node::undefined(), 7.0, node::simple(8) };
             std::string s;
                 cxon::to_bytes(s, n);
             CHECK(s == "[1,2,[3],\"text\",[4],{\"5\":6},true,null,null,7,8]");
         }
-        {   node n = node::map {
+        {   node n = {
                 { 1, 0 },
                 { 2U, 0 },
                 { node::bytes {3}, 0 },
                 { "4", 0 },
-                { node::array {5}, 0 },
-                { node::map {{6, 0}}, 0 },
+                { {5}, 0 },
+                { {{6, 0}}, 0 },
                 { node::tag {7, 8}, 0 },
                 { true, 0 },
                 { nullptr, 0 },
@@ -779,8 +780,8 @@ static unsigned self() {
     {   // round-trip
         using node = cxon::cbor::node;
         {   // cbor::node => json => cbor::node
-            node const fr = node::array {   -1,  2U, node::bytes {  3,   4}, "5, 6", node::array {  7,   8}, node::map {{  9,   10}, {"11",   12}}, node::tag {13,   14}, true, nullptr, node::undefined(), 15.0, node::simple( 16) };
-            node const to = node::array { -1.0, 2.0, node::array {3.0, 4.0}, "5, 6", node::array {7.0, 8.0}, node::map {{"9", 10.0}, {"11", 12.0}},                14.0,  true, nullptr,           nullptr, 15.0,             16.0  };
+            node const fr = { -1, 2U, node::bytes {3 , 4 }, "5, 6", {7 , 8 }, {{  9, 10 }, {"11", 12 }}, node::tag {13, 14}, true, nullptr, node::undefined(), 15.16, node::simple(17) };
+            node const to = { -1, 2U,             {3U, 4U}, "5, 6", {7U, 8U}, {{"9", 10U}, {"11", 12U}},                14U, true, nullptr,           nullptr, 15.16,              17U };
             std::string s;
                 cxon::to_bytes(s, fr);
             node n;

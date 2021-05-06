@@ -225,7 +225,27 @@ namespace cxon { namespace cbor { // node
                 CXON_CBOR_TYPE_DEF(simple);
 #           undef CXON_CBOR_TYPE_DEF
 
-            // handle literals
+            // map if empty or array(s) of two elements, array otherwise
+            basic_node(std::initializer_list<basic_node> l) : kind_(node_kind::undefined) {
+                *this = l;
+            }
+            basic_node& operator =(std::initializer_list<basic_node> l) {
+                bool const obj = l.size() == 0 || std::all_of(l.begin(), l.end(), [&](const basic_node& e) {
+                    return e.template is<array>() && e.template get<array>().size() == 2;
+                });
+                if (obj) {
+                    auto& o = imbue<map>();
+                    for (auto& e : l) {
+                        auto& a = e.template get<array>();
+                        cxon::cnt::append(o, {a[0], a[1]});
+                    }
+                }
+                else
+                    imbue<array>() = l;
+                return *this;
+            }
+
+            // literals
             private:
                 template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
                     struct int_type             { using type = sint; };
@@ -237,7 +257,7 @@ namespace cxon { namespace cbor { // node
                         static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, typename int_type<T>::type>::value;
                     };
             public:
-                // numeric
+                // integrals
                 template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
                     basic_node(T t) : kind_(node_kind::undefined) {
                         imbue<typename int_type<T>::type>() = t;
