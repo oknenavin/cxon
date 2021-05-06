@@ -188,8 +188,8 @@ struct result {
                         a1->push_back(1);                   CHECK(a1->back().is<node::sint>());
                         a1->push_back(2);                   CHECK(a1->back().is<node::sint>());
                         a1->push_back(3);                   CHECK(a1->back().is<node::sint>());
-                    //a.push_back(node::map {});
-                    a.push_back(node({}));                  CHECK(a.back().is<node::map>());
+                    //a.push_back(node({}));
+                    a.push_back(node::map {});              CHECK(a.back().is<node::map>());
                     auto& m = a.back().get<node::map>();
                         m[1] = 1;                           CHECK(m.find(node::sint(1)) != m.end());
                         m[node::uint(1)] = 1;               CHECK(m.find(node::uint(1)) != m.end());
