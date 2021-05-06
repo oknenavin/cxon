@@ -418,10 +418,10 @@ struct result {
                 a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
             }
             {   node a;
-                a = {1, 2}; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1, 2}));
+                a = node(1.0); CHECK(a.is<node::real>() && a.get<node::real>() == 1.0);
             }
             {   node a;
-                a = {{1, 2}}; CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{1, 2}}));
+                a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
             }
         }
         {   // json::node

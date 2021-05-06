@@ -650,10 +650,10 @@ CXON_JSON_CLS(my_type,
                 a = node(""); CHECK(a.is<node::string>() && a.get<node::string>() == "");
             }
             {   node a;
-                a = {1, 2}; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1, 2}));
+                a = node(node::array {1}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1}));
             }
             {   node a;
-                a = {{1, 2}}; CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{1, 2}}));
+                a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
             }
         }
         {   // less than
