@@ -27,7 +27,7 @@ namespace cxon {
                 iterator end()      { return std::end(a_); }
 
                 reference emplace_back()            { return grow(), a_[i_++]; }
-                void push_back(const value_type& t) { grow(), a_[i_++] = t; }
+                //void push_back(const value_type& t) { grow(), a_[i_++] = t; }
                 void push_back(value_type&& t)      { grow(), a_[i_++] = std::move(t); }
 
                 void reserve(size_t n)              { n > a_.size() ? grow(n) : void(); }

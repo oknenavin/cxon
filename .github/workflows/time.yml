@@ -17,7 +17,7 @@ jobs:
     - name: Time
       env:
         CXX: g++-5
-        CXXFLAGS: -std=c++11
+        CXXFLAGS: -DTIME_ONLY -std=c++11
       run: make time
 
   gcc-10:
@@ -49,7 +49,7 @@ jobs:
     - name: Time
       env:
         CXX: g++-10
-        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -DCOMPARE_WITH_BOOST_JSON -DCOMPARE_WITH_RAPIDJSON -DCOMPARE_WITH_NLOHMANN -std=c++20
+        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -DTIME_ONLY -DCOMPARE_WITH_BOOST_JSON -DCOMPARE_WITH_RAPIDJSON -DCOMPARE_WITH_NLOHMANN -std=c++20
       run: make time
 
   # clang ######################################################################
@@ -65,7 +65,7 @@ jobs:
     - name: Time
       env:
         CXX: clang++-3.5
-        CXXFLAGS: -std=c++11
+        CXXFLAGS: -DTIME_ONLY -std=c++11
       run: make time
 
   clang-11:
@@ -97,5 +97,5 @@ jobs:
     - name: Time
       env:
         CXX: clang++-11
-        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -DCOMPARE_WITH_BOOST_JSON -DCOMPARE_WITH_RAPIDJSON -DCOMPARE_WITH_NLOHMANN -std=c++20
+        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -DTIME_ONLY -DCOMPARE_WITH_BOOST_JSON -DCOMPARE_WITH_RAPIDJSON -DCOMPARE_WITH_NLOHMANN -std=c++20
       run: make time
