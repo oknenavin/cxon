@@ -81,9 +81,9 @@ static unsigned execute_self() {
     }
     {   // ex3
         unsigned char const b0[] = "\xA2\144even\x82\x02\x04\x63odd\x82\x01\x03";
-        node const n0 = node::map {
-            { "even", node::array { 2U, 4U } },
-            { "odd", node::array { 1U, 3U } }
+        node const n0 = {
+            { "even", { 2U, 4U } },
+            { "odd", { 1U, 3U } }
         };
 
         node n1; // read
@@ -116,19 +116,19 @@ static unsigned execute_self() {
     }
     {   // ex4
         // build using initializer lists
-        node n1 = node::array {
+        node n1 = {
             -1,                         // sint
-            node::uint(1),              // uint
+            1U,                         // uint
             node::bytes {0x01, 0x02},   // bytes
             "text",                     // text
-            node::array {1, 2, 3},      // array
-            node::map {                 // map
+            {1, 2, 3},                  // array
+            {                           // map
                 { 1, 1 }, // { key, value }
-                { node::uint(1), 1 },
+                { 1U, 1 },
                 { node::bytes {0x01, 0x02}, 1 },
                 { "text", 1 },
-                { node::array {1, 2, 3}, 1 },
-                { node::map {{1, 2}, {3, 4}}, 1 },
+                { {1, 2, 3}, 1 },
+                { {{1, 2}, {3, 4}}, 1 },
                 { node::tag {1, 2}, 1 },
                 { false, 1 },
                 { nullptr, 1 },
@@ -392,7 +392,7 @@ static unsigned execute_self() {
         }
         {   node n1;
                 cxon::from_bytes(n1, "\x9F\x01\x21\x41\x03\x61\x34\x81\x05\xA1\x61\x36\x07\xC1\x08\xF5\xF6\xF7\xFA\x00\x00\x00\x00\x09\xFF");
-            node n2 = node::array {1U, -2, node::array {3U}, "4", node::array {5U}, node::object{{"6", 7U}}, 8U, true, nullptr, nullptr, 0.0, 9U };
+            node n2 = {1U, -2, {3U}, "4", {5U}, {{"6", 7U}}, 8U, true, nullptr, nullptr, 0.0, 9U };
             CHECK(n2 == n1);
         }
         {   node n;
@@ -403,7 +403,7 @@ static unsigned execute_self() {
                 auto r = cxon::from_bytes(n, "\xFF");
             CHECK(!r && r.ec == cxon::cbor::read_error::unexpected);
         }
-        {   node n = node::array { node::object {{"1", 2.0}}, node::array {3.0}, "4", 5.0, true, nullptr };
+        {   node n = { {{"1", 2.0}}, {3.0}, "4", 5.0, true, nullptr };
             std::string s1;
                 cxon::to_bytes(s1, n);
             char const s2[] = "\x86\xA1\x61\x31\xFB\x40\x00\x00\x00\x00\x00\x00\x00\x81\xFB\x40\x08\x00\x00\x00\x00\x00\x00\x61\x34\xFB\x40\x14\x00\x00\x00\x00\x00\x00\xF5\xF6";
@@ -411,15 +411,15 @@ static unsigned execute_self() {
         }
         {   node n1;
                 cxon::from_bytes(n1, "\xA1\x01\x02");
-            node n2 = node::object{{1U, 2U}};
+            node n2 = {{1U, 2U}};
             CHECK(n2 == n1);
         }
     }
     {   // round-trip
         using node = cxon::json::node;
         {   // json::node => cbor => json::node
-            node const fr = node::array { node::object {{"1", 2}, {3, 4}}, node::array {5, 6}, "7, 8", 9, true, nullptr };
-            node const to = node::array { node::object {{"1", 2U}, {3U, 4U}}, node::array {5U, 6U}, "7, 8", 9U, true, nullptr };
+            node const fr = { {{"1", 2 }, {3 , 4 }}, {5 , 6 }, "7, 8", 9 , true, nullptr };
+            node const to = { {{"1", 2U}, {3U, 4U}}, {5U, 6U}, "7, 8", 9U, true, nullptr };
             std::vector<unsigned char> s;
                 cxon::to_bytes(s, fr);
             node n;

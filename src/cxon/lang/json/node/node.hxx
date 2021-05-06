@@ -183,7 +183,27 @@ namespace cxon { namespace json { // node
                 CXON_JSON_TYPE_DEF(null)
 #           undef CXON_JSON_TYPE_DEF
 
-            // handle literals
+            // object if empty or array(s) of two elements, array otherwise
+            basic_node(std::initializer_list<basic_node> l) : kind_(node_kind::null) {
+                *this = l;
+            }
+            basic_node& operator =(std::initializer_list<basic_node> l) {
+                bool const obj = l.size() == 0 || std::all_of(l.begin(), l.end(), [&](const basic_node& e) {
+                    return e.template is<array>() && e.template get<array>().size() == 2;
+                });
+                if (obj) {
+                    auto& o = imbue<object>();
+                    for (auto& e : l) {
+                        auto& a = e.template get<array>();
+                        cxon::cnt::append(o, {a[0], a[1]});
+                    }
+                }
+                else
+                    imbue<array>() = l;
+                return *this;
+            }
+
+            // literals
             private:
                 template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
                     struct int_type             { using type = sint; };
@@ -195,7 +215,7 @@ namespace cxon { namespace json { // node
                         static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, typename int_type<T>::type>::value;
                     };
             public:
-                // numeric
+                // integral
                 template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
                     basic_node(T t) : kind_(node_kind::null) {
                         imbue<typename int_type<T>::type>() = t;

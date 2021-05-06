@@ -112,7 +112,7 @@ namespace cxon { namespace cbor { namespace cnt {
                 -> enable_if_t<!is_forward_iterator<II>::value, bool>
             {
                 for ( ; n != 0 && f != l; --n, ++f)
-                    cxon::cnt::emplace(c) = *f;
+                    cxon::cnt::append(c, *f);
                 return n == 0;
             }
 
