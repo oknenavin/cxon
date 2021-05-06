@@ -42,9 +42,9 @@ int main() {
     using node = cxon::json::node;
         
     char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
-    node const n0 = node::object {
-        { "even", node::array { 2U, 4U, 6U } },
-        { "odd", node::array { 1U, 3U, 5U } }
+    node const n0 = {
+        { "even", { 2U, 4U, 6U } }, // list of key-value pairs form an object
+        { "odd", { 1U, 3U, 5U } }
     };
 
     node n1; // read
@@ -70,20 +70,20 @@ int main() {
     using node = cxon::json::node;
 
     // build using initializer lists
-    node n1 = node::object {
-        { "object", node::object { {"object", 0} } },
-        { "array", node::array {
-                node::object { {"object", 0} }, // objects and
-                node::array { 1, 2, 3 },        // arrays must be explicit
-                "4",        // string
-                3,          // signed
-                14U,        // unsigned
-                3.14,       // real
-                true,       // boolean
-                nullptr     // null
+    node n1 = { // list of key-value pairs form an object [1]
+        { "object", { {"object", 0} } },
+        { "array", { // an array if not [1]
+                { {"object", 0} },  // object if empty or array(s) of two elements
+                { 1, 2, 3 },        // array otherwise
+                "4",                // string
+                3,                  // signed
+                14U,                // unsigned
+                3.14,               // real
+                true,               // boolean
+                nullptr             // null
             }
         },
-        { "string", "string" }, // "key": value
+        { "string", "string" },
         { "sint", 3 },
         { "uint", 14U },
         { "real", 3.14 },
@@ -124,8 +124,6 @@ int main() {
     std::string s2;
         cxon::to_bytes(s2, n2);
     assert(s1 == s2);
-
-    std::string const tidy_json = cxon::json::tidy(s1);
 }
 ```
 
@@ -133,6 +131,7 @@ The resulting `JSON` is (*note, that the default `real` type is `double`*):
 
 ``` json
 {
+    "object": { "object": 0 },
     "array": [
         { "object": 0 },
         [ 1, 2, 3 ],
@@ -143,13 +142,12 @@ The resulting `JSON` is (*note, that the default `real` type is `double`*):
         true,
         null
     ],
-    "boolean": false,
-    "null": null,
-    "object": { "object": 0 },
-    "real": 3.1400000000000001,
-    "sint": 3,
     "string": "string",
-    "uint": 14
+    "sint": 3,
+    "uint": 14,
+    "real": 3.1400000000000001,
+    "boolean": false,
+    "null": null
 }
 ```
 
@@ -245,12 +243,12 @@ assert(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
 ##### Constructors
 
 ``` c++
-basic_node();                       (1)
+basic_node();                           (1)
 
-basic_node(basic_node&& o);         (2)
+basic_node(basic_node&& o);             (2)
 basic_node(const basic_node& o);
 
-basic_node(object&& v);             (3)
+basic_node(object&& v);                 (3)
 basic_node(const object& v);
 basic_node(array&& v);
 basic_node(const array& v);
@@ -267,8 +265,10 @@ basic_node(const boolean& v);
 basic_node(null&& v);
 basic_node(const null& v);
 
-basic_node(<integral> v);           (4)
+basic_node(<integral> v);               (4)
 basic_node(const char* v);
+
+basic_node(std::initializer_list l);    (5)
 ```
 
 Construct new node from a variety of data sources.
@@ -276,6 +276,8 @@ Construct new node from a variety of data sources.
   - `(2)` Move and copy constructors
   - `(3)` Move and copy constructors for each value type
   - `(4)` Constructors for `string` and `integral` value types
+  - `(5)` Constructors from initializer list. Will create an object if empty
+          or array(s) of two elements, array otherwise
 
 ###### Example
 
@@ -308,6 +310,12 @@ using namespace cxon::json;
 {   // (4)
     node n("string"); assert(n.is<node::string>() && n.get<node::string>() == "string");
 }
+{   // (5)
+    node n({{1, 2}, {3, 4}}); CHECK(n.is<node::object>() && n.get<node::object>() == (node::object {{1, 2}, {3, 4}}));
+}
+{   // (5)
+    node n({1, 2, 3, 4}); CHECK(n.is<node::array>() && n.get<node::array>() == (node::array {1, 2, 3, 4}));
+}
 ```
 
 
@@ -316,10 +324,10 @@ using namespace cxon::json;
 ##### Assignment operators
 
 ``` c++
-basic_node& operator =(basic_node&& o);         (1)
+basic_node& operator =(basic_node&& o);             (1)
 basic_node& operator =(const basic_node& o);
 
-basic_node& operator =(object&& v);             (2)
+basic_node& operator =(object&& v);                 (2)
 basic_node& operator =(const object& v);
 basic_node& operator =(array&& v);
 basic_node& operator =(const array& v);
@@ -336,14 +344,18 @@ basic_node& operator =(const boolean& v);
 basic_node& operator =(null&& v);
 basic_node& operator =(const null& v);
 
-basic_node& operator =(int v);                  (3)
+basic_node& operator =(int v);                      (3)
 basic_node& operator =(const char* v);
+
+basic_node& operator =(std::initializer_list l);    (4)
 ```
 
 Replaces the content of the node: 
   - `(1)` Move or copy of `o`
   - `(2)` Move or copy of `v`
   - `(3)` Copy of `v`
+  - `(4)` From initializer list. Object if empty or array(s) of two elements,
+          array otherwise
 
 ###### Return value
 

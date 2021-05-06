@@ -188,14 +188,15 @@ struct result {
                         a1->push_back(1);                   CHECK(a1->back().is<node::sint>());
                         a1->push_back(2);                   CHECK(a1->back().is<node::sint>());
                         a1->push_back(3);                   CHECK(a1->back().is<node::sint>());
-                    a.push_back(node:: map {});             CHECK(a.back().is<node::map>());
+                    //a.push_back(node::map {});
+                    a.push_back(node({}));                  CHECK(a.back().is<node::map>());
                     auto& m = a.back().get<node::map>();
                         m[1] = 1;                           CHECK(m.find(node::sint(1)) != m.end());
                         m[node::uint(1)] = 1;               CHECK(m.find(node::uint(1)) != m.end());
                         m[node::bytes {0x01, 0x02}] = 1;    CHECK(m.find(node::bytes {0x01, 0x02}) != m.end());
                         m["text"] = 1;                      CHECK(m.find(node::text("text")) != m.end());
-                        m[node::array {1, 2, 3}] = 1;       CHECK(m.find(node::array({1, 2, 3})) != m.end());
-                        m[node::map {{1, 2}, {3, 4}}] = 1;  CHECK(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
+                        m[{1, 2, 3}] = 1;                   CHECK(m.find(node::array({1, 2, 3})) != m.end());
+                        m[{{1, 2}, {3, 4}}] = 1;            CHECK(m.find(node::map({{1, 2}, {3, 4}})) != m.end());
                         m[node::tag {1, 2}] = 1;            CHECK(m.find(node::tag(1, 2)) != m.end());
                         m[false] = 1;                       CHECK(m.find(node::boolean(false)) != m.end());
                         m[nullptr] = 1;                     CHECK(m.find(node::null(nullptr)) != m.end());
@@ -311,6 +312,12 @@ struct result {
             {
                 node n; CHECK(n.is<node::undefined>());
             }
+            {
+                node n({{1, 2}, {3, 4}}); CHECK(n.is<node::map>() && n.get<node::map>() == (node::map {{1, 2}, {3, 4}}));
+            }
+            {
+                node n({1, 2, 3, 4}); CHECK(n.is<node::array>() && n.get<node::array>() == (node::array {1, 2, 3, 4}));
+            }
         }
         {   // ex6
             {   // T is the same
@@ -409,6 +416,12 @@ struct result {
             }
             {   node a;
                 a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
+            }
+            {   node a;
+                a = {1, 2}; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1, 2}));
+            }
+            {   node a;
+                a = {{1, 2}}; CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{1, 2}}));
             }
         }
         {   // json::node
