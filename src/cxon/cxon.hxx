@@ -7,8 +7,8 @@
 #define CXON_CXON_HXX_
 
 #define CXON_VERSION_MAJOR 0
-#define CXON_VERSION_MINOR 52
-#define CXON_VERSION_PATCH 2
+#define CXON_VERSION_MINOR 53
+#define CXON_VERSION_PATCH 0
 
 #include "utility.hxx"
 

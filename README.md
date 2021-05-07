@@ -92,6 +92,30 @@ int main() {
   - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](src/cxon/README.md#interface))
 
+###### Example
+
+``` c++
+// customized format
+    struct custom_traits : cxon::json::format_traits {
+        // if the input is trusted, we can disable some checks
+        static constexpr bool read_validate_string_utf8 = false;
+    };
+    using TRJS = cxon::JSON<custom_traits>; // TRusted JSon
+    ...
+    std::vector<std::string> sv;
+        cxon::from_bytes<TRJS>(sv, R"(["trusted", "strings"])");
+
+// named parameter
+    using namespace cxon::json;
+    std string pi;
+        cxon::to_bytes(pi, 3.1415926, fp_precision::set<3>()); // floating-point precision
+    assert(pi == "3.14");
+```
+
+Traits can be stateful or stateless allowing arbitrary complex formats.  
+Named parameters can be compile time or runtime giving flexibility for the implementations.
+
+
 ###### Interface
 
 ```c++
