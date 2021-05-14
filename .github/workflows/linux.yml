@@ -89,6 +89,20 @@ jobs:
         CXX: g++-10
         CXXFLAGS: -std=c++20
       run: make -j check
+
+  gcc-11:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Compiler setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-11 g++-11
+    - name: Check
+      env:
+        CXX: g++-11
+        CXXFLAGS: -std=c++20
+      run: make -j check
   
   # clang ######################################################################
 
@@ -215,5 +229,19 @@ jobs:
     - name: Check
       env:
         CXX: clang++-11
+        CXXFLAGS: -std=c++20
+      run: make -j check
+
+  clang-12:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Compiler setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-12
+    - name: Check
+      env:
+        CXX: clang++-12
         CXXFLAGS: -std=c++20
       run: make -j check
