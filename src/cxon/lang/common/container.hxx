@@ -7,6 +7,7 @@
 #define CXON_CONTAINER_HXX_
 
 #include "allocator.hxx"
+#include <limits>
 #include <utility>
 #include <type_traits>
 #include <iterator>
