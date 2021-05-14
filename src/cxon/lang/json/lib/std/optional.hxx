@@ -10,23 +10,24 @@ namespace cxon {
 
     template <typename X, typename T>
         struct read<JSON<X>, std::optional<T>> {
-            template <typename II, typename Cx, typename J = JSON<X>>
+            template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
-                    if (cio::peek(i, e) == *J::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
+                    cio::consume<Y>(i, e);
+                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
                         II const o = i;
-                        return cio::consume<J>(J::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected);
+                        return cio::consume<Y>(Y::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected);
                     }
-                    return read_value<J>(t.emplace(), i, e, cx);
+                    return read_value<Y>(t.emplace(), i, e, cx);
                 }
         };
 
     template <typename X, typename T>
         struct write<JSON<X>, std::optional<T>> {
-            template <typename O, typename Cx, typename J = JSON<X>>
+            template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::optional<T>& t, Cx& cx) {
                     return t.has_value() ?
-                        write_value<J>(o, t.value(), cx) :
-                        cio::poke<J>(o, J::id::nil, cx)
+                        write_value<Y>(o, t.value(), cx) :
+                        cio::poke<Y>(o, Y::id::nil, cx)
                     ;
                 }
         };
