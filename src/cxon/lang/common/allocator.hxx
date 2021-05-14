@@ -19,7 +19,7 @@ namespace cxon {
                 auto t = tr::allocate(al_, 1);
                 return construct(t), t;
             }
-            T* create(size_t n) {
+            T* create(std::size_t n) {
                 auto p = tr::allocate(al_, n);
                     for (T *t = p, *te = t + n; t != te; ++t)
                         construct(t);
@@ -29,7 +29,7 @@ namespace cxon {
             void release(T* t) {
                 destroy(t), tr::deallocate(al_, t, 1);
             }
-            void release(T* p, size_t n) {
+            void release(T* p, std::size_t n) {
                 for (T *t = p, *te = t + n; t != te; ++t)
                     destroy(t);
                 tr::deallocate(al_, p, n);

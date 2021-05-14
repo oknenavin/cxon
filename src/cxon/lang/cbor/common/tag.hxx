@@ -59,7 +59,7 @@ namespace cxon { namespace cbor { namespace tag {
                             case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
                             case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
                             case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-                                return  (bio::get(i, e), t = size_t(b), true);
+                                return  (bio::get(i, e), t = std::size_t(b), true);
                             case 0x18: case 0x19: case 0x1A: case 0x1B:
                                 return  (bio::get(i, e), bio::get(t, 1 << (b - 0x18), i, e)) ||
                                         (bio::rewind(i, o), cx/cbor::read_error::integer_invalid)

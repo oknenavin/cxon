@@ -15,18 +15,18 @@ namespace cxon {
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(std::valarray<T>& t, II& i, II e, Cx& cx) { // no, it sucks
                     std::valarray<T> v(4);
-                    size_t p = 0;
+                    std::size_t p = 0;
                     bool const r = cio::cnt::read_list<Y>(i, e, cx, [&] {
                         if (p >= v.size()) {
                             std::valarray<T> n(std::move(v));
                             v.resize(p + p);
-                                for (size_t i = 0; i != p; ++i) v[i] = n[i];
+                                for (std::size_t i = 0; i != p; ++i) v[i] = n[i];
                         }
                         return read_value<Y>(v[p], i, e, cx) && (++p, true);
                     });
                         if (!r) return false;
                     t.resize(p);
-                        for (size_t j = 0; j != p; ++j) t[j] = v[j];
+                        for (std::size_t j = 0; j != p; ++j) t[j] = v[j];
                     return true;
                 }
         };

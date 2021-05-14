@@ -117,7 +117,7 @@ types is as follow:
     Parameter      | Type                     | Default                             | Description
     ---------------|--------------------------|-------------------------------------|-------------------------
     `allocator`    | [`Allocator`][std-alloc] | `std::allocator<T>`                 | `T*` allocator
-    `ids_len_max`  | `size_t`                 | 64                                  | token read buffer size
+    `ids_len_max`  | `std::size_t`            | 64                                  | token read buffer size
 
 
 --------------------------------------------------------------------------------

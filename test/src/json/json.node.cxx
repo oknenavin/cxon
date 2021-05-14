@@ -39,7 +39,7 @@
 using node = cxon::json::ordered_node;
 
 struct test_time {
-    size_t size = 0;
+    std::size_t size = 0;
     double read = 0;
     double write = 0;
     double tidy_itr = 0;
@@ -848,7 +848,7 @@ int main(int argc, char *argv[]) {
                     ++err, c.error += "must pass: '" + c.source + "' (failed with '" + format_error(r, s.begin()) + "')";
                 }
             }
-            size_t fc = 0;
+            std::size_t fc = 0;
                 for (auto& c : pass) {
                     if (!c.error.empty()) {
                         ++fc, std::fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
@@ -874,7 +874,7 @@ int main(int argc, char *argv[]) {
                     ++err, c.error += "must fail: '" + c.source + "' (passed as '" + pass + "')";
                 }
             }
-            size_t fc = 0;
+            std::size_t fc = 0;
                 for (auto& c : fail) {
                     if (!c.error.empty()) {
                         ++fc, std::fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
@@ -928,7 +928,7 @@ int main(int argc, char *argv[]) {
                         }
                 }
             }
-            size_t fc = 0;
+            std::size_t fc = 0;
                 for (auto& c : diff) {
                     if (!c.error.empty()) {
                         ++fc, std::fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
@@ -1067,10 +1067,10 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        std::vector<size_t> wid(tab[0].size(), 0);
+        std::vector<std::size_t> wid(tab[0].size(), 0);
         {   // column width
             for (auto& r : tab)
-                for (size_t i = 0, is = r.size(); i != is; ++i)
+                for (std::size_t i = 0, is = r.size(); i != is; ++i)
                     wid[i] = std::max(wid[i], r[i].length());
         }
 
@@ -1089,15 +1089,15 @@ int main(int argc, char *argv[]) {
             line();
             {   // header
                 std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.front()[0].c_str());
-                for (size_t i = 1, is = tab.front().size(); i != is; ++i)
+                for (std::size_t i = 1, is = tab.front().size(); i != is; ++i)
                     std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.front()[i].c_str());
                 std::fputc('\n', stdout);
             }
             line();
             {   // body
-                for (size_t i = 1, is = tab.size() - 1; i != is; ++i) {
+                for (std::size_t i = 1, is = tab.size() - 1; i != is; ++i) {
                     std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab[i][0].c_str());
-                    for (size_t j = 1, js = tab[i].size(); j != js; ++j)
+                    for (std::size_t j = 1, js = tab[i].size(); j != js; ++j)
                         std::fprintf(stdout, " %*s |", (unsigned)wid[j], tab[i][j].c_str());
                     std::fputc('\n', stdout);
                 }
@@ -1105,7 +1105,7 @@ int main(int argc, char *argv[]) {
             line();
             {   // average
                 std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.back()[0].c_str());
-                for (size_t i = 1, is = tab.back().size(); i != is; ++i)
+                for (std::size_t i = 1, is = tab.back().size(); i != is; ++i)
                     std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.back()[i].c_str());
                 std::fputc('\n', stdout);
             }

@@ -115,7 +115,7 @@ namespace cxon { namespace test {
                     return !std::isgreater(t0, t1) && !std::isless(t0, t1);
                 }
         };
-    template <typename T, size_t N>
+    template <typename T, std::size_t N>
         struct match<T[N]> {
             static bool values(const T (&t0)[N], const T (&t1)[N]) {
                 return std::equal(
@@ -210,10 +210,10 @@ namespace cxon { namespace test {
             return from_bytes<X>(t, s);
         }
 
-    template <typename T>           struct clean        { clean(T&) {} };
-    template <typename T, size_t N> struct clean<T[N]>  { clean(T (&)[N]) {} };
+    template <typename T>           struct clean            { clean(T&) {} };
+    template <typename T, std::size_t N> struct clean<T[N]> { clean(T (&)[N]) {} };
     // TODO: incorrect, see the TODO entry about this
-    template <typename T>           struct clean<T*>    { clean(T* t) : t_(t) {} ~clean() { delete [] t_; } T* t_; }; // std::allocator
+    template <typename T>           struct clean<T*>        { clean(T* t) : t_(t) {} ~clean() { delete [] t_; } T* t_; }; // std::allocator
 
     template <typename X, typename T, typename C>
         static bool verify_read_(const T& ref, const C& sbj) {

@@ -30,9 +30,9 @@ namespace cxon { namespace test {
             -> enable_if_t<std::is_floating_point<T>::value, std::string>
         {
             char s[std::numeric_limits<T>::max_digits10 * 2] = { 0 };
-            size_t const l = sizeof(s) / sizeof(char);
+            std::size_t const l = sizeof(s) / sizeof(char);
             int const w = std::snprintf(s, l, fmt<T>::str, std::numeric_limits<T>::max_digits10, t);
-                CXON_ASSERT(w > 0 && (size_t)w < l, "conversion failed");
+                CXON_ASSERT(w > 0 && (std::size_t)w < l, "conversion failed");
             return s;
         }
 

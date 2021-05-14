@@ -581,11 +581,11 @@ namespace jsonrpc {
     template <typename ...P>
         struct request {
             static char const*const jsonrpc;
-            size_t const            id;
+            std::size_t const       id;
             char const*const        method;
             std::tuple<P...> const  params;
 
-            constexpr request(size_t id, const char* method, P... params) noexcept
+            constexpr request(std::size_t id, const char* method, P... params) noexcept
             :   id(id), method(method), params(params...) { }
 
             CXON_JSON_CLS_WRITE_MEMBER(request,
@@ -599,11 +599,11 @@ namespace jsonrpc {
         char const*const request<P...>::jsonrpc = "2.0";
 
     template <typename ...P>
-        constexpr request<P...> make_request(size_t id, const char* method, P... params) {
+        constexpr request<P...> make_request(std::size_t id, const char* method, P... params) {
             return request<P...>(id, method, params...);
         }
     template <typename ...P>
-        constexpr request<napa<P>...> make_request(size_t id, const char* method, napa<P>... params) {
+        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>... params) {
             return request<napa<P>...>(id, method, params...);
         }
 
@@ -625,7 +625,7 @@ namespace jsonrpc {
     template <typename R, typename D = cxon::cio::val::sink<>>
         struct response {
             char            jsonrpc[8];
-            size_t          id;
+            std::size_t     id;
             R               result;
             struct error<D> error;
 

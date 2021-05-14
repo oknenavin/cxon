@@ -59,10 +59,10 @@ namespace cxon { namespace cio { namespace key {
 
     template <typename T> struct is_quoted : std::false_type {};
 #   define CXON_QUOTED(T)\
-        template <size_t N>     struct is_quoted<T[N]>          : std::true_type  {};\
-        template <size_t N>     struct is_quoted<const T[N]>    : std::true_type  {};\
-        template <>             struct is_quoted<T*>            : std::true_type  {};\
-        template <>             struct is_quoted<const T*>      : std::true_type  {};
+        template <std::size_t N>    struct is_quoted<T[N]>          : std::true_type  {};\
+        template <std::size_t N>    struct is_quoted<const T[N]>    : std::true_type  {};\
+        template <>                 struct is_quoted<T*>            : std::true_type  {};\
+        template <>                 struct is_quoted<const T*>      : std::true_type  {};
         CXON_QUOTED(char)
         CXON_QUOTED(wchar_t)
 #       if __cplusplus > 201703L /* C++20 */

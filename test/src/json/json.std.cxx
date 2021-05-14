@@ -229,7 +229,7 @@ TEST_BEG(cxon::JSON<>)
 TEST_END()
 
 
-template <size_t N>
+template <std::size_t N>
     struct less {
         constexpr bool operator()(const std::bitset<N>& l, const std::bitset<N>& r) const {
             return l.to_string() < r.to_string();

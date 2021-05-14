@@ -141,7 +141,7 @@ namespace cxon { namespace charconv { namespace imp {
                  -> typename std::enable_if<std::is_integral<T>::value, to_chars_result>::type
             {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
-                CXON_ASSERT(last > first && size_t(last - first) >= std::numeric_limits<T>::digits10 + 1, "buffer too small");
+                CXON_ASSERT(last > first && std::size_t(last - first) >= std::numeric_limits<T>::digits10 + 1, "buffer too small");
                 unsigned const w = itoa_(first, value, base);
                 return { first + w, std::errc{} };
             }
@@ -155,8 +155,8 @@ namespace cxon { namespace charconv { namespace imp {
             inline auto number_to_chars_(char* first, char* last, T value, int precision)
                  -> typename std::enable_if<std::is_floating_point<T>::value, to_chars_result>::type
             {
-                size_t const l = last - first;
-                int const w = std::snprintf(first, l, fmt_<T>::str, precision, value); CXON_ASSERT(w > 0 && (size_t)w < l, "conversion failed");
+                std::size_t const l = last - first;
+                int const w = std::snprintf(first, l, fmt_<T>::str, precision, value); CXON_ASSERT(w > 0 && (std::size_t)w < l, "conversion failed");
                 return { first + w, std::errc{} };
             }
 

@@ -43,12 +43,12 @@ namespace cxon { // pointer
 
 namespace cxon { // array
 
-    template <typename X, typename T, size_t N>
+    template <typename X, typename T, std::size_t N>
         struct read<JSON<X>, T[N]> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
                     II const o = i;
-                        size_t p = 0;
+                        std::size_t p = 0;
                     return cio::cnt::read_list<J>(i, e, cx, [&] {
                         return (p != N || (cio::rewind(i, o), cx/json::read_error::overflow)) &&
                                 read_value<J>(t[p++], i, e, cx)
@@ -57,7 +57,7 @@ namespace cxon { // array
                 }
         };
 
-    template <typename X, typename T, size_t N>
+    template <typename X, typename T, std::size_t N>
         struct write<JSON<X>, T[N]> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
@@ -70,7 +70,7 @@ namespace cxon { // array
 namespace cxon { // character pointer & array
 
 #   define CXON_ARRAY(T)\
-        template <typename X, size_t N>\
+        template <typename X, std::size_t N>\
             struct read<JSON<X>, T[N]> {\
                 template <typename II, typename Cx>\
                     static bool value(T (&t)[N], II& i, II e, Cx& cx)   { return cio::str::array_read<JSON<X>>(t, t + N, i, e, cx); }\
@@ -115,7 +115,7 @@ namespace cxon { // character pointer & array
 #   undef CXON_POINTER
 
 #   define CXON_ARRAY(T)\
-        template <typename X, size_t N>\
+        template <typename X, std::size_t N>\
             struct write<JSON<X>, T[N]> {\
                 template <typename O, typename Cx>\
                     static bool value(O& o, const T (&t)[N], Cx& cx)    { return cio::str::array_write<JSON<X>>(o, t, t + N, cx); }\
