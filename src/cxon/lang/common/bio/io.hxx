@@ -32,17 +32,17 @@ namespace cxon { namespace bio {
         inline auto get(T& t, unsigned n, II& i, II e)
             -> enable_if_t<std::is_integral<T>::value, bool>;
 
-    template <size_t N, typename T, typename II>
+    template <std::size_t N, typename T, typename II>
         inline auto get(T& t, II& i, II e)
             -> enable_if_t<std::is_floating_point<T>::value, bool>;
 
     template <typename OI, typename II>
         inline bool get(OI o, II& i, II e);
     template <typename OI, typename II>
-        inline bool get(OI o, II& i, II e, size_t n);
+        inline bool get(OI o, II& i, II e, std::size_t n);
 
     template <typename II>
-        inline bool advance(II& i, II e, size_t n);
+        inline bool advance(II& i, II e, std::size_t n);
 
     // output
 
@@ -57,7 +57,7 @@ namespace cxon { namespace bio {
         inline auto poke(O& o, FI f, FI l )
             -> enable_if_t<is_forward_iterator<FI>::value, bool>;
     template <typename O, typename FI>
-        inline auto poke(O& o, FI i, size_t n)
+        inline auto poke(O& o, FI i, std::size_t n)
             -> enable_if_t<is_forward_iterator<FI>::value, bool>;
 
     template <typename O, typename T>
@@ -75,7 +75,7 @@ namespace cxon { namespace bio {
         inline auto poke(O& o, FI f, FI l, Cx& cx)
             -> enable_if_t<is_forward_iterator<FI>::value, bool>;
     template <typename X, typename O, typename FI, typename Cx>
-        inline auto poke(O& o, FI i, size_t n, Cx& cx)
+        inline auto poke(O& o, FI i, std::size_t n, Cx& cx)
             -> enable_if_t<is_forward_iterator<FI>::value, bool>;
 
     template <typename X, typename O, typename T, typename Cx>
@@ -230,7 +230,7 @@ namespace cxon { namespace bio {
             }
         }
 
-    template <size_t N, typename T, typename II>
+    template <std::size_t N, typename T, typename II>
         inline auto get(T& t, II& i, II e)
             -> enable_if_t<std::is_floating_point<T>::value, bool>
         {
@@ -246,41 +246,41 @@ namespace cxon { namespace bio {
     namespace imp {
 
         template <typename OI, typename II>
-            inline auto get_(OI o, II& i, II e, size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+            inline auto get_(OI o, II& i, II e, std::size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
                 for ( ; n != 0 && i != e && poke(o, *i); --n, ++i)
                     ;
                 return n == 0;
             }
         template <typename OI, typename II>
-            inline auto get_(OI o, II& i, II e, size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
-                auto const m = std::min(n, static_cast<size_t>(std::distance(i, e)));
+            inline auto get_(OI o, II& i, II e, std::size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
+                auto const m = std::min(n, static_cast<std::size_t>(std::distance(i, e)));
                 return std::copy(i, i + m, o), std::advance(i, m), m == n;
             }
 
     }
     template <typename OI, typename II>
-        inline bool get(OI o, II& i, II e, size_t n) {
+        inline bool get(OI o, II& i, II e, std::size_t n) {
             return imp::get_(o, i, e, n);
         }
 
     namespace imp {
 
         template <typename II>
-            inline auto advance_(II& i, II e, size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+            inline auto advance_(II& i, II e, std::size_t n) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
                 for ( ; n != 0 && i != e; --n, ++i)
                     ;
                 return n == 0;
             }
         template <typename II>
-            inline auto advance_(II& i, II e, size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
-                return  (static_cast<size_t>(std::distance(i, e)) >= n) &&
+            inline auto advance_(II& i, II e, std::size_t n) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
+                return  (static_cast<std::size_t>(std::distance(i, e)) >= n) &&
                         (std::advance(i, n), true)
                 ;
             }
 
     }
     template <typename II>
-        inline bool advance(II& i, II e, size_t n) {
+        inline bool advance(II& i, II e, std::size_t n) {
             return imp::advance_(i, e, n);
         }
 
@@ -311,15 +311,15 @@ namespace cxon { namespace bio {
             }
 
         template <typename O, typename FI>
-            inline auto push_(option<1>, O& o, FI i, size_t n) -> decltype(o.append(i, n), void()) {
+            inline auto push_(option<1>, O& o, FI i, std::size_t n) -> decltype(o.append(i, n), void()) {
                 o.append(i, n);
             }
         template <typename O, typename FI>
-            inline void push_(option<0>, O& o, FI i, size_t n) {
+            inline void push_(option<0>, O& o, FI i, std::size_t n) {
                 while (n) push_(o, *i), ++i, --n;
             }
         template <typename O, typename FI>
-            inline void push_(O& o, FI i, size_t n) {
+            inline void push_(O& o, FI i, std::size_t n) {
                 push_(option<1>(), o, i, n);
             }
             
@@ -398,7 +398,7 @@ namespace cxon { namespace bio {
                 return poke_(o, f, l);
             }
         template <typename O, typename FI>
-            inline auto put_(O& o, FI i, size_t n)
+            inline auto put_(O& o, FI i, std::size_t n)
                 -> enable_if_t<is_forward_iterator<FI>::value, bool>
             {
                 return poke_(o, i, n);
@@ -444,7 +444,7 @@ namespace cxon { namespace bio {
             return imp::put_(o, f, l);
         }
     template <typename O, typename FI>
-        inline auto poke(O& o, FI i, size_t n)
+        inline auto poke(O& o, FI i, std::size_t n)
             -> enable_if_t<is_forward_iterator<FI>::value, bool>
         {
             return imp::put_(o, i, n);
@@ -476,7 +476,7 @@ namespace cxon { namespace bio {
             return imp::put_(o, f, l) || cx/X::write_error::output_failure;
         }
     template <typename X, typename O, typename FI, typename Cx>
-        inline auto poke(O& o, FI i, size_t n, Cx& cx)
+        inline auto poke(O& o, FI i, std::size_t n, Cx& cx)
             -> enable_if_t<is_forward_iterator<FI>::value, bool>
         {
             return imp::put_(o, i, n) || cx/X::write_error::output_failure;

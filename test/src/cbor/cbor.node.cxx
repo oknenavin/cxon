@@ -561,7 +561,7 @@ struct result {
                 };
                 CXON_ASSERT(hex.length() % 2 == 0, "invalid input");
                 std::string bin;
-                    for (size_t i = 0, is = hex.length(); i != is; i += 2) {
+                    for (std::size_t i = 0, is = hex.length(); i != is; i += 2) {
                         char const b = char((hex_[(unsigned)hex[i]] << 4) + hex_[(unsigned)hex[i + 1]]);
                         bin += b;
                     }
@@ -740,7 +740,7 @@ namespace timing
     struct test_time {
         std::string source;
         std::string error;
-        size_t size = 0;
+        std::size_t size = 0;
         double read = 0;
         double write = 0;
     };
@@ -865,10 +865,10 @@ namespace timing
                 }
             }
 
-            std::vector<size_t> wid(tab[0].size(), 0);
+            std::vector<std::size_t> wid(tab[0].size(), 0);
             {   // column width
                 for (auto& r : tab)
-                    for (size_t i = 0, is = r.size(); i != is; ++i)
+                    for (std::size_t i = 0, is = r.size(); i != is; ++i)
                         wid[i] = std::max(wid[i], r[i].length());
             }
 
@@ -884,15 +884,15 @@ namespace timing
                 line();
                 {   // header
                     std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.front()[0].c_str());
-                    for (size_t i = 1, is = tab.front().size(); i != is; ++i)
+                    for (std::size_t i = 1, is = tab.front().size(); i != is; ++i)
                         std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.front()[i].c_str());
                     std::fputc('\n', stdout);
                 }
                 line();
                 {   // body
-                    for (size_t i = 1, is = tab.size() - 1; i != is; ++i) {
+                    for (std::size_t i = 1, is = tab.size() - 1; i != is; ++i) {
                         std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab[i][0].c_str());
-                        for (size_t j = 1, js = tab[i].size(); j != js; ++j)
+                        for (std::size_t j = 1, js = tab[i].size(); j != js; ++j)
                             std::fprintf(stdout, " %*s |", (unsigned)wid[j], tab[i][j].c_str());
                         std::fputc('\n', stdout);
                     }
@@ -900,7 +900,7 @@ namespace timing
                 line();
                 {   // average
                     std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.back()[0].c_str());
-                    for (size_t i = 1, is = tab.back().size(); i != is; ++i)
+                    for (std::size_t i = 1, is = tab.back().size(); i != is; ++i)
                         std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.back()[i].c_str());
                     std::fputc('\n', stdout);
                 }

@@ -10,12 +10,12 @@
 
 namespace cxon {
 
-    template <typename X, typename T, size_t N>
+    template <typename X, typename T, std::size_t N>
         struct read<JSON<X>, std::array<T, N>> {
             template <typename II, typename Cx, typename J = JSON<X>>
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
                     II const o = i;
-                        size_t p = 0;
+                        std::size_t p = 0;
                     return cio::cnt::read_list<J>(i, e, cx, [&] {
                         return (p != N || (cio::rewind(i, o), cx/json::read_error::overflow)) &&
                                 read_value<J>(t[p++], i, e, cx)
@@ -31,7 +31,7 @@ namespace cxon {
                 }
         };
 
-    template <typename X, typename T, size_t N>
+    template <typename X, typename T, std::size_t N>
         struct write<JSON<X>, std::array<T, N>> {
             template <typename O, typename Cx, typename J = JSON<X>>
                 static bool value(O& o, const std::array<T, N>& t, Cx& cx) {

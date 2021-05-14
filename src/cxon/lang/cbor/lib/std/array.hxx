@@ -10,7 +10,7 @@
 
 namespace cxon {
 
-    template <typename X, typename T, size_t N>
+    template <typename X, typename T, std::size_t N>
         struct read<CBOR<X>, std::array<T, N>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::array<T, N>& t, II& i, II e, Cx& cx) {
@@ -25,7 +25,7 @@ namespace cxon {
                 }
         };
 
-    template <typename X, typename T, size_t N>
+    template <typename X, typename T, std::size_t N>
         struct write<CBOR<X>, std::array<T, N>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::array<T, N>& t, Cx& cx) {

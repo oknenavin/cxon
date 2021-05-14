@@ -34,7 +34,7 @@ namespace cxon { namespace cio { namespace str { // char arrays: write
         inline bool array_write(O& o, const T* t, const T* te, Cx& cx);
 
     template <typename X, typename O, typename T, typename Cx>
-        inline bool pointer_write(O& o, const T* t, size_t s, Cx& cx);
+        inline bool pointer_write(O& o, const T* t, std::size_t s, Cx& cx);
     template <typename X, typename O, typename T, typename Cx>
         inline bool pointer_write(O& o, const T* t, Cx& cx);
 
@@ -159,7 +159,7 @@ namespace cxon { namespace cio { namespace str {
 namespace cxon { namespace cio { namespace str {
 
     template <typename T>
-        inline size_t ptrlen(const T* t) noexcept {
+        inline std::size_t ptrlen(const T* t) noexcept {
             const T* e = t;
                 while (*e) ++e;
             return e - t;
@@ -173,7 +173,7 @@ namespace cxon { namespace cio { namespace str {
         }
 
     template <typename X, typename O, typename T, typename Cx>
-        inline bool pointer_write(O& o, const T* t, size_t s, Cx& cx) {
+        inline bool pointer_write(O& o, const T* t, std::size_t s, Cx& cx) {
             return  poke<X>(o, X::string::beg, cx) &&
                         chr::encode_range<X>(o, t, t + s, cx) &&
                     poke<X>(o, X::string::end, cx)

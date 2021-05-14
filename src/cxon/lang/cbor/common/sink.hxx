@@ -128,7 +128,7 @@ namespace cxon { namespace cbor { namespace imp {
                                             (bio::rewind(i, o), cx/cbor::read_error::unexpected)
                                     ;
                                 case 0x18: case 0x19: case 0x1A: case 0x1B: {
-                                    size_t n;
+                                    std::size_t n;
                                     return  (
                                                 bio::get(t, i, e) &&
                                                 bio::get(n, 1U << (mnr - 0x18), i, e) &&
@@ -161,7 +161,7 @@ namespace cxon { namespace cbor { namespace imp {
                                             return (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                     return  true;
                                 case 0x18: case 0x19: case 0x1A: case 0x1B: {
-                                    size_t n;
+                                    std::size_t n;
                                     if (!bio::get(t, i, e) || !bio::get(n, 1U << (mnr - 0x18), i, e) || !bio::poke(t, n, 1U << (mnr - 0x18)))
                                         return (bio::rewind(i, o), cx/cbor::read_error::unexpected);
                                     for (unsigned j = 0; j != n; ++j)

@@ -109,7 +109,7 @@ namespace cxon { namespace json {
                     return cio::poke(o, f, l);
                 });
             }
-            bool append(const char* s, size_t n) {
+            bool append(const char* s, std::size_t n) {
                 return indent_value([&](out_type o, ...) {
                     return cio::poke(o, s, n);
                 });

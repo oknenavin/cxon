@@ -112,7 +112,7 @@ namespace cxon { namespace cbor { namespace cls {
 
     namespace imp {
 
-        template <typename X, size_t N, size_t L>
+        template <typename X, std::size_t N, std::size_t L>
             struct read_ {
                 template <typename S, typename F, typename II, typename Cx>
                     static bool fields(S& s, const char* name, const F& f, II& i, II e, Cx& cx) {
@@ -122,7 +122,7 @@ namespace cxon { namespace cbor { namespace cls {
                         ;
                     }
             };
-        template <typename X, size_t N>
+        template <typename X, std::size_t N>
             struct read_<X, N, N> {
                 template <typename S, typename F, typename II, typename Cx>
                     static constexpr bool fields(S&, const char*, const F&, II&, II, Cx&) {
@@ -130,7 +130,7 @@ namespace cxon { namespace cbor { namespace cls {
                     }
             };
 
-        template <typename X, size_t N, size_t L>
+        template <typename X, std::size_t N, std::size_t L>
             struct write_ {
                 template <typename S, typename F, typename O, typename Cx>
                     static bool fields(O& o, const S& s, const F& f, Cx& cx) {
@@ -139,7 +139,7 @@ namespace cxon { namespace cbor { namespace cls {
                         ;
                     }
             };
-        template <typename X, size_t N>
+        template <typename X, std::size_t N>
             struct write_<X, N, N> {
                 template <typename S, typename F, typename O, typename Cx>
                     static constexpr bool fields(O&, const S&, const F&, Cx&) {
@@ -151,7 +151,7 @@ namespace cxon { namespace cbor { namespace cls {
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
-            size_t n;
+            std::size_t n;
             if (cbor::cnt::read_size_le<X>(n, std::tuple_size<fields<F...>>::value, i, e, cx))
                 for ( ; n; --n) {
                     char id[bio::ids_len_max::constant<napa_type<Cx>>(64)];

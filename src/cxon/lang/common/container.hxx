@@ -18,7 +18,7 @@ namespace cxon { namespace cnt { // container mutation
 
     template <typename C>
         struct traits;
-        //  static bool reserve(C& c, size_t s);
+        //  static bool reserve(C& c, std::size_t s);
         //  static auto emplace(C& c) -> typename C::reference;
         //  template <typename II>
         //      static bool append(C& c, II f, II l);
@@ -26,7 +26,7 @@ namespace cxon { namespace cnt { // container mutation
         //    inline bool append(C& c, T&& t);
 
     template <typename C>
-        inline bool reserve(C& c, size_t s);
+        inline bool reserve(C& c, std::size_t s);
     template <typename C>
         inline auto emplace(C& c) -> typename C::reference;
     template <typename C, typename II>
@@ -88,25 +88,25 @@ namespace cxon { namespace cnt {
     namespace imp {
 
         template <typename C>
-            inline auto reserve_(option<2>, C& c, size_t s)
+            inline auto reserve_(option<2>, C& c, std::size_t s)
                 -> enable_if_t<std::is_same<decltype(traits<C>::reserve(c, s)), bool>::value, bool>
             {
                 return traits<C>::reserve(c, s);
             }
         template <typename C>
-            inline auto reserve_(option<1>, C& c, size_t s)
+            inline auto reserve_(option<1>, C& c, std::size_t s)
                 -> decltype(c.reserve(s), bool())
             {
                 return c.reserve(s), true;
             }
         template <typename C>
-            inline constexpr bool reserve_(option<0>, C&, size_t) {
+            inline constexpr bool reserve_(option<0>, C&, std::size_t) {
                 return true;
             }
 
     }
     template <typename C>
-        inline bool reserve(C& c, size_t s) {
+        inline bool reserve(C& c, std::size_t s) {
             return imp::reserve_(option<1>(), c, s);
         }
 
@@ -281,11 +281,11 @@ namespace cxon { namespace cnt {
 
             range_container(FI f, FI l) noexcept : f_(f), l_(l), e_(f) {}
 
-            size_t size() const noexcept                    { return std::distance(f_, e_); }
-            size_t max_size() const noexcept                { return std::distance(f_, l_); }
+            std::size_t size() const noexcept       { return std::distance(f_, e_); }
+            std::size_t max_size() const noexcept   { return std::distance(f_, l_); }
 
-            FI begin() noexcept                             { return f_; }
-            FI end() noexcept                               { return e_; }
+            FI begin() noexcept                     { return f_; }
+            FI end() noexcept                       { return e_; }
 
             reference emplace_back() noexcept {
                 CXON_ASSERT(e_ != l_, "overflow");
@@ -307,7 +307,7 @@ namespace cxon { namespace cnt {
                     auto const s = std::distance(f, l);
                     return s <= std::distance(e_, l_) && (std::copy(f, l, e_), e_ += s, true);
                 }
-            bool append(const value_type* t, size_t n) noexcept {
+            bool append(const value_type* t, std::size_t n) noexcept {
                 return append(t, t + n);
             }
             bool append(value_type&& t) noexcept {
@@ -355,27 +355,27 @@ namespace cxon { namespace cnt {
                 // coverity[var_deref_model] - 'grow dereferences null this->f_' - it's about std::move(f_, e_, p), but in this case f_ == e_
                 grow(8);
             }
-            ~pointer_container()                { a_.release(f_, l_ - f_); }
+            ~pointer_container()                    { a_.release(f_, l_ - f_); }
 
-            pointer release() noexcept          { pointer p = f_; return f_ = l_ = e_ = nullptr, p; }
+            pointer release() noexcept              { pointer p = f_; return f_ = l_ = e_ = nullptr, p; }
 
-            size_t size() const noexcept        { return std::distance(f_, e_); }
-            size_t max_size() const noexcept    { return std::numeric_limits<size_t>::max(); }
+            std::size_t size() const noexcept       { return std::distance(f_, e_); }
+            std::size_t max_size() const noexcept   { return std::numeric_limits<std::size_t>::max(); }
 
-            pointer begin() noexcept            { return f_; }
-            pointer end() noexcept              { return e_; }
+            pointer begin() noexcept                { return f_; }
+            pointer end() noexcept                  { return e_; }
 
-            reference emplace_back()            { return grow(), *e_++; }
-            void push_back(const value_type& t) { grow(), *e_ = t, ++e_; }
-            void push_back(value_type&& t)      { grow(), *e_ = std::move(t), ++e_; }
+            reference emplace_back()                { return grow(), *e_++; }
+            void push_back(const value_type& t)     { grow(), *e_ = t, ++e_; }
+            void push_back(value_type&& t)          { grow(), *e_ = std::move(t), ++e_; }
 
-            void reserve(size_t n)              { n > size_t(l_ - f_) ? grow(n) : void(); }
+            void reserve(std::size_t n)             { n > std::size_t(l_ - f_) ? grow(n) : void(); }
 
             private:
-                void grow()                     { e_ == l_ ? grow((l_ - f_) * 2) : void(); }
+                void grow()                         { e_ == l_ ? grow((l_ - f_) * 2) : void(); }
                     
-                void grow(size_t n) {
-                    CXON_ASSERT(n > size_t(l_ - f_), "unexpected");
+                void grow(std::size_t n) {
+                    CXON_ASSERT(n > std::size_t(l_ - f_), "unexpected");
                     auto const p = a_.create(n);
                         std::move(f_, e_, p);
                         a_.release(f_, l_ - f_);
