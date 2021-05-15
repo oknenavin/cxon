@@ -262,7 +262,7 @@ namespace cxon { namespace charconv { // <charconv>
         // g++: error: 'general' is not a member of 'std::chars_format'
         template <typename T, typename = void>
             struct general {
-                static constexpr T      value = (T)7;
+                static constexpr T      value = (T)imp::chars_format::general;
             };
         template <typename T>
             struct general<T, enable_if_t<sizeof(T::general)>> {
