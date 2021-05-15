@@ -57,8 +57,9 @@ struct result {
         unsigned a_ = 0;
         unsigned f_ = 0;
 
-#       define CHECK(c) ++a_; if (!(c))\
-            fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_;\
+#       define CHECK(c) ++a_;\
+            if (!(c))\
+                fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_;\
             CXON_ASSERT((c), "check failed");
 
         using node = cxon::cbor::node;

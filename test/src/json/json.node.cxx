@@ -243,8 +243,9 @@ CXON_JSON_CLS(my_type,
     static unsigned self() {
         unsigned a_ = 0;
         unsigned f_ = 0;
-#       define CHECK(c) ++a_; if (!(c))\
-            std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_;\
+#       define CHECK(c) ++a_;\
+            if (!(c))\
+                std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_;\
             CXON_ASSERT((c), "check failed");
         {   // custom type binding + equal keys
             using node = cxon::json::basic_node<my_traits>;
