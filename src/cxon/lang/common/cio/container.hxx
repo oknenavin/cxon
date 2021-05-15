@@ -56,7 +56,7 @@ namespace cxon { namespace cio { namespace cnt {
             }
 
         template <typename X, typename Cr, typename II, typename Cx, typename EA>
-            inline bool read(II& i, II e, Cx& cx, EA element_add) {
+            inline bool read_(II& i, II e, Cx& cx, EA element_add) {
                 if (!consume<X>(Cr::beg, i, e, cx)) return false;
                 if ( consume<X>(Cr::end, i, e))     return true;
                 return list_read_<X, Cr>(i, e, element_add), !cx.ec && consume<X>(Cr::end, i, e, cx);
@@ -85,24 +85,24 @@ namespace cxon { namespace cio { namespace cnt {
 
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_list(C& c, II& i, II e, Cx& cx) {
-            return imp::read<X, typename X::list>(i, e, cx, [&] {
+            return imp::read_<X, typename X::list>(i, e, cx, [&] {
                 return cxon::cnt::element_read<X>(c, i, e, cx);
             });
         }
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_list(II& i, II e, Cx& cx, EA element_add) {
-            return imp::read<X, typename X::list>(i, e, cx, element_add);
+            return imp::read_<X, typename X::list>(i, e, cx, element_add);
         }
 
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_map(C& c, II& i, II e, Cx& cx) {
-            return imp::read<X, typename X::map>(i, e, cx, [&] {
+            return imp::read_<X, typename X::map>(i, e, cx, [&] {
                 return cxon::cnt::element_read<X>(c, i, e, cx);
             });
         }
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_map(II& i, II e, Cx& cx, EA element_add) {
-            return imp::read<X, typename X::map>(i, e, cx, element_add);
+            return imp::read_<X, typename X::map>(i, e, cx, element_add);
         }
 
     template <typename X, typename C, typename O, typename II, typename Cx, typename L>
