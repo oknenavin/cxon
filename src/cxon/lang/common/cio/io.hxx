@@ -95,24 +95,22 @@ namespace cxon { namespace cio {
 
     template <typename X, typename II>
         inline void consume(II& i, II e) {
-            while (chr::is<X>::space(peek(i, e))) next(i, e);
+            for ( ; i != e && chr::is<X>::space(*i); ++i) ;
         }
 
     template <typename X, typename II>
         inline bool consume(char c, II& i, II e) {
             consume<X>(i, e);
-            return c == peek(i, e) && (next(i, e), true);
+            return i != e && c == *i && (++i, true);
         }
     template <typename X, typename II, typename Cx>
         inline bool consume(char c, II& i, II e, Cx& cx) {
-            consume<X>(i, e);
-            return (c == peek(i, e) && (next(i, e), true)) || cx/X::read_error::unexpected;
+            return consume<X>(c, i, e) || cx/X::read_error::unexpected;
         }
 
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e) {
-            consume<X>(i, e);
-            for (char c = peek(i, e); *s && *s == c; c = next(i, e), ++s) ;
+            for (consume<X>(i, e); i != e && *s && *s == *i; ++i, ++s) ;
             return *s == '\0';
         }
 
