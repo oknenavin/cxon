@@ -6,13 +6,14 @@
 #include "cxon/cbor.hxx"
 #include "cxon/json.hxx"
 
+#include "../utility.hxx"
+
 #include "cxon/lib/node.ordered.hxx"
 #include "cxon/lib/std/list.hxx"
 
 #include "cxon/lang/json/tidy.hxx"
 
 #include <fstream>
-#include <chrono>
 #include <cstring>
 
 
@@ -52,7 +53,7 @@ struct result {
     int all = 0;
 };
 
-#ifndef TIME_ONLY
+#ifndef CXON_TIME_ONLY
     static unsigned execute_self() {
         unsigned a_ = 0;
         unsigned f_ = 0;
@@ -746,34 +747,6 @@ namespace timing
         double write = 0;
     };
 
-    constexpr unsigned cxon_cbor_repeat = 3;
-
-    template <typename B>
-        static double measure(unsigned c, B block) {
-            CXON_ASSERT(c > 0, "unexpected");
-            using clock = std::chrono::steady_clock;
-            using std::chrono::duration_cast;
-            using std::chrono::nanoseconds;
-            double t = std::numeric_limits<double>::max();
-                do {
-                    auto const s = clock::now();
-                    block();
-                    t = std::min(t, duration_cast<nanoseconds>(clock::now() - s).count() / 1e6);
-                }   while (--c);
-            return t;
-        }
-
-    template <typename R, typename I>
-        static std::string format_error(const R& r, I b) {
-            return std::string()
-                .append(r.ec.category().name())
-                .append(":")
-                .append(std::to_string(std::distance(b, r.end)))
-                .append(": ")
-                .append(r.ec.message())
-            ;
-        }
-
     static result execute(const fixture& fixture) {
         CXON_ASSERT(fixture.type == "timing", "unexpected");
         
@@ -810,19 +783,20 @@ namespace timing
             {   // time
                 t.source = file;
                 t.size = cbor.size();
-
-                std::vector<cxon::cbor::ordered_node> vn;
-                t.read = measure(cxon_cbor_repeat, [&] {
-                    vn.emplace_back();
-                    auto const r = cxon::from_bytes(vn.back(), cbor);
-                    if (!r) t.error = format_error(r, cbor.cbegin());
-                });
-                auto n = vn.back(); vn.clear();
-                {   std::string s;
-                    t.write = measure(cxon_cbor_repeat, [&] {
-                        s.clear(); cxon::to_bytes(s, n);
-                    });
-                }
+                // read
+                    std::vector<cxon::cbor::ordered_node> vo;
+                    t.read = CXON_MEASURE(
+                        vo.emplace_back();
+                        auto const r = cxon::from_bytes(vo.back(), cbor);
+                        if (!r) t.error = test::format_error(r, cbor.cbegin());
+                    );
+                // write
+                    auto o = vo.back(); vo.clear();
+                    std::vector<std::string> vs;
+                    t.write = CXON_MEASURE(
+                        vs.emplace_back();
+                        cxon::to_bytes(vs.back(), o);
+                    );
             }
             time.push_back(t);
         }
@@ -919,7 +893,7 @@ namespace timing
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
-#       ifndef TIME_ONLY
+#       ifndef CXON_TIME_ONLY
             return execute_self();
 #       else
             return -1;
@@ -944,7 +918,7 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-#       ifndef TIME_ONLY
+#       ifndef CXON_TIME_ONLY
             if (fixture.type == "test-vector") {
                 result const r = test_vector::execute(fixture);
                 res.all += r.all, res.err += r.err;
