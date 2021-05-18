@@ -630,6 +630,12 @@ using node = cxon::json::ordered_node;
                     CHECK(s == to);
                 }
             }
+            {   // test the test (coverage)
+                int t = 0; std::string const f = "";
+                auto const r = cxon::from_bytes(t, f);
+                auto const s = test::format_error(r, f.begin());
+                CHECK(s == "cxon/json/read:0: invalid integral or value out of range");
+            }
 
             std::fprintf(stdout, "cxon/json/node/self:  %u of %3u failed\n", f_, a_); std::fflush(stdout);
 
