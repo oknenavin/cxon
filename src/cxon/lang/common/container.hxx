@@ -78,7 +78,7 @@ namespace cxon { namespace cnt { // adaptors
     template <typename T, typename A>
         struct pointer_container;
     template <typename X, typename T, typename Cx>
-        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<X, T>(cx))>;
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<T>(cx))>;
 
 }}
 
@@ -354,11 +354,11 @@ namespace cxon { namespace cnt {
             :   a_(a), f_(), l_(), e_()
             {
                 // coverity[var_deref_model] - 'grow dereferences null this->f_' - it's about std::move(f_, e_, p), but in this case f_ == e_
-                grow(8);
+                resize(8);
             }
             ~pointer_container()                    { a_.release(f_, l_ - f_); }
 
-            pointer release() noexcept              { pointer p = f_; return f_ = l_ = e_ = nullptr, p; }
+            pointer release()                       { pointer p = reduce(); return f_ = l_ = e_ = nullptr, p; }
 
             std::size_t size() const noexcept       { return std::distance(f_, e_); }
             std::size_t max_size() const noexcept   { return std::numeric_limits<std::size_t>::max(); }
@@ -370,26 +370,28 @@ namespace cxon { namespace cnt {
             void push_back(const value_type& t)     { grow(), *e_ = t, ++e_; }
             void push_back(value_type&& t)          { grow(), *e_ = std::move(t), ++e_; }
 
-            void reserve(std::size_t n)             { n > std::size_t(l_ - f_) ? grow(n) : void(); }
+            void reserve(std::size_t n)             { n > std::size_t(l_ - f_) ? resize(n) : void(); }
 
             private:
-                void grow()                         { e_ == l_ ? grow((l_ - f_) * 2) : void(); }
+                void grow()                         { e_ == l_ ? resize((l_ - f_) * 2) : void(); }
                     
-                void grow(std::size_t n) {
-                    CXON_ASSERT(n > std::size_t(l_ - f_), "unexpected");
+                void resize(std::size_t n) {
+                    CXON_ASSERT(n != 0 && n >= std::size_t(e_ - f_), "unexpected");
                     auto const p = a_.create(n);
                         std::move(f_, e_, p);
                         a_.release(f_, l_ - f_);
                     e_ = p + (e_ - f_), l_ = p + n, f_ = p;
                 }
 
+                pointer reduce() { return resize(e_ - f_), f_; }
+
             private:
                 A a_;
                 pointer f_, l_, e_;
         };
     template <typename X, typename T, typename Cx>
-        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<X, T>(cx))> {
-            return { make_context_allocator<X, T>(cx) };
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<T>(cx))> {
+            return { make_context_allocator<T>(cx) };
         }
 
 }}

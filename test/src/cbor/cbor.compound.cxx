@@ -261,6 +261,14 @@ TEST_BEG(cxon::CBOR<>)
             R_TEST(&n, BS("\x1A\x01\x01\x01\x01"));
             W_TEST(BS("\x1A\x01\x01\x01\x01"), &n);
         }
+    // const T*
+        R_TEST((const int*)nullptr, BS("\xF6"));
+        W_TEST(BS("\xF6"), (const int*)nullptr);
+        R_TEST((const int*)nullptr, BS("\xF7"), cbor::read_error::integer_invalid, 0);
+        {   const int n = 0x01010101;
+            R_TEST(&n, BS("\x1A\x01\x01\x01\x01"));
+            W_TEST(BS("\x1A\x01\x01\x01\x01"), &n);
+        }
     // const char*
         R_TEST((const char*)"", BS("\x80"));        // definite
         R_TEST((const char*)"", BS("\x60"));        // definite
