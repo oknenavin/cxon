@@ -13,26 +13,32 @@ namespace cxon {
 
     CXON_PARAMETER(allocator, std::allocator<char>);
 
-    template <typename X, typename T, typename Ax>
-        struct context_allocator {
+    template <typename T, typename Ax>
+        struct basic_allocator {
+            using type = typename std::allocator_traits<Ax>::template rebind_alloc<T>;
+
+            basic_allocator(const type& al) : al_(al) {}
+
             T* create() {
                 auto t = tr::allocate(al_, 1);
-                return construct(t), t;
+                return t ? construct(t), t : t;
             }
             T* create(std::size_t n) {
                 auto p = tr::allocate(al_, n);
-                    for (T *t = p, *te = t + n; t != te; ++t)
+                    if (p) for (T *t = p, *te = t + n; t != te; ++t)
                         construct(t);
                 return p;
             }
 
             void release(T* t) {
-                destroy(t), tr::deallocate(al_, t, 1);
+                if (t) destroy(t), tr::deallocate(al_, t, 1);
             }
             void release(T* p, std::size_t n) {
-                for (T *t = p, *te = t + n; t != te; ++t)
-                    destroy(t);
-                tr::deallocate(al_, p, n);
+                if (p) {
+                    for (T *t = p, *te = t + n; t != te; ++t)
+                        destroy(t);
+                    tr::deallocate(al_, p, n);
+                }
             }
 
             template <typename U = T> auto construct(U *u)
@@ -46,15 +52,16 @@ namespace cxon {
                 -> enable_if_t< std::is_trivial<U>::value> {}
 
             private:
-                using al = typename std::allocator_traits<Ax>::template rebind_alloc<T>;
-                using tr = std::allocator_traits<al>;
-                al al_;
+                using tr = std::allocator_traits<type>;
+                type al_;
         };
-    template <typename X, typename T, typename Cx>
-        inline auto make_context_allocator(Cx& cx)
-            -> context_allocator<X, T, decltype(allocator::value(cx.px, std::allocator<T>()))>
-        {
-            return context_allocator<X, T, decltype(allocator::value(cx.px, std::allocator<T>()))>{};
+    template <typename T, typename Cx, typename Ax = decltype(allocator::value(std::declval<Cx&>().px, std::allocator<T>()))>
+        inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Ax> {
+            return basic_allocator<T, Ax>(allocator::value(cx.px, std::allocator<T>()));
+        }
+    template <typename T, typename Ax>
+        inline auto make_allocator(const Ax& ax) -> basic_allocator<T, Ax> {
+            return basic_allocator<T, Ax>(ax);
         }
 
 }

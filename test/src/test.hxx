@@ -210,25 +210,41 @@ namespace cxon { namespace test {
             return from_bytes<X>(t, s);
         }
 
-    template <typename T>           struct clean            { clean(T&) {} };
-    template <typename T, std::size_t N> struct clean<T[N]> { clean(T (&)[N]) {} };
-    // TODO: incorrect, see the TODO entry about this
-    template <typename T>           struct clean<T*>        { clean(T* t) : t_(t) {} ~clean() { delete [] t_; } T* t_; }; // std::allocator
+    template <typename T>
+        struct clean        { clean(T&) {} };
+    template <typename T, std::size_t N>
+        struct clean<T[N]>  { clean(T (&)[N]) {} };
+    template <typename T>
+        struct clean<T*>    {
+            T* t_;
+
+            clean(T* t) : t_(t) {}
+            ~clean()            { destroy(); }
+
+            template <typename U = typename std::remove_const<T>::type>
+                auto destroy() -> enable_if_t<!is_char<U>::value, void> {
+                    auto al = make_allocator<U>(std::allocator<U>());
+                    al.release(const_cast<U*>(t_));
+                }
+            template <typename U = typename std::remove_const<T>::type>
+                auto destroy() -> enable_if_t< is_char<U>::value, void> {
+                    auto al = make_allocator<U>(std::allocator<U>());
+                    al.release(const_cast<U*>(t_), t_ ? std::char_traits<U>::length(t_) + 1 : 0);
+                }
+        };
 
     template <typename X, typename T, typename C>
         static bool verify_read_(const T& ref, const C& sbj) {
-            T res{}; clean<T> clean__(res);
-                // coverity[alloc_arg]
+            T res{};
                 auto const r = from_string<X>(res, sbj);
-            // coverity[leaked_storage]
+            clean<T> clean__(res);
             return r && r.end == std::end(sbj) && match<T>::values(res, ref);
         }
     template <typename X, typename T, typename C, typename E>
         static bool verify_read_(const T&, const C& sbj, E err, int pos) {
-            T res{}; clean<T> clean__(res);
-                // coverity[alloc_arg]
+            T res{};
                 auto const r = from_string<X>(res, sbj);
-            // coverity[leaked_storage]
+            clean<T> clean__(res);
             return r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
         }
 

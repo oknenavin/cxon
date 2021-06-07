@@ -14,20 +14,27 @@ namespace cxon { // pointer
 
     template <typename X, typename T>
         struct read<JSON<X>, T*> {
-            template <typename II, typename Cx, typename J = JSON<X>>
+            template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(T*& t, II& i, II e, Cx& cx) {
-                    cio::consume<J>(i, e);
-                    if (cio::peek(i, e) == *J::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
+                    cio::consume<Y>(i, e);
+                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
-                        return  (cio::consume<J>(J::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected)) &&
+                        return  (cio::consume<Y>(Y::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected)) &&
                                 (t = nullptr, true)
                         ;
                     }
-                    auto al = make_context_allocator<X, T>(cx);
+                    auto al = make_context_allocator<T>(cx);
                     T *const n = al.create();
-                        if (!read_value<J>(*n, i, e, cx))
+                        if (!read_value<Y>(*n, i, e, cx))
                             return al.release(n), false;
                     return t = n, true;
+                }
+        };
+    template <typename X, typename T>
+        struct read<JSON<X>, const T*> {
+            template <typename II, typename Cx, typename Y = JSON<X>>
+                static bool value(const T*& t, II& i, II e, Cx& cx) {
+                    return read<Y, T*>::value((T*&)t, i, e, cx);
                 }
         };
 
@@ -45,13 +52,13 @@ namespace cxon { // array
 
     template <typename X, typename T, std::size_t N>
         struct read<JSON<X>, T[N]> {
-            template <typename II, typename Cx, typename J = JSON<X>>
+            template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
                     II const o = i;
                         std::size_t p = 0;
-                    return cio::cnt::read_list<J>(i, e, cx, [&] {
+                    return cio::cnt::read_list<Y>(i, e, cx, [&] {
                         return (p != N || (cio::rewind(i, o), cx/json::read_error::overflow)) &&
-                                read_value<J>(t[p++], i, e, cx)
+                                read_value<Y>(t[p++], i, e, cx)
                         ;
                     });
                 }
@@ -59,9 +66,9 @@ namespace cxon { // array
 
     template <typename X, typename T, std::size_t N>
         struct write<JSON<X>, T[N]> {
-            template <typename O, typename Cx, typename J = JSON<X>>
+            template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return cio::cnt::write_list<J>(o, t, cx);
+                    return cio::cnt::write_list<Y>(o, t, cx);
                 }
         };
 

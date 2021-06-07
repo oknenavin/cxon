@@ -175,6 +175,22 @@ TEST_BEG(cxon::JSON<>)
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
+    // T*
+        {   int x = 42;
+            R_TEST(&x, "42");
+            R_TEST((int*)nullptr, "null");
+            W_TEST("42", &x);
+            W_TEST("null", (int*)nullptr);
+            R_TEST((int*)nullptr, "nil", json::read_error::unexpected, 0);
+        }
+    // const T*
+        {   int const x = 42;
+            R_TEST(&x, "42");
+            R_TEST((const int*)nullptr, "null");
+            W_TEST("42", &x);
+            W_TEST("null", (const int*)nullptr);
+            R_TEST((const int*)nullptr, "nil", json::read_error::unexpected, 0);
+        }
     // const char*
         R_TEST((const char*)"test", QS("test"));
         R_TEST((const char*)nullptr, "null");
