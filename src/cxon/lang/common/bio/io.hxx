@@ -107,50 +107,55 @@ namespace cxon { namespace bio {
 
     namespace imp {
 
+        template <unsigned N, typename II, bool E = is_random_access_iterator<II>::value>
+            struct buffer_;
+        template <unsigned N, typename II>
+            struct buffer_<N, II, false> {
+                explicit buffer_(II) noexcept {}
+                void  append(II f, II l) noexcept {
+                    std::copy(std::begin(s_), std::end(s_), std::distance(f, l));
+                }
+                byte& operator [](int i) noexcept       { return s_[i]; }
+                byte  operator [](int i) const noexcept { return s_[i]; }
+                private:
+                    byte s_[N];
+            };
+        template <unsigned N, typename II>
+            struct buffer_<N, II, true> {
+                explicit buffer_(II f) noexcept : s_(f) {}
+                void append(II, II) noexcept {}
+                byte operator [](int i) const noexcept  { return s_[i]; }
+                private:
+                    II s_;
+            };
+
         template <typename II, unsigned N>
-            inline auto get_n_(byte (&bs)[N], II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
+            inline auto get_n_(buffer_<N, II>& bs, II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, bool> {
                 using dt = typename std::iterator_traits<II>::difference_type;
                 return  std::distance(i, e) >= static_cast<dt>(N) &&
-                        (std::copy(i, i + N, std::begin(bs)), std::advance(i, N), true)
+                        (bs.append(i, i + N), std::advance(i, N), true)
                 ;
             }
-
-        template <typename T, typename II>
-            inline bool get_1_(T& t, II& i, II e) {
-                return i != e ? (t = T(*i), ++i, true) : false;
-            }
-        template <typename II>
-            inline auto get_n_(byte (&bs)[2], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get_1_(bs[0], i, e) && get_1_(bs[1], i, e)
-                ;
-            }
-        template <typename II>
-            inline auto get_n_(byte (&bs)[4], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get_1_(bs[0], i, e) && get_1_(bs[1], i, e) &&
-                        get_1_(bs[2], i, e) && get_1_(bs[3], i, e)
-                ;
-            }
-        template <typename II>
-            inline auto get_n_(byte (&bs)[8], II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
-                return  get_1_(bs[0], i, e) && get_1_(bs[1], i, e) &&
-                        get_1_(bs[2], i, e) && get_1_(bs[3], i, e) &&
-                        get_1_(bs[4], i, e) && get_1_(bs[5], i, e) &&
-                        get_1_(bs[6], i, e) && get_1_(bs[7], i, e)
-                ;
+        template <typename II, unsigned N>
+            inline auto get_n_(buffer_<N, II>& bs, II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, bool> {
+                unsigned j = 0;
+                    for ( ; j != N && i != e; ++j, ++i)
+                        bs[j] = *i;
+                return j == N;
             }
 
         // coverity[ -tainted_data_return ]
         // coverity[ -tainted_data_argument : arg-0 ]
-        template <typename T>
-            inline T be_to_i_(const byte (&bs)[2]) {
+        template <typename T, typename II>
+            inline T be_to_i_(const buffer_<2, II>& bs) {
                 using R = unsigned long;
                 CXON_ASSERT(sizeof(T) >= 2, "narrowing");
                 return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
             }
         // coverity[ -tainted_data_return ]
         // coverity[ -tainted_data_argument : arg-0 ]
-        template <typename T>
-            inline T be_to_i_(const byte (&bs)[4]) {
+        template <typename T, typename II>
+            inline T be_to_i_(const buffer_<4, II>& bs) {
                 using R = unsigned long;
                 CXON_ASSERT(sizeof(T) >= 4, "narrowing");
                 return  (R(bs[3])<< 0) | (R(bs[2])<< 8) |
@@ -159,8 +164,8 @@ namespace cxon { namespace bio {
             }
         // coverity[ -tainted_data_return ]
         // coverity[ -tainted_data_argument : arg-0 ]
-        template <typename T>
-            inline T be_to_i_(const byte (&bs)[8]) {
+        template <typename T, typename II>
+            inline T be_to_i_(const buffer_<8, II>& bs) {
                 using R = unsigned long long;
                 CXON_ASSERT(sizeof(T) >= 8, "narrowing");
                 return  (R(bs[7])<< 0) | (R(bs[6])<< 8) |
@@ -170,8 +175,8 @@ namespace cxon { namespace bio {
                 ;
             }
 
-        template <typename T>
-            inline T be_to_fp_(const byte (&bs)[2]) {
+        template <typename T, typename II>
+            inline T be_to_fp_(const buffer_<2, II>& bs) {
                 // TODO: not correct, but as in RFC7049 Appendix D
                 const unsigned half = (bs[0] << 8) + bs[1];
                 const unsigned exp = (half >> 10) & 0x1f;
@@ -182,8 +187,8 @@ namespace cxon { namespace bio {
                 else                val = mant == 0 ? INFINITY : NAN;
                 return (T)(half & 0x8000 ? -val : val);
             }
-        template <typename T>
-            inline T be_to_fp_(const byte (&bs)[4]) {
+        template <typename T, typename II>
+            inline T be_to_fp_(const buffer_<4, II>& bs) {
                 using R = unsigned long;
                 CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
                 union { R i; float f; } u;
@@ -192,8 +197,8 @@ namespace cxon { namespace bio {
                 ;
                 return static_cast<T>(u.f);
             }
-        template <typename T>
-            inline T be_to_fp_(const byte (&bs)[8]) {
+        template <typename T, typename II>
+            inline T be_to_fp_(const buffer_<8, II>& bs) {
                 using R = unsigned long long;
                 CXON_ASSERT(sizeof(R) <= sizeof(T), "narrowing");
                 union { R i; double f; } u;
@@ -211,7 +216,7 @@ namespace cxon { namespace bio {
             }
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {
-                byte bs[N];
+                buffer_<N, II> bs(i);
                 return get_n_(bs, i, e) && (t = be_to_i_<T>(bs), true);
             }
 
@@ -234,7 +239,7 @@ namespace cxon { namespace bio {
         inline auto get(T& t, II& i, II e)
             -> enable_if_t<std::is_floating_point<T>::value, bool>
         {
-            byte bs[N];
+            imp::buffer_<N, II> bs(i);
             return imp::get_n_(bs, i, e) && (t = imp::be_to_fp_<T>(bs), true);
         }
     
