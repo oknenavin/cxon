@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: MIT
 
 #include "cxon/cbor.hxx"
+#include "cxon/lib/std/string.hxx"
+
 #include "../test.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5,12 +5,12 @@
 
 #include "cxon/cbor.hxx"
 
-#include "../test.hxx"
-
 #include "cxon/lib/std/array.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/string_view.hxx"
+
+#include "../test.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -6,12 +6,13 @@
 #include "cxon/cbor.hxx"
 #include "cxon/json.hxx"
 
-#include "../utility.hxx"
-
 #include "cxon/lib/node.ordered.hxx"
 #include "cxon/lib/std/list.hxx"
+#include "cxon/lib/std/string.hxx"
 
 #include "cxon/lang/json/tidy.hxx"
+
+#include "../utility.hxx"
 
 #include <fstream>
 #include <cstring>
