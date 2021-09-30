@@ -11,10 +11,10 @@ namespace cxon { namespace cbor { namespace imp {
     template <typename X, typename S>
         struct set_element_reader_ {
             template <typename II, typename Cx>
-                static bool read(S& s, II& i, II e, Cx& cx) {
-                    auto v = typename S::value_type {}; // TODO: allocator
+                static bool read(S& t, II& i, II e, Cx& cx) {
+                    auto v = make_value_in_context<typename S::value_type>(t);
                     return  read_value<X>(v, i, e, cx) &&
-                            (s.emplace(std::move(v)), true)
+                            (t.emplace(std::move(v)), true)
                     ;
                 }
         };
