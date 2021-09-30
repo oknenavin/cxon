@@ -44,6 +44,9 @@
 
 namespace cxon {
 
+    template <typename ...>
+        using void_t = void;
+
     template <bool C, typename T = void> // C++14
         using enable_if_t = typename std::enable_if<C, T>::type;
 
