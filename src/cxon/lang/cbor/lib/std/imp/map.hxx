@@ -12,8 +12,7 @@ namespace cxon { namespace cbor { namespace imp {
         struct map_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(M& t, II& i, II e, Cx& cx) {
-                    auto k = make_value_in_context<typename M::key_type>(t);
-                    auto v = make_value_in_context<typename M::mapped_type>(t);
+                    typename M::key_type k{}; typename M::mapped_type v{};
                     return  read_value<X>(k, i, e, cx) &&
                             read_value<X>(v, i, e, cx) &&
                             (t.emplace(std::move(k), std::move(v)), true)
