@@ -14,9 +14,9 @@ namespace cxon { namespace json { namespace imp {
         struct set_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(S& t, II& i, II e, Cx& cx) {
-                    auto o = make_value_in_context<typename S::value_type>(t);
-                    return  read_value<X>(o, i, e, cx) &&
-                            (t.emplace(std::move(o)), true)
+                    typename S::value_type v{};
+                    return  read_value<X>(v, i, e, cx) &&
+                            (t.emplace(std::move(v)), true)
                     ;
                 }
         };

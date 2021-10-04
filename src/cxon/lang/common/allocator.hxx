@@ -69,34 +69,6 @@ namespace cxon {
     template <typename T>
         struct is_allocator_aware<T, void_t<typename T::allocator_type>>    : std::true_type {};
 
-    namespace imp {
-
-        template <typename T, typename C, bool E = is_allocator_aware<T>::value && is_allocator_aware<C>::value>
-            struct value_in_context_ {
-                template <typename ...A>
-                    static constexpr T make(A&&... as) {
-                        return T { std::forward<A>(as)... };
-                    }
-            };
-        template <typename T, typename C>
-            struct value_in_context_<T, C, true> {
-                template <typename ...A>
-                    static constexpr T make(A&&... as) {
-                        using al = typename std::allocator_traits<typename C::allocator_type>::template rebind_alloc<typename T::value_type>;
-                        return T { std::forward<A>(as)..., al{} };
-                    }
-            };
-
-    }
-    template <typename T, typename C, typename ...A>
-        constexpr T make_value_in_context(A&&... as) {
-            return imp::value_in_context_<T, C>::make(std::forward<A>(as)...);
-        }
-    template <typename T, typename C, typename ...A>
-        constexpr T make_value_in_context(const C&, A&&... as) {
-            return imp::value_in_context_<T, C>::make(std::forward<A>(as)...);
-        }
-
 }
 
 #endif // CXON_ALLOCATOR_HXX_
