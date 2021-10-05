@@ -340,6 +340,8 @@ int main(int argc, char *argv[]) {
             benchmark::boostjson_time_run(t);
             benchmark::rapidjson_time_run(t);
             benchmark::nlohmannjson_time_run(t);
+            if (t.flag) // cxon_type_time_run resorts to node
+                t.source.push_back('*');
         }
         benchmark::print("CXON/JSON", time_cxon);
     }

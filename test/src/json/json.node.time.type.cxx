@@ -70,7 +70,7 @@ namespace test { namespace benchmark {
         auto i = benchmark::executors_.find(t.source.substr(t.source.rfind('/') + 1));
         i != benchmark::executors_.end() ?
             i->second(t) :
-            (benchmark::cxon_node_time_run(t), t.source.push_back('*'))
+            (benchmark::cxon_node_time_run(t), t.flag = true, void())
         ;
     }
 
