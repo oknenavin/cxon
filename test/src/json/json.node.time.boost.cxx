@@ -1,0 +1,48 @@
+// Copyright (c) 2017-2021 oknenavin.
+// Licensed under the MIT license. See LICENSE file in the library root for full license information.
+//
+// SPDX-License-Identifier: MIT
+
+#include "json.node.hxx"
+
+#ifdef CXON_TIME_BOOST_JSON
+
+#define BOOST_JSON_STANDALONE
+#include <boost/json/src.hpp>
+
+#include <fstream>
+
+////////////////////////////////////////////////////////////////////////////////
+
+namespace test { namespace benchmark {
+
+    void boostjson_time_run(test& t) {
+        std::ifstream is(t.source, std::ifstream::binary);
+            if (!is) return t.error = "cannot be opened", void();
+        std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+        // size
+            t.size = json.size() - 1;
+        // read
+            std::vector<boost::json::value> vo;
+            t.time.read.push_back(CXON_MEASURE(
+                vo.emplace_back();
+                boost::json::error_code ec;
+                vo.back() = boost::json::parse(json, ec);
+                if (ec) t.error = std::string("Boost/JSON: ") + ec.category().name() + ": " + ec.message();
+            ));
+        // write
+            auto o = vo.back(); vo.clear();
+            std::vector<std::string> vs;
+            t.time.write.push_back(CXON_MEASURE(
+                vs.emplace_back();
+                vs.back() = boost::json::serialize(o);
+            ));
+    }
+
+}}
+
+#else
+    namespace test { namespace benchmark {
+        void boostjson_time_run(test&) {}
+    }}
+#endif // CXON_TIME_BOOST_JSON
