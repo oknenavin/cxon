@@ -19,7 +19,7 @@
         };
 
         struct error_category;
-        std::error_condition make_error_condition(error e) noexcept;
+        inline std::error_condition make_error_condition(error e) noexcept;
 
     }}
 
@@ -107,7 +107,7 @@
             }
         };
 
-        std::error_condition make_error_condition(error e) noexcept {
+        inline std::error_condition make_error_condition(error e) noexcept {
             return { static_cast<int>(e), error_category::value() };
         }
 
