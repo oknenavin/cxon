@@ -23,7 +23,7 @@ namespace test {
         std::size_t size;
         struct time time;
         std::string error;
-        bool flag = false;
+        bool flag;
     };
 
     using cases = std::vector<test>;

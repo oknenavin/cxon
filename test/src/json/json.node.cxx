@@ -163,14 +163,14 @@ static bool cl_parse(int argc, char *argv[], test::cases& pass, test::cases& fai
                     while (std::getline(is, l)) {
                         auto const f = l.find_first_not_of(" \t");
                         if (f != std::string::npos && l[f] != '#') {
-                            c.push_back({l, {}, {}, {}});
+                            c.push_back({l, 0, {}, {}, false});
                         }
                     }
             }
             else    std::fprintf(stderr, "%s: cannot be opened\n", v);
         }
         else {
-            c.push_back({v, {}, {}, {}});
+            c.push_back({v, 0, {}, {}, false});
         }
     };
     for (int i = 1; i < argc; ++i) {
