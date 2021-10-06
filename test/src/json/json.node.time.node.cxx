@@ -14,9 +14,9 @@
 
 using node = cxon::json::ordered_node;
 
-namespace test { namespace benchmark {
+namespace test { namespace kind {
 
-    void cxon_node_time_run(test& t) {
+    void time_cxon_node(test& t) {
         std::ifstream is(t.source, std::ifstream::binary);
             if (!is) return t.error = "cannot be opened", void();
         std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());

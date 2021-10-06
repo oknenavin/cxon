@@ -22,7 +22,7 @@
 
 using node = cxon::json::ordered_node;
 
-namespace self {
+namespace test { namespace kind {
 
     struct my_traits : cxon::json::node_traits {
         using                               string_type = std::u16string;
@@ -40,9 +40,9 @@ namespace self {
         )
     };
 
-    unsigned test() {
-        unsigned a_ = 0;
-        unsigned f_ = 0;
+    int self() {
+        int a_ = 0;
+        int f_ = 0;
 
 #           define CHECK(c) ++a_;\
             if (!(c))\
@@ -615,17 +615,17 @@ namespace self {
         {   // test the test (coverage)
             int t = 0; std::string const f = "";
             auto const r = cxon::from_bytes(t, f);
-            auto const s = test::format_error(r, f.begin());
+            auto const s = format_error(r, f.begin());
             CHECK(s == "cxon/json/read:0: invalid integral or value out of range");
         }
 
-        std::fprintf(stdout, "cxon/json/node/self:  %u of %3u failed\n", f_, a_); std::fflush(stdout);
+        std::fprintf(stdout, "cxon/json/node/self:  %i of %3i failed\n", f_, a_); std::fflush(stdout);
 
 #           undef CHECK
 
         return f_;
     }
 
-}
+}}
 
 #endif // CXON_TIME_ONLY
