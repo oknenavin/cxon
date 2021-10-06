@@ -17,9 +17,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace test { namespace benchmark {
+namespace test { namespace kind {
 
-    void rapidjson_time_run(test& t) {
+    void time_rapidjson(test& t) {
         std::ifstream is(t.source, std::ifstream::binary);
             if (!is) return t.error = "cannot be opened", void();
         std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
@@ -46,8 +46,4 @@ namespace test { namespace benchmark {
 
 }}
 
-#else
-    namespace test { namespace benchmark {
-        void rapidjson_time_run(test&) {}
-    }}
 #endif // CXON_TIME_RAPIDJSON

@@ -28,19 +28,31 @@ namespace test {
 
     using cases = std::vector<test>;
 
+    bool parse_cl(int argc, char *argv[], cases& pass, cases& fail, cases& diff, cases& time);
+
 }
 
-namespace self {
-    unsigned test();
-}
+namespace test { namespace kind {
 
-namespace test { namespace benchmark {
+    int self();
 
-    void cxon_node_time_run(test&);
-    void cxon_type_time_run(test&);
-    void boostjson_time_run(test&);
-    void rapidjson_time_run(test&);
-    void nlohmannjson_time_run(test&);
+    int pass(cases& cases);
+    int fail(cases& cases);
+    int diff(cases& cases);
+
+}}
+
+namespace test { namespace kind {
+
+    void time(cases& cases);
+
+    void time_cxon_node(test&);
+    void time_cxon_type(test&);
+    void time_boostjson(test&);
+    void time_rapidjson(test&);
+    void time_nlohmannjson(test&);
+
+    void time_print(const std::vector<std::string>& names, const cases& c);
 
 }}
 

@@ -16,10 +16,10 @@
 
 using node = cxon::json::ordered_node;
 
-namespace test { namespace benchmark {
+namespace test { namespace kind {
 
     template <typename T>
-        static void cxon_time_run(test& t) {
+        static void time_run(test& t) {
             std::ifstream is(t.source, std::ifstream::binary);
                 if (!is) return t.error = "cannot be opened", void();
             std::string const json = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
@@ -44,33 +44,33 @@ namespace test { namespace benchmark {
     using executor = void (*)(test& t);
 
     static std::map<std::string, executor> executors_ = {
-        { "blns.json",              &cxon_time_run<blns::object> },
-        { "emoji.json",             &cxon_time_run<emoji::object> },
-        { "apache_builds.json",     &cxon_time_run<apache_builds::object> },
-        { "canada.json",            &cxon_time_run<canada::object> },
+        { "blns.json",              &time_run<blns::object> },
+        { "emoji.json",             &time_run<emoji::object> },
+        { "apache_builds.json",     &time_run<apache_builds::object> },
+        { "canada.json",            &time_run<canada::object> },
 #       ifdef CXON_HAS_LIB_STD_OPTIONAL
-        { "citm_catalog.json",      &cxon_time_run<citm_catalog::object> },
+        { "citm_catalog.json",      &time_run<citm_catalog::object> },
 #       endif
-        //{ "github_events.json",     &cxon_time_run<node> },
-        { "gsoc-2018.json",         &cxon_time_run<gsoc_2018::object> },
+        //{ "github_events.json",     &time_run<node> },
+        { "gsoc-2018.json",         &time_run<gsoc_2018::object> },
 #       ifdef CXON_HAS_LIB_STD_OPTIONAL
-        { "instruments.json",       &cxon_time_run<instruments::object> },
+        { "instruments.json",       &time_run<instruments::object> },
 #       endif
-        { "marine_ik.json",         &cxon_time_run<marine_ik::object> },
-        { "mesh.json",              &cxon_time_run<mesh::object> },
-        { "mesh.pretty.json",       &cxon_time_run<mesh::object> },
-        { "numbers.json",           &cxon_time_run<numbers::object> },
-        { "random.json",            &cxon_time_run<random::object> },
-        //{ "twitter.json",           &cxon_time_run<node> },
-        //{ "twitterescaped.json",    &cxon_time_run<node> },
-        { "update-center.json",     &cxon_time_run<update_center::object> },
+        { "marine_ik.json",         &time_run<marine_ik::object> },
+        { "mesh.json",              &time_run<mesh::object> },
+        { "mesh.pretty.json",       &time_run<mesh::object> },
+        { "numbers.json",           &time_run<numbers::object> },
+        { "random.json",            &time_run<random::object> },
+        //{ "twitter.json",           &time_run<node> },
+        //{ "twitterescaped.json",    &time_run<node> },
+        { "update-center.json",     &time_run<update_center::object> },
     };
 
-    void cxon_type_time_run(test& t) {
-        auto i = benchmark::executors_.find(t.source.substr(t.source.rfind('/') + 1));
-        i != benchmark::executors_.end() ?
+    void time_cxon_type(test& t) {
+        auto i = executors_.find(t.source.substr(t.source.rfind('/') + 1));
+        i != executors_.end() ?
             i->second(t) :
-            (benchmark::cxon_node_time_run(t), t.flag = true, void())
+            (time_cxon_node(t), t.flag = true, void())
         ;
     }
 
