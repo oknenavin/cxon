@@ -492,9 +492,7 @@ namespace std {
                     }
                     case node_kind::tag: {
                         auto const& t = get<typename node::tag>(n);
-                        size_t s = 0;
-                            s = make_hash(s, t.tag, t.value);
-                        return s;
+                        return make_hash(/*0, */t.tag, t.value);
                     }
                     case node_kind::text:       return make_hash(get<typename node::text>(n));
                     case node_kind::real:       return make_hash(get<typename node::real>(n));
@@ -510,16 +508,18 @@ namespace std {
             }
 
             // TODO: optimize & move to common/functional.hxx
+            template <typename ...>
+                static constexpr size_t make_hash(size_t s)
+                { return s; }
             template <typename T>
                 static size_t make_hash(const T& t) {
                     return hash<T>()(t);
                 }
             template <typename H, typename ...T>
-                static size_t make_hash(const H& h, const T&... t) {
-                    size_t const s = make_hash(h);
-                    return s ^ (make_hash(t...) + 0x9E3779B9 + (s << 6) + (s >> 2));
+                static size_t make_hash(size_t s, const H& h, const T&... t) {
+                    s ^= make_hash(h) + 0x9e3779b9 + (s << 6) + (s >> 2);
+                    return make_hash(s, t...);
                 }
-
         };
 
 }
