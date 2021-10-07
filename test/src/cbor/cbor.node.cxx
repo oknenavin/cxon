@@ -16,6 +16,7 @@
 
 #include <fstream>
 #include <cstring>
+#include <unordered_set>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +60,8 @@ struct result {
         unsigned a_ = 0;
         unsigned f_ = 0;
 
-#       define CHECK(c) ++a_;\
+#       define CHECK(c)\
+            ++a_;\
             if (!(c))\
                 fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_;\
             CXON_ASSERT((c), "check failed");
@@ -518,6 +520,41 @@ struct result {
                     cxon::to_bytes(s, n);
                 CHECK(std::memcmp(s.data(), to, sizeof(to) - 1) == 0);
             }
+        }
+        {   // hash
+            using node = cxon::cbor::node;
+            std::unordered_set<node> s = {
+                node::map {{1, 2}, {3, 4}},
+                node::array {5, 6},
+                node::bytes {0x07, 0x08},
+                node::tag {9, 10},
+                node::simple {11},
+                "12",
+                13.,
+                14,
+                15U,
+                true,
+                node::null {},
+                node::undefined {},
+                node::undefined {} // duplicate
+            };
+            CHECK(s.size() == 12);
+            std::unordered_multiset<node> m = {
+                node::map {{1, 2}, {3, 4}},
+                node::array {5, 6},
+                node::bytes {0x07, 0x08},
+                node::tag {9, 10},
+                node::simple {11},
+                "12",
+                13.,
+                14,
+                15U,
+                true,
+                node::null {},
+                node::undefined {},
+                node::undefined {} // duplicate
+            };
+            CHECK(m.size() == 13);
         }
 #       undef CHECK
     
