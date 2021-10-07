@@ -12,6 +12,8 @@
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/map.hxx"
 
+#include <functional>
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace json { // node
@@ -46,6 +48,11 @@ namespace cxon { namespace json { // node traits
     };
 
 }}
+
+namespace std {
+    template <typename Tr>
+        struct hash<cxon::json::basic_node<Tr>>;
+}
 
 #define CXON_JSON_NODE_DEFINED
 
@@ -88,6 +95,11 @@ namespace cxon { namespace json { // node
             using string    = typename Tr::string_type;
             using array     = typename Tr::template array_type<basic_node>;
             using object    = typename Tr::template object_type<basic_node, basic_node>;
+
+            private:
+                using value_type = typename std::aligned_union<0, object, array, string, sint, uint, real, boolean, null>::type;
+                value_type  value_;
+                node_kind   kind_;
 
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
@@ -215,18 +227,19 @@ namespace cxon { namespace json { // node
                         static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, typename int_type<T>::type>::value;
                     };
             public:
-                // integral
-                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node(T t) : kind_(node_kind::null) {
-                        imbue<typename int_type<T>::type>() = t;
-                    }
-                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node& operator =(T t) {
-                        imbue<typename int_type<T>::type>() = t; return *this;
-                    }
-                // string
-                basic_node(const typename string::value_type* s) : kind_(node_kind::null)   { imbue<string>() = s; }
-                basic_node& operator =(const typename string::value_type* s)                { imbue<string>() = s; return *this; }
+
+            // integral
+            template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
+                basic_node(T t) : kind_(node_kind::null) {
+                    imbue<typename int_type<T>::type>() = t;
+                }
+            template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
+                basic_node& operator =(T t) {
+                    imbue<typename int_type<T>::type>() = t; return *this;
+                }
+            // string
+            basic_node(const typename string::value_type* s) : kind_(node_kind::null)   { imbue<string>() = s; }
+            basic_node& operator =(const typename string::value_type* s)                { imbue<string>() = s; return *this; }
 
             void reset() noexcept {
                 switch (kind_) {
@@ -311,11 +324,6 @@ namespace cxon { namespace json { // node
                 }
                 return false; // LCOV_EXCL_LINE
             }
-
-            private:
-                using value_type = typename std::aligned_union<0, object, array, string, sint, uint, real, boolean, null>::type;
-                value_type  value_;
-                node_kind   kind_;
         };
 
     template <typename T, typename N>
@@ -336,5 +344,55 @@ namespace cxon { namespace json { // node
         inline const T* get_if(const N& n) noexcept { return n.template get_if<T>(); }
 
 }}
+
+namespace std {
+
+    template <typename Tr>
+        struct hash<cxon::json::basic_node<Tr>> {
+
+            using node = cxon::json::basic_node<Tr>;
+            using node_kind = cxon::json::node_kind;
+
+            size_t operator()(const node& n) const {
+                switch (n.kind()) {
+                    case node_kind::object: {
+                        size_t s = 0;
+                        for (auto& v: get<typename node::object>(n))
+                            s = make_hash(s, v.first, v.second);
+                        return s;
+                    }
+                    case node_kind::array: {
+                        size_t s = 0;
+                        for (auto& v: get<typename node::array>(n))
+                            s = make_hash(s, v);
+                        return s;
+                    }
+                    case node_kind::string:     return make_hash(get<typename node::string>(n));
+                    case node_kind::real:       return make_hash(get<typename node::real>(n));
+                    case node_kind::uint:       return make_hash(get<typename node::uint>(n));
+                    case node_kind::sint:       return make_hash(get<typename node::sint>(n));
+                    case node_kind::boolean:    return make_hash(get<typename node::boolean>(n));
+                    // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
+                    case node_kind::null:       return 0/*make_hash(get<typename node::null>(n))*/;
+                }
+                return 0; // LCOV_EXCL_LINE
+            }
+
+            // TODO: optimize & move to common/functional.hxx
+            template <typename ...>
+                static constexpr size_t make_hash(size_t s)
+                { return s; }
+            template <typename T>
+                static size_t make_hash(const T& t) {
+                    return hash<T>()(t);
+                }
+            template <typename H, typename ...T>
+                static size_t make_hash(size_t s, const H& h, const T&... t) {
+                    s ^= make_hash(h) + 0x9e3779b9 + (s << 6) + (s >> 2);
+                    return make_hash(s, t...);
+                }
+        };
+
+}
 
 #endif // CXON_JSON_NODE_HXX_

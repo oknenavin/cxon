@@ -17,6 +17,8 @@
 
 #include "cxon/lang/json/tidy.hxx"
 
+#include <unordered_set>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +46,8 @@ namespace test { namespace kind {
         int a_ = 0;
         int f_ = 0;
 
-#           define CHECK(c) ++a_;\
+#       define CHECK(c)\
+            ++a_;\
             if (!(c))\
                 std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_;\
             CXON_ASSERT((c), "check failed");
@@ -618,10 +621,36 @@ namespace test { namespace kind {
             auto const s = format_error(r, f.begin());
             CHECK(s == "cxon/json/read:0: invalid integral or value out of range");
         }
+        {   // hash
+            using node = cxon::json::node;
+            std::unordered_set<node> s = {
+                node::object {{1, 2}, {3, 4}},
+                node::array {5, 6},
+                "7",
+                8.,
+                9,
+                10U,
+                true,
+                node::null {},
+                node::null {} // duplicate
+            };
+            CHECK(s.size() == 8);
+            std::unordered_multiset<node> m = {
+                node::object {{1, 2}, {3, 4}},
+                node::array {5, 6},
+                "7",
+                8.,
+                9,
+                10U,
+                true,
+                node::null {},
+                node::null {} // duplicate
+            };
+            CHECK(m.size() == 9);
+        }
+#       undef CHECK
 
         std::fprintf(stdout, "cxon/json/node/self:  %i of %3i failed\n", f_, a_); std::fflush(stdout);
-
-#           undef CHECK
 
         return f_;
     }

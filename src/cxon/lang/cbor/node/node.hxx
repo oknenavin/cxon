@@ -12,6 +12,8 @@
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/map.hxx"
 
+#include <functional>
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cbor { // node
@@ -63,6 +65,11 @@ namespace cxon { namespace cbor { // node traits
 
 }}
 
+namespace std {
+    template <typename Tr>
+        struct hash<cxon::cbor::basic_node<Tr>>;
+}
+
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cbor { // node
@@ -110,6 +117,11 @@ namespace cxon { namespace cbor { // node
             using undefined = typename Tr::undefined_type;
             using real      = typename Tr::real_type;
             using simple    = typename Tr::simple_type;
+
+            private:
+                using value_type = typename std::aligned_union<0, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>::type;
+                value_type  value_;
+                node_kind   kind_;
 
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
@@ -257,18 +269,19 @@ namespace cxon { namespace cbor { // node
                         static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, typename int_type<T>::type>::value;
                     };
             public:
-                // integrals
-                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node(T t) : kind_(node_kind::undefined) {
-                        imbue<typename int_type<T>::type>() = t;
-                    }
-                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node& operator =(T t) {
-                        imbue<typename int_type<T>::type>() = t; return *this;
-                    }
-                // string
-                basic_node(const typename text::value_type* s) : kind_(node_kind::undefined)    { imbue<text>() = s; }
-                basic_node& operator =(const typename text::value_type* s)                      { imbue<text>() = s; return *this; }
+
+            // integrals
+            template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
+                basic_node(T t) : kind_(node_kind::undefined) {
+                    imbue<typename int_type<T>::type>() = t;
+                }
+            template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
+                basic_node& operator =(T t) {
+                    imbue<typename int_type<T>::type>() = t; return *this;
+                }
+            // string
+            basic_node(const typename text::value_type* s) : kind_(node_kind::undefined)    { imbue<text>() = s; }
+            basic_node& operator =(const typename text::value_type* s)                      { imbue<text>() = s; return *this; }
 
             void reset() noexcept {
                 switch (kind_) {
@@ -365,11 +378,6 @@ namespace cxon { namespace cbor { // node
                 }
                 return false; // LCOV_EXCL_LINE
             }
-
-        private:
-            using value_type = typename std::aligned_union<0, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>::type;
-            value_type  value_;
-            node_kind   kind_;
         };
 
     template <typename T, typename N>
@@ -453,5 +461,67 @@ namespace cxon { namespace cbor { // helpers
         };
 
 }}
+
+namespace std {
+
+    template <typename Tr>
+        struct hash<cxon::cbor::basic_node<Tr>> {
+
+            using node = cxon::cbor::basic_node<Tr>;
+            using node_kind = cxon::cbor::node_kind;
+
+            size_t operator()(const node& n) const {
+                switch (n.kind()) {
+                    case node_kind::map: {
+                        size_t s = 0;
+                        for (auto& v: get<typename node::map>(n))
+                            s = make_hash(s, v.first, v.second);
+                        return s;
+                    }
+                    case node_kind::array: {
+                        size_t s = 0;
+                        for (auto& v: get<typename node::array>(n))
+                            s = make_hash(s, v);
+                        return s;
+                    }
+                    case node_kind::bytes: {
+                        size_t s = 0;
+                        for (auto& v: get<typename node::bytes>(n))
+                            s = make_hash(s, v);
+                        return s;
+                    }
+                    case node_kind::tag: {
+                        auto const& t = get<typename node::tag>(n);
+                        return make_hash(/*0, */t.tag, t.value);
+                    }
+                    case node_kind::text:       return make_hash(get<typename node::text>(n));
+                    case node_kind::real:       return make_hash(get<typename node::real>(n));
+                    case node_kind::uint:       return make_hash(get<typename node::uint>(n));
+                    case node_kind::sint:       return make_hash(get<typename node::sint>(n));
+                    case node_kind::boolean:    return make_hash(get<typename node::boolean>(n));
+                    // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
+                    case node_kind::null:       return 0/*make_hash(get<typename node::null>(n))*/;
+                    case node_kind::undefined:  return 1;
+                    case node_kind::simple:     return make_hash(get<typename node::simple>(n).value);
+                }
+                return 0; // LCOV_EXCL_LINE
+            }
+
+            // TODO: optimize & move to common/functional.hxx
+            template <typename ...>
+                static constexpr size_t make_hash(size_t s)
+                { return s; }
+            template <typename T>
+                static size_t make_hash(const T& t) {
+                    return hash<T>()(t);
+                }
+            template <typename H, typename ...T>
+                static size_t make_hash(size_t s, const H& h, const T&... t) {
+                    s ^= make_hash(h) + 0x9e3779b9 + (s << 6) + (s >> 2);
+                    return make_hash(s, t...);
+                }
+        };
+
+}
 
 #endif // CXON_CBOR_NODE_HXX_
