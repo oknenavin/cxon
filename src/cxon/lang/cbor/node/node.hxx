@@ -474,29 +474,26 @@ namespace std {
                 switch (n.kind()) {
                     case node_kind::map: {
                         size_t s = 0;
-                        hash<typename node::map::key_type> h;
                         for (auto& v: get<typename node::map>(n))
-                            s = combine(combine(s, h(v.first)), h(v.second));
+                            s = make_hash(s, v.first, v.second);
                         return s;
                     }
                     case node_kind::array: {
                         size_t s = 0;
-                        hash<typename node::array::value_type> h;
                         for (auto& v: get<typename node::array>(n))
-                            s = combine(s, h(v));
+                            s = make_hash(s, v);
                         return s;
                     }
                     case node_kind::bytes: {
                         size_t s = 0;
-                        hash<typename node::bytes::value_type> h;
                         for (auto& v: get<typename node::bytes>(n))
-                            s = combine(s, h(v));
+                            s = make_hash(s, v);
                         return s;
                     }
                     case node_kind::tag: {
                         auto const& t = get<typename node::tag>(n);
                         size_t s = 0;
-                            s = combine(combine(s, make_hash(t.tag)), make_hash(t.value));
+                            s = make_hash(s, t.tag, t.value);
                         return s;
                     }
                     case node_kind::text:       return make_hash(get<typename node::text>(n));
@@ -512,14 +509,16 @@ namespace std {
                 return 0; // LCOV_EXCL_LINE
             }
 
+            // TODO: optimize & move to common/functional.hxx
             template <typename T>
                 static size_t make_hash(const T& t) {
                     return hash<T>()(t);
                 }
-
-            static size_t combine(size_t h0, size_t h1) {
-                return h0 ^ (h1 + 0x9e3779b9 + (h0 << 6) + (h0 >> 2));
-            }
+            template <typename H, typename ...T>
+                static size_t make_hash(const H& h, const T&... t) {
+                    size_t const s = make_hash(h);
+                    return s ^ (make_hash(t...) + 0x9E3779B9 + (s << 6) + (s >> 2));
+                }
 
         };
 
