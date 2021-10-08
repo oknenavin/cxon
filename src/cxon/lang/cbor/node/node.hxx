@@ -7,12 +7,12 @@
 #define CXON_CBOR_NODE_HXX_
 
 #include "cxon/lang/cbor/cbor.hxx"
+#include "cxon/lang/common/hash.hxx"
 
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/map.hxx"
 
-#include <functional>
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -462,64 +462,53 @@ namespace cxon { namespace cbor { // helpers
 
 }}
 
+namespace cxon {
+
+    template <typename T, typename V>
+        struct hash<cbor::taggle<T, V>> {
+            std::size_t operator ()(const cbor::taggle<T, V>& t) const noexcept {
+                return make_hash(t.tag, t.value);
+            }
+        };
+    template <typename T>
+        struct hash<cbor::simple<T>> {
+            std::size_t operator ()(const cbor::simple<T>& t) const noexcept {
+                return make_hash(t.value);
+            }
+        };
+
+    template <typename Tr>
+        struct hash<cbor::basic_node<Tr>> {
+            size_t operator ()(const cbor::basic_node<Tr>& n) const noexcept {
+                switch (n.kind()) {
+#                   define CXON_CBOR_TYPE_DEF(T)            case cbor::node_kind::T: return make_hash(cbor::get<typename cbor::basic_node<Tr>::T>(n))
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(bytes);
+                        CXON_CBOR_TYPE_DEF(text);
+                        CXON_CBOR_TYPE_DEF(array);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(boolean);
+                        case cbor::node_kind::null:         return  1; //CXON_CBOR_TYPE_DEF(null); // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
+                        case cbor::node_kind::undefined:    return -1;
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(simple);
+#                   undef CXON_CBOR_TYPE_DEF
+                }
+                return 0; // LCOV_EXCL_LINE
+            }
+        };
+
+}
+
 namespace std {
 
     template <typename Tr>
         struct hash<cxon::cbor::basic_node<Tr>> {
-
-            using node = cxon::cbor::basic_node<Tr>;
-            using node_kind = cxon::cbor::node_kind;
-
-            size_t operator()(const node& n) const {
-                switch (n.kind()) {
-                    case node_kind::map: {
-                        size_t s = 0;
-                        for (auto& v: get<typename node::map>(n))
-                            s = make_hash(s, v.first, v.second);
-                        return s;
-                    }
-                    case node_kind::array: {
-                        size_t s = 0;
-                        for (auto& v: get<typename node::array>(n))
-                            s = make_hash(s, v);
-                        return s;
-                    }
-                    case node_kind::bytes: {
-                        size_t s = 0;
-                        for (auto& v: get<typename node::bytes>(n))
-                            s = make_hash(s, v);
-                        return s;
-                    }
-                    case node_kind::tag: {
-                        auto const& t = get<typename node::tag>(n);
-                        return make_hash(/*0, */t.tag, t.value);
-                    }
-                    case node_kind::text:       return make_hash(get<typename node::text>(n));
-                    case node_kind::real:       return make_hash(get<typename node::real>(n));
-                    case node_kind::uint:       return make_hash(get<typename node::uint>(n));
-                    case node_kind::sint:       return make_hash(get<typename node::sint>(n));
-                    case node_kind::boolean:    return make_hash(get<typename node::boolean>(n));
-                    // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
-                    case node_kind::null:       return 0/*make_hash(get<typename node::null>(n))*/;
-                    case node_kind::undefined:  return 1;
-                    case node_kind::simple:     return make_hash(get<typename node::simple>(n).value);
-                }
-                return 0; // LCOV_EXCL_LINE
+            size_t operator ()(const cxon::cbor::basic_node<Tr>& n) const noexcept {
+                return cxon::make_hash(n);
             }
-
-            // TODO: optimize & move to common/functional.hxx
-            template <typename ...>
-                static constexpr size_t make_hash(size_t s)
-                { return s; }
-            template <typename T>
-                static size_t make_hash(const T& t) {
-                    return hash<T>()(t);
-                }
-            template <typename H, typename ...T>
-                static size_t make_hash(size_t s, const H& h, const T&... t) {
-                    s ^= make_hash(h) + 0x9e3779b9 + (s << 6) + (s >> 2);
-                    return make_hash(s, t...);
-                }
         };
 
 }
