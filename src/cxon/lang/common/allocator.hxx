@@ -9,13 +9,66 @@
 #include "cxon/utility.hxx"
 #include <memory>
 
+
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon {
 
-    CXON_PARAMETER(allocator, std::allocator<char>);
+#   if __cplusplus > 201703L /* C++20 */
+        CXON_PARAMETER(allocator, std::allocator<void>);
+#   else
+        CXON_PARAMETER(allocator, std::allocator<char>);
+#   endif
 
-    template <typename T, typename Ax>
+}
+
+namespace cxon { namespace alc {
+
+    template <typename Al, typename U>
+        using rebind_t = typename std::allocator_traits<Al>::template rebind_alloc<U>;
+
+    template< class T, class Al, class... A> // C++20
+        constexpr T* uninitialized_construct_using_allocator(T* t, const Al& al, A&&... as);
+
+    template <typename T, typename Al>
+        struct basic_allocator;
+
+    template <typename T, typename Cx, typename Al = decltype(allocator::value(std::declval<Cx&>().px, std::allocator<T>()))>
+        inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Al>;
+    template <typename T, typename Al>
+        inline auto make_allocator(const Al& al) -> basic_allocator<T, Al> ;
+
+}}
+
+// implementation //////////////////////////////////////////////////////////////
+
+namespace cxon { namespace alc {
+
+    namespace imp {
+
+        template< class T, class Al, class... A>
+            constexpr auto uninitialized_construct_using_allocator_(option<2>, T* t, const Al& al, A&&... as) -> decltype(new T(std::forward<A>(as)..., al)) {
+                return new (t) T(std::forward<A>(as)..., al);
+            }
+        template< class T, class Al, class... A>
+            constexpr auto uninitialized_construct_using_allocator_(option<1>, T* t, const Al& al, A&&... as) -> decltype(new T(al, std::forward<A>(as)...)) {
+                return new (t) T(al, std::forward<A>(as)...);
+            }
+        template< class T, class Al, class... A>
+            constexpr auto uninitialized_construct_using_allocator_(option<1>, T* t, const Al&, A&&... as) -> decltype(new T(std::forward<A>(as)...)) {
+                return new (t) T(std::forward<A>(as)...);
+            }
+
+    }
+
+    template< class T, class Al, class... A>
+        constexpr T* uninitialized_construct_using_allocator(T* t, const Al& al, A&&... as) {
+            return imp::uninitialized_construct_using_allocator_<T>(option<2>(), t, al, std::forward<A>(as)...);
+        }
+
+    template <typename T, typename Al>
         struct basic_allocator {
-            using type = typename std::allocator_traits<Ax>::template rebind_alloc<T>;
+            using type = rebind_t<Al, T>;
 
             basic_allocator(const type& al) : al_(al) {}
 
@@ -55,20 +108,16 @@ namespace cxon {
                 using tr = std::allocator_traits<type>;
                 type al_;
         };
-    template <typename T, typename Cx, typename Ax = decltype(allocator::value(std::declval<Cx&>().px, std::allocator<T>()))>
-        inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Ax> {
-            return basic_allocator<T, Ax>(allocator::value(cx.px, std::allocator<T>()));
+
+    template <typename T, typename Cx, typename Al>
+        inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Al> {
+            return basic_allocator<T, Al>(allocator::value(cx.px, std::allocator<T>()));
         }
-    template <typename T, typename Ax>
-        inline auto make_allocator(const Ax& ax) -> basic_allocator<T, Ax> {
-            return basic_allocator<T, Ax>(ax);
+    template <typename T, typename Al>
+        inline auto make_allocator(const Al& al) -> basic_allocator<T, Al> {
+            return basic_allocator<T, Al>(al);
         }
 
-    template <typename T, typename E = void_t<>>
-        struct is_allocator_aware                                           : std::false_type {};
-    template <typename T>
-        struct is_allocator_aware<T, void_t<typename T::allocator_type>>    : std::true_type {};
-
-}
+}}
 
 #endif // CXON_ALLOCATOR_HXX_

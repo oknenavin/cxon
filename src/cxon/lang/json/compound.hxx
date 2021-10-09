@@ -23,7 +23,7 @@ namespace cxon { // pointer
                                 (t = nullptr, true)
                         ;
                     }
-                    auto al = make_context_allocator<T>(cx);
+                    auto al = alc::make_context_allocator<T>(cx);
                     T *const n = al.create();
                         if (!read_value<Y>(*n, i, e, cx))
                             return al.release(n), false;

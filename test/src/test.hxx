@@ -223,12 +223,12 @@ namespace cxon { namespace test {
 
             template <typename U = typename std::remove_const<T>::type>
                 auto destroy() -> enable_if_t<!is_char<U>::value, void> {
-                    auto al = make_allocator<U>(std::allocator<U>());
+                    auto al = alc::make_allocator<U>(std::allocator<U>());
                     al.release(const_cast<U*>(t_));
                 }
             template <typename U = typename std::remove_const<T>::type>
                 auto destroy() -> enable_if_t< is_char<U>::value, void> {
-                    auto al = make_allocator<U>(std::allocator<U>());
+                    auto al = alc::make_allocator<U>(std::allocator<U>());
                     al.release(const_cast<U*>(t_), t_ ? std::char_traits<U>::length(t_) + 1 : 0);
                 }
         };

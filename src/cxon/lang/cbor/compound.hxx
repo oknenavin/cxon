@@ -45,7 +45,7 @@ namespace cxon { // pointer/read
             inline bool read_pointer_t_(T*& t, II& i, II e, Cx& cx) {
                 if (bio::peek(i, e) == X::nil)
                     return bio::get(i, e), t = nullptr, true;
-                auto al = make_context_allocator<T>(cx);
+                auto al = alc::make_context_allocator<T>(cx);
                 T *const v = al.create();
                     if (!v || !read_value<X>(*v, i, e, cx))
                         return al.release(v), false;

@@ -18,10 +18,13 @@
 
 namespace cxon { namespace cbor { // node
 
+    template <typename Al = std::allocator<void>>
+        struct node_traits;
+
     template <typename Tr>
         struct basic_node;
 
-    using node = basic_node<struct node_traits>;
+    using node = basic_node<node_traits<>>;
 
     template <typename T, typename N> inline        bool    is(const N& n) noexcept;
     template <typename T, typename N> inline        T&      imbue(N& n)/* noexcept(std::is_nothrow_default_constructible<T>::value)*/;
@@ -48,20 +51,22 @@ namespace cxon { namespace cbor { // node traits
 
     enum class node_kind { sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple };
 
-    struct node_traits {
-        using                                       sint_type       = long long;
-        using                                       uint_type       = unsigned long long;
-        using                                       bytes_type      = std::vector<unsigned char>;
-        using                                       text_type       = std::basic_string<char>;
-        template <typename T> using                 array_type      = std::vector<T>;
-        template <typename K, typename V> using     map_type        = std::map<K, V>;
-        template <typename N, typename T> using     tag_type        = taggle<N, T>;
-        using                                       boolean_type    = bool;
-        using                                       null_type       = std::nullptr_t;
-        using                                       undefined_type  = undefined;
-        using                                       real_type       = double;
-        using                                       simple_type     = simple<unsigned char>;
-    };
+    template <typename Al>
+        struct node_traits {
+            using                                       allocator_type  = alc::rebind_t<Al, basic_node<node_traits>>;
+            using                                       sint_type       = long long;
+            using                                       uint_type       = unsigned long long;
+            using                                       bytes_type      = std::vector<unsigned char, alc::rebind_t<Al, unsigned char>>;
+            using                                       text_type       = std::basic_string<char, std::char_traits<char>, alc::rebind_t<Al, char>>;
+            template <typename T> using                 array_type      = std::vector<T, alc::rebind_t<Al, T>>;
+            template <typename K, typename V> using     map_type        = std::map<K, V, std::less<K>, alc::rebind_t<Al, std::pair<const K, V>>>;
+            template <typename N, typename T> using     tag_type        = taggle<N, T, alc::rebind_t<Al, T>>;
+            using                                       boolean_type    = bool;
+            using                                       null_type       = std::nullptr_t;
+            using                                       undefined_type  = undefined;
+            using                                       real_type       = double;
+            using                                       simple_type     = simple<unsigned char>;
+        };
 
 }}
 
@@ -118,10 +123,13 @@ namespace cxon { namespace cbor { // node
             using real      = typename Tr::real_type;
             using simple    = typename Tr::simple_type;
 
+            using allocator_type = alc::rebind_t<typename Tr::allocator_type, basic_node>;
+
             private:
                 using value_type = typename std::aligned_union<0, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>::type;
-                value_type  value_;
-                node_kind   kind_;
+                value_type      value_;
+                node_kind       kind_;
+                allocator_type  alloc_;
 
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
@@ -139,12 +147,45 @@ namespace cxon { namespace cbor { // node
                     using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
             public:
 
-            basic_node() noexcept : kind_(node_kind::undefined) {}
-            ~basic_node()                                       { reset(); }
+            basic_node() noexcept
+            :   kind_(node_kind::undefined)
+            {
+            }
+            basic_node(const allocator_type& al) noexcept
+            :   kind_(node_kind::undefined),
+                alloc_(al)
+            {
+            }
+            ~basic_node() {
+                reset();
+            }
 
-            basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : kind_(o.kind_) {
+            basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value)
+            :   kind_(o.kind_)
+            {
                 switch (o.kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: new (&reinterpret_cast<T&>(value_)) T(std::move(o.get<T>())); break
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, std::move(o.get<T>())); break
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(bytes);
+                        CXON_CBOR_TYPE_DEF(text);
+                        CXON_CBOR_TYPE_DEF(array);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(boolean);
+                        CXON_CBOR_TYPE_DEF(null);
+                        CXON_CBOR_TYPE_DEF(undefined);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(simple);
+#                   undef CXON_CBOR_TYPE_DEF
+                }
+            }
+            basic_node(basic_node&& o, const allocator_type& al) noexcept(is_nothrow_move_constructible::value)
+            :   kind_(o.kind_),
+                alloc_(al)
+            {
+                switch (o.kind_) {
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, std::move(o.get<T>())); break
                         CXON_CBOR_TYPE_DEF(sint);
                         CXON_CBOR_TYPE_DEF(uint);
                         CXON_CBOR_TYPE_DEF(bytes);
@@ -180,9 +221,32 @@ namespace cxon { namespace cbor { // node
                 return *this;
             }
 
-            basic_node(const basic_node& o) noexcept(is_nothrow_copy_constructible::value) : kind_(o.kind_) {
+            basic_node(const basic_node& o) noexcept(is_nothrow_copy_constructible::value)
+            :   kind_(o.kind_)
+            {
                 switch (o.kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: new (&reinterpret_cast<T&>(value_)) T(o.get<T>()); break
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, o.get<T>()); break
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(bytes);
+                        CXON_CBOR_TYPE_DEF(text);
+                        CXON_CBOR_TYPE_DEF(array);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(boolean);
+                        CXON_CBOR_TYPE_DEF(null);
+                        CXON_CBOR_TYPE_DEF(undefined);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(simple);
+#                   undef CXON_CBOR_TYPE_DEF
+                }
+            }
+            basic_node(const basic_node& o, const allocator_type& al) noexcept(is_nothrow_copy_constructible::value)
+            :   kind_(o.kind_),
+                alloc_(al)
+            {
+                switch (o.kind_) {
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, o.get<T>()); break
                         CXON_CBOR_TYPE_DEF(sint);
                         CXON_CBOR_TYPE_DEF(uint);
                         CXON_CBOR_TYPE_DEF(bytes);
@@ -219,10 +283,12 @@ namespace cxon { namespace cbor { // node
             }
 
 #           define CXON_CBOR_TYPE_DEF(T)\
-                    basic_node(T&& v) : kind_(node_kind::undefined)         { imbue<T>() = std::forward<T>(v); }\
-                    basic_node& operator =(T&& v)                           { imbue<T>() = std::forward<T>(v); return *this; }\
-                    basic_node(const T& v) : kind_(node_kind::undefined)    { imbue<T>() = v; }\
-                    basic_node& operator =(const T& v)                      { imbue<T>() = v; return *this; }
+                    basic_node(T&& v)                                   : kind_(node_kind::T)                   { alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, std::forward<T>(v)); } \
+                    basic_node(T&& v, const allocator_type& al)         : kind_(node_kind::T), alloc_(al)       { alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, std::forward<T>(v)); } \
+                    basic_node& operator =(T&& v)                                                               { imbue<T>() = std::forward<T>(v); return *this; }\
+                    basic_node(const T& v)                              : kind_(node_kind::T)                   { alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, v); } \
+                    basic_node(const T& v, const allocator_type& al)    : kind_(node_kind::T), alloc_(al)       { alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, v); } \
+                    basic_node& operator =(const T& v)                                                          { imbue<T>() = v; return *this; }
                 CXON_CBOR_TYPE_DEF(sint);
                 CXON_CBOR_TYPE_DEF(uint);
                 CXON_CBOR_TYPE_DEF(bytes);
@@ -238,54 +304,89 @@ namespace cxon { namespace cbor { // node
 #           undef CXON_CBOR_TYPE_DEF
 
             // map if empty or array(s) of two elements, array otherwise
-            basic_node(std::initializer_list<basic_node> l) : kind_(node_kind::undefined) {
-                *this = l;
-            }
-            basic_node& operator =(std::initializer_list<basic_node> l) {
-                bool const obj = l.size() == 0 || std::all_of(l.begin(), l.end(), [&](const basic_node& e) {
-                    return e.template is<array>() && e.template get<array>().size() == 2;
-                });
-                if (obj) {
-                    auto& o = imbue<map>();
-                    for (auto& e : l) {
-                        auto& a = e.template get<array>();
-                        cxon::cnt::append(o, {a[0], a[1]});
-                    }
+                basic_node(std::initializer_list<basic_node> l)
+                :   kind_(node_kind::undefined)
+                {
+                    *this = l;
                 }
-                else
-                    imbue<array>() = l;
-                return *this;
-            }
+                basic_node(std::initializer_list<basic_node> l, const allocator_type& al)
+                :   kind_(node_kind::undefined),
+                    alloc_(al)
+                {
+                    *this = l;
+                }
+                basic_node& operator =(std::initializer_list<basic_node> l) {
+                    bool const obj = l.size() == 0 || std::all_of(l.begin(), l.end(), [&](const basic_node& e) {
+                        return e.template is<array>() && e.template get<array>().size() == 2;
+                    });
+                    if (obj) {
+                        auto& o = imbue<map>();
+                        for (auto& e : l) {
+                            auto& a = e.template get<array>();
+                            cxon::cnt::append(o, {a[0], a[1]});
+                        }
+                    }
+                    else
+                        imbue<array>() = l;
+                    return *this;
+                }
 
             // literals
-            private:
-                template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
-                    struct int_type             { using type = sint; };
-                template <typename T>
-                    struct int_type<T, false>   { using type = uint; };
+                private:
+                    template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
+                        struct int_kind             { static constexpr node_kind value = node_kind::sint; };
+                    template <typename T>
+                        struct int_kind<T, false>   { static constexpr node_kind value = node_kind::uint; };
 
-                template <typename T>
-                    struct is_int_unique {
-                        static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, typename int_type<T>::type>::value;
-                    };
-            public:
+                    template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
+                        struct int_type_            { using type = sint; };
+                    template <typename T>
+                        struct int_type_<T, false>  { using type = uint; };
+                    template <typename T>
+                        using int_type = typename int_type_<T>::type;
 
+                    template <typename T>
+                        struct is_int_unique {
+                            static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, int_type<T>>::value;
+                        };
+                public:
             // integrals
-            template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                basic_node(T t) : kind_(node_kind::undefined) {
-                    imbue<typename int_type<T>::type>() = t;
-                }
-            template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                basic_node& operator =(T t) {
-                    imbue<typename int_type<T>::type>() = t; return *this;
-                }
+                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
+                    basic_node(T t)
+                    :   kind_(int_kind<T>::value)
+                    {
+                        alc::uninitialized_construct_using_allocator<int_type<T>>((int_type<T>*)&value_, alloc_, t);
+                    }
+                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
+                    basic_node(T t, const allocator_type& al)
+                    :   kind_(int_kind<T>::value),
+                        alloc_(al)
+                    {
+                        alc::uninitialized_construct_using_allocator<int_type<T>>((int_type<T>*)&value_, al, t);
+                    }
+                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
+                    basic_node& operator =(T t) {
+                        imbue<int_type<T>>() = t; return *this;
+                    }
             // string
-            basic_node(const typename text::value_type* s) : kind_(node_kind::undefined)    { imbue<text>() = s; }
-            basic_node& operator =(const typename text::value_type* s)                      { imbue<text>() = s; return *this; }
+                basic_node(const typename text::value_type* s)
+                :   kind_(node_kind::text)
+                {
+                    alc::uninitialized_construct_using_allocator<text>((text*)&value_, alloc_, s);
+                }
+                basic_node(const typename text::value_type* s, const allocator_type& al)
+                :   kind_(node_kind::text),
+                    alloc_(al)
+                {
+                    alc::uninitialized_construct_using_allocator<text>((text*)&value_, al, s);
+                }
+                basic_node& operator =(const typename text::value_type* s) {
+                    imbue<text>() = s; return *this;
+                }
 
             void reset() noexcept {
                 switch (kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: reinterpret_cast<T&>(value_).~T(); break
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: ((T*)&value_)->~T(); break
                         CXON_CBOR_TYPE_DEF(sint);
                         CXON_CBOR_TYPE_DEF(uint);
                         CXON_CBOR_TYPE_DEF(bytes);
@@ -305,6 +406,10 @@ namespace cxon { namespace cbor { // node
 
             node_kind kind() const noexcept { return kind_; }
 
+            allocator_type get_allocator() const noexcept {
+                return alloc_;
+            }
+
             template <typename T> bool  is() const noexcept {
                 return kind_ == imp::node_kind_from_<basic_node, T>();
             }
@@ -312,25 +417,25 @@ namespace cxon { namespace cbor { // node
             template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
                 if (!is<T>()) {
                     reset(), kind_ = imp::node_kind_from_<basic_node, T>();
-                    new (&value_) T();
+                    alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_);
                 }
-                return reinterpret_cast<T&>(value_);
+                return *(T*)&value_;
             }
 
             template <typename T> T& get() noexcept {
                 CXON_ASSERT(is<T>(), "node type mismatch");
-                return reinterpret_cast<T&>(value_);
+                return *(T*)&value_;
             }
             template <typename T> const T& get() const noexcept {
                 CXON_ASSERT(is<T>(), "node type mismatch");
-                return reinterpret_cast<const T&>(value_);
+                return *(T*)&value_;
             }
 
             template <typename T> T* get_if() noexcept {
-                return is<T>() ? &reinterpret_cast<T&>(value_) : nullptr;
+                return is<T>() ? (T*)&value_ : nullptr;
             }
             template <typename T> const T* get_if() const noexcept {
-                return is<T>() ? &reinterpret_cast<const T&>(value_) : nullptr;
+                return is<T>() ? (T*)&value_ : nullptr;
             }
 
             bool operator == (const basic_node& n) const noexcept {
@@ -414,55 +519,76 @@ namespace cxon { namespace cbor { // helpers
             operator T() const noexcept { return value; }
         };
 
-    template <typename N, typename T, typename A>
+    template <typename N, typename T, typename Al>
         struct taggle {
-            N tag;
-            T& value;
+            public:     N tag;
+            private:    Al al_; // oops, initialization order
+            public:     T& value;
 
-            taggle(A a = std::allocator<T>())
-            :   tag(-1), value(*std::allocator_traits<A>::allocate(a, 1)), a_(a)
-            {   std::allocator_traits<A>::construct(a_, &value); }
-            taggle(N n, const T& t, A a = std::allocator<T>())
-            :   tag(n), value(*std::allocator_traits<A>::allocate(a, 1)), a_(a)
-            {   std::allocator_traits<A>::construct(a_, &value, t); }
-            taggle(N n, T&& t, A a = std::allocator<T>())
-            :   tag(n), value(*std::allocator_traits<A>::allocate(a, 1)), a_(a)
-            {   std::allocator_traits<A>::construct(a_, &value, std::move(t)); }
+            taggle()
+            :   tag(-1), al_(), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {   std::allocator_traits<Al>::construct(al_, &value); }
+            taggle(const Al& al)
+            :   tag(-1), al_(al), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {   std::allocator_traits<Al>::construct(al_, &value); }
+
+            taggle(N n, T&& t)
+            :   tag(n), al_(), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {   std::allocator_traits<Al>::construct(al_, &value, std::move(t)); }
+            taggle(N n, T&& t, const Al& al)
+            :   tag(n), al_(al), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {   std::allocator_traits<Al>::construct(al_, &value, std::move(t)); }
+
+            taggle(N n, const T& t)
+            :   tag(n), al_(), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {   std::allocator_traits<Al>::construct(al_, &value, t); }
+            taggle(N n, const T& t, const Al& al)
+            :   tag(n), al_(al), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {   std::allocator_traits<Al>::construct(al_, &value, t); }
 
             ~taggle() {
-                std::allocator_traits<A>::destroy(a_, &value);
-                std::allocator_traits<A>::deallocate(a_, &value, 1);
+                std::allocator_traits<Al>::destroy(al_, &value);
+                std::allocator_traits<Al>::deallocate(al_, &value, 1);
             }
 
             taggle(taggle&& t)
-            :   tag(t.tag), value(*std::allocator_traits<A>::allocate(t.a_, 1)), a_(t.a_)
+            :   tag(t.tag), al_(), value(*std::allocator_traits<Al>::allocate(al_, 1))
             {
-                std::allocator_traits<A>::construct(a_, &value);
+                std::allocator_traits<Al>::construct(al_, &value);
                 value = std::move(t.value);
             }
-            taggle& operator =(taggle&& t)          { return a_ = t.a_, tag = t.tag, value = std::move(t.value), *this; }
+            taggle(taggle&& t, const Al& al)
+            :   tag(t.tag), al_(al), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {
+                std::allocator_traits<Al>::construct(al_, &value);
+                value = std::move(t.value);
+            }
+            taggle& operator =(taggle&& t) { return tag = t.tag, value = std::move(t.value), *this; }
 
             taggle(const taggle& t)
-            :   tag(t.tag), value(*std::allocator_traits<A>::allocate(const_cast<A&>(t.a_), 1)), a_(t.a_)
+            :   tag(t.tag), al_(), value(*std::allocator_traits<Al>::allocate(al_, 1))
             {
-                std::allocator_traits<A>::construct(a_, &value);
+                std::allocator_traits<Al>::construct(al_, &value);
                 value = t.value;
             }
-            taggle& operator =(const taggle& t)     { return a_ = t.a_, tag = t.tag, value = t.value, *this; }
+            taggle(const taggle& t, const Al& al)
+            :   tag(t.tag), al_(al), value(*std::allocator_traits<Al>::allocate(al_, 1))
+            {
+                std::allocator_traits<Al>::construct(al_, &value);
+                value = t.value;
+            }
+            taggle& operator =(const taggle& t) { return tag = t.tag, value = t.value, *this; }
 
-            taggle& operator =(T&& t)       { return value = std::move(t), *this; }
-            taggle& operator =(const T& t)  { return value = t, *this; }
+            taggle& operator =(T&& t) { return value = std::move(t), *this; }
+            taggle& operator =(const T& t) { return value = t, *this; }
 
             bool operator ==(const taggle& t) const noexcept { return tag == t.tag && value == t.value; }
             bool operator  <(const taggle& t) const noexcept { return tag < t.tag || (tag == t.tag && value < t.value); }
-
-            private:
-                A a_;
         };
 
 }}
 
-namespace cxon {
+namespace cxon { // hash
 
     template <typename T, typename V>
         struct hash<cbor::taggle<T, V>> {
@@ -502,7 +628,7 @@ namespace cxon {
 
 }
 
-namespace std {
+namespace std { // hash
 
     template <typename Tr>
         struct hash<cxon::cbor::basic_node<Tr>> {

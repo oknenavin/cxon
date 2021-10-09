@@ -19,6 +19,13 @@
 
 #include <unordered_set>
 
+#if __cplusplus >= 201703L
+#   if defined(__has_include) && __has_include(<memory_resource>)
+#       include <memory_resource>
+#       define CXON_HAS_LIB_STD_MEMORY_RESOURCE
+#   endif
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,7 +33,7 @@ using node = cxon::json::ordered_node;
 
 namespace test { namespace kind {
 
-    struct my_traits : cxon::json::node_traits {
+    struct my_traits : cxon::json::node_traits<> {
         using                               string_type = std::u16string;
         template <class T> using            array_type = std::list<T>;
         template <class K, class V> using   object_type = std::multimap<K, V>;
@@ -41,6 +48,11 @@ namespace test { namespace kind {
             CXON_JSON_CLS_FIELD_ASIS(odd)
         )
     };
+    
+    template <typename T>
+        struct my_allocator : std::allocator<T> {
+            using std::allocator<T>::allocator;
+        };
 
     int self() {
         int a_ = 0;
@@ -107,7 +119,7 @@ namespace test { namespace kind {
                     // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     // seems to be fixed around 10, but after the inclusion of cbor.hxx,
                     // this workaround does not work for to_bytes anymore
-                    //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                    //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits<>>
                     //    (cxon::json::make_indenter(s1, 4, ' '), n, cxon::json::fp_precision::set<4>());
 #                   endif
                 std::string const s0 =
@@ -164,7 +176,7 @@ namespace test { namespace kind {
                     // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     // seems to be fixed around 10, but after the inclusion of cbor.hxx,
                     // this workaround does not work for to_bytes anymore
-                    //auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                    //auto const r = cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits<>>
                     //                    (cxon::json::make_indenter(s), n, cxon::node::recursion_depth::set<4>());
                     //CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
 #                   endif
@@ -180,7 +192,7 @@ namespace test { namespace kind {
                     // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     // seems to be fixed around 10, after the inclusion of cbor.hxx,
                     // funnily enough, this workaround continues to work for from_chars (unlike to_chars)
-                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::ordered_node_traits<>>
                                         (jn, "[[[[", cxon::node::recursion_depth::set<4>());
 #                   endif
                 CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
@@ -529,15 +541,15 @@ namespace test { namespace kind {
                     {std::numeric_limits<node::real>::quiet_NaN(), 18U}
                 };
                 node n;
-                    cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, in, cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
+                    cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, in, cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
                 CHECK(n == out);
             }
             {   node n;
-                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, "{\"x: 0}", cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
+                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
                 CHECK(!r && r.ec == cxon::json::read_error::unexpected);
             }
             {   node n;
-                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(n, "{x: 0}", cxon::node::json::arbitrary_keys::set<true>());
+                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, "{x: 0}", cxon::node::json::arbitrary_keys::set<true>());
                 CHECK(!r && r.ec == cxon::node::error::invalid);
             }
             {
@@ -550,7 +562,7 @@ namespace test { namespace kind {
                     // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     // seems to be fixed around 10, but after the inclusion of cbor.hxx,
                     // this workaround does not work for to_bytes anymore
-                    //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits>
+                    //cxon::to_bytes<cxon::JSON<>, cxon::json::ordered_node_traits<>>
                     //    (s, n, cxon::node::json::arbitrary_keys::set<true>());
                     //CHECK(s == "{{1:2}:3,[4]:5,\"6\":7,8:9,true:10,null:11}");
 #                   endif
@@ -648,6 +660,24 @@ namespace test { namespace kind {
             };
             CHECK(m.size() == 9);
         }
+        {
+            using node = cxon::json::basic_node<cxon::json::node_traits<my_allocator<void>>>;
+            my_allocator<node> al;
+            node n(al);
+                n = { 1, 2, 3};
+            CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
+        }
+#       ifdef CXON_HAS_LIB_STD_MEMORY_RESOURCE
+        {
+            using node = cxon::json::basic_node<cxon::json::node_traits<std::pmr::polymorphic_allocator<void>>>;
+            char bf[4096];
+            std::pmr::monotonic_buffer_resource ar(bf, sizeof(bf));
+            std::pmr::polymorphic_allocator<node> al(&ar);
+            node n(al);
+                n = { 1, 2, 3};
+            CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
+        }
+#       endif
 #       undef CHECK
 
         std::fprintf(stdout, "cxon/json/node/self:  %i of %3i failed\n", f_, a_); std::fflush(stdout);
