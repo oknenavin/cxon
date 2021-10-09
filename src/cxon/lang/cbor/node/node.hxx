@@ -18,10 +18,13 @@
 
 namespace cxon { namespace cbor { // node
 
+    template <typename Al = std::allocator<void>>
+        struct node_traits;
+
     template <typename Tr>
         struct basic_node;
 
-    using node = basic_node<struct node_traits>;
+    using node = basic_node<node_traits<>>;
 
     template <typename T, typename N> inline        bool    is(const N& n) noexcept;
     template <typename T, typename N> inline        T&      imbue(N& n)/* noexcept(std::is_nothrow_default_constructible<T>::value)*/;
@@ -48,20 +51,22 @@ namespace cxon { namespace cbor { // node traits
 
     enum class node_kind { sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple };
 
-    struct node_traits {
-        using                                       sint_type       = long long;
-        using                                       uint_type       = unsigned long long;
-        using                                       bytes_type      = std::vector<unsigned char>;
-        using                                       text_type       = std::basic_string<char>;
-        template <typename T> using                 array_type      = std::vector<T>;
-        template <typename K, typename V> using     map_type        = std::map<K, V>;
-        template <typename N, typename T> using     tag_type        = taggle<N, T>;
-        using                                       boolean_type    = bool;
-        using                                       null_type       = std::nullptr_t;
-        using                                       undefined_type  = undefined;
-        using                                       real_type       = double;
-        using                                       simple_type     = simple<unsigned char>;
-    };
+    template <typename Al>
+        struct node_traits {
+            using                                       allocator_type  = alc::rebind_t<Al, basic_node<node_traits>>;
+            using                                       sint_type       = long long;
+            using                                       uint_type       = unsigned long long;
+            using                                       bytes_type      = std::vector<unsigned char, alc::rebind_t<Al, unsigned char>>;
+            using                                       text_type       = std::basic_string<char, std::char_traits<char>, alc::rebind_t<Al, char>>;
+            template <typename T> using                 array_type      = std::vector<T, alc::rebind_t<Al, T>>;
+            template <typename K, typename V> using     map_type        = std::map<K, V, std::less<K>, alc::rebind_t<Al, std::pair<const K, V>>>;
+            template <typename N, typename T> using     tag_type        = taggle<N, T, alc::rebind_t<Al, T>>;
+            using                                       boolean_type    = bool;
+            using                                       null_type       = std::nullptr_t;
+            using                                       undefined_type  = undefined;
+            using                                       real_type       = double;
+            using                                       simple_type     = simple<unsigned char>;
+        };
 
 }}
 
@@ -105,6 +110,7 @@ namespace cxon { namespace cbor { // node
 
     template <typename Tr>
         struct basic_node {
+            using allocator = typename Tr::allocator_type;
             using sint      = typename Tr::sint_type;
             using uint      = typename Tr::uint_type;
             using bytes     = typename Tr::bytes_type;
@@ -122,6 +128,7 @@ namespace cxon { namespace cbor { // node
                 using value_type = typename std::aligned_union<0, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>::type;
                 value_type  value_;
                 node_kind   kind_;
+                allocator   alloc_;
 
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
@@ -139,8 +146,9 @@ namespace cxon { namespace cbor { // node
                     using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
             public:
 
-            basic_node() noexcept : kind_(node_kind::undefined) {}
-            ~basic_node()                                       { reset(); }
+            basic_node() noexcept : kind_(node_kind::undefined)                                 {}
+            basic_node(const allocator& al) noexcept : kind_(node_kind::undefined), alloc_(al)  {}
+            ~basic_node()                                                                       { reset(); }
 
             basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : kind_(o.kind_) {
                 switch (o.kind_) {
@@ -309,10 +317,19 @@ namespace cxon { namespace cbor { // node
                 return kind_ == imp::node_kind_from_<basic_node, T>();
             }
 
+            private: // allocator
+                template <typename T>
+                    auto construct() -> enable_if_t< alc::has_allocator<T>::value>
+                        { new (&value_) T(alc::rebind_t<allocator, alc::value_t<typename T::allocator_type>>(alloc_)); }
+                template <typename T>
+                    auto construct() -> enable_if_t<!alc::has_allocator<T>::value>
+                        { new (&value_) T(); }
+            public:
+
             template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
                 if (!is<T>()) {
                     reset(), kind_ = imp::node_kind_from_<basic_node, T>();
-                    new (&value_) T();
+                    construct<T>();
                 }
                 return reinterpret_cast<T&>(value_);
             }
@@ -462,7 +479,7 @@ namespace cxon { namespace cbor { // helpers
 
 }}
 
-namespace cxon {
+namespace cxon { // hash
 
     template <typename T, typename V>
         struct hash<cbor::taggle<T, V>> {
@@ -502,7 +519,7 @@ namespace cxon {
 
 }
 
-namespace std {
+namespace std { // hash
 
     template <typename Tr>
         struct hash<cxon::cbor::basic_node<Tr>> {

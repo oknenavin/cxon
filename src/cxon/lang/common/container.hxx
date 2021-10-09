@@ -78,7 +78,7 @@ namespace cxon { namespace cnt { // adaptors
     template <typename T, typename A>
         struct pointer_container;
     template <typename X, typename T, typename Cx>
-        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<T>(cx))>;
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(alc::make_context_allocator<T>(cx))>;
 
 }}
 
@@ -390,8 +390,8 @@ namespace cxon { namespace cnt {
                 pointer f_, l_, e_;
         };
     template <typename X, typename T, typename Cx>
-        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(make_context_allocator<T>(cx))> {
-            return { make_context_allocator<T>(cx) };
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(alc::make_context_allocator<T>(cx))> {
+            return { alc::make_context_allocator<T>(cx) };
         }
 
 }}

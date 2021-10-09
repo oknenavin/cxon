@@ -21,7 +21,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//struct my_traits : cxon::cbor::node_traits {
+//struct my_traits : cxon::cbor::node_traits<> {
 //    using                               bytes_type = std::vector;
 //    template <class T> using            array_type = std::list<T>;
 //    template <class K, class V> using   map_type = std::multimap<K, V>;
@@ -87,7 +87,7 @@ struct result {
 #               else
                     // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                     // seems to be fixed around 10
-                    auto const r = cxon::from_bytes<cxon::CBOR<>, cxon::cbor::node_traits>(n, "\x81\x81\x81\x81", cxon::node::recursion_depth::set<4>());
+                    auto const r = cxon::from_bytes<cxon::CBOR<>, cxon::cbor::node_traits<>>(n, "\x81\x81\x81\x81", cxon::node::recursion_depth::set<4>());
 #               endif
                 CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
             }
@@ -645,7 +645,7 @@ struct result {
 #                               else
                                     // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                                     // seems to be fixed around 10
-                                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits>(
+                                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(
                                         decoded, fix->second.data,
                                         cxon::node::json::arbitrary_keys::set<true>(),
                                         cxon::node::json::extract_nans::set<true>()

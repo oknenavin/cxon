@@ -9,13 +9,49 @@
 #include "cxon/utility.hxx"
 #include <memory>
 
+
+// interface ///////////////////////////////////////////////////////////////////
+
 namespace cxon {
 
-    CXON_PARAMETER(allocator, std::allocator<char>);
+#   if __cplusplus > 201703L /* C++20 */
+        CXON_PARAMETER(allocator, std::allocator<void>);
+#   else
+        CXON_PARAMETER(allocator, std::allocator<char>);
+#   endif
 
-    template <typename T, typename Ax>
+}
+
+namespace cxon { namespace alc {
+
+    template <typename Al>
+        using value_t = typename std::allocator_traits<Al>::value_type;
+
+    template <typename Al, typename U>
+        using rebind_t = typename std::allocator_traits<Al>::template rebind_alloc<U>;
+
+    template <typename T, typename E = void_t<>>
+        struct has_allocator                                        : std::false_type {};
+    template <typename T>
+        struct has_allocator<T, void_t<typename T::allocator_type>> : std::true_type {};
+
+    template <typename T, typename Al>
+        struct basic_allocator;
+
+    template <typename T, typename Cx, typename Al = decltype(allocator::value(std::declval<Cx&>().px, std::allocator<T>()))>
+        inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Al>;
+    template <typename T, typename Al>
+        inline auto make_allocator(const Al& al) -> basic_allocator<T, Al> ;
+
+}}
+
+// implementation //////////////////////////////////////////////////////////////
+
+namespace cxon { namespace alc {
+
+    template <typename T, typename Al>
         struct basic_allocator {
-            using type = typename std::allocator_traits<Ax>::template rebind_alloc<T>;
+            using type = rebind_t<Al, T>;
 
             basic_allocator(const type& al) : al_(al) {}
 
@@ -55,20 +91,16 @@ namespace cxon {
                 using tr = std::allocator_traits<type>;
                 type al_;
         };
-    template <typename T, typename Cx, typename Ax = decltype(allocator::value(std::declval<Cx&>().px, std::allocator<T>()))>
-        inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Ax> {
-            return basic_allocator<T, Ax>(allocator::value(cx.px, std::allocator<T>()));
+
+    template <typename T, typename Cx, typename Al>
+        inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Al> {
+            return basic_allocator<T, Al>(allocator::value(cx.px, std::allocator<T>()));
         }
-    template <typename T, typename Ax>
-        inline auto make_allocator(const Ax& ax) -> basic_allocator<T, Ax> {
-            return basic_allocator<T, Ax>(ax);
+    template <typename T, typename Al>
+        inline auto make_allocator(const Al& al) -> basic_allocator<T, Al> {
+            return basic_allocator<T, Al>(al);
         }
 
-    template <typename T, typename E = void_t<>>
-        struct is_allocator_aware                                           : std::false_type {};
-    template <typename T>
-        struct is_allocator_aware<T, void_t<typename T::allocator_type>>    : std::true_type {};
-
-}
+}}
 
 #endif // CXON_ALLOCATOR_HXX_

@@ -16,6 +16,7 @@
 
         template <typename K, typename V, typename ...R>
             struct object : std::vector<std::pair<K, V>, R...> {
+                using std::vector<std::pair<K, V>, R...>::vector;
                 object() : std::vector<std::pair<K, V>, R...>() {}
                 object(std::initializer_list<std::pair<K, V>> l) : std::vector<std::pair<K, V>, R...>(l) {}
             };
@@ -28,10 +29,11 @@
 
     namespace cxon { namespace json {
 
-        struct ordered_node_traits : cxon::json::node_traits {
-            template <typename K, typename V> using object_type = ordered::object<K, V>;
-        };
-        using ordered_node = cxon::json::basic_node<ordered_node_traits>;
+        template <typename Al = std::allocator<void>>
+            struct ordered_node_traits : cxon::json::node_traits<Al> {
+                template <typename K, typename V> using object_type = ordered::object<K, V, alc::rebind_t<Al, std::pair<K, V>>>;
+            };
+        using ordered_node = cxon::json::basic_node<ordered_node_traits<>>;
 
     }}
 
@@ -41,10 +43,11 @@
 
     namespace cxon { namespace cbor {
 
-        struct ordered_node_traits : cxon::cbor::node_traits {
-            template <typename K, typename V> using map_type = ordered::object<K, V>;
-        };
-        using ordered_node = cxon::cbor::basic_node<ordered_node_traits>;
+        template <typename Al = std::allocator<void>>
+            struct ordered_node_traits : cxon::cbor::node_traits<Al> {
+                template <typename K, typename V> using map_type = ordered::object<K, V, alc::rebind_t<Al, std::pair<K, V>>>;
+            };
+        using ordered_node = cxon::cbor::basic_node<ordered_node_traits<>>;
 
     }}
 

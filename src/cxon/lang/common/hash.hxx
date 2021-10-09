@@ -26,7 +26,7 @@ namespace cxon {
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { // hash
+namespace cxon {
 
     template <typename T>
         struct hash {

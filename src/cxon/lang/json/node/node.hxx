@@ -18,10 +18,13 @@
 
 namespace cxon { namespace json { // node
 
+    template <typename Al = std::allocator<void>>
+        struct node_traits;
+
     template <typename Tr>
         struct basic_node;
 
-    using node = basic_node<struct node_traits>;
+    using node = basic_node<node_traits<>>;
 
     template <typename T, typename N> inline        bool    is(const N& n) noexcept;
     template <typename T, typename N> inline        T&      imbue(N& n)/* noexcept(std::is_nothrow_default_constructible<T>::value)*/;
@@ -36,16 +39,18 @@ namespace cxon { namespace json { // node traits
 
     enum class node_kind { object, array, string, sint, uint, real, boolean, null };
 
-    struct node_traits {
-        using                                       null_type       = std::nullptr_t;
-        using                                       boolean_type    = bool;
-        using                                       sint_type       = long long;
-        using                                       uint_type       = unsigned long long;
-        using                                       real_type       = double;
-        using                                       string_type     = std::basic_string<char>;
-        template <typename T> using                 array_type      = std::vector<T>;
-        template <typename K, typename V> using     object_type     = std::map<K, V>;
-    };
+    template <typename Al>
+        struct node_traits {
+            using                                       allocator_type  = alc::rebind_t<Al, basic_node<node_traits>>;
+            template <typename K, typename V> using     object_type     = std::map<K, V, std::less<K>, alc::rebind_t<Al, std::pair<const K, V>>>;
+            template <typename T> using                 array_type      = std::vector<T, alc::rebind_t<Al, T>>;
+            using                                       string_type     = std::basic_string<char, std::char_traits<char>, alc::rebind_t<Al, char>>;
+            using                                       real_type       = double;
+            using                                       sint_type       = long long;
+            using                                       uint_type       = unsigned long long;
+            using                                       boolean_type    = bool;
+            using                                       null_type       = std::nullptr_t;
+        };
 
 }}
 
@@ -87,19 +92,21 @@ namespace cxon { namespace json { // node
 
     template <typename Tr>
         struct basic_node {
-            using null      = typename Tr::null_type;
-            using boolean   = typename Tr::boolean_type;
+            using allocator = typename Tr::allocator_type;
+            using object    = typename Tr::template object_type<basic_node, basic_node>;
+            using array     = typename Tr::template array_type<basic_node>;
+            using string    = typename Tr::string_type;
+            using real      = typename Tr::real_type;
             using sint      = typename Tr::sint_type;
             using uint      = typename Tr::uint_type;
-            using real      = typename Tr::real_type;
-            using string    = typename Tr::string_type;
-            using array     = typename Tr::template array_type<basic_node>;
-            using object    = typename Tr::template object_type<basic_node, basic_node>;
+            using boolean   = typename Tr::boolean_type;
+            using null      = typename Tr::null_type;
 
             private:
                 using value_type = typename std::aligned_union<0, object, array, string, sint, uint, real, boolean, null>::type;
                 value_type  value_;
                 node_kind   kind_;
+                allocator   alloc_;
 
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
@@ -117,8 +124,9 @@ namespace cxon { namespace json { // node
                     using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, object, array, string, sint, uint, real, boolean, null>;
             public:
 
-            basic_node() noexcept : kind_(node_kind::null)  { get<null>() = nullptr; }
-            ~basic_node()                                   { reset(); }
+            basic_node() noexcept : kind_(node_kind::null)                                  { get<null>() = nullptr; }
+            basic_node(const allocator& al) noexcept : kind_(node_kind::null), alloc_(al)   { get<null>() = nullptr; }
+            ~basic_node()                                                                   { reset(); }
 
             basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : kind_(o.kind_) {
                 switch (o.kind_) {
@@ -263,10 +271,19 @@ namespace cxon { namespace json { // node
                 return kind_ == imp::node_kind_from_<basic_node, T>();
             }
 
-            template <typename T> T& imbue()/* noexcept(std::is_nothrow_default_constructible<T>::value)*/ {
+            private: // allocator
+                template <typename T>
+                    auto construct() -> enable_if_t< alc::has_allocator<T>::value>
+                        { new (&value_) T(alc::rebind_t<allocator, alc::value_t<typename T::allocator_type>>(alloc_)); }
+                template <typename T>
+                    auto construct() -> enable_if_t<!alc::has_allocator<T>::value>
+                        { new (&value_) T(); }
+            public:
+
+            template <typename T> T& imbue() {
                 if (!is<T>()) {
                     reset(), kind_ = imp::node_kind_from_<basic_node, T>();
-                    new (&value_) T();
+                    construct<T>();
                 }
                 return reinterpret_cast<T&>(value_);
             }
@@ -368,7 +385,7 @@ namespace cxon { // hash
 
 }
 
-namespace std { // 
+namespace std { // hash
 
     template <typename Tr>
         struct hash<cxon::json::basic_node<Tr>> {
