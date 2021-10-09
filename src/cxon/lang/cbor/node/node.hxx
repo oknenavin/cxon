@@ -110,7 +110,6 @@ namespace cxon { namespace cbor { // node
 
     template <typename Tr>
         struct basic_node {
-            using allocator = typename Tr::allocator_type;
             using sint      = typename Tr::sint_type;
             using uint      = typename Tr::uint_type;
             using bytes     = typename Tr::bytes_type;
@@ -124,11 +123,13 @@ namespace cxon { namespace cbor { // node
             using real      = typename Tr::real_type;
             using simple    = typename Tr::simple_type;
 
+            using allocator_type = typename Tr::allocator_type;
+
             private:
                 using value_type = typename std::aligned_union<0, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>::type;
-                value_type  value_;
-                node_kind   kind_;
-                allocator   alloc_;
+                value_type      value_;
+                node_kind       kind_;
+                allocator_type  alloc_;
 
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
@@ -146,9 +147,9 @@ namespace cxon { namespace cbor { // node
                     using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple>;
             public:
 
-            basic_node() noexcept : kind_(node_kind::undefined)                                 {}
-            basic_node(const allocator& al) noexcept : kind_(node_kind::undefined), alloc_(al)  {}
-            ~basic_node()                                                                       { reset(); }
+            basic_node() noexcept : kind_(node_kind::undefined)                                     {}
+            basic_node(const allocator_type& al) noexcept : kind_(node_kind::undefined), alloc_(al) {}
+            ~basic_node()                                                                           { reset(); }
 
             basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : kind_(o.kind_) {
                 switch (o.kind_) {
@@ -313,6 +314,10 @@ namespace cxon { namespace cbor { // node
 
             node_kind kind() const noexcept { return kind_; }
 
+            allocator_type get_allocator() const noexcept {
+                return alloc_;
+            }
+
             template <typename T> bool  is() const noexcept {
                 return kind_ == imp::node_kind_from_<basic_node, T>();
             }
@@ -320,7 +325,7 @@ namespace cxon { namespace cbor { // node
             private: // allocator
                 template <typename T>
                     auto construct() -> enable_if_t< alc::has_allocator<T>::value>
-                        { new (&value_) T(alc::rebind_t<allocator, alc::value_t<typename T::allocator_type>>(alloc_)); }
+                        { new (&value_) T(alc::rebind_t<allocator_type, alc::value_t<typename T::allocator_type>>(alloc_)); }
                 template <typename T>
                     auto construct() -> enable_if_t<!alc::has_allocator<T>::value>
                         { new (&value_) T(); }

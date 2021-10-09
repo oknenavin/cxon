@@ -92,7 +92,6 @@ namespace cxon { namespace json { // node
 
     template <typename Tr>
         struct basic_node {
-            using allocator = typename Tr::allocator_type;
             using object    = typename Tr::template object_type<basic_node, basic_node>;
             using array     = typename Tr::template array_type<basic_node>;
             using string    = typename Tr::string_type;
@@ -102,11 +101,13 @@ namespace cxon { namespace json { // node
             using boolean   = typename Tr::boolean_type;
             using null      = typename Tr::null_type;
 
+            using allocator_type = typename Tr::allocator_type;
+
             private:
                 using value_type = typename std::aligned_union<0, object, array, string, sint, uint, real, boolean, null>::type;
-                value_type  value_;
-                node_kind   kind_;
-                allocator   alloc_;
+                value_type      value_;
+                node_kind       kind_;
+                allocator_type  alloc_;
 
             private:
 #               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
@@ -124,9 +125,9 @@ namespace cxon { namespace json { // node
                     using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, object, array, string, sint, uint, real, boolean, null>;
             public:
 
-            basic_node() noexcept : kind_(node_kind::null)                                  { get<null>() = nullptr; }
-            basic_node(const allocator& al) noexcept : kind_(node_kind::null), alloc_(al)   { get<null>() = nullptr; }
-            ~basic_node()                                                                   { reset(); }
+            basic_node() noexcept : kind_(node_kind::null)                                      { get<null>() = nullptr; }
+            basic_node(const allocator_type& al) noexcept : kind_(node_kind::null), alloc_(al)  { get<null>() = nullptr; }
+            ~basic_node()                                                                       { reset(); }
 
             basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value) : kind_(o.kind_) {
                 switch (o.kind_) {
@@ -267,6 +268,10 @@ namespace cxon { namespace json { // node
 
             node_kind kind() const noexcept { return kind_; }
 
+            allocator_type get_allocator() const noexcept {
+                return alloc_;
+            }
+
             template <typename T> bool  is() const noexcept {
                 return kind_ == imp::node_kind_from_<basic_node, T>();
             }
@@ -274,7 +279,7 @@ namespace cxon { namespace json { // node
             private: // allocator
                 template <typename T>
                     auto construct() -> enable_if_t< alc::has_allocator<T>::value>
-                        { new (&value_) T(alc::rebind_t<allocator, alc::value_t<typename T::allocator_type>>(alloc_)); }
+                        { new (&value_) T(alc::rebind_t<allocator_type, alc::value_t<typename T::allocator_type>>(alloc_)); }
                 template <typename T>
                     auto construct() -> enable_if_t<!alc::has_allocator<T>::value>
                         { new (&value_) T(); }
