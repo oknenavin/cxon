@@ -19,6 +19,10 @@
 
 #include <unordered_set>
 
+#if __cplusplus >= 201703L
+#   include <memory_resource>
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +45,11 @@ namespace test { namespace kind {
             CXON_JSON_CLS_FIELD_ASIS(odd)
         )
     };
+    
+    template <typename T>
+        struct my_allocator : std::allocator<T> {
+            using std::allocator<T>::allocator;
+        };
 
     int self() {
         int a_ = 0;
@@ -648,6 +657,23 @@ namespace test { namespace kind {
             };
             CHECK(m.size() == 9);
         }
+        {
+            using node = cxon::json::basic_node<cxon::json::node_traits<my_allocator<void>>>;
+            my_allocator<node> al;
+            node n(al);
+                n = { 1, 2, 3};
+            CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
+        }
+#       if __cplusplus >= 201703L
+        {
+            using node = cxon::json::basic_node<cxon::json::node_traits<std::pmr::polymorphic_allocator<void>>>;
+            std::pmr::unsynchronized_pool_resource pl;
+            std::pmr::polymorphic_allocator<node> al(&pl);
+            node n(al);
+                n = { 1, 2, 3};
+            CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
+        }
+#       endif
 #       undef CHECK
 
         std::fprintf(stdout, "cxon/json/node/self:  %i of %3i failed\n", f_, a_); std::fflush(stdout);

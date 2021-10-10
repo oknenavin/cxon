@@ -35,6 +35,9 @@ namespace cxon { namespace alc {
     template <typename T>
         struct has_allocator<T, void_t<typename T::allocator_type>> : std::true_type {};
 
+    template< class T, class Al, class... A >
+        constexpr T* uninitialized_construct_using_allocator(T* t, const Al& al, A&&... as);
+
     template <typename T, typename Al>
         struct basic_allocator;
 
