@@ -20,7 +20,10 @@
 #include <unordered_set>
 
 #if __cplusplus >= 201703L
-#   include <memory_resource>
+#   if defined(__has_include) && __has_include(<memory_resource>)
+#       include <memory_resource>
+#       define CXON_HAS_LIB_STD_MEMORY_RESOURCE
+#   endif
 #endif
 
 
@@ -664,11 +667,12 @@ namespace test { namespace kind {
                 n = { 1, 2, 3};
             CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
         }
-#       if __cplusplus >= 201703L
+#       ifdef CXON_HAS_LIB_STD_MEMORY_RESOURCE
         {
             using node = cxon::json::basic_node<cxon::json::node_traits<std::pmr::polymorphic_allocator<void>>>;
-            std::pmr::unsynchronized_pool_resource pl;
-            std::pmr::polymorphic_allocator<node> al(&pl);
+            char bf[4096];
+            std::pmr::monotonic_buffer_resource ar(bf, sizeof(bf));
+            std::pmr::polymorphic_allocator<node> al(&ar);
             node n(al);
                 n = { 1, 2, 3};
             CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);

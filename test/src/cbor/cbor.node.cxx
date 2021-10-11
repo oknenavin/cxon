@@ -18,6 +18,13 @@
 #include <cstring>
 #include <unordered_set>
 
+#if __cplusplus >= 201703L
+#   if defined(__has_include) && __has_include(<memory_resource>)
+#       include <memory_resource>
+#       define CXON_HAS_LIB_STD_MEMORY_RESOURCE
+#   endif
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +61,11 @@ struct result {
     int err = 0;
     int all = 0;
 };
+    
+template <typename T>
+    struct my_allocator : std::allocator<T> {
+        using std::allocator<T>::allocator;
+    };
 
 #ifndef CXON_TIME_ONLY
     static unsigned execute_self() {
@@ -556,6 +568,24 @@ struct result {
             };
             CHECK(m.size() == 13);
         }
+        {
+            using node = cxon::cbor::basic_node<cxon::cbor::node_traits<my_allocator<void>>>;
+            my_allocator<node> al;
+            node n(al);
+                n = { 1, 2, 3};
+            CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
+        }
+#       ifdef CXON_HAS_LIB_STD_MEMORY_RESOURCE
+        {
+            using node = cxon::cbor::basic_node<cxon::cbor::node_traits<std::pmr::polymorphic_allocator<void>>>;
+            char bf[4096];
+            std::pmr::monotonic_buffer_resource ar(bf, sizeof(bf));
+            std::pmr::polymorphic_allocator<node> al(&ar);
+            node n(al);
+                n = { 1, 2, 3};
+            CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
+        }
+#       endif
 #       undef CHECK
     
         fprintf(stdout, "cxon/cbor/node/self:  %u of %3u failed\n", f_, a_); fflush(stdout);
