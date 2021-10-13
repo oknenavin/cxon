@@ -23,9 +23,14 @@ jobs:
         wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
         tar xvfz lcov-1.14.tar.gz
         make -C lcov-1.14
+    - name: Codecov setup
+      run: |
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
     - name: Coverage
       run: |
         lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
         lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info
         lcov-1.14/bin/lcov -l cxon.info
         bash <(curl -s https://codecov.io/bash) -f cxon.info || echo "upload failed"
+        ./codecov -t ${CODECOV_TOKEN} -f cxon.info

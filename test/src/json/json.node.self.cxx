@@ -18,6 +18,7 @@
 #include "cxon/lang/json/tidy.hxx"
 
 #include <unordered_set>
+#include <unordered_map>
 
 #if __cplusplus >= 201703L
 #   if defined(__has_include) && __has_include(<memory_resource>)
@@ -48,6 +49,11 @@ namespace test { namespace kind {
             CXON_JSON_CLS_FIELD_ASIS(odd)
         )
     };
+
+    template <typename Al = std::allocator<void>>
+        struct unordered_node_traits : cxon::json::node_traits<Al> {
+            template <typename K, typename V> using object_type = std::unordered_map<K, V, cxon::hash<K>, std::equal_to<K>, cxon::alc::rebind_t<Al, std::pair<const K, V>>>;
+        };
     
     template <typename T>
         struct my_allocator : std::allocator<T> {
@@ -336,7 +342,7 @@ namespace test { namespace kind {
         {   // ex5
             using node = cxon::json::node;
             {   // (1)
-                node n; CHECK(n.is<node::null>() && n.get<node::null>() == nullptr);
+                node n; CHECK(n.is<node::null>() && n == nullptr && n.get<node::null>() == nullptr);
             }
             {   // (2)
                 node o = true; CHECK(o.is<node::boolean>());
@@ -659,6 +665,11 @@ namespace test { namespace kind {
                 node::null {} // duplicate
             };
             CHECK(m.size() == 9);
+        }
+        {
+            using node = cxon::json::basic_node<unordered_node_traits<>>;
+            node n; n = { {1, 2} };
+            CHECK(n.is<node::object>() && n.get<node::object>().size() == 1);
         }
         {
             using node = cxon::json::basic_node<cxon::json::node_traits<my_allocator<void>>>;
