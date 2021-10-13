@@ -8,7 +8,8 @@ cxon-lang-common = \
     $(srcdir)/lang/common/allocator.hxx \
     $(srcdir)/lang/common/charconv.hxx \
     $(srcdir)/lang/common/container.hxx \
-    $(srcdir)/lang/common/hash.hxx
+    $(srcdir)/lang/common/hash.hxx \
+    $(srcdir)/lang/common/node-value.hxx
 
 cxon-lang-common-cio = \
     $(srcdir)/lang/common/cio/char.hxx \
@@ -157,6 +158,9 @@ check-json-node:
 
 check-cbor:
 	@$(MAKE) -C test check-cbor
+
+check-cbor-node:
+	@$(MAKE) -C test check-cbor-node
 
 time:
 	@$(MAKE) -C test time

@@ -55,11 +55,36 @@ namespace cxon {
 
     template <std::size_t N> struct option;
 
+    // type sequence
+
+    template <typename ...>
+        struct type_sequence;
+
+    template <template <typename> class Trait, typename ...T>
+        struct type_sequence_conjunction;
+
+    template <template <typename> class Trait, typename ...T>
+        struct type_sequence_disjunction;
+
+    // integer sequence
+
+    template <typename T, T ...>
+        struct integer_sequence;
+
+    template <typename S, typename S::value_type>
+        struct integer_sequence_contains;
+
     // type traits
 
     template <typename T> struct is_bool;
     template <typename T> struct is_char;
     template <typename T> struct is_numeric;
+
+    template <bool B> // C++17
+        using bool_constant = std::integral_constant<bool, B>;
+
+    template <typename ...> // C++20
+        struct conjunction;
 
     // container
 
@@ -114,6 +139,45 @@ namespace cxon {
     template <std::size_t N>    struct option : option<N - 1>   {};
     template<>                  struct option<0>                {};
 
+    // type sequence
+
+    template <template <typename> class Trait, typename ...T>
+        struct type_sequence_conjunction :
+            std::true_type {};
+    template <template <typename> class Trait, typename T, typename ...Ts>
+        struct type_sequence_conjunction<Trait, type_sequence<T, Ts...>> :
+            bool_constant<Trait<T>::value && type_sequence_conjunction<Trait, type_sequence<Ts...>>::value> {};
+
+    template <template <typename> class Trait, typename ...T>
+        struct type_sequence_disjunction :
+            std::true_type {};
+    template <template <typename> class Trait, typename T, typename ...Ts>
+        struct type_sequence_disjunction<Trait, type_sequence<T, Ts...>> :
+            bool_constant<Trait<T>::value || type_sequence_disjunction<Trait, type_sequence<Ts...>>::value> {};
+
+    // integer sequence
+
+    template <typename T, T ...Ts>
+        struct integer_sequence {
+            using value_type = T;
+            static constexpr std::size_t size() noexcept { return sizeof...(Ts); }
+        };
+
+    namespace imp {
+
+        template <typename T, T V, typename W, T ...Es>
+            struct integer_sequence_contains_ :
+                std::false_type {};
+        template <typename T, T V, T E, T ...Es>
+            struct integer_sequence_contains_<T, V, integer_sequence<T, E, Es...>> :
+                bool_constant<V == E || integer_sequence_contains_<T, V, integer_sequence<T, Es...>>::value> {};
+
+    }
+
+    template <typename S, typename S::value_type V>
+        struct integer_sequence_contains :
+            bool_constant<imp::integer_sequence_contains_<typename S::value_type, V, S>::value> {};
+
     // type traits
 
     namespace imp {
@@ -132,19 +196,16 @@ namespace cxon {
     }
 
     template <typename T>
-        struct is_bool {
-            static constexpr bool value = imp::is_bool_<typename std::remove_cv<T>::type>::value;
-        };
-
+        struct is_bool      : bool_constant<imp::is_bool_<typename std::remove_cv<T>::type>::value> {};
     template <typename T>
-        struct is_char {
-            static constexpr bool value = imp::is_char_<typename std::remove_cv<T>::type>::value;
-        };
-
+        struct is_char      : bool_constant<imp::is_char_<typename std::remove_cv<T>::type>::value> {};
     template <typename T>
-        struct is_numeric {
-            static constexpr bool value = std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value;
-        };
+        struct is_numeric   : bool_constant<std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value> {};
+
+    template <typename ...>
+        struct conjunction                  : std::true_type {};
+    template <typename B, typename ...Bs>
+        struct conjunction<B, Bs...>        : bool_constant<B::value && conjunction<Bs...>::value> {};
 
     // iterators
 
@@ -171,11 +232,11 @@ namespace cxon { namespace napa {
             using tuple_element_t = typename std::tuple_element<Ix, T>::type;
 
         template <typename Tg, typename Pk, std::size_t Sz = std::tuple_size<Pk>::value>
-            struct has_tag              { static constexpr bool value = !is_same_tag<Tg, Pk, Sz - 1>::value ? has_tag<Tg, Pk, Sz - 1>::value : true; };
+            struct has_tag              : bool_constant<!is_same_tag<Tg, Pk, Sz - 1>::value ? has_tag<Tg, Pk, Sz - 1>::value : true> {};
         template <typename Tg, typename Pk>
-            struct has_tag<Tg, Pk, 1>   { static constexpr bool value = is_same_tag<Tg, Pk, 0>::value; };
+            struct has_tag<Tg, Pk, 1>   : bool_constant<is_same_tag<Tg, Pk, 0>::value> {};
         template <typename Tg, typename Pk>
-            struct has_tag<Tg, Pk, 0>   { static constexpr bool value = false; };
+            struct has_tag<Tg, Pk, 0>   : std::false_type {};
 
         template <typename Tg, typename Pk, std::size_t Sz = std::tuple_size<Pk>::value>
             struct pack {

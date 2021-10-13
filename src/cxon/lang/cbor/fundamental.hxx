@@ -170,11 +170,11 @@ namespace cxon { // numeric|character/write
             inline auto power_(T t) -> enable_if_t<sizeof(T) == 8, unsigned> { return !(t >> 32) ? !(t >> 16) ? !(t >> 8) ? 0 : 1 : 2 : 3; }
 
         template <typename T>
-            struct is_quantum_  { static constexpr bool value = std::is_same<T, char>::value || std::is_same<T, wchar_t>::value; };
+            struct is_quantum_  : bool_constant<std::is_same<T, char>::value || std::is_same<T, wchar_t>::value> {};
         template <typename T>
-            struct is_signed_   { static constexpr bool value = std::is_signed<T>::value   && !is_quantum_<T>::value; };
+            struct is_signed_   : bool_constant<std::is_signed<T>::value   && !is_quantum_<T>::value> {};
         template <typename T>
-            struct is_unsigned_ { static constexpr bool value = std::is_unsigned<T>::value && !is_quantum_<T>::value; };
+            struct is_unsigned_ : bool_constant<std::is_unsigned<T>::value && !is_quantum_<T>::value> {};
 
     }}
 

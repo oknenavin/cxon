@@ -8,11 +8,11 @@
 
 #include "cxon/lang/json/json.hxx"
 #include "cxon/lang/common/hash.hxx"
+#include "cxon/lang/common/node-value.hxx"
 
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/map.hxx"
-
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -27,7 +27,7 @@ namespace cxon { namespace json { // node
     using node = basic_node<node_traits<>>;
 
     template <typename T, typename N> inline        bool    is(const N& n) noexcept;
-    template <typename T, typename N> inline        T&      imbue(N& n)/* noexcept(std::is_nothrow_default_constructible<T>::value)*/;
+    template <typename T, typename N> inline        T&      imbue(N& n) noexcept(noexcept(std::declval<N&>().template imbue<T>()));
     template <typename T, typename N> inline        T&      get(N& n) noexcept;
     template <typename T, typename N> inline const  T&      get(const N& n) noexcept;
     template <typename T, typename N> inline        T*      get_if(N& n) noexcept;
@@ -50,6 +50,7 @@ namespace cxon { namespace json { // node traits
             using                                       uint_type       = unsigned long long;
             using                                       boolean_type    = bool;
             using                                       null_type       = std::nullptr_t;
+            using                                       dynamic_types   = integer_sequence<node_kind, node_kind::object, node_kind::array>;
         };
 
 }}
@@ -66,28 +67,8 @@ namespace std {
 namespace cxon { namespace json { // node
 
     namespace imp {
-
         template <typename N, typename T>
-            struct node_kind_;
-        template <typename N> struct node_kind_<N, typename N::null>        { static constexpr node_kind value = node_kind::null; };
-        template <typename N> struct node_kind_<N, typename N::boolean>     { static constexpr node_kind value = node_kind::boolean; };
-        template <typename N> struct node_kind_<N, typename N::sint>        { static constexpr node_kind value = node_kind::sint; };
-        template <typename N> struct node_kind_<N, typename N::uint>        { static constexpr node_kind value = node_kind::uint; };
-        template <typename N> struct node_kind_<N, typename N::real>        { static constexpr node_kind value = node_kind::real; };
-        template <typename N> struct node_kind_<N, typename N::string>      { static constexpr node_kind value = node_kind::string; };
-        template <typename N> struct node_kind_<N, typename N::array>       { static constexpr node_kind value = node_kind::array; };
-        template <typename N> struct node_kind_<N, typename N::object>      { static constexpr node_kind value = node_kind::object; };
-
-        template <typename N, typename T>
-            constexpr node_kind node_kind_from_() noexcept { return node_kind_<N, T>::value; }
-
-        template <template <typename C> class X, typename ...>
-            struct is_nothrow_x_                { static constexpr bool value = true; };
-        template <template <typename C> class X, typename T>
-            struct is_nothrow_x_<X, T>          { static constexpr bool value = X<T>::value; };
-        template <template <typename C> class X, typename H, typename ...T>
-            struct is_nothrow_x_<X, H, T...>    { static constexpr bool value = is_nothrow_x_<X, H>::value && is_nothrow_x_<X, T...>::value; };
-
+            struct node_kind_; // value
     }
 
     template <typename Tr>
@@ -103,48 +84,59 @@ namespace cxon { namespace json { // node
 
             using allocator_type = alc::rebind_t<typename Tr::allocator_type, basic_node>;
 
-            private:
-                using value_type = typename std::aligned_union<0, object, array, string, sint, uint, real, boolean, null>::type;
-                value_type      value_;
+            private: // value
+                template <typename T>
+                    using is_dynamic_type_ = integer_sequence_contains<
+                        typename Tr::dynamic_types, imp::node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
+                    >;
+                template <typename T>
+                    using dt_ = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+
+#               define CXON_TYPES_DEF dt_<object>, dt_<array>, dt_<string>, dt_<sint>, dt_<uint>, dt_<real>, dt_<boolean>, dt_<null>
+                    using dynamic_types_ = type_sequence<CXON_TYPES_DEF>;
+                    using value_type_ = typename std::aligned_union<0, CXON_TYPES_DEF>::type;
+#               undef CXON_TYPES_DEF
+
+                value_type_     value_;
                 node_kind       kind_;
                 allocator_type  alloc_;
 
-            private:
-#               ifdef _MSC_VER // std::map move copy/assign are not noexcept, force
-                    template <template <typename C> class X, bool = false>
-                        struct msvc_map_override            : imp::is_nothrow_x_<X, object, array, string, sint, uint, real, boolean, null> {};
-                    template <template <typename C> class X>
-                        struct msvc_map_override<X, true>   : imp::is_nothrow_x_<X, /*object, */array, string, sint, uint, real, boolean, null> {};
-                    using is_nothrow_move_constructible = msvc_map_override<std::is_nothrow_move_constructible, std::is_same<object, std::map<basic_node, basic_node>>::value>;
-                    using is_nothrow_move_assignable    = msvc_map_override<std::is_nothrow_move_assignable,    std::is_same<object, std::map<basic_node, basic_node>>::value>;
-#               else
-                    using is_nothrow_move_constructible = imp::is_nothrow_x_<std::is_nothrow_move_constructible, object, array, string, sint, uint, real, boolean, null>;
-                    using is_nothrow_move_assignable    = imp::is_nothrow_x_<std::is_nothrow_move_assignable, object, array, string, sint, uint, real, boolean, null>;
-#               endif
-                    using is_nothrow_copy_constructible = imp::is_nothrow_x_<std::is_nothrow_copy_constructible, object, array, string, sint, uint, real, boolean, null>;
-                    using is_nothrow_copy_assignable    = imp::is_nothrow_x_<std::is_nothrow_copy_assignable, object, array, string, sint, uint, real, boolean, null>;
+                // value access
+                    static constexpr node_kind kind_default_ = node_kind::null;
+                    template <typename N> friend struct value::controller;
             public:
 
-            basic_node() noexcept
+            /*constexpr */basic_node() noexcept
             :   kind_(node_kind::null)
             {
-                alc::uninitialized_construct_using_allocator<null>((null*)&value_, alloc_, nullptr);
+                value::construct<null>(*this, nullptr);
             }
-            basic_node(const allocator_type& al) noexcept
-            :   kind_(node_kind::null),
-                alloc_(al)
+            /*constexpr */basic_node(const allocator_type& al) noexcept
+            :   kind_(node_kind::null), alloc_(al)
             {
-                alc::uninitialized_construct_using_allocator<null>((null*)&value_, alloc_, nullptr);
+                value::construct<null>(*this, nullptr);
             }
-            ~basic_node() {
-                reset();
+            ~basic_node() noexcept {
+                switch (kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::destruct<T>(*this); break
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
             }
 
-            basic_node(basic_node&& o) noexcept(is_nothrow_move_constructible::value)
+            basic_node(basic_node&& o)
+                noexcept(value::is_nothrow_move_constructible<basic_node>::value)
             :   kind_(o.kind_)
             {
                 switch (o.kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, std::move(o.get<T>())); break
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
@@ -156,12 +148,12 @@ namespace cxon { namespace json { // node
 #                   undef CXON_JSON_TYPE_DEF
                 }
             }
-            basic_node(basic_node&& o, const allocator_type& al) noexcept(is_nothrow_move_constructible::value)
-            :   kind_(o.kind_),
-                alloc_(al)
+            basic_node(basic_node&& o, const allocator_type& al)
+                noexcept(value::is_nothrow_move_constructible<basic_node>::value)
+            :   kind_(o.kind_), alloc_(al)
             {
                 switch (o.kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, std::move(o.get<T>())); break
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
@@ -173,9 +165,14 @@ namespace cxon { namespace json { // node
 #                   undef CXON_JSON_TYPE_DEF
                 }
             }
-            basic_node& operator =(basic_node&& o) noexcept(is_nothrow_move_assignable::value) {
+            basic_node& operator =(basic_node&& o)
+                noexcept(value::is_nothrow_move_assignable<basic_node>::value)
+            {   // TODO: alloc_ != o.alloc_
+                this->~basic_node(), kind_ = o.kind_;
                 switch (o.kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: imbue<T>() = std::move(o.get<T>()); break
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return   alloc_ == o.alloc_ ? \
+                                                                                    value::move_assign<T>(*this, std::forward<basic_node>(o)) : \
+                                                                                    value::copy_assign<T>(*this, o)
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
@@ -186,14 +183,15 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
                 }
-                return *this;
+                return *this; // LCOV_EXCL_LINE
             }
 
-            basic_node(const basic_node& o) noexcept(is_nothrow_copy_constructible::value)
-            :   kind_(o.kind_)
+            basic_node(const basic_node& o)
+                noexcept(value::is_nothrow_copy_constructible<basic_node>::value)
+            :   kind_(o.kind_), alloc_(std::allocator_traits<allocator_type>::select_on_container_copy_construction(o.alloc_))
             {
                 switch (o.kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, o.get<T>()); break
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::copy_construct<T>(*this, o); break
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
@@ -205,12 +203,12 @@ namespace cxon { namespace json { // node
 #                   undef CXON_JSON_TYPE_DEF
                 }
             }
-            basic_node(const basic_node& o, const allocator_type& al) noexcept(is_nothrow_copy_constructible::value)
-            :   kind_(o.kind_),
-                alloc_(al)
+            basic_node(const basic_node& o, const allocator_type& al)
+                noexcept(value::is_nothrow_copy_constructible<basic_node>::value)
+            :   kind_(o.kind_), alloc_(al)
             {
                 switch (o.kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, o.get<T>()); break
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::copy_construct<T>(*this, o); break
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
@@ -222,29 +220,54 @@ namespace cxon { namespace json { // node
 #                   undef CXON_JSON_TYPE_DEF
                 }
             }
-            basic_node& operator =(const basic_node& o) noexcept(is_nothrow_copy_assignable::value) {
-                switch (o.kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: imbue<T>() = o.get<T>(); break
-                        CXON_JSON_TYPE_DEF(object);
-                        CXON_JSON_TYPE_DEF(array);
-                        CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(sint);
-                        CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
-                        CXON_JSON_TYPE_DEF(boolean);
-                        CXON_JSON_TYPE_DEF(null);
-#                   undef CXON_JSON_TYPE_DEF
+            basic_node& operator =(const basic_node& o)
+                noexcept(value::is_nothrow_copy_assignable<basic_node>::value)
+            {   // TODO: alloc_ != o.alloc_
+                if (kind_ != o.kind_) {
+                    this->~basic_node(), kind_ = o.kind_;
+                    switch (o.kind_) {
+#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o), *this
+                            CXON_JSON_TYPE_DEF(object);
+                            CXON_JSON_TYPE_DEF(array);
+                            CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(sint);
+                            CXON_JSON_TYPE_DEF(uint);
+                            CXON_JSON_TYPE_DEF(real);
+                            CXON_JSON_TYPE_DEF(boolean);
+                            CXON_JSON_TYPE_DEF(null);
+#                       undef CXON_JSON_TYPE_DEF
+                    }
                 }
-                return *this;
+                else {
+                    switch (kind_) {
+#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return value::get<T>(*this) = value::get<T>(o), *this
+                            CXON_JSON_TYPE_DEF(object);
+                            CXON_JSON_TYPE_DEF(array);
+                            CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(sint);
+                            CXON_JSON_TYPE_DEF(uint);
+                            CXON_JSON_TYPE_DEF(real);
+                            CXON_JSON_TYPE_DEF(boolean);
+                            CXON_JSON_TYPE_DEF(null);
+#                       undef CXON_JSON_TYPE_DEF
+                    }
+                }
+                return *this; // LCOV_EXCL_LINE
             }
 
 #           define CXON_JSON_TYPE_DEF(T)\
-                    basic_node(T&& v)                                   : kind_(node_kind::T)                   { alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, std::forward<T>(v)); } \
-                    basic_node(T&& v, const allocator_type& al)         : kind_(node_kind::T), alloc_(al)       { alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, std::forward<T>(v)); } \
-                    basic_node& operator =(T&& v)                                                               { imbue<T>() = std::forward<T>(v); return *this; } \
-                    basic_node(const T& v)                              : kind_(node_kind::T)                   { alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_, v); } \
-                    basic_node(const T& v, const allocator_type& al)    : kind_(node_kind::T), alloc_(al)       { alc::uninitialized_construct_using_allocator<T>((T*)&value_, al, v); } \
-                    basic_node& operator =(const T& v)                                                          { imbue<T>() = v; return *this; }
+                    basic_node(T&& v)                                   noexcept(value::is_nothrow_constructible<basic_node, T, T&&>::value) \
+                                                                        : kind_(node_kind::T)               { value::construct<T>(*this, std::forward<T>(v)); } \
+                    basic_node(T&& v, const allocator_type& al)         noexcept(value::is_nothrow_constructible<basic_node, T, T&&>::value) \
+                                                                        : kind_(node_kind::T), alloc_(al)   { value::construct<T>(*this, std::forward<T>(v)); } \
+                    basic_node& operator =(T&& v)                       noexcept(noexcept(std::declval<basic_node&>().template imbue<T>() = std::forward<T>(v))) \
+                                                                        { return imbue<T>() = std::forward<T>(v), *this; } \
+                    basic_node(const T& v)                              noexcept(value::is_nothrow_constructible<basic_node, T, T&>::value) \
+                                                                        : kind_(node_kind::T)               { value::construct<T>(*this, v); } \
+                    basic_node(const T& v, const allocator_type& al)    noexcept(value::is_nothrow_constructible<basic_node, T, T&>::value) \
+                                                                        : kind_(node_kind::T), alloc_(al)   { value::construct<T>(*this, v); } \
+                    basic_node& operator =(const T& v)                  noexcept(noexcept(std::declval<basic_node&>().template imbue<T>() = v)) \
+                                                                        { return imbue<T>() = v, *this; }
                 CXON_JSON_TYPE_DEF(object)
                 CXON_JSON_TYPE_DEF(array)
                 CXON_JSON_TYPE_DEF(string)
@@ -262,8 +285,7 @@ namespace cxon { namespace json { // node
                     *this = l;
                 }
                 basic_node(std::initializer_list<basic_node> l, const allocator_type& al)
-                :   kind_(node_kind::null),
-                    alloc_(al)
+                :   kind_(node_kind::null), alloc_(al)
                 {
                     *this = l;
                 }
@@ -275,7 +297,7 @@ namespace cxon { namespace json { // node
                         auto& o = imbue<object>();
                         for (auto& e : l) {
                             auto& a = e.template get<array>();
-                            cxon::cnt::append(o, {a[0], a[1]});
+                            cxon::cnt::append(o, { a[0], a[1] });
                         }
                     }
                     else
@@ -286,70 +308,66 @@ namespace cxon { namespace json { // node
             // literals
                 private:
                     template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
-                        struct int_kind             { static constexpr node_kind value = node_kind::sint; };
+                        struct int_kind_            { static constexpr node_kind value = node_kind::sint; };
                     template <typename T>
-                        struct int_kind<T, false>   { static constexpr node_kind value = node_kind::uint; };
+                        struct int_kind_<T, false>  { static constexpr node_kind value = node_kind::uint; };
 
                     template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
-                        struct int_type_            { using type = sint; };
+                        struct int_type__           { using type = sint; };
                     template <typename T>
-                        struct int_type_<T, false>  { using type = uint; };
+                        struct int_type__<T, false> { using type = uint; };
                     template <typename T>
-                        using int_type = typename int_type_<T>::type;
-
-                    template <typename T>
-                        struct is_int_unique {
-                            static constexpr bool value = std::is_integral<T>::value && !std::is_same<T, int_type<T>>::value;
-                        };
+                        using int_type_ = typename int_type__<T>::type;
                 public:
             // integral
-                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node(T t)
-                    :   kind_(int_kind<T>::value)
+                template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
+                    basic_node(T t) noexcept
+                    :   kind_(int_kind_<T>::value)
                     {
-                        alc::uninitialized_construct_using_allocator<int_type<T>>((int_type<T>*)&value_, alloc_, t);
+                        value::construct<int_type_<T>>(*this, t);
                     }
-                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node(T t, const allocator_type& al)
-                    :   kind_(int_kind<T>::value),
-                        alloc_(al)
+                template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
+                    basic_node(T t, const allocator_type& al) noexcept
+                    :   kind_(int_kind_<T>::value), alloc_(al)
                     {
-                        alc::uninitialized_construct_using_allocator<int_type<T>>((int_type<T>*)&value_, al, t);
+                        value::construct<int_type_<T>>(*this, t);
                     }
-                template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node& operator =(T t) {
-                        imbue<int_type<T>>() = t; return *this;
+                template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
+                    basic_node& operator =(T t) noexcept {
+                        return imbue<int_type_<T>>() = t, *this;
+                    }
+            // std::nullptr_t
+                template <typename ...>
+                    constexpr basic_node(std::nullptr_t) noexcept
+                    :   kind_(node_kind::null)
+                    {
+                    }
+                template <typename ...>
+                    constexpr basic_node(std::nullptr_t, const allocator_type& al) noexcept
+                    :   kind_(node_kind::null), alloc_(al)
+                    {
+                    }
+                template <typename ...>
+                    basic_node& operator =(std::nullptr_t) noexcept {
+                        return imbue<null>() = nullptr, *this;
                     }
             // string
                 basic_node(const typename string::value_type* s)
                 :   kind_(node_kind::string)
                 {
-                    alc::uninitialized_construct_using_allocator<string>((string*)&value_, alloc_, s);
+                    value::construct<string>(*this, s);
                 }
                 basic_node(const typename string::value_type* s, const allocator_type& al)
-                :   kind_(node_kind::string),
-                    alloc_(al)
+                :   kind_(node_kind::string), alloc_(al)
                 {
-                    alc::uninitialized_construct_using_allocator<string>((string*)&value_, al, s);
+                    value::construct<string>(*this, s);
                 }
                 basic_node& operator =(const typename string::value_type* s) {
                     return imbue<string>() = s, *this;
                 }
 
             void reset() noexcept {
-                switch (kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: ((T*)&value_)->~T(); break
-                        CXON_JSON_TYPE_DEF(object);
-                        CXON_JSON_TYPE_DEF(array);
-                        CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(sint);
-                        CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
-                        CXON_JSON_TYPE_DEF(boolean);
-                        CXON_JSON_TYPE_DEF(null);
-#                   undef CXON_JSON_TYPE_DEF
-                }
-                kind_ = node_kind::null;
+                this->~basic_node(), kind_ = node_kind::null;
             }
 
             node_kind kind() const noexcept { return kind_; }
@@ -359,31 +377,33 @@ namespace cxon { namespace json { // node
             }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == imp::node_kind_from_<basic_node, T>();
+                return kind_ == imp::node_kind_<basic_node, T>::value;
             }
 
-            template <typename T> T& imbue() {
+            template <typename T> T& imbue()
+                noexcept(noexcept(value::construct<T>(std::declval<basic_node&>())))
+            {
                 if (!is<T>()) {
-                    reset(), kind_ = imp::node_kind_from_<basic_node, T>();
-                    alc::uninitialized_construct_using_allocator<T>((T*)&value_, alloc_);
+                    reset(), kind_ = imp::node_kind_<basic_node, T>::value;
+                    value::construct<T>(*this);
                 }
-                return *(T*)&value_;
+                return value::get<T>(*this);
             }
 
             template <typename T> T& get() noexcept {
                 CXON_ASSERT(is<T>(), "node type mismatch");
-                return *(T*)&value_;
+                return value::get<T>(*this);
             }
             template <typename T> const T& get() const noexcept {
                 CXON_ASSERT(is<T>(), "node type mismatch");
-                return *(T*)&value_;
+                return value::get<T>(*this);
             }
 
             template <typename T> T* get_if() noexcept {
-                return is<T>() ? (T*)&value_ : nullptr;
+                return is<T>() ? &value::get<T>(*this) : nullptr;
             }
             template <typename T> const T* get_if() const noexcept {
-                return is<T>() ? (T*)&value_ : nullptr;
+                return is<T>() ? &value::get<T>(*this) : nullptr;
             }
 
             bool operator == (const basic_node& n) const noexcept {
@@ -397,7 +417,7 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(uint);
                         CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
-                        CXON_JSON_TYPE_DEF(null);
+                        case node_kind::null: return true;
 #                   undef CXON_JSON_TYPE_DEF
                 }
                 return false; // LCOV_EXCL_LINE
@@ -423,13 +443,30 @@ namespace cxon { namespace json { // node
                 }
                 return false; // LCOV_EXCL_LINE
             }
+
+            private:
+                friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
+                friend constexpr bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
+                friend constexpr bool operator !=(const basic_node& n, null) noexcept { return !n.is<null>(); }
+                friend constexpr bool operator !=(null, const basic_node& n) noexcept { return !n.is<null>(); }
         };
+
+    namespace imp {
+        template <typename N> struct node_kind_<N, typename N::null>    { static constexpr node_kind value = node_kind::null; };
+        template <typename N> struct node_kind_<N, typename N::boolean> { static constexpr node_kind value = node_kind::boolean; };
+        template <typename N> struct node_kind_<N, typename N::sint>    { static constexpr node_kind value = node_kind::sint; };
+        template <typename N> struct node_kind_<N, typename N::uint>    { static constexpr node_kind value = node_kind::uint; };
+        template <typename N> struct node_kind_<N, typename N::real>    { static constexpr node_kind value = node_kind::real; };
+        template <typename N> struct node_kind_<N, typename N::string>  { static constexpr node_kind value = node_kind::string; };
+        template <typename N> struct node_kind_<N, typename N::array>   { static constexpr node_kind value = node_kind::array; };
+        template <typename N> struct node_kind_<N, typename N::object>  { static constexpr node_kind value = node_kind::object; };
+    }
 
     template <typename T, typename N>
         inline bool is(const N& n) noexcept         { return n.template is<T>(); }
 
     template <typename T, typename N>
-        inline T& imbue(N& n)/* noexcept(std::is_nothrow_default_constructible<T>::value)*/
+        inline T& imbue(N& n) noexcept(noexcept(std::declval<N&>().template imbue<T>()))
                                                     { return n.template imbue<T>(); }
 
     template <typename T, typename N>
@@ -448,7 +485,7 @@ namespace cxon { // hash
 
     template <typename Tr>
         struct hash<json::basic_node<Tr>> {
-            size_t operator ()(const json::basic_node<Tr>& n) const noexcept {
+            std::size_t operator ()(const json::basic_node<Tr>& n) const noexcept {
                 switch (n.kind()) {
 #                   define CXON_JSON_TYPE_DEF(T)        case json::node_kind::T: return make_hash(json::get<typename json::basic_node<Tr>::T>(n))
                         CXON_JSON_TYPE_DEF(object);
@@ -471,7 +508,7 @@ namespace std { // hash
 
     template <typename Tr>
         struct hash<cxon::json::basic_node<Tr>> {
-            size_t operator ()(const cxon::json::basic_node<Tr>& n) const noexcept {
+            std::size_t operator ()(const cxon::json::basic_node<Tr>& n) const noexcept {
                 return cxon::make_hash(n);
             }
         };
