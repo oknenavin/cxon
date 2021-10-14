@@ -35,13 +35,12 @@ namespace cxon { namespace json { // node
 
 }}
 
-namespace cxon { namespace json { // helpers
-    struct null;
-}}
-
 namespace cxon { namespace json { // node traits
 
     enum class node_kind { object, array, string, sint, uint, real, boolean, null };
+
+    template <typename T, T ...>
+        struct integer_sequence;
 
     template <typename Al>
         struct node_traits {
@@ -54,6 +53,7 @@ namespace cxon { namespace json { // node traits
             using                                       uint_type       = unsigned long long;
             using                                       boolean_type    = bool;
             using                                       null_type       = std::nullptr_t;
+            using                                       dynamic_types   = integer_sequence<node_kind, node_kind::object, node_kind::array>;
         };
 
 }}
@@ -82,32 +82,23 @@ namespace cxon { namespace json { // node
         template <typename N> struct node_kind_<N, typename N::array>       { static constexpr node_kind value = node_kind::array; };
         template <typename N> struct node_kind_<N, typename N::object>      { static constexpr node_kind value = node_kind::object; };
 
-        template <typename N, typename T>
-            constexpr node_kind node_kind_from_() noexcept { return node_kind_<N, T>::value; }
-
         template <template <typename C> class X, typename ...>
-            struct is_nothrow_x_                { static constexpr bool value = true; };
+            struct is_nothrow_x_;
         template <template <typename C> class X, typename T>
-            struct is_nothrow_x_<X, T>          { static constexpr bool value = X<T>::value; };
+            struct is_nothrow_x_<X, T> :
+                std::integral_constant<bool, X<T>::value> {};
         template <template <typename C> class X, typename H, typename ...T>
-            struct is_nothrow_x_<X, H, T...>    { static constexpr bool value = X<H>::value && is_nothrow_x_<X, T...>::value; };
+            struct is_nothrow_x_<X, H, T...> :
+                std::integral_constant<bool, X<H>::value && is_nothrow_x_<X, T...>::value> {};
 
-        template <typename T, typename ...U>
-            struct is_from              { static constexpr bool value = false; };
-        template <typename T, typename U>
-            struct is_from<T, U>        { static constexpr bool value = std::is_same<T, U>:: value; };
-        template <typename T, typename U, typename ...R>
-            struct is_from<T, U, R...>  { static constexpr bool value = std::is_same<T, U>:: value || is_from<T, R...>::value; };
-
-        //template<typename T, typename ...U> // C++17
-        //    struct is_from { static constexpr bool value {(std::is_same_v<T, U> || ...)}; };
-
-        template <typename T, typename U, bool C>
-            struct select;
-        template <typename T, typename U>
-            struct select<T, U, true>   { using type = U; };
-        template <typename T, typename U>
-            struct select<T, U, false>  { using type = T; };
+        template <typename T, T V0, typename W, T ...Vs>
+            struct has_kind_;
+        template <typename T, T V0, T V1>
+            struct has_kind_<T, V0, integer_sequence<T, V1>> :
+                std::integral_constant<bool,  V0 == V1> {};
+        template <typename T, T V0, T V1, T ...Vs>
+            struct has_kind_<T, V0, integer_sequence<T, V1, Vs...>> :
+                std::integral_constant<bool, V0 == V1 || has_kind_<T, V0, integer_sequence<T, Vs...>>::value> {};
 
     }
 
@@ -126,11 +117,13 @@ namespace cxon { namespace json { // node
 
             private:
                 template <typename T>
-                    struct is_dynamic : std::integral_constant<bool, imp::is_from<T, object, array>::value> {};
-                template <typename T>
-                    using dynamic_t = typename imp::select<T, T*, is_dynamic<T>::value>::type;
+                    using is_dynamic_type_ =
+                        imp::has_kind_<node_kind, imp::node_kind_<basic_node, typename std::remove_pointer<T>::type>::value, typename Tr::dynamic_types>;
 
-                using value_type = typename std::aligned_union<0, dynamic_t<object>, dynamic_t<array>, dynamic_t<string>, sint, uint, real, boolean, null>::type;
+                template <typename T>
+                    using dt_ = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+                using value_type = typename std::aligned_union<0, dt_<object>, dt_<array>, dt_<string>, dt_<sint>, dt_<uint>, dt_<real>, dt_<boolean>, dt_<null>>::type;
+
                 value_type      value_;
                 node_kind       kind_;
                 allocator_type  alloc_;
@@ -146,15 +139,27 @@ namespace cxon { namespace json { // node
                 private:
                     template <typename T, typename N>
                         static constexpr auto value(N& n) noexcept
-                            -> enable_if_t<!is_dynamic<T>(), decltype(*(T*)&n.value_)>
+                            -> enable_if_t<!is_dynamic_type_<T>::value, T&>
                         {
                             return *(T*)&n.value_;
                         }
                     template <typename T, typename N>
                         static constexpr auto value(N& n) noexcept
-                            -> enable_if_t< is_dynamic<T>::value, decltype(**(T**)&n.value_)>
+                            -> enable_if_t< is_dynamic_type_<T>::value, T&>
                         {
                             return **(T**)&n.value_;
+                        }
+                    template <typename T, typename N>
+                        static constexpr auto address(N& n) noexcept
+                            -> enable_if_t<!is_dynamic_type_<T>::value, T&>
+                        {
+                            return (T*)&n.value_;
+                        }
+                    template <typename T, typename N>
+                        static constexpr auto address(N& n) noexcept
+                            -> enable_if_t< is_dynamic_type_<T>::value, T*&>
+                        {
+                            return *(T**)&n.value_;
                         }
                 public:
 
@@ -162,21 +167,21 @@ namespace cxon { namespace json { // node
                 private:
                     template <typename T>
                         static auto move_construct_(basic_node& n, basic_node&& o) noexcept(std::is_nothrow_move_constructible<T>::value)
-                            -> enable_if_t<!is_dynamic<T>::value && !std::is_trivially_copyable<T>::value>
+                            -> enable_if_t<!is_dynamic_type_<T>::value && !std::is_trivially_copyable<T>::value>
                         {
                             alc::uninitialized_construct_using_allocator<T>(&value<T>(n), n.alloc_, std::move(value<T>(o)));
                         }
                     template <typename T>
                         static auto move_construct_(basic_node& n, basic_node&& o) noexcept
-                            -> enable_if_t<!is_dynamic<T>::value &&  std::is_trivially_copyable<T>::value>
+                            -> enable_if_t<!is_dynamic_type_<T>::value &&  std::is_trivially_copyable<T>::value>
                         {
                             value<T>(n) = std::move(value<T>(o));
                         }
                     template <typename T>
                         static auto move_construct_(basic_node& n, basic_node&& o) noexcept
-                            -> enable_if_t< is_dynamic<T>::value>
+                            -> enable_if_t< is_dynamic_type_<T>::value>
                         {
-                            value<T*>(n) = value<T*>(o), o.kind_ = node_kind::null;
+                            address<T>(n) = address<T>(o), o.kind_ = node_kind::null;
                         }
                     static void move_construct(basic_node& n, basic_node&& o) {
                         switch (o.kind_) {
@@ -217,18 +222,18 @@ namespace cxon { namespace json { // node
                 private:
                     template <typename T, typename ...A>
                         static auto copy_construct_(basic_node& n, A&&... t) noexcept(std::is_nothrow_copy_constructible<T>::value)
-                            -> enable_if_t<!is_dynamic<T>::value>
+                            -> enable_if_t<!is_dynamic_type_<T>::value>
                         {
                             alc::uninitialized_construct_using_allocator<T>(&value<T>(n), n.alloc_, std::forward<A>(t)...);
                         }
                     template <typename T, typename ...A>
                         static auto copy_construct_(basic_node& n, A&&... t)
-                            -> enable_if_t< is_dynamic<T>::value>
+                            -> enable_if_t< is_dynamic_type_<T>::value>
                         {
                             using at = alc::rebind_t<allocator_type, T>;
                             at    al(n.alloc_);
-                            value<T*>(n) = std::allocator_traits<at>::allocate(al, 1);
-                            alc::uninitialized_construct_using_allocator<T>(value<T*>(n), al, std::forward<A>(t)...);
+                            address<T>(n) = std::allocator_traits<at>::allocate(al, 1);
+                            alc::uninitialized_construct_using_allocator<T>(address<T>(n), al, std::forward<A>(t)...);
                         }
                     static void copy_construct(basic_node& n, const basic_node& o) {
                         switch (o.kind_) {
@@ -277,18 +282,18 @@ namespace cxon { namespace json { // node
                 private:
                     template <typename T>
                         static auto destruct(basic_node& n) noexcept
-                            -> enable_if_t<!is_dynamic<T>::value>
+                            -> enable_if_t<!is_dynamic_type_<T>::value>
                         {
                             value<T>(n).~T();
                         }
                     template <typename T>
                         static auto destruct(basic_node& n) noexcept
-                            -> enable_if_t< is_dynamic<T>::value>
+                            -> enable_if_t< is_dynamic_type_<T>::value>
                         {
                             using at = alc::rebind_t<allocator_type, T>;
                             at    al(n.alloc_);
-                            std::allocator_traits<at>::destroy(al, value<T*>(n));
-                            std::allocator_traits<at>::deallocate(al, value<T*>(n), 1);
+                            std::allocator_traits<at>::destroy(al, address<T>(n));
+                            std::allocator_traits<at>::deallocate(al, address<T>(n), 1);
                         }
                     static void destruct(basic_node& n) noexcept {
                         switch (n.kind_) {
@@ -306,14 +311,16 @@ namespace cxon { namespace json { // node
                     }
                 public:
 
-            constexpr basic_node() noexcept
+            /*constexpr */basic_node() noexcept
             :   kind_(node_kind::null)
             {
+                construct<null>(*this, nullptr);
             }
-            constexpr basic_node(const allocator_type& al) noexcept
+            /*constexpr */basic_node(const allocator_type& al) noexcept
             :   kind_(node_kind::null),
                 alloc_(al)
             {
+                construct<null>(*this, nullptr);
             }
             ~basic_node() noexcept {
                 reset();
@@ -426,6 +433,22 @@ namespace cxon { namespace json { // node
                     basic_node& operator =(T t) noexcept {
                         return imbue<int_type<T>>() = t, *this;
                     }
+            // std::nullptr_t
+                template <typename ...>
+                    constexpr basic_node(std::nullptr_t) noexcept
+                    :   kind_(node_kind::null)
+                    {
+                    }
+                template <typename ...>
+                    constexpr basic_node(std::nullptr_t, const allocator_type& al) noexcept
+                    :   kind_(node_kind::null),
+                        alloc_(al)
+                    {
+                    }
+                template <typename ...>
+                    basic_node& operator =(std::nullptr_t) noexcept {
+                        return destruct(*this), kind_ = node_kind::null, *this;
+                    }
             // string
                 basic_node(const typename string::value_type* s)
                 :   kind_(node_kind::string)
@@ -441,25 +464,6 @@ namespace cxon { namespace json { // node
                 basic_node& operator =(const typename string::value_type* s) {
                     return imbue<string>() = s, *this;
                 }
-            // std::nullptr_t
-                //template <typename T, typename = enable_if_t<!std::is_same<T, std::nullptr_t>::value>>
-                template <typename ...>
-                    constexpr basic_node(std::nullptr_t) noexcept
-                    :   kind_(node_kind::null)
-                    {
-                    }
-                //template <typename T, typename = enable_if_t<!std::is_same<T, std::nullptr_t>::value>>
-                template <typename ...>
-                    constexpr basic_node(std::nullptr_t, const allocator_type& al) noexcept
-                    :   kind_(node_kind::null),
-                        alloc_(al)
-                    {
-                    }
-                //template <typename T, typename = enable_if_t<!std::is_same<T, std::nullptr_t>::value>>
-                template <typename ...>
-                    basic_node& operator =(std::nullptr_t) noexcept {
-                        return destruct(*this), kind_ = node_kind::null, *this;
-                    }
 
             void reset() noexcept {
                 destruct(*this), kind_ = node_kind::null;
@@ -472,12 +476,12 @@ namespace cxon { namespace json { // node
             }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == imp::node_kind_from_<basic_node, T>();
+                return kind_ == imp::node_kind_<basic_node, T>::value;
             }
 
             template <typename T> T& imbue() {
                 if (!is<T>()) {
-                    reset(), kind_ = imp::node_kind_from_<basic_node, T>();
+                    reset(), kind_ = imp::node_kind_<basic_node, T>::value;
                     construct<T>(*this);
                 }
                 return value<T>(*this);
@@ -536,6 +540,12 @@ namespace cxon { namespace json { // node
                 }
                 return false; // LCOV_EXCL_LINE
             }
+
+            private:
+                friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
+                friend constexpr bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
+                friend constexpr bool operator !=(const basic_node& n, null) noexcept { return !n.is<null>(); }
+                friend constexpr bool operator !=(null, const basic_node& n) noexcept { return !n.is<null>(); }
         };
 
     template <typename T, typename N>
@@ -557,18 +567,6 @@ namespace cxon { namespace json { // node
 
 }}
 
-namespace cxon { namespace json { // helpers
-
-    struct null {
-        constexpr bool operator ==(const null&) const noexcept { return true; }
-        constexpr bool operator  <(const null&) const noexcept { return false; }
-        private:
-            friend constexpr bool operator ==(null, std::nullptr_t) noexcept { return true; }
-            friend constexpr bool operator ==(std::nullptr_t, null) noexcept { return true; }
-    };
-
-}}
-
 namespace cxon { // hash
 
     template <typename Tr>
@@ -583,7 +581,7 @@ namespace cxon { // hash
                         CXON_JSON_TYPE_DEF(uint);
                         CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
-                        case json::node_kind::null:     return 0;
+                        case json::node_kind::null:     return 0; //CXON_JSON_TYPE_DEF(null); // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
 #                   undef CXON_JSON_TYPE_DEF
                 }
                 return 0; // LCOV_EXCL_LINE

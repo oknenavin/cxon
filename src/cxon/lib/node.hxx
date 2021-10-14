@@ -508,26 +508,6 @@
                     }
             };
 
-        template <typename X>
-            struct read<JSON<X>, json::null> {
-                template <typename II, typename Cx, typename Y = JSON<X>>
-                    static bool value(json::null&, II& i, II e, Cx& cx) {
-                        II const o = i;
-                        cio::consume<Y>(i, e);
-                        return  (cio::consume<Y>(Y::id::nil, i, e) ||
-                                (cio::rewind(i, o), cx/json::read_error::unexpected))
-                        ;
-                    }
-            };
-
-        template <typename X>
-            struct write<JSON<X>, json::null> {
-                template <typename O, typename Cx, typename Y = JSON<X>>
-                    static bool value(O& o, const json::null&, Cx& cx) {
-                        return cio::poke<Y>(o, Y::id::nil, cx);
-                    }
-            };
-
 #       ifdef CXON_CBOR_DEFINED
 
             namespace cio { namespace key { // keys
@@ -925,25 +905,6 @@
 #                               undef CXON_WRITE
                             }
                             return false; // LCOV_EXCL_LINE
-                        }
-                };
-
-            template <typename X>
-                struct read<CBOR<X>, json::null> {
-                    template <typename II, typename Cx, typename Y = CBOR<X>>
-                        static bool value(json::null&, II& i, II e, Cx& cx) {
-                            II const o = i;
-                            return  (bio::get(i, e) == Y::nil) ||
-                                    (bio::rewind(i, o), cx/cbor::read_error::unexpected)
-                            ;
-                        }
-                };
-
-            template <typename X>
-                struct write<CBOR<X>, json::null> {
-                    template <typename O, typename Cx, typename Y = CBOR<X>>
-                        static bool value(O& o, const json::null&, Cx& cx) {
-                            return bio::poke<Y>(o, Y::nil, cx);
                         }
                 };
 

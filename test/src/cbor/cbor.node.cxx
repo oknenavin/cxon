@@ -75,8 +75,7 @@ template <typename T>
 #       define CHECK(c)\
             ++a_;\
             if (!(c))\
-                fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_;\
-            CXON_ASSERT((c), "check failed");
+                fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_, CXON_ASSERT(false, "check failed")
 
         using node = cxon::cbor::node;
 

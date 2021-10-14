@@ -67,8 +67,7 @@ namespace test { namespace kind {
 #       define CHECK(c)\
             ++a_;\
             if (!(c))\
-                std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_;\
-            CXON_ASSERT((c), "check failed");
+                std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_, CXON_ASSERT((c), "check failed")
 
         {   // custom type binding + equal keys
             using node = cxon::json::basic_node<my_traits>;
@@ -342,7 +341,7 @@ namespace test { namespace kind {
         {   // ex5
             using node = cxon::json::node;
             {   // (1)
-                node n; CHECK(n.is<node::null>() && n == nullptr && n.get<node::null>() == nullptr);
+                node n; CHECK(n.is<node::null>() && n.get<node::null>() == nullptr);
             }
             {   // (2)
                 node o = true; CHECK(o.is<node::boolean>());
@@ -465,7 +464,7 @@ namespace test { namespace kind {
                 a = node(42.0); CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
             }
             {   node a;
-                a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+                a = node(nullptr); CHECK(a.is<node::null>() && a == nullptr);
             }
             {   node a;
                 a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
