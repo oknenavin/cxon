@@ -158,6 +158,9 @@ check-json-node:
 check-cbor:
 	@$(MAKE) -C test check-cbor
 
+check-cbor-node:
+	@$(MAKE) -C test check-cbor-node
+
 time:
 	@$(MAKE) -C test time
 
