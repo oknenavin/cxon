@@ -8,8 +8,7 @@ cxon-lang-common = \
     $(srcdir)/lang/common/allocator.hxx \
     $(srcdir)/lang/common/charconv.hxx \
     $(srcdir)/lang/common/container.hxx \
-    $(srcdir)/lang/common/hash.hxx \
-    $(srcdir)/lang/common/node-value.hxx
+    $(srcdir)/lang/common/hash.hxx
 
 cxon-lang-common-cio = \
     $(srcdir)/lang/common/cio/char.hxx \
