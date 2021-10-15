@@ -52,7 +52,7 @@ namespace test { namespace kind {
 
     template <typename Al = std::allocator<void>>
         struct unordered_node_traits : cxon::json::node_traits<Al> {
-            template <typename K, typename V> using object_type = std::unordered_map<K, V, cxon::hash<K>, std::equal_to<K>, cxon::alc::rebind_t<Al, std::pair<const K, V>>>;
+            template <typename K, typename V> using object_type = std::unordered_map<K, V, std::hash<K>, std::equal_to<K>, cxon::alc::rebind_t<Al, std::pair<const K, V>>>;
         };
     
     template <typename T>

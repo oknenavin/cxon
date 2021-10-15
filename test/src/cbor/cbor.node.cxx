@@ -17,6 +17,7 @@
 #include <fstream>
 #include <cstring>
 #include <unordered_set>
+#include <unordered_map>
 
 #if __cplusplus >= 201703L
 #   if defined(__has_include) && __has_include(<memory_resource>)
@@ -61,7 +62,12 @@ struct result {
     int err = 0;
     int all = 0;
 };
-    
+
+template <typename Al = std::allocator<void>>
+    struct unordered_node_traits : cxon::cbor::node_traits<Al> {
+        template <typename K, typename V> using map_type = std::unordered_map<K, V, std::hash<K>, std::equal_to<K>, cxon::alc::rebind_t<Al, std::pair<const K, V>>>;
+    };
+
 template <typename T>
     struct my_allocator : std::allocator<T> {
         using std::allocator<T>::allocator;
@@ -567,6 +573,11 @@ template <typename T>
             };
             CHECK(m.size() == 13);
         }
+        //{
+        //    using node = cxon::cbor::basic_node<unordered_node_traits<>>;
+        //    node n; n = { {1, 2} };
+        //    CHECK(n.is<node::map>() && n.get<node::map>().size() == 1);
+        //}
         {
             using node = cxon::cbor::basic_node<cxon::cbor::node_traits<my_allocator<void>>>;
             my_allocator<node> al;

@@ -352,13 +352,13 @@ namespace cxon { namespace cbor { // node
                 public:
             // integrals
                 template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node(T t)
+                    basic_node(T t) noexcept
                     :   kind_(int_kind<T>::value)
                     {
                         alc::uninitialized_construct_using_allocator<int_type<T>>((int_type<T>*)&value_, alloc_, t);
                     }
                 template <typename T, typename = enable_if_t<is_int_unique<T>::value>>
-                    basic_node(T t, const allocator_type& al)
+                    basic_node(T t, const allocator_type& al) noexcept
                     :   kind_(int_kind<T>::value),
                         alloc_(al)
                     {
@@ -605,7 +605,7 @@ namespace cxon { // hash
 
     template <typename Tr>
         struct hash<cbor::basic_node<Tr>> {
-            size_t operator ()(const cbor::basic_node<Tr>& n) const noexcept {
+            std::size_t operator ()(const cbor::basic_node<Tr>& n) const noexcept {
                 switch (n.kind()) {
 #                   define CXON_CBOR_TYPE_DEF(T)            case cbor::node_kind::T: return make_hash(cbor::get<typename cbor::basic_node<Tr>::T>(n))
                         CXON_CBOR_TYPE_DEF(sint);
@@ -632,7 +632,7 @@ namespace std { // hash
 
     template <typename Tr>
         struct hash<cxon::cbor::basic_node<Tr>> {
-            size_t operator ()(const cxon::cbor::basic_node<Tr>& n) const noexcept {
+            std::size_t operator ()(const cxon::cbor::basic_node<Tr>& n) const noexcept {
                 return cxon::make_hash(n);
             }
         };
