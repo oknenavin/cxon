@@ -21,48 +21,52 @@ namespace cxon { namespace imp {
 
     template <typename N>
         struct node {
+            template <typename T>
+                using is_dynamic_type = typename N::template is_dynamic_type_<T>;
+
+            using allocator_type = typename N::allocator_type;
+            using propagate_on_container_move_assignment = typename std::allocator_traits<allocator_type>::propagate_on_container_move_assignment;
+
             // value access
             template <typename U, typename M>
-                static constexpr auto value(M& n) noexcept -> enable_if_t<!M::template is_dynamic_type_<U>::value && !std::is_pointer<U>::value, U&> {
+                static constexpr auto value(M& n) noexcept -> enable_if_t<!is_dynamic_type<U>::value && !std::is_pointer<U>::value, U&> {
                     return *(U*)&n.value_;
                 }
             template <typename U, typename M>
-                static constexpr auto value(M& n) noexcept -> enable_if_t< M::template is_dynamic_type_<U>::value && !std::is_pointer<U>::value, U&> {
+                static constexpr auto value(M& n) noexcept -> enable_if_t< is_dynamic_type<U>::value && !std::is_pointer<U>::value, U&> {
                     return **(U**)&n.value_;
                 }
             template <typename U, typename M>
-                static constexpr auto value(M& n) noexcept -> enable_if_t<!M::template is_dynamic_type_<U>::value &&  std::is_pointer<U>::value, U&> {
+                static constexpr auto value(M& n) noexcept -> enable_if_t<!is_dynamic_type<U>::value &&  std::is_pointer<U>::value, U&> {
                     return (U)&n.value_;
                 }
             template <typename U, typename M>
-                static constexpr auto value(M& n) noexcept -> enable_if_t< M::template is_dynamic_type_<U>::value &&  std::is_pointer<U>::value, U&> {
+                static constexpr auto value(M& n) noexcept -> enable_if_t< is_dynamic_type<U>::value &&  std::is_pointer<U>::value, U&> {
                     return *(U*)&n.value_;
                 }
             // move construct
             template <typename U>
-                static auto move_construct(N& n, N&& o)
-                       noexcept(std::is_nothrow_move_constructible<U>::value)
-                    -> enable_if_t<!N::template is_dynamic_type_<U>::value && !std::is_trivially_assignable<U, U>::value>
+                static auto move_construct(N& n, N&& o) noexcept(std::is_nothrow_move_constructible<U>::value)
+                    -> enable_if_t<!is_dynamic_type<U>::value && !std::is_trivially_assignable<U, U>::value>
                 {
                     alc::uninitialized_construct_using_allocator<U>(&value<U>(n), n.alloc_, std::move(value<U>(o)));
                 }
             template <typename U>
                 static auto move_construct(N& n, N&& o) noexcept
-                    -> enable_if_t<!N::template is_dynamic_type_<U>::value &&  std::is_trivially_assignable<U, U>::value>
+                    -> enable_if_t<!is_dynamic_type<U>::value &&  std::is_trivially_assignable<U, U>::value>
                 {
                     value<U>(n) = value<U>(o);
                 }
             template <typename U>
                 static auto move_construct(N& n, N&& o) noexcept
-                    -> enable_if_t< N::template is_dynamic_type_<U>::value>
+                    -> enable_if_t< is_dynamic_type<U>::value>
                 {
                     value<U*>(n) = value<U*>(o), o.kind_ = N::node_kind_default;
                 }
             // move assign
             template <typename U>
-                static auto move_assign(N& n, N&& o)
-                       noexcept(std::is_nothrow_move_constructible<U>::value)
-                    -> enable_if_t<!N::template is_dynamic_type_<U>::value &&  std::allocator_traits<typename N::allocator_type>::propagate_on_container_move_assignment::value, N&>
+                static auto move_assign(N& n, N&& o) noexcept(std::is_nothrow_move_constructible<U>::value)
+                    -> enable_if_t<!is_dynamic_type<U>::value &&  propagate_on_container_move_assignment::value, N&>
                 {
                     n.alloc_ = std::move(o.alloc_);
                     alc::uninitialized_construct_using_allocator<U>(&value<U>(n), n.alloc_, std::move(value<U>(o)));
@@ -70,76 +74,89 @@ namespace cxon { namespace imp {
                 }
             template <typename U>
                 static auto move_assign(N& n, N&& o) noexcept
-                    -> enable_if_t< N::template is_dynamic_type_<U>::value &&  std::allocator_traits<typename N::allocator_type>::propagate_on_container_move_assignment::value, N&>
+                    -> enable_if_t< is_dynamic_type<U>::value &&  propagate_on_container_move_assignment::value, N&>
                 {
                     n.alloc_ = std::move(o.alloc_);
                     value<U*>(n) = value<U*>(o), o.kind_ = N::node_kind_default;
                     return n;
                 }
             template <typename U>
-                static auto move_assign(N& n, N&& o)
-                        noexcept(std::is_nothrow_move_assignable<U>::value)
-                    -> enable_if_t<!N::template is_dynamic_type_<U>::value && !std::allocator_traits<typename N::allocator_type>::propagate_on_container_move_assignment::value, N&>
+                static auto move_assign(N& n, N&& o) noexcept(std::is_nothrow_move_constructible<U>::value)
+                    -> enable_if_t<!is_dynamic_type<U>::value && !propagate_on_container_move_assignment::value, N&>
                 {
-                    value<U>(n) = std::move(value<U>(o));
+                    alc::uninitialized_construct_using_allocator<U>(&value<U>(n), n.alloc_, std::move(value<U>(o)));
                     return n;
                 }
             template <typename U>
                 static auto move_assign(N& n, N&& o) noexcept
-                    -> enable_if_t< N::template is_dynamic_type_<U>::value && !std::allocator_traits<typename N::allocator_type>::propagate_on_container_move_assignment::value, N&>
+                    -> enable_if_t< is_dynamic_type<U>::value && !propagate_on_container_move_assignment::value, N&>
                 {
                     value<U*>(n) = value<U*>(o), o.kind_ = N::node_kind_default;
                     return n;
                 }
             // copy construct
             template <typename U>
-                static auto copy_construct(N& n, const N& o)
-                        noexcept(std::is_nothrow_copy_constructible<U>::value)
-                    -> enable_if_t<!N::template is_dynamic_type_<U>::value && !std::is_trivially_assignable<U, U>::value>
+                static auto copy_construct(N& n, const N& o) noexcept(std::is_nothrow_copy_constructible<U>::value)
+                    -> enable_if_t<!is_dynamic_type<U>::value && !std::is_trivially_assignable<U, U>::value>
                 {
                     alc::uninitialized_construct_using_allocator<U>(&value<U>(n), n.alloc_, value<U>(o));
                 }
             template <typename U>
                 static auto copy_construct(N& n, const N& o) noexcept
-                    -> enable_if_t<!N::template is_dynamic_type_<U>::value &&  std::is_trivially_assignable<U, U>::value>
+                    -> enable_if_t<!is_dynamic_type<U>::value &&  std::is_trivially_assignable<U, U>::value>
                 {
                     value<U>(n) = value<U>(o);
                 }
             template <typename U>
                 static auto copy_construct(N& n, const N& o)
-                    -> enable_if_t< N::template is_dynamic_type_<U>::value>
+                    -> enable_if_t< is_dynamic_type<U>::value>
                 {
                     construct<U>(n, value<U>(o));
                 }
+            // copy assign
+            template <typename U>
+                static N& copy_assign(N& n, const N& o) noexcept(noexcept(copy_construct<U>(n, o)))
+                {
+                    return copy_construct<U>(n, o), n;
+                }
             // construct
             template <typename U, typename ...A>
-                static auto construct(N& n, A&&... t)
-                        noexcept(std::is_nothrow_constructible<U, A&&...>::value)
-                    ->  enable_if_t<!N::template is_dynamic_type_<U>::value>
+                static auto construct(N& n, A&&... t) noexcept(std::is_nothrow_constructible<U, A&&...>::value)
+                    ->  enable_if_t<!is_dynamic_type<U>::value>
                 {
                     alc::uninitialized_construct_using_allocator<U>(&value<U>(n), n.alloc_, std::forward<A>(t)...);
                 }
             template <typename U, typename ...A>
                 static auto construct(N& n, A&&... t)
-                    -> enable_if_t< N::template is_dynamic_type_<U>::value>
+                    -> enable_if_t< is_dynamic_type<U>::value>
                 {
-                    using at = alc::rebind_t<typename N::allocator_type, U>;
+                    using at = alc::rebind_t<allocator_type, U>;
                     at    al(n.alloc_);
                     value<U*>(n) = std::allocator_traits<at>::allocate(al, 1);
                     alc::uninitialized_construct_using_allocator<U>(value<U*>(n), al, std::forward<A>(t)...);
                 }
             // destruct
             template <typename U>
-                static auto destruct(N& n) noexcept -> enable_if_t<!N::template is_dynamic_type_<U>::value> {
+                static auto destruct(N& n) noexcept -> enable_if_t<!is_dynamic_type<U>::value> {
                     value<U>(n).~U();
                 }
             template <typename U>
-                static auto destruct(N& n) noexcept -> enable_if_t< N::template is_dynamic_type_<U>::value> {
-                    using at = alc::rebind_t<typename N::allocator_type, U>;
+                static auto destruct(N& n) noexcept -> enable_if_t< is_dynamic_type<U>::value> {
+                    using at = alc::rebind_t<allocator_type, U>;
                     at    al(n.alloc_);
                     std::allocator_traits<at>::destroy(al, value<U*>(n));
                     std::allocator_traits<at>::deallocate(al, value<U*>(n), 1);
                 }
+
+            using dynamic_types = typename N::dynamic_types_;
+
+            using has_dynamic_tpyes             = type_sequence_disjunction<N::template is_dynamic_type_, dynamic_types>;
+
+            using is_nothrow_move_constructible = bool_constant<type_sequence_conjunction<std::is_nothrow_move_constructible, dynamic_types>::value>;
+            using is_nothrow_move_assignable    = bool_constant<type_sequence_conjunction<std::is_nothrow_move_constructible, dynamic_types>::value>;
+
+            using is_nothrow_copy_constructible = bool_constant<!has_dynamic_tpyes::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;
+            using is_nothrow_copy_assignable    = bool_constant<!has_dynamic_tpyes::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;
 
         };
 
@@ -154,7 +171,6 @@ namespace cxon { namespace imp {
         {
             node<N>::template move_construct<T>(n, std::forward<N>(o));
         }
-
     template <typename T, typename N>
         inline N& move_assign(N& n, N&& o)
             noexcept(noexcept(node<N>::template move_assign<T>(n, std::forward<N>(o))))
@@ -168,6 +184,12 @@ namespace cxon { namespace imp {
         {
             node<N>::template copy_construct<T>(n, o);
         }
+    template <typename T, typename N>
+        inline N& copy_assign(N& n, const N& o)
+            noexcept(noexcept(node<N>::template copy_assign<T>(n, o)))
+        {
+            return node<N>::template copy_assign<T>(n, o);
+        }
 
     template <typename T, typename N, typename ...A>
         inline void construct(N& n, A&&... t)
@@ -180,6 +202,16 @@ namespace cxon { namespace imp {
         inline void destruct(N& n) noexcept {
             node<N>::template destruct<T>(n);
         }
+
+    template <typename N>
+        using is_nothrow_move_constructible = typename node<N>::is_nothrow_move_constructible;
+    template <typename N>
+        using is_nothrow_move_assignable    = typename node<N>::is_nothrow_move_assignable;
+
+    template <typename N>
+        using is_nothrow_copy_constructible = typename node<N>::is_nothrow_copy_constructible;
+    template <typename N>
+        using is_nothrow_copy_assignable    = typename node<N>::is_nothrow_copy_assignable;
 
 }}
 
@@ -291,111 +323,6 @@ namespace cxon { namespace json { // node
                         friend struct cxon::imp::node;
                 public:
 
-            // move construct
-                private:
-                    static void move_construct(basic_node& n, basic_node&& o)
-                        noexcept(is_nothrow_move_constructible_::value)
-                    {
-                        switch (o.kind_) {
-#                           define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::move_construct<T>(n, std::forward<basic_node>(o)); break
-                                CXON_JSON_TYPE_DEF(object);
-                                CXON_JSON_TYPE_DEF(array);
-                                CXON_JSON_TYPE_DEF(string);
-                                CXON_JSON_TYPE_DEF(sint);
-                                CXON_JSON_TYPE_DEF(uint);
-                                CXON_JSON_TYPE_DEF(real);
-                                CXON_JSON_TYPE_DEF(boolean);
-                                CXON_JSON_TYPE_DEF(null);
-#                           undef CXON_JSON_TYPE_DEF
-                        }
-                    }
-                public:
-
-            // move assign
-                private:
-                    static basic_node& move_assign(basic_node& n, basic_node&& o)
-                        noexcept(is_nothrow_move_constructible_::value && is_nothrow_move_assignable_::value)
-                    {
-                        destruct(n), n.kind_ = o.kind_;
-                        switch (o.kind_) {
-#                           define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return cxon::imp::move_assign<T>(n, std::forward<basic_node>(o))
-                                CXON_JSON_TYPE_DEF(object);
-                                CXON_JSON_TYPE_DEF(array);
-                                CXON_JSON_TYPE_DEF(string);
-                                CXON_JSON_TYPE_DEF(sint);
-                                CXON_JSON_TYPE_DEF(uint);
-                                CXON_JSON_TYPE_DEF(real);
-                                CXON_JSON_TYPE_DEF(boolean);
-                                CXON_JSON_TYPE_DEF(null);
-#                           undef CXON_JSON_TYPE_DEF
-                        }
-                        return n; // LCOV_EXCL_LINE
-                    }
-                public:
-
-            // copy construct
-                private:
-                    static void copy_construct(basic_node& n, const basic_node& o)
-                        noexcept(!has_dynamic_tpyes_::value && is_nothrow_copy_constructible_::value)
-                    {
-                        switch (o.kind_) {
-#                           define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::copy_construct<T>(n, o); break
-                                CXON_JSON_TYPE_DEF(object);
-                                CXON_JSON_TYPE_DEF(array);
-                                CXON_JSON_TYPE_DEF(string);
-                                CXON_JSON_TYPE_DEF(sint);
-                                CXON_JSON_TYPE_DEF(uint);
-                                CXON_JSON_TYPE_DEF(real);
-                                CXON_JSON_TYPE_DEF(boolean);
-                                CXON_JSON_TYPE_DEF(null);
-#                           undef CXON_JSON_TYPE_DEF
-                        }
-                    }
-                public:
-
-            // copy assign
-                private:
-                    static void copy_assign(basic_node& n, const basic_node& o)
-                        noexcept(!has_dynamic_tpyes_::value && is_nothrow_copy_constructible_::value)
-                    {
-                        destruct(n), n.kind_ = o.kind_;
-                        switch (o.kind_) {
-#                           define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::copy_construct<T>(n, o); break
-                                CXON_JSON_TYPE_DEF(object);
-                                CXON_JSON_TYPE_DEF(array);
-                                CXON_JSON_TYPE_DEF(string);
-                                CXON_JSON_TYPE_DEF(sint);
-                                CXON_JSON_TYPE_DEF(uint);
-                                CXON_JSON_TYPE_DEF(real);
-                                CXON_JSON_TYPE_DEF(boolean);
-                                CXON_JSON_TYPE_DEF(null);
-#                           undef CXON_JSON_TYPE_DEF
-                        }
-                    }
-                public:
-
-            // construct
-                private:
-                public:
-
-            // destruct
-                private:
-                    static void destruct(basic_node& n) noexcept {
-                        switch (n.kind_) {
-#                           define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::destruct<T>(n); break
-                                CXON_JSON_TYPE_DEF(object);
-                                CXON_JSON_TYPE_DEF(array);
-                                CXON_JSON_TYPE_DEF(string);
-                                CXON_JSON_TYPE_DEF(sint);
-                                CXON_JSON_TYPE_DEF(uint);
-                                CXON_JSON_TYPE_DEF(real);
-                                CXON_JSON_TYPE_DEF(boolean);
-                                CXON_JSON_TYPE_DEF(null);
-#                           undef CXON_JSON_TYPE_DEF
-                        }
-                    }
-                public:
-
             /*constexpr */basic_node() noexcept
             :   kind_(node_kind::null)
             {
@@ -407,51 +334,142 @@ namespace cxon { namespace json { // node
                 cxon::imp::construct<null>(*this, nullptr);
             }
             ~basic_node() noexcept {
-                reset();
+                switch (kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::destruct<T>(*this); break
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
             }
 
             /*constexpr */basic_node(basic_node&& o)
-                noexcept(noexcept(move_construct(std::declval<basic_node&>(), std::forward<basic_node>(o))))
+                noexcept(cxon::imp::is_nothrow_move_constructible<basic_node>::value)
             :   kind_(o.kind_)
             {
-                move_construct(*this, std::forward<basic_node>(o));
+                switch (o.kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::move_construct<T>(*this, std::forward<basic_node>(o)); break
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
             }
             /*constexpr */basic_node(basic_node&& o, const allocator_type& al)
-                noexcept(noexcept(move_construct(std::declval<basic_node&>(), std::forward<basic_node>(o))))
+                noexcept(cxon::imp::is_nothrow_move_constructible<basic_node>::value)
             :   kind_(o.kind_), alloc_(al)
             {
-                move_construct(*this, std::forward<basic_node>(o));
+                switch (o.kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::move_construct<T>(*this, std::forward<basic_node>(o)); break
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
             }
             /*constexpr */basic_node& operator =(basic_node&& o)
-                noexcept(
-                    noexcept(move_assign(std::declval<basic_node&>(), std::forward<basic_node>(o))) &&
-                    noexcept(copy_assign(std::declval<basic_node&>(), o))
-                )
-            {
-                // TODO: alloc_ != o.alloc_
-                return alloc_ == o.alloc_ ?
-                    move_assign(*this, std::forward<basic_node>(o)) :
-                    (copy_assign(*this, o), *this)
-                ;
+                noexcept(cxon::imp::is_nothrow_move_assignable<basic_node>::value)
+            {   // TODO: alloc_ != o.alloc_
+                this->~basic_node(), kind_ = o.kind_;
+                switch (o.kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return   alloc_ == o.alloc_ ? \
+                                                                                    cxon::imp::move_assign<T>(*this, std::forward<basic_node>(o)) : \
+                                                                                    cxon::imp::copy_assign<T>(*this, o)
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
+                return *this; // LCOV_EXCL_LINE
             }
 
             /*constexpr */basic_node(const basic_node& o)
-                noexcept(noexcept(copy_construct(std::declval<basic_node&>(), o)))
+                noexcept(cxon::imp::is_nothrow_copy_constructible<basic_node>::value)
             :   kind_(o.kind_), alloc_(std::allocator_traits<allocator_type>::select_on_container_copy_construction(o.alloc_))
             {
-                copy_construct(*this, o);
+                switch (o.kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::copy_construct<T>(*this, o); break
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
             }
             /*constexpr */basic_node(const basic_node& o, const allocator_type& al)
-                noexcept(noexcept(copy_construct(std::declval<basic_node&>(), o)))
+                noexcept(cxon::imp::is_nothrow_copy_constructible<basic_node>::value)
             :   kind_(o.kind_), alloc_(al)
             {
-                copy_construct(*this, o);
+                switch (o.kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: cxon::imp::copy_construct<T>(*this, o); break
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
             }
             /*constexpr */basic_node& operator =(const basic_node& o)
-                noexcept(noexcept(copy_assign(std::declval<basic_node&>(), o)))
-            {
-                // TODO: alloc_ != o.alloc_
-                return copy_assign(*this, o), *this;
+                noexcept(cxon::imp::is_nothrow_copy_assignable<basic_node>::value)
+            {   // TODO: alloc_ != o.alloc_
+                if (kind_ != o.kind_) {
+                    this->~basic_node(), kind_ = o.kind_;
+                    switch (o.kind_) {
+#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return cxon::imp::copy_assign<T>(*this, o), *this
+                            CXON_JSON_TYPE_DEF(object);
+                            CXON_JSON_TYPE_DEF(array);
+                            CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(sint);
+                            CXON_JSON_TYPE_DEF(uint);
+                            CXON_JSON_TYPE_DEF(real);
+                            CXON_JSON_TYPE_DEF(boolean);
+                            CXON_JSON_TYPE_DEF(null);
+#                       undef CXON_JSON_TYPE_DEF
+                    }
+                }
+                else {
+                    switch (n.kind_) {
+#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return cxon::imp::value<T>(*this) = cxon::imp::value<T>(o), *this
+                            CXON_JSON_TYPE_DEF(object);
+                            CXON_JSON_TYPE_DEF(array);
+                            CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(sint);
+                            CXON_JSON_TYPE_DEF(uint);
+                            CXON_JSON_TYPE_DEF(real);
+                            CXON_JSON_TYPE_DEF(boolean);
+                            CXON_JSON_TYPE_DEF(null);
+#                       undef CXON_JSON_TYPE_DEF
+                    }
+                }
+                return *this; // LCOV_EXCL_LINE
             }
 
 #           define CXON_JSON_TYPE_DEF(T)\
@@ -551,7 +569,7 @@ namespace cxon { namespace json { // node
                     }
                 template <typename ...>
                     basic_node& operator =(std::nullptr_t) noexcept {
-                        return destruct(*this), kind_ = node_kind::null, *this; // TODO: assign nullptr
+                        return reset(), *this; // TODO: assign nullptr
                     }
             // string
                 basic_node(const typename string::value_type* s)
@@ -570,7 +588,7 @@ namespace cxon { namespace json { // node
                 }
 
             void reset() noexcept {
-                destruct(*this), kind_ = node_kind::null;
+                this->~basic_node(), kind_ = node_kind::null;
             }
 
             node_kind kind() const noexcept { return kind_; }
