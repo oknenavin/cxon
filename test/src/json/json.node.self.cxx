@@ -479,6 +479,58 @@ namespace test { namespace kind {
                 a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
             }
         }
+        {   // copy assignment
+            // different kind
+            {   node a, b = 42;
+                a = b; CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+            }
+            {   node a, b = 42U;
+                a = b; CHECK(a.is<node::uint>() && a.get<node::uint>() == 42U);
+            }
+            {   node a, b = 42.0;
+                a = b;CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+            }
+            {   node a = 42, b = nullptr;
+                a = b; CHECK(a.is<node::null>() && a == nullptr);
+            }
+            {   node a, b = true;
+                a = b; CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+            }
+            {   node a, b = "42";
+                a = b; CHECK(a.is<node::string>() && a.get<node::string>() == "42");
+            }
+            {   node a = {24}, b = {42};
+                a = b; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+            }
+            {   node a = {{"42", 24}}, b = {{"42", 42}};
+                a = b; CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"42", 42}}));
+            }
+            // same kind
+            {   node a = 24, b = 42;
+                a = b; CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+            }
+            {   node a = 24U, b = 42U;
+                a = b; CHECK(a.is<node::uint>() && a.get<node::uint>() == 42U);
+            }
+            {   node a = 24.0, b = 42.0;
+                a = b;CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+            }
+            {   node a = nullptr, b = nullptr;
+                a = b; CHECK(a.is<node::null>() && a == nullptr);
+            }
+            {   node a = false, b = true;
+                a = b; CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+            }
+            {   node a = "24", b = "42";
+                a = b; CHECK(a.is<node::string>() && a.get<node::string>() == "42");
+            }
+            {   node a = {24}, b = {42};
+                a = b; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+            }
+            {   node a = {{"24", 24}}, b = {{"42", 42}};
+                a = b; CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"42", 42}}));
+            }
+        }
         {   // less than
             CHECK(node(node::object{}) < node(node::array{}));
             CHECK(node(node::object{{1, 0}}) < node(node::object{{2, 0}}));

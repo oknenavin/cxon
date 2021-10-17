@@ -439,11 +439,81 @@ template <typename T>
             {   node a;
                 a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
             }
-            {   node a;
-                a = node(1.0); CHECK(a.is<node::real>() && a.get<node::real>() == 1.0);
+        }
+        {   // copy assignment
+            // different kind
+            {   node a, b = 42;
+                a = b; CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
             }
-            {   node a;
-                a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
+            {   node a, b = 42U;
+                a = b; CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
+            }
+            {   node a, b = node::bytes {0x2A};
+                a = b; CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x2A}));
+            }
+            {   node a, b = "42";
+                a = b; CHECK(a.is<node::text>() && a.get<node::text>() == "42");
+            }
+            {   node a, b = {42};
+                a = b; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+            }
+            {   node a, b = {{"42", 42}};
+                a = b; CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{"42", 42}}));
+            }
+            {   node a, b = node::tag {42, "42"};
+                a = b; CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {42, "42"}));
+            }
+            {   node a, b = true;
+                a = b; CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+            }
+            {   node a, b = nullptr;
+                a = b; CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+            }
+            {   node a = 42, b = node::undefined {};
+                a = b; CHECK(a.is<node::undefined>() && a.get<node::undefined>() == node::undefined {});
+            }
+            {   node a, b = 42.0;
+                a = b; CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+            }
+            {   node a, b = node::simple {42};
+                a = b; CHECK(a.is<node::simple>() && a.get<node::simple>() == 42);
+            }
+            // same kind
+            {   node a = 24, b = 42;
+                a = b; CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+            }
+            {   node a = 24U, b = 42U;
+                a = b; CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
+            }
+            {   node a = node::bytes {0x18}, b = node::bytes {0x2A};
+                a = b; CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x2A}));
+            }
+            {   node a = "24", b = "42";
+                a = b; CHECK(a.is<node::text>() && a.get<node::text>() == "42");
+            }
+            {   node a = {24}, b = {42};
+                a = b; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+            }
+            {   node a = {{"24", 24}}, b = {{"42", 42}};
+                a = b; CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{"42", 42}}));
+            }
+            {   node a = node::tag {24, "24"}, b = node::tag {42, "42"};
+                a = b; CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {42, "42"}));
+            }
+            {   node a = false, b = true;
+                a = b; CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+            }
+            {   node a = nullptr, b = nullptr;
+                a = b; CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+            }
+            {   node a = node::undefined {}, b = node::undefined {};
+                a = b; CHECK(a.is<node::undefined>() && a.get<node::undefined>() == node::undefined {});
+            }
+            {   node a = 24.0, b = 42.0;
+                a = b; CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+            }
+            {   node a = node::simple {24}, b = node::simple {42};
+                a = b; CHECK(a.is<node::simple>() && a.get<node::simple>() == 42);
             }
         }
         {   // json::node
