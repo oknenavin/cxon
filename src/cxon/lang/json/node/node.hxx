@@ -285,8 +285,7 @@ namespace cxon { namespace json { // node
                     *this = l;
                 }
                 basic_node(std::initializer_list<basic_node> l, const allocator_type& al)
-                :   kind_(node_kind::null),
-                    alloc_(al)
+                :   kind_(node_kind::null), alloc_(al)
                 {
                     *this = l;
                 }
@@ -309,34 +308,33 @@ namespace cxon { namespace json { // node
             // literals
                 private:
                     template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
-                        struct int_kind             { static constexpr node_kind value = node_kind::sint; };
+                        struct int_kind_            { static constexpr node_kind value = node_kind::sint; };
                     template <typename T>
-                        struct int_kind<T, false>   { static constexpr node_kind value = node_kind::uint; };
+                        struct int_kind_<T, false>  { static constexpr node_kind value = node_kind::uint; };
 
                     template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
-                        struct int_type_            { using type = sint; };
+                        struct int_type__           { using type = sint; };
                     template <typename T>
-                        struct int_type_<T, false>  { using type = uint; };
+                        struct int_type__<T, false> { using type = uint; };
                     template <typename T>
-                        using int_type = typename int_type_<T>::type;
+                        using int_type_ = typename int_type__<T>::type;
                 public:
             // integral
                 template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
                     basic_node(T t) noexcept
-                    :   kind_(int_kind<T>::value)
+                    :   kind_(int_kind_<T>::value)
                     {
-                        value::construct<int_type<T>>(*this, t);
+                        value::construct<int_type_<T>>(*this, t);
                     }
                 template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
                     basic_node(T t, const allocator_type& al) noexcept
-                    :   kind_(int_kind<T>::value),
-                        alloc_(al)
+                    :   kind_(int_kind_<T>::value), alloc_(al)
                     {
-                        value::construct<int_type<T>>(*this, t);
+                        value::construct<int_type_<T>>(*this, t);
                     }
                 template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
                     basic_node& operator =(T t) noexcept {
-                        return imbue<int_type<T>>() = t, *this;
+                        return imbue<int_type_<T>>() = t, *this;
                     }
             // std::nullptr_t
                 template <typename ...>
@@ -346,13 +344,12 @@ namespace cxon { namespace json { // node
                     }
                 template <typename ...>
                     constexpr basic_node(std::nullptr_t, const allocator_type& al) noexcept
-                    :   kind_(node_kind::null),
-                        alloc_(al)
+                    :   kind_(node_kind::null), alloc_(al)
                     {
                     }
                 template <typename ...>
                     basic_node& operator =(std::nullptr_t) noexcept {
-                        return reset(), *this; // TODO: assign nullptr
+                        return imbue<null>() = nullptr, *this;
                     }
             // string
                 basic_node(const typename string::value_type* s)
@@ -361,8 +358,7 @@ namespace cxon { namespace json { // node
                     value::construct<string>(*this, s);
                 }
                 basic_node(const typename string::value_type* s, const allocator_type& al)
-                :   kind_(node_kind::string),
-                    alloc_(al)
+                :   kind_(node_kind::string), alloc_(al)
                 {
                     value::construct<string>(*this, s);
                 }

@@ -657,10 +657,10 @@
                         }
                 };
 
-            template <typename X, typename N, typename T, typename A>
-                struct read<JSON<X>, cbor::taggle<N, T, A>> {
+            template <typename X, typename N, typename T>
+                struct read<JSON<X>, cbor::taggle<N, T>> {
                     template <typename II, typename Cx, typename Y = JSON<X>>
-                        static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
+                        static bool value(cbor::taggle<N, T>& t, II& i, II e, Cx& cx) {
                             II const o = i;
                             return  (/*read_value<Y>(t.tag, i, e) && */read_value<Y>(t.value, i, e)) || // TODO: keep as an object?
                                     (cio::rewind(i, o), cx/json::read_error::unexpected)
@@ -668,10 +668,10 @@
                         }
                 };
 
-            template <typename X, typename N, typename T, typename A>
-                struct write<JSON<X>, cbor::taggle<N, T, A>> {
+            template <typename X, typename N, typename T>
+                struct write<JSON<X>, cbor::taggle<N, T>> {
                     template <typename O, typename Cx, typename Y = JSON<X>>
-                        static bool value(O& o, const cbor::taggle<N, T, A>& t, Cx& cx) {
+                        static bool value(O& o, const cbor::taggle<N, T>& t, Cx& cx) {
                             return /*write_value<Y>(o, t.tag, cx) && */write_value<Y>(o, t.value, cx); // TODO: keep as an object?
                         }
                 };
@@ -829,18 +829,18 @@
                     }
             };
 
-        template <typename X, typename N, typename T, typename A>
-            struct read<CBOR<X>, cbor::taggle<N, T, A>> {
+        template <typename X, typename N, typename T>
+            struct read<CBOR<X>, cbor::taggle<N, T>> {
                 template <typename II, typename Cx, typename Y = CBOR<X>>
-                    static bool value(cbor::taggle<N, T, A>& t, II& i, II e, Cx& cx) {
+                    static bool value(cbor::taggle<N, T>& t, II& i, II e, Cx& cx) {
                         return cbor::tag::read<Y>(t.tag, i, e, cx) && read_value<Y>(t.value, i, e, cx); // TODO: check simple-value values
                     }
             };
 
-        template <typename X, typename N, typename T, typename A>
-            struct write<CBOR<X>, cbor::taggle<N, T, A>> {
+        template <typename X, typename N, typename T>
+            struct write<CBOR<X>, cbor::taggle<N, T>> {
                 template <typename O, typename Cx, typename Y = CBOR<X>>
-                    static bool value(O& o, const cbor::taggle<N, T, A>& t, Cx& cx) {
+                    static bool value(O& o, const cbor::taggle<N, T>& t, Cx& cx) {
                         return write_value<Y>(o, t.tag, cx) && write_value<Y>(o, t.value, cx); // TODO: check simple-value values
                     }
             };

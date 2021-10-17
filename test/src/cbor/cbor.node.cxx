@@ -573,11 +573,11 @@ template <typename T>
             };
             CHECK(m.size() == 13);
         }
-        //{
-        //    using node = cxon::cbor::basic_node<unordered_node_traits<>>;
-        //    node n; n = { {1, 2} };
-        //    CHECK(n.is<node::map>() && n.get<node::map>().size() == 1);
-        //}
+        {
+            using node = cxon::cbor::basic_node<unordered_node_traits<>>;
+            node n; n = { {1, 2} };
+            CHECK(n.is<node::map>() && n.get<node::map>().size() == 1);
+        }
         {
             using node = cxon::cbor::basic_node<cxon::cbor::node_traits<my_allocator<void>>>;
             my_allocator<node> al;
