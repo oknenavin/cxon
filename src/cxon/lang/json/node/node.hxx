@@ -27,7 +27,10 @@ namespace cxon { namespace json { // node
     using node = basic_node<node_traits<>>;
 
     template <typename T, typename N> inline        bool    is(const N& n) noexcept;
-    template <typename T, typename N> inline        T&      imbue(N& n) noexcept(noexcept(std::declval<N&>().template imbue<T>()));
+#   if !defined(__GNUC__) || (__GNUC__ > 7 || (__GNUC__ == 7 && __GNUC_MINOR__ >= 5)) || defined(__clang__)
+        // error: declaration of ‘template<class T, class N> T& cxon::json::imbue(N&) noexcept (noexcept (declval<N&>().imbue<T>()))’ has a different exception specifier
+        template <typename T, typename N> inline        T&      imbue(N& n) noexcept(noexcept(std::declval<N&>().template imbue<T>()));
+#   endif
     template <typename T, typename N> inline        T&      get(N& n) noexcept;
     template <typename T, typename N> inline const  T&      get(const N& n) noexcept;
     template <typename T, typename N> inline        T*      get_if(N& n) noexcept;
