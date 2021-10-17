@@ -12,12 +12,11 @@
 #include <type_traits>
 #include <memory>
 
-////////////////////////////////////////////////////////////////////////////////
-// for <lang>/node/node.hxx
-
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace value {
+
+    // <lang>/node/node.hxx
 
     template <typename N>
         struct controller;
