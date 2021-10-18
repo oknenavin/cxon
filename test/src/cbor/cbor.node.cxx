@@ -403,6 +403,7 @@ template <typename T>
             }
         }
         {   // move assignment
+            // different kind
             {   node a;
                 a = node(1); CHECK(a.is<node::sint>() && a.get<node::sint>() == 1);
             }
@@ -438,6 +439,43 @@ template <typename T>
             }
             {   node a;
                 a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
+            }
+            // same kind
+            {   node a = 24;
+                a = node(42); CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+            }
+            {   node a= 24U;
+                a = node(42U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
+            }
+            {   node a = 0x18;
+                a = node(node::bytes {0x2A}); CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x2A}));
+            }
+            {   node a = "24";
+                a = node("42"); CHECK(a.is<node::text>() && a.get<node::text>() == "42");
+            }
+            {   node a = {24};
+                a = node(node::array {42}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+            }
+            {   node a = {{"24", 24}};
+                a = node(node::map {{"42", 42}}); CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{"42", 42}}));
+            }
+            {   node a = node::tag {24, 24};
+                a = node(node::tag {42, 42}); CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {42, 42}));
+            }
+            {   node a = false;
+                a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+            }
+            {   node a = nullptr;
+                a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+            }
+            {   node a = node::undefined {};
+                a = node(node::undefined {}); CHECK(a.is<node::undefined>() && a.get<node::undefined>() == node::undefined {});
+            }
+            {   node a = 24.0;
+                a = node(42.0); CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+            }
+            {   node a = node::simple {24};
+                a = node(node::simple {42}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 42);
             }
         }
         {   // copy assignment

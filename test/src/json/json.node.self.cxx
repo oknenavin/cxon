@@ -454,6 +454,7 @@ namespace test { namespace kind {
             }
         }
         {   // move assignment
+            // different kind
             {   node a;
                 a = node(42); CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
             }
@@ -477,6 +478,31 @@ namespace test { namespace kind {
             }
             {   node a;
                 a = node(node::object {{"", 1}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"", 1}}));
+            }
+            // same kind
+            {   node a = 24;
+                a = node(42); CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+            }
+            {   node a = 24U;
+                a = node(42U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 42U);
+            }
+            {   node a = 24.0;
+                a = node(42.0); CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+            }
+            {   node a = nullptr;
+                a = node(nullptr); CHECK(a.is<node::null>() && a == nullptr);
+            }
+            {   node a = false;
+                a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+            }
+            {   node a = "24";
+                a = node("42"); CHECK(a.is<node::string>() && a.get<node::string>() == "42");
+            }
+            {   node a = node::array {24};
+                a = node(node::array {42}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+            }
+            {   node a = {{"24", 24}};
+                a = node(node::object {{"42", 42}}); CHECK(a.is<node::object>() && a.get<node::object>() == (node::object {{"42", 42}}));
             }
         }
         {   // copy assignment
