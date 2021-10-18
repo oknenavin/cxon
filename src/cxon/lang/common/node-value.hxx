@@ -75,6 +75,7 @@ namespace cxon { namespace value {
 
             using allocator_type = typename N::allocator_type;
             using propagate_on_container_move_assignment = typename std::allocator_traits<allocator_type>::propagate_on_container_move_assignment;
+            using propagate_on_container_copy_assignment = typename std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment;
 
             // value access
                 template <typename T, typename M>
@@ -117,30 +118,69 @@ namespace cxon { namespace value {
                     static auto move_assign(N& n, N&& o) noexcept(std::is_nothrow_move_constructible<T>::value)
                         -> enable_if_t<!is_dynamic_type<T>::value &&  propagate_on_container_move_assignment::value, N&>
                     {
-                        n.alloc_ = std::move(o.alloc_);
-                        alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T(), n.alloc_ = std::move(o.alloc_);
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_, n.alloc_ = std::move(o.alloc_);
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
+                        }
                         return n;
                     }
                 template <typename T>
                     static auto move_assign(N& n, N&& o) noexcept
                         -> enable_if_t< is_dynamic_type<T>::value &&  propagate_on_container_move_assignment::value, N&>
                     {
-                        n.alloc_ = std::move(o.alloc_);
-                        get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T(), n.alloc_ = std::move(o.alloc_);
+                            get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_, n.alloc_ = std::move(o.alloc_);
+                            get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
+                        }
                         return n;
                     }
                 template <typename T>
-                    static auto move_assign(N& n, N&& o) noexcept(std::is_nothrow_move_constructible<T>::value)
+                    static auto move_assign(N& n, N&& o)
+                        noexcept(std::is_nothrow_move_constructible<T>::value && std::is_nothrow_move_constructible<T>::value)
                         -> enable_if_t<!is_dynamic_type<T>::value && !propagate_on_container_move_assignment::value, N&>
                     {
-                        alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T();
+                            if (n.alloc_ == o.alloc_) // TODO: likely
+                                alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
+                            else
+                                alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_;
+                            if (n.alloc_ == o.alloc_) // TODO: likely
+                                alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
+                            else
+                                alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
                         return n;
                     }
                 template <typename T>
-                    static auto move_assign(N& n, N&& o) noexcept
+                    static auto move_assign(N& n, N&& o)
                         -> enable_if_t< is_dynamic_type<T>::value && !propagate_on_container_move_assignment::value, N&>
                     {
-                        get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T();
+                            if (n.alloc_ == o.alloc_) // TODO: likely
+                                alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
+                            else
+                                alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_;
+                            if (n.alloc_ == o.alloc_) // TODO: likely
+                                construct(n, std::move(get<T>(o)));
+                            else
+                                construct(n, get<T>(o));
+                        }
                         return n;
                     }
             // copy construct
@@ -164,9 +204,60 @@ namespace cxon { namespace value {
                     }
             // copy assign
                 template <typename T>
-                    static N& copy_assign(N& n, const N& o) noexcept(noexcept(copy_construct<T>(n, o)))
+                    static auto copy_assign(N& n, const N& o) noexcept(std::is_nothrow_copy_constructible<T>::value)
+                        -> enable_if_t<!is_dynamic_type<T>::value &&  propagate_on_container_copy_assignment::value, N&>
                     {
-                        return copy_construct<T>(n, o), n;
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T(), n.alloc_ = o.alloc_;
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_, n.alloc_ = o.alloc_;
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        return n;
+                    }
+                template <typename T>
+                    static auto copy_assign(N& n, const N& o)
+                        -> enable_if_t< is_dynamic_type<T>::value &&  propagate_on_container_copy_assignment::value, N&>
+                    {
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T(), n.alloc_ = o.alloc_;
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_, n.alloc_ = o.alloc_;
+                            construct<T>(n, get<T>(o));
+                        }
+                        return n;
+                    }
+                template <typename T>
+                    static auto copy_assign(N& n, const N& o) noexcept(std::is_nothrow_copy_constructible<T>::value)
+                        -> enable_if_t<!is_dynamic_type<T>::value && !propagate_on_container_copy_assignment::value, N&>
+                    {
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T();
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_;
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        return n;
+                    }
+                template <typename T>
+                    static auto copy_assign(N& n, const N& o)
+                        -> enable_if_t< is_dynamic_type<T>::value && !propagate_on_container_copy_assignment::value, N&>
+                    {
+                        if (n.kind_ == o.kind_) {
+                            get<T>(n).~T();
+                            alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
+                        }
+                        else {
+                            n.~N(), n.kind_ = o.kind_;
+                            construct<T>(n, get<T>(o));
+                        }
+                        return n;
                     }
             // construct
                 template <typename T, typename ...A>
@@ -205,7 +296,11 @@ namespace cxon { namespace value {
                     using is_nothrow_constructible  = bool_constant<!is_dynamic_type<T>::value && std::is_nothrow_constructible<T, A&&...>::value>;
 
                 using is_nothrow_move_constructible = bool_constant<type_sequence_conjunction<std::is_nothrow_move_constructible, dynamic_types>::value>;
-                using is_nothrow_move_assignable    = bool_constant<type_sequence_conjunction<std::is_nothrow_move_constructible, dynamic_types>::value>;
+                using is_nothrow_move_assignable    = bool_constant<
+                    !has_dynamic_tpyes::value &&
+                    type_sequence_conjunction<std::is_nothrow_move_constructible, dynamic_types>::value &&
+                    type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value
+                >;
 
                 using is_nothrow_copy_constructible = bool_constant<!has_dynamic_tpyes::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;
                 using is_nothrow_copy_assignable    = bool_constant<!has_dynamic_tpyes::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;

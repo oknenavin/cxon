@@ -199,12 +199,9 @@ namespace cxon { namespace cbor { // node
             }
             basic_node& operator =(basic_node&& o)
                 noexcept(value::is_nothrow_move_assignable<basic_node>::value)
-            {   // TODO: alloc_ != o.alloc_
-                this->~basic_node(), kind_ = o.kind_;
+            {
                 switch (o.kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return   alloc_ == o.alloc_ ? \
-                                                                                    value::move_assign<T>(*this, std::forward<basic_node>(o)) : \
-                                                                                    value::copy_assign<T>(*this, o)
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::move_assign<T>(*this, std::forward<basic_node>(o))
                         CXON_CBOR_TYPE_DEF(sint);
                         CXON_CBOR_TYPE_DEF(uint);
                         CXON_CBOR_TYPE_DEF(bytes);
@@ -267,43 +264,22 @@ namespace cxon { namespace cbor { // node
             }
             basic_node& operator =(const basic_node& o)
                 noexcept(value::is_nothrow_copy_assignable<basic_node>::value)
-            {   // TODO: alloc_ != o.alloc_
-                if (kind_ != o.kind_) {
-                    this->~basic_node(), kind_ = o.kind_;
-                    switch (o.kind_) {
-#                       define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o), *this
-                            CXON_CBOR_TYPE_DEF(sint);
-                            CXON_CBOR_TYPE_DEF(uint);
-                            CXON_CBOR_TYPE_DEF(bytes);
-                            CXON_CBOR_TYPE_DEF(text);
-                            CXON_CBOR_TYPE_DEF(array);
-                            CXON_CBOR_TYPE_DEF(map);
-                            CXON_CBOR_TYPE_DEF(tag);
-                            CXON_CBOR_TYPE_DEF(boolean);
-                            CXON_CBOR_TYPE_DEF(null);
-                            CXON_CBOR_TYPE_DEF(undefined);
-                            CXON_CBOR_TYPE_DEF(real);
-                            CXON_CBOR_TYPE_DEF(simple);
-#                       undef CXON_CBOR_TYPE_DEF
-                    }
-                }
-                else {
-                    switch (kind_) {
-#                       define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::get<T>(*this) = value::get<T>(o), *this
-                            CXON_CBOR_TYPE_DEF(sint);
-                            CXON_CBOR_TYPE_DEF(uint);
-                            CXON_CBOR_TYPE_DEF(bytes);
-                            CXON_CBOR_TYPE_DEF(text);
-                            CXON_CBOR_TYPE_DEF(array);
-                            CXON_CBOR_TYPE_DEF(map);
-                            CXON_CBOR_TYPE_DEF(tag);
-                            CXON_CBOR_TYPE_DEF(boolean);
-                            CXON_CBOR_TYPE_DEF(null);
-                            CXON_CBOR_TYPE_DEF(undefined);
-                            CXON_CBOR_TYPE_DEF(real);
-                            CXON_CBOR_TYPE_DEF(simple);
-#                       undef CXON_CBOR_TYPE_DEF
-                    }
+            {
+                switch (o.kind_) {
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o), *this
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(bytes);
+                        CXON_CBOR_TYPE_DEF(text);
+                        CXON_CBOR_TYPE_DEF(array);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(boolean);
+                        CXON_CBOR_TYPE_DEF(null);
+                        CXON_CBOR_TYPE_DEF(undefined);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(simple);
+#                   undef CXON_CBOR_TYPE_DEF
                 }
                 return *this; // LCOV_EXCL_LINE
             }
