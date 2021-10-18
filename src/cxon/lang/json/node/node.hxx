@@ -170,12 +170,9 @@ namespace cxon { namespace json { // node
             }
             basic_node& operator =(basic_node&& o)
                 noexcept(value::is_nothrow_move_assignable<basic_node>::value)
-            {   // TODO: alloc_ != o.alloc_
-                this->~basic_node(), kind_ = o.kind_;
+            {
                 switch (o.kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return   alloc_ == o.alloc_ ? \
-                                                                                    value::move_assign<T>(*this, std::forward<basic_node>(o)) : \
-                                                                                    value::copy_assign<T>(*this, o)
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return value::move_assign<T>(*this, std::forward<basic_node>(o))
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
@@ -225,35 +222,18 @@ namespace cxon { namespace json { // node
             }
             basic_node& operator =(const basic_node& o)
                 noexcept(value::is_nothrow_copy_assignable<basic_node>::value)
-            {   // TODO: alloc_ != o.alloc_
-                if (kind_ != o.kind_) {
-                    this->~basic_node(), kind_ = o.kind_;
-                    switch (o.kind_) {
-#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o), *this
-                            CXON_JSON_TYPE_DEF(object);
-                            CXON_JSON_TYPE_DEF(array);
-                            CXON_JSON_TYPE_DEF(string);
-                            CXON_JSON_TYPE_DEF(sint);
-                            CXON_JSON_TYPE_DEF(uint);
-                            CXON_JSON_TYPE_DEF(real);
-                            CXON_JSON_TYPE_DEF(boolean);
-                            CXON_JSON_TYPE_DEF(null);
-#                       undef CXON_JSON_TYPE_DEF
-                    }
-                }
-                else {
-                    switch (kind_) {
-#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return value::get<T>(*this) = value::get<T>(o), *this
-                            CXON_JSON_TYPE_DEF(object);
-                            CXON_JSON_TYPE_DEF(array);
-                            CXON_JSON_TYPE_DEF(string);
-                            CXON_JSON_TYPE_DEF(sint);
-                            CXON_JSON_TYPE_DEF(uint);
-                            CXON_JSON_TYPE_DEF(real);
-                            CXON_JSON_TYPE_DEF(boolean);
-                            CXON_JSON_TYPE_DEF(null);
-#                       undef CXON_JSON_TYPE_DEF
-                    }
+            {
+                switch (o.kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o)
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
                 }
                 return *this; // LCOV_EXCL_LINE
             }
