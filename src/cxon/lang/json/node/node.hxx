@@ -136,7 +136,7 @@ namespace cxon { namespace json { // node
 
             basic_node(basic_node&& o)
                 noexcept(value::is_nothrow_move_constructible<basic_node>::value)
-            :   kind_(o.kind_)
+            :   kind_(o.kind_), alloc_(std::move(o.alloc_))
             {
                 switch (o.kind_) {
 #                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
@@ -387,6 +387,26 @@ namespace cxon { namespace json { // node
             }
             template <typename T> const T* get_if() const noexcept {
                 return is<T>() ? &value::get<T>(*this) : nullptr;
+            }
+
+            void swap(basic_node& o) {
+                using st = void (*)(basic_node& , basic_node&);
+                static constexpr st swap[8][8] = {
+#                   define S(...) value::swap<basic_node, __VA_ARGS__>
+                        {S(object, object), S(object, array), S(object, string), S(object, sint), S(object, uint), S(object, real), S(object,  boolean), S(object,  null)},
+                        {          nullptr, S(array,  array), S(array,  string), S(array,  sint), S(array,  uint), S(array,  real), S(array,   boolean), S(array,   null)},
+                        {          nullptr,          nullptr, S(string, string), S(string, sint), S(string, uint), S(string, real), S(string,  boolean), S(string,  null)},
+                        {          nullptr,          nullptr,           nullptr, S(sint,   sint), S(sint,   uint), S(sint,   real), S(sint,    boolean), S(sint,    null)},
+                        {          nullptr,          nullptr,           nullptr,         nullptr, S(uint,   uint), S(uint,   real), S(uint,    boolean), S(uint,    null)},
+                        {          nullptr,          nullptr,           nullptr,         nullptr,         nullptr, S(real,   real), S(real,    boolean), S(real,    null)},
+                        {          nullptr,          nullptr,           nullptr,         nullptr,         nullptr,         nullptr, S(boolean, boolean), S(boolean, null)},
+                        {          nullptr,          nullptr,           nullptr,         nullptr,         nullptr,         nullptr,             nullptr, S(null,    null)}
+#                   undef S
+                };
+                kind_ < o.kind_ ?
+                    swap[(int)kind_][(int)o.kind_](*this, o) :
+                    swap[(int)o.kind_][(int)kind_](o, *this)
+                ;
             }
 
             bool operator == (const basic_node& n) const noexcept {

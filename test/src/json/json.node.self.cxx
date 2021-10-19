@@ -570,6 +570,41 @@ namespace test { namespace kind {
             CHECK(node(false) < node(true));
             CHECK(!(node(nullptr) < node(nullptr)));
         }
+        {   // swap
+            using node = cxon::json::node;
+            {   node f = {{"24", 24}}, s = {{"42", 42}};
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::object>() && s.get<node::object>()["24"] == 24);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["24"] == 24 && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+            }
+            {   node f = {{"42", 42}}, s = {42};
+                f.swap(s); CHECK(f.is<node::array>() && f.get<node::array>()[0] == 42 && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::array>() && s.get<node::array>()[0] == 42);
+            }
+            {   node f = {{"42", 42}}, s = "42";
+                f.swap(s); CHECK(f.is<node::string>() && f.get<node::string>() == "42" && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::string>() && s.get<node::string>() == "42");
+            }
+            {   node f = {{"42", 42}}, s = 42;
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 42 && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::sint>() && s.get<node::sint>() == 42);
+            }
+            {   node f = {{"42", 42}}, s = 42U;
+                f.swap(s); CHECK(f.is<node::uint>() && f.get<node::uint>() == 42U && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::uint>() && s.get<node::uint>() == 42U);
+            }
+            {   node f = {{"42", 42}}, s = 42.0;
+                f.swap(s); CHECK(f.is<node::real>() && f.get<node::real>() == 42.0 && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::real>() && s.get<node::real>() == 42.0);
+            }
+            {   node f = {{"42", 42}}, s = true;
+                f.swap(s); CHECK(f.is<node::boolean>() && f.get<node::boolean>() && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::boolean>() && s.get<node::boolean>());
+            }
+            {   node f = {{"42", 42}}, s = nullptr;
+                f.swap(s); CHECK(f.is<node::null>() && f.get<node::null>() == nullptr && s.is<node::object>() && s.get<node::object>()["42"] == 42);
+                f.swap(s); CHECK(f.is<node::object>() && f.get<node::object>()["42"] == 42 && s.is<node::null>() && s.get<node::null>() == nullptr);
+            }
+        }
         {   // numbers
             node n; cxon::from_bytes_result<const char*> r;
                 r = cxon::from_bytes(n, "2147483648"); // 2^31 = 2147483648

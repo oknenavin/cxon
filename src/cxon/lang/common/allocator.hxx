@@ -51,11 +51,11 @@ namespace cxon { namespace alc {
                 return new (t) T(std::forward<A>(as)..., al);
             }
         template< class T, class Al, class... A>
-            constexpr auto uninitialized_construct_using_allocator_(option<1>, T* t, const Al& al, A&&... as) -> decltype(new T(al, std::forward<A>(as)...)) {
-                return new (t) T(al, std::forward<A>(as)...);
+            constexpr auto uninitialized_construct_using_allocator_(option<1>, T* t, const Al& al, A&&... as) -> decltype(new T(std::allocator_arg, al, std::forward<A>(as)...)) {
+                return new (t) T(std::allocator_arg, al, std::forward<A>(as)...);
             }
         template< class T, class Al, class... A>
-            constexpr auto uninitialized_construct_using_allocator_(option<1>, T* t, const Al&, A&&... as) -> decltype(new T(std::forward<A>(as)...)) {
+            constexpr auto uninitialized_construct_using_allocator_(option<0>, T* t, const Al&, A&&... as) -> decltype(new T(std::forward<A>(as)...)) {
                 return new (t) T(std::forward<A>(as)...);
             }
 

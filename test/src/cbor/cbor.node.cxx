@@ -444,7 +444,7 @@ template <typename T>
             {   node a = 24;
                 a = node(42); CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
             }
-            {   node a= 24U;
+            {   node a = 24U;
                 a = node(42U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
             }
             {   node a = 0x18;
@@ -552,6 +552,57 @@ template <typename T>
             }
             {   node a = node::simple {24}, b = node::simple {42};
                 a = b; CHECK(a.is<node::simple>() && a.get<node::simple>() == 42);
+            }
+        }
+        {   // swap
+            using node = cxon::cbor::node;
+            {   node f = 24, s = 42;
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 42 && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::sint>() && s.get<node::sint>() == 42);
+            }
+            {   node f = 24, s = 42U;
+                f.swap(s); CHECK(f.is<node::uint>() && f.get<node::uint>() == 42U && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::uint>() && s.get<node::uint>() == 42U);
+            }
+            {   node f = 24, s = node::bytes {0x2A};
+                f.swap(s); CHECK(f.is<node::bytes>() && f.get<node::bytes>()[0] == 0x2A && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::bytes>() && s.get<node::bytes>()[0] == 0x2A);
+            }
+            {   node f = 24, s = "42";
+                f.swap(s); CHECK(f.is<node::text>() && f.get<node::text>() == "42" && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::text>() && s.get<node::text>() == "42");
+            }
+            {   node f = 24, s = {42};
+                f.swap(s); CHECK(f.is<node::array>() && f.get<node::array>()[0] == 42 && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::array>() && s.get<node::array>()[0] == 42);
+            }
+            {   node f = 24, s = {{"42", 42}};
+                f.swap(s); CHECK(f.is<node::map>() && f.get<node::map>()["42"] == 42 && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::map>() && s.get<node::map>()["42"] == 42);
+            }
+            {   node f = 24, s = node::tag {42, "42"};
+                f.swap(s); CHECK(f.is<node::tag>() && f.get<node::tag>() == (node::tag {42, "42"}) && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::tag>() && s.get<node::tag>() == (node::tag {42, "42"}));
+            }
+            {   node f = 24, s = true;
+                f.swap(s); CHECK(f.is<node::boolean>() && f.get<node::boolean>() == true && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::boolean>() && s.get<node::boolean>() == true);
+            }
+            {   node f = 24, s = nullptr;
+                f.swap(s); CHECK(f.is<node::null>() && f.get<node::null>() == nullptr && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::null>() && s.get<node::null>() == nullptr);
+            }
+            {   node f = 24, s = node::undefined {};
+                f.swap(s); CHECK(f.is<node::undefined>() && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::undefined>());
+            }
+            {   node f = 24, s = 42.0;
+                f.swap(s); CHECK(f.is<node::real>() && f.get<node::real>() == 42.0 && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::real>() && s.get<node::real>() == 42.0);
+            }
+            {   node f = 24, s = node::simple {42};
+                f.swap(s); CHECK(f.is<node::simple>() && f.get<node::simple>() == node::simple {42} && s.is<node::sint>() && s.get<node::sint>() == 24);
+                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::simple>() && s.get<node::simple>() == node::simple {42});
             }
         }
         {   // json::node
