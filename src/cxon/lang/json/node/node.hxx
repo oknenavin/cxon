@@ -389,6 +389,26 @@ namespace cxon { namespace json { // node
                 return is<T>() ? &value::get<T>(*this) : nullptr;
             }
 
+            void swap(basic_node& o) {
+                using st = void (*)(basic_node& , basic_node&);
+                static constexpr st swap[8][8] = {
+#                   define _CXSP_(f, s) value::swap<basic_node, f, s>
+                        {_CXSP_(object, object), _CXSP_(object, array), _CXSP_(object, string), _CXSP_(object, sint), _CXSP_(object, uint), _CXSP_(object, real), _CXSP_(object,  boolean), _CXSP_(object,  null)},
+                        {               nullptr, _CXSP_(array,  array), _CXSP_(array,  string), _CXSP_(array,  sint), _CXSP_(array,  uint), _CXSP_(array,  real), _CXSP_(array,   boolean), _CXSP_(array,   null)},
+                        {               nullptr,               nullptr, _CXSP_(string, string), _CXSP_(string, sint), _CXSP_(string, uint), _CXSP_(string, real), _CXSP_(string,  boolean), _CXSP_(string,  null)},
+                        {               nullptr,               nullptr,                nullptr, _CXSP_(sint,   sint), _CXSP_(sint,   uint), _CXSP_(sint,   real), _CXSP_(sint,    boolean), _CXSP_(sint,    null)},
+                        {               nullptr,               nullptr,                nullptr,              nullptr, _CXSP_(uint,   uint), _CXSP_(uint,   real), _CXSP_(uint,    boolean), _CXSP_(uint,    null)},
+                        {               nullptr,               nullptr,                nullptr,              nullptr,              nullptr, _CXSP_(real,   real), _CXSP_(real,    boolean), _CXSP_(real,    null)},
+                        {               nullptr,               nullptr,                nullptr,              nullptr,              nullptr,              nullptr, _CXSP_(boolean, boolean), _CXSP_(boolean, null)},
+                        {               nullptr,               nullptr,                nullptr,              nullptr,              nullptr,              nullptr,                  nullptr, _CXSP_(null,    null)}
+#                   undef _CXSP_
+                };
+                kind_ < o.kind_ ?
+                    swap[(int)kind_][(int)o.kind_](*this, o) :
+                    swap[(int)o.kind_][(int)kind_](o, *this)
+                ;
+            }
+
             bool operator == (const basic_node& n) const noexcept {
                 if (kind() != n.kind()) return false;
                 switch (kind_) {

@@ -48,6 +48,11 @@ namespace cxon { namespace value {
         template <typename T, typename N>
             inline void destruct(N& n) noexcept;
 
+    // swap
+        template <typename N, typename F, typename S>
+            inline void swap(N& f, N& s)
+                noexcept(noexcept(controller<N>::template swap<F, S>(f, s)));
+
     // exception specification
         template <typename N, typename T, typename ...A>
             using is_nothrow_constructible      = typename controller<N>::template is_nothrow_constructible<T, A...>;
@@ -70,12 +75,10 @@ namespace cxon { namespace value {
 
     template <typename N>
         struct controller {
-            template <typename T>
-                using is_dynamic_type = typename N::template is_dynamic_type_<T>;
-
-            using allocator_type = typename N::allocator_type;
-            using propagate_on_container_move_assignment = typename std::allocator_traits<allocator_type>::propagate_on_container_move_assignment;
-            using propagate_on_container_copy_assignment = typename std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment;
+            template <typename T> using is_dynamic_type     = typename N::template is_dynamic_type_<T>;
+            using allocator_type                            = typename N::allocator_type;
+            using propagate_on_container_move_assignment    = typename std::allocator_traits<allocator_type>::propagate_on_container_move_assignment;
+            using propagate_on_container_copy_assignment    = typename std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment;
 
             // value access
                 template <typename T, typename M>
@@ -287,6 +290,17 @@ namespace cxon { namespace value {
                         std::allocator_traits<at>::destroy(al, get<T*>(n));
                         std::allocator_traits<at>::deallocate(al, get<T*>(n), 1);
                     }
+            // swap
+                template <typename F, typename S>
+                    static void swap(N& f, N& s) {
+                        F t = std::move(get<F>(f));
+                        destruct<F>(f);
+                        construct<S>(f, std::move(get<S>(s)));
+                        destruct<S>(s);
+                        construct<F>(s, std::move(t));
+                        std::swap(f.kind_, s.kind_);
+                        std::swap(f.alloc_, s.alloc_);
+                    }
 
             // exception specification
                 using dynamic_types = typename N::dynamic_types_;
@@ -350,6 +364,14 @@ namespace cxon { namespace value {
         template <typename T, typename N>
             inline void destruct(N& n) noexcept {
                 controller<N>::template destruct<T>(n);
+            }
+
+    // swap
+        template <typename N, typename F, typename S>
+            inline void swap(N& f, N& s)
+                noexcept(noexcept(controller<N>::template swap<F, S>(f, s)))
+            {
+                controller<N>::template swap<F, S>(f, s);
             }
 
 }}
