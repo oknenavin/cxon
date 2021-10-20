@@ -50,8 +50,7 @@ namespace cxon { namespace value {
 
     // swap
         template <typename N, typename F, typename S>
-            inline void swap(N& f, N& s)
-                noexcept(noexcept(controller<N>::template swap<F, S>(f, s)));
+            inline void swap(N& f, N& s);
 
     // exception specification
         template <typename N, typename T, typename ...A>
@@ -79,6 +78,7 @@ namespace cxon { namespace value {
             using allocator_type                            = typename N::allocator_type;
             using propagate_on_container_move_assignment    = typename std::allocator_traits<allocator_type>::propagate_on_container_move_assignment;
             using propagate_on_container_copy_assignment    = typename std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment;
+            using propagate_on_container_swap               = typename std::allocator_traits<allocator_type>::propagate_on_container_swap;
 
             // value access
                 template <typename T, typename M>
@@ -291,15 +291,56 @@ namespace cxon { namespace value {
                         std::allocator_traits<at>::deallocate(al, get<T*>(n), 1);
                     }
             // swap
+                private:
+                    template <typename T>
+                        static auto swap_(option<1>, T& f, T& s) -> decltype(f.swap(s), void()) {
+                            f.swap(s);
+                        }
+                    template <typename T>
+                        static auto swap_(option<0>, T& f, T& s) -> void {
+                            T t = std::move(f); f = std::move(s), s = std::move(t);
+                        }
+                    template <typename T>
+                        static void swap_(T& f, T& s) {
+                            swap_(option<1>(), f, s);
+                        }
+                    template <typename F, typename S>
+                        struct ndes_ {
+                            template <typename U = F, typename V = S>
+                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value &&  propagate_on_container_swap::value> {
+                                    auto tv = std::move(get<U>(f));
+                                    auto ta = f.alloc_;
+                                    destruct<U>(f); construct<V>(f, std::move(get<V>(s)), std::move(s.alloc_));
+                                    destruct<V>(s); construct<U>(s, std::move(tv), std::move(ta));
+                                    swap_(f.kind_, s.kind_);
+                                }
+                            template <typename U = F, typename V = S>
+                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value && !propagate_on_container_swap::value> {
+                                    auto tv = std::move(get<U>(f));
+                                    destruct<U>(f); construct<V>(f, std::move(get<V>(s)));
+                                    destruct<V>(s); construct<U>(s, std::move(tv));
+                                    swap_(f.kind_, s.kind_);
+                                }
+                        };
+                    template <typename T>
+                        struct ndes_<T, T> {
+                            template <typename U = T>
+                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value &&  propagate_on_container_swap::value> {
+                                    swap_(get<T>(f), get<T>(s));
+                                    swap_(f.kind_, s.kind_);
+                                    swap_(f.alloc_, s.alloc_);
+                                }
+                            template <typename U = T>
+                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !propagate_on_container_swap::value> {
+                                    swap_(get<T>(f), get<T>(s));
+                                    swap_(f.kind_, s.kind_);
+                                }
+                        };
+                public:
+
                 template <typename F, typename S>
                     static void swap(N& f, N& s) {
-                        F t = std::move(get<F>(f));
-                        destruct<F>(f);
-                        construct<S>(f, std::move(get<S>(s)));
-                        destruct<S>(s);
-                        construct<F>(s, std::move(t));
-                        std::swap(f.kind_, s.kind_);
-                        std::swap(f.alloc_, s.alloc_);
+                        ndes_<F, S>::swap(f, s);
                     }
 
             // exception specification
@@ -368,9 +409,7 @@ namespace cxon { namespace value {
 
     // swap
         template <typename N, typename F, typename S>
-            inline void swap(N& f, N& s)
-                noexcept(noexcept(controller<N>::template swap<F, S>(f, s)))
-            {
+            inline void swap(N& f, N& s) {
                 controller<N>::template swap<F, S>(f, s);
             }
 
