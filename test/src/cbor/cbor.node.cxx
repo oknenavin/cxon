@@ -78,9 +78,9 @@ template <typename T>
         unsigned a_ = 0;
         unsigned f_ = 0;
 
-#       define CHECK(c)\
+#       define CHECK(...)\
             ++a_;\
-            if (!(c))\
+            if (!(__VA_ARGS__))\
                 fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_, CXON_ASSERT(false, "check failed")
 
         using node = cxon::cbor::node;
@@ -605,6 +605,22 @@ template <typename T>
                 f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::simple>() && s.get<node::simple>() == node::simple {42});
             }
         }
+        {   // taggle
+            using node = cxon::cbor::node;
+            using taggle = cxon::cbor::taggle<int, node>;
+            taggle t0;                      CHECK(t0.tag = -1 && t0.value.is<node::undefined>());
+            taggle t1 = {42, "42"};         CHECK(t1.tag = 42 && t1.value == "42");
+            taggle t2 = {42, t1.value};     CHECK(t2.tag = 42 && t2.value == "42");
+            taggle t3 = std::move(t2);      CHECK(t3.tag = 42 && t3.value == "42");
+            taggle t4; t4 = std::move(t3);  CHECK(t4.tag = 42 && t4.value == "42");
+            taggle t5 = t4;                 CHECK(t5.tag = 42 && t5.value == "42");
+            taggle t6; t6 = t5;             CHECK(t6.tag = 42 && t6.value == "42");
+            CHECK(taggle {42, "42"} == taggle {42, "42"});
+            CHECK(taggle {24, "42"} != taggle {42, "42"});
+            CHECK(taggle {42, "24"} != taggle {42, "42"});
+            CHECK(taggle {24, "42"}  < taggle {42, "42"});
+            CHECK(taggle {42, "24"}  < taggle {42, "42"});
+        }
         {   // json::node
             using node = cxon::json::node;
             {   node n;
@@ -700,8 +716,8 @@ template <typename T>
         {   // hash
             using node = cxon::cbor::node;
             std::unordered_set<node> s = {
-                node::map {{1, 2}, {3, 4}},
-                node::array {5, 6},
+                {{1, 2}, {3, 4}},
+                {5, 6},
                 node::bytes {0x07, 0x08},
                 node::tag {9, 10},
                 node::simple {11},
@@ -710,14 +726,14 @@ template <typename T>
                 14,
                 15U,
                 true,
-                node::null {},
+                nullptr,
                 node::undefined {},
                 node::undefined {} // duplicate
             };
             CHECK(s.size() == 12);
             std::unordered_multiset<node> m = {
-                node::map {{1, 2}, {3, 4}},
-                node::array {5, 6},
+                {{1, 2}, {3, 4}},
+                {5, 6},
                 node::bytes {0x07, 0x08},
                 node::tag {9, 10},
                 node::simple {11},
@@ -726,7 +742,7 @@ template <typename T>
                 14,
                 15U,
                 true,
-                node::null {},
+                nullptr,
                 node::undefined {},
                 node::undefined {} // duplicate
             };
