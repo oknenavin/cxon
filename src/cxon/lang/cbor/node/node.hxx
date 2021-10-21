@@ -52,24 +52,24 @@ namespace cxon { namespace cbor { // helpers
 
 namespace cxon { namespace cbor { // node traits
 
-    enum class node_kind { sint, uint, bytes, text, array, map, tag, boolean, null, undefined, real, simple };
+    enum class node_kind { map, array, bytes, text, tag, real, sint, uint, simple, boolean, null, undefined };
 
     template <typename Al>
         struct node_traits {
             using                                       allocator_type  = alc::rebind_t<Al, basic_node<node_traits>>;
-            using                                       sint_type       = long long;
-            using                                       uint_type       = unsigned long long;
+            template <typename K, typename V> using     map_type        = std::map<K, V, std::less<K>, alc::rebind_t<Al, std::pair<const K, V>>>;
+            template <typename T> using                 array_type      = std::vector<T, alc::rebind_t<Al, T>>;
             using                                       bytes_type      = std::vector<unsigned char, alc::rebind_t<Al, unsigned char>>;
             using                                       text_type       = std::basic_string<char, std::char_traits<char>, alc::rebind_t<Al, char>>;
-            template <typename T> using                 array_type      = std::vector<T, alc::rebind_t<Al, T>>;
-            template <typename K, typename V> using     map_type        = std::map<K, V, std::less<K>, alc::rebind_t<Al, std::pair<const K, V>>>;
             template <typename N, typename T> using     tag_type        = taggle<N, T>;
+            using                                       real_type       = double;
+            using                                       sint_type       = long long;
+            using                                       uint_type       = unsigned long long;
+            using                                       simple_type     = simple<unsigned char>;
             using                                       boolean_type    = bool;
             using                                       null_type       = std::nullptr_t;
             using                                       undefined_type  = undefined;
-            using                                       real_type       = double;
-            using                                       simple_type     = simple<unsigned char>;
-            using                                       dynamic_types   = integer_sequence<node_kind, node_kind::array, node_kind::map, node_kind::tag>;
+            using                                       dynamic_types   = integer_sequence<node_kind, node_kind::map, node_kind::array, node_kind::tag>;
         };
 
 }}
@@ -83,37 +83,46 @@ namespace std {
 
 namespace cxon { namespace cbor { // node
 
-    namespace imp {
-        template <typename N, typename T>
-            struct node_kind_; // value
-    }
-
     template <typename Tr>
         struct basic_node {
-            using sint      = typename Tr::sint_type;
-            using uint      = typename Tr::uint_type;
+            using map       = typename Tr::template map_type<basic_node, basic_node>;
+            using array     = typename Tr::template array_type<basic_node>;
             using bytes     = typename Tr::bytes_type;
             using text      = typename Tr::text_type;
-            using array     = typename Tr::template array_type<basic_node>;
-            using map       = typename Tr::template map_type<basic_node, basic_node>;
-            using tag       = typename Tr::template tag_type<uint, basic_node>;
+            using tag       = typename Tr::template tag_type<typename Tr::uint_type, basic_node>;
+            using real      = typename Tr::real_type;
+            using sint      = typename Tr::sint_type;
+            using uint      = typename Tr::uint_type;
+            using simple    = typename Tr::simple_type;
             using boolean   = typename Tr::boolean_type;
             using null      = typename Tr::null_type;
             using undefined = typename Tr::undefined_type;
-            using real      = typename Tr::real_type;
-            using simple    = typename Tr::simple_type;
 
             using allocator_type = alc::rebind_t<typename Tr::allocator_type, basic_node>;
 
             private: // value
+                template <typename N, typename T> struct node_kind_;
+                template <typename N> struct node_kind_<N, typename N::map>         : std::integral_constant<node_kind, node_kind::map>         {};
+                template <typename N> struct node_kind_<N, typename N::array>       : std::integral_constant<node_kind, node_kind::array>       {};
+                template <typename N> struct node_kind_<N, typename N::bytes>       : std::integral_constant<node_kind, node_kind::bytes>       {};
+                template <typename N> struct node_kind_<N, typename N::text>        : std::integral_constant<node_kind, node_kind::text>        {};
+                template <typename N> struct node_kind_<N, typename N::tag>         : std::integral_constant<node_kind, node_kind::tag>         {};
+                template <typename N> struct node_kind_<N, typename N::real>        : std::integral_constant<node_kind, node_kind::real>        {};
+                template <typename N> struct node_kind_<N, typename N::sint>        : std::integral_constant<node_kind, node_kind::sint>        {};
+                template <typename N> struct node_kind_<N, typename N::uint>        : std::integral_constant<node_kind, node_kind::uint>        {};
+                template <typename N> struct node_kind_<N, typename N::simple>      : std::integral_constant<node_kind, node_kind::simple>      {};
+                template <typename N> struct node_kind_<N, typename N::boolean>     : std::integral_constant<node_kind, node_kind::boolean>     {};
+                template <typename N> struct node_kind_<N, typename N::null>        : std::integral_constant<node_kind, node_kind::null>        {};
+                template <typename N> struct node_kind_<N, typename N::undefined>   : std::integral_constant<node_kind, node_kind::undefined>   {};
+
                 template <typename T>
                     using is_dynamic_type_ = integer_sequence_contains<
-                        typename Tr::dynamic_types, imp::node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
+                        typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
                     using dt_ = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
 
-#               define CXON_TYPES_DEF dt_<sint>, dt_<uint>, dt_<bytes>, dt_<text>, dt_<array>, dt_<map>, dt_<tag>, dt_<boolean>, dt_<null>, dt_<undefined>, dt_<real>, dt_<simple>
+#               define CXON_TYPES_DEF dt_<map>, dt_<array>, dt_<bytes>, dt_<text>, dt_<tag>, dt_<real>, dt_<sint>, dt_<uint>, dt_<simple>, dt_<boolean>, dt_<null>, dt_<undefined>
                     using dynamic_types_ = type_sequence<CXON_TYPES_DEF>;
                     using value_type_ = typename std::aligned_union<0, CXON_TYPES_DEF>::type;
 #               undef CXON_TYPES_DEF
@@ -139,18 +148,18 @@ namespace cxon { namespace cbor { // node
             ~basic_node() {
                 switch (kind_) {
 #                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::destruct<T>(*this); break
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
             }
@@ -161,18 +170,18 @@ namespace cxon { namespace cbor { // node
             {
                 switch (o.kind_) {
 #                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
             }
@@ -182,18 +191,18 @@ namespace cxon { namespace cbor { // node
             {
                 switch (o.kind_) {
 #                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
             }
@@ -202,18 +211,18 @@ namespace cxon { namespace cbor { // node
             {
                 switch (o.kind_) {
 #                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::move_assign<T>(*this, std::forward<basic_node>(o))
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
                 return *this; // LCOV_EXCL_LINE
@@ -225,18 +234,18 @@ namespace cxon { namespace cbor { // node
             {
                 switch (o.kind_) {
 #                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::copy_construct<T>(*this, o); break
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
             }
@@ -247,18 +256,18 @@ namespace cxon { namespace cbor { // node
             {
                 switch (o.kind_) {
 #                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::copy_construct<T>(*this, o); break
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
             }
@@ -267,18 +276,18 @@ namespace cxon { namespace cbor { // node
             {
                 switch (o.kind_) {
 #                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o), *this
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         CXON_CBOR_TYPE_DEF(null);
                         CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
                 return *this; // LCOV_EXCL_LINE
@@ -297,18 +306,18 @@ namespace cxon { namespace cbor { // node
                                                                         : kind_(node_kind::T), alloc_(al)   { value::construct<T>(*this, v); } \
                     basic_node& operator =(const T& v)                  noexcept(noexcept(std::declval<basic_node&>().template imbue<T>() = v)) \
                                                                         { return imbue<T>() = v, *this; }
-                CXON_CBOR_TYPE_DEF(sint);
-                CXON_CBOR_TYPE_DEF(uint);
+                CXON_CBOR_TYPE_DEF(map);
+                CXON_CBOR_TYPE_DEF(array);
                 CXON_CBOR_TYPE_DEF(bytes);
                 CXON_CBOR_TYPE_DEF(text);
-                CXON_CBOR_TYPE_DEF(array);
-                CXON_CBOR_TYPE_DEF(map);
                 CXON_CBOR_TYPE_DEF(tag);
+                CXON_CBOR_TYPE_DEF(real);
+                CXON_CBOR_TYPE_DEF(sint);
+                CXON_CBOR_TYPE_DEF(uint);
+                CXON_CBOR_TYPE_DEF(simple);
                 CXON_CBOR_TYPE_DEF(boolean);
                 CXON_CBOR_TYPE_DEF(null);
                 CXON_CBOR_TYPE_DEF(undefined);
-                CXON_CBOR_TYPE_DEF(real);
-                CXON_CBOR_TYPE_DEF(simple);
 #           undef CXON_CBOR_TYPE_DEF
 
             // map if empty or array(s) of two elements, array otherwise
@@ -410,14 +419,14 @@ namespace cxon { namespace cbor { // node
             }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == imp::node_kind_<basic_node, T>::value;
+                return kind_ == node_kind_<basic_node, T>::value;
             }
 
             template <typename T> T& imbue()
                 noexcept(noexcept(value::construct<T>(std::declval<basic_node&>())))
             {
                 if (!is<T>()) {
-                    reset(), kind_ = imp::node_kind_<basic_node, T>::value;
+                    reset(), kind_ = node_kind_<basic_node, T>::value;
                     value::construct<T>(*this);
                 }
                 return value::get<T>(*this);
@@ -443,18 +452,18 @@ namespace cxon { namespace cbor { // node
                 using st = void (*)(basic_node& , basic_node&);
                 static constexpr st swap[12][12] = {
 #                   define S(...) value::swap<basic_node, __VA_ARGS__>
-                        {S(sint, sint), S(sint, uint), S(sint,  bytes), S(sint,  text), S(sint,  array), S(sint,  map), S(sint,   tag), S(sint,    boolean), S(sint,    null), S(sint,      undefined), S(sint,      real), S(sint,      simple)},
-                        {      nullptr, S(uint, uint), S(uint,  bytes), S(uint,  text), S(uint,  array), S(uint,  map), S(uint,   tag), S(uint,    boolean), S(uint,    null), S(uint,      undefined), S(uint,      real), S(uint,      simple)},
-                        {      nullptr,       nullptr, S(bytes, bytes), S(bytes, text), S(bytes, array), S(bytes, map), S(bytes,  tag), S(bytes,   boolean), S(bytes,   null), S(bytes,     undefined), S(bytes,     real), S(bytes,     simple)},
-                        {      nullptr,       nullptr,         nullptr, S(text,  text), S(text,  array), S(text,  map), S(text,   tag), S(text,    boolean), S(text,    null), S(text,      undefined), S(text,      real), S(text,      simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr, S(array, array), S(array, map), S(array,  tag), S(array,   boolean), S(array,   null), S(array,     undefined), S(array,     real), S(array,     simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr,         nullptr, S(map,   map), S(map,    tag), S(map,     boolean), S(map,     null), S(map,       undefined), S(map,       real), S(map,       simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr,         nullptr,       nullptr, S(tag,    tag), S(tag,     boolean), S(tag,     null), S(tag,       undefined), S(tag,       real), S(tag,       simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr,         nullptr,       nullptr,        nullptr, S(boolean, boolean), S(boolean, null), S(boolean,   undefined), S(boolean,   real), S(boolean,   simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr,         nullptr,       nullptr,        nullptr,             nullptr, S(null,    null), S(null,      undefined), S(null,      real), S(null,      simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr,         nullptr,       nullptr,        nullptr,             nullptr,          nullptr, S(undefined, undefined), S(undefined, real), S(undefined, simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr,         nullptr,       nullptr,        nullptr,             nullptr,          nullptr,                 nullptr, S(real,      real), S(real,      simple)},
-                        {      nullptr,       nullptr,         nullptr,        nullptr,         nullptr,       nullptr,        nullptr,             nullptr,          nullptr,                 nullptr,            nullptr, S(simple,    simple)},
+                        {S(map, map), S(map,   array), S(map,   bytes), S(map,   text), S(map,   tag), S(map,   real), S(map,   sint), S(map,   uint), S(map,    simple), S(map,     boolean), S(map,     null), S(map,       undefined)},
+                        {    nullptr, S(array, array), S(array, bytes), S(array, text), S(array, tag), S(array, real), S(array, sint), S(array, uint), S(array,  simple), S(array,   boolean), S(array,   null), S(array,     undefined)},
+                        {    nullptr,         nullptr, S(bytes, bytes), S(bytes, text), S(bytes, tag), S(bytes, real), S(bytes, sint), S(bytes, uint), S(bytes,  simple), S(bytes,   boolean), S(bytes,   null), S(bytes,     undefined)},
+                        {    nullptr,         nullptr,         nullptr, S(text,  text), S(text,  tag), S(text,  real), S(text,  sint), S(text,  uint), S(text,   simple), S(text,    boolean), S(text,    null), S(text,      undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr, S(tag,   tag), S(tag,   real), S(tag,   sint), S(tag,   uint), S(tag,    simple), S(tag,     boolean), S(tag,     null), S(tag,       undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr,       nullptr, S(real,  real), S(real,  sint), S(real,  uint), S(real,   simple), S(real,    boolean), S(real,    null), S(real,      undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr,       nullptr,        nullptr, S(sint,  sint), S(sint,  uint), S(sint,   simple), S(sint,    boolean), S(sint,    null), S(sint,      undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr,       nullptr,        nullptr,        nullptr, S(uint,  uint), S(uint,   simple), S(uint,    boolean), S(uint,    null), S(uint,      undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr,       nullptr,        nullptr,        nullptr,        nullptr, S(simple, simple), S(simple,  boolean), S(simple,  null), S(simple,    undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr,       nullptr,        nullptr,        nullptr,        nullptr,           nullptr, S(boolean, boolean), S(boolean, null), S(boolean,   undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr,       nullptr,        nullptr,        nullptr,        nullptr,           nullptr,             nullptr, S(null,    null), S(null,      undefined)},
+                        {    nullptr,         nullptr,         nullptr,        nullptr,       nullptr,        nullptr,        nullptr,        nullptr,          nullptr,              nullptr,          nullptr, S(undefined, undefined)}
 #                   undef S
                 };
                 kind_ < o.kind_ ?
@@ -469,18 +478,18 @@ namespace cxon { namespace cbor { // node
                         return false;
                     switch (f.kind_) {
 #                       define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return f.get<T>() == s.get<T>()
-                            CXON_CBOR_TYPE_DEF(sint);
-                            CXON_CBOR_TYPE_DEF(uint);
+                            CXON_CBOR_TYPE_DEF(map);
+                            CXON_CBOR_TYPE_DEF(array);
                             CXON_CBOR_TYPE_DEF(bytes);
                             CXON_CBOR_TYPE_DEF(text);
-                            CXON_CBOR_TYPE_DEF(array);
-                            CXON_CBOR_TYPE_DEF(map);
                             CXON_CBOR_TYPE_DEF(tag);
+                            CXON_CBOR_TYPE_DEF(real);
+                            CXON_CBOR_TYPE_DEF(sint);
+                            CXON_CBOR_TYPE_DEF(uint);
+                            CXON_CBOR_TYPE_DEF(simple);
                             CXON_CBOR_TYPE_DEF(boolean);
                             CXON_CBOR_TYPE_DEF(null);
                             CXON_CBOR_TYPE_DEF(undefined);
-                            CXON_CBOR_TYPE_DEF(real);
-                            CXON_CBOR_TYPE_DEF(simple);
 #                       undef CXON_CBOR_TYPE_DEF
                     }
                     return false; // LCOV_EXCL_LINE
@@ -494,18 +503,18 @@ namespace cxon { namespace cbor { // node
                         return f.kind_ < s.kind_;
                     switch (f.kind_) {
 #                       define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return f.get<T>() < s.get<T>()
-                            CXON_CBOR_TYPE_DEF(sint);
-                            CXON_CBOR_TYPE_DEF(uint);
+                            CXON_CBOR_TYPE_DEF(map);
+                            CXON_CBOR_TYPE_DEF(array);
                             CXON_CBOR_TYPE_DEF(bytes);
                             CXON_CBOR_TYPE_DEF(text);
-                            CXON_CBOR_TYPE_DEF(array);
-                            CXON_CBOR_TYPE_DEF(map);
                             CXON_CBOR_TYPE_DEF(tag);
+                            CXON_CBOR_TYPE_DEF(real);
+                            CXON_CBOR_TYPE_DEF(sint);
+                            CXON_CBOR_TYPE_DEF(uint);
+                            CXON_CBOR_TYPE_DEF(simple);
                             CXON_CBOR_TYPE_DEF(boolean);
                             case node_kind::null: return false;
                             CXON_CBOR_TYPE_DEF(undefined);
-                            CXON_CBOR_TYPE_DEF(real);
-                            CXON_CBOR_TYPE_DEF(simple);
 #                       undef CXON_CBOR_TYPE_DEF
                     }
                     return false; // LCOV_EXCL_LINE
@@ -516,6 +525,41 @@ namespace cxon { namespace cbor { // node
                     friend constexpr bool operator ==(const T& v, const basic_node& n) noexcept { return  n.is<T>() && n.get<T>() == v; } \
                     friend constexpr bool operator !=(const basic_node& n, const T& v) noexcept { return !n.is<T>() || n.get<T>() != v; } \
                     friend constexpr bool operator !=(const T& v, const basic_node& n) noexcept { return !n.is<T>() || n.get<T>() != v; }
+                    CXON_JSON_DEF(map)
+                    CXON_JSON_DEF(array)
+                    CXON_JSON_DEF(bytes)
+                    CXON_JSON_DEF(text)
+                    // const string::value_type*
+                    friend constexpr bool operator ==(const basic_node& n, const typename text::value_type* v) noexcept {
+                        return n.is<text>() && n.get<text>() == v;
+                    }
+                    friend constexpr bool operator ==(const typename text::value_type* v, const basic_node& n) noexcept {
+                        return n.is<text>() && n.get<text>() == v;
+                    }
+                    friend constexpr bool operator !=(const basic_node& n, const typename text::value_type* v) noexcept {
+                        return !n.is<text>() || n.get<text>() != v;
+                    }
+                    friend constexpr bool operator !=(const typename text::value_type* v, const basic_node& n) noexcept {
+                        return !n.is<text>() || n.get<text>() != v;
+                    }
+                    CXON_JSON_DEF(tag)
+                    //CXON_JSON_DEF(real)
+                    template <typename U = real>
+                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return n.is<real>() && n.get<real>() == v; }
+                    template <typename U = real>
+                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return n.is<real>() && n.get<real>() == v; }
+                    template <typename U = real>
+                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return !n.is<real>() || n.get<real>() != v; }
+                    template <typename U = real>
+                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return !n.is<real>() || n.get<real>() != v; }
                     //CXON_JSON_DEF(sint)
                     template <typename U = sint>
                         friend constexpr auto operator ==(const basic_node& n, U v) noexcept
@@ -550,24 +594,7 @@ namespace cxon { namespace cbor { // node
                         friend constexpr auto operator !=(U v, const basic_node& n) noexcept
                             -> enable_if_t<std::is_unsigned<U>::value, bool>
                         { return !n.is<uint>() || n.get<uint>() != v; }
-                    CXON_JSON_DEF(bytes)
-                    CXON_JSON_DEF(text)
-                    // const string::value_type*
-                    friend constexpr bool operator ==(const basic_node& n, const typename text::value_type* v) noexcept {
-                        return n.is<text>() && n.get<text>() == v;
-                    }
-                    friend constexpr bool operator ==(const typename text::value_type* v, const basic_node& n) noexcept {
-                        return n.is<text>() && n.get<text>() == v;
-                    }
-                    friend constexpr bool operator !=(const basic_node& n, const typename text::value_type* v) noexcept {
-                        return !n.is<text>() || n.get<text>() != v;
-                    }
-                    friend constexpr bool operator !=(const typename text::value_type* v, const basic_node& n) noexcept {
-                        return !n.is<text>() || n.get<text>() != v;
-                    }
-                    CXON_JSON_DEF(array)
-                    CXON_JSON_DEF(map)
-                    CXON_JSON_DEF(tag)
+                    CXON_JSON_DEF(simple)
                     CXON_JSON_DEF(boolean)
                     //CXON_JSON_DEF(null)
                     friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
@@ -579,41 +606,8 @@ namespace cxon { namespace cbor { // node
                     friend constexpr bool operator ==(undefined, const basic_node& n) noexcept { return  n.is<undefined>(); }
                     friend constexpr bool operator !=(const basic_node& n, undefined) noexcept { return !n.is<undefined>(); }
                     friend constexpr bool operator !=(undefined, const basic_node& n) noexcept { return !n.is<undefined>(); }
-                    //CXON_JSON_DEF(real)
-                    template <typename U = real>
-                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
-                        { return n.is<real>() && n.get<real>() == v; }
-                    template <typename U = real>
-                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
-                        { return n.is<real>() && n.get<real>() == v; }
-                    template <typename U = real>
-                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
-                        { return !n.is<real>() || n.get<real>() != v; }
-                    template <typename U = real>
-                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
-                        { return !n.is<real>() || n.get<real>() != v; }
-                    CXON_JSON_DEF(simple)
 #               undef CXON_JSON_DEF
         };
-
-    namespace imp {
-        template <typename N> struct node_kind_<N, typename N::sint>        { static constexpr node_kind value = node_kind::sint; };
-        template <typename N> struct node_kind_<N, typename N::uint>        { static constexpr node_kind value = node_kind::uint; };
-        template <typename N> struct node_kind_<N, typename N::bytes>       { static constexpr node_kind value = node_kind::bytes; };
-        template <typename N> struct node_kind_<N, typename N::text>        { static constexpr node_kind value = node_kind::text; };
-        template <typename N> struct node_kind_<N, typename N::array>       { static constexpr node_kind value = node_kind::array; };
-        template <typename N> struct node_kind_<N, typename N::map>         { static constexpr node_kind value = node_kind::map; };
-        template <typename N> struct node_kind_<N, typename N::tag>         { static constexpr node_kind value = node_kind::tag; };
-        template <typename N> struct node_kind_<N, typename N::null>        { static constexpr node_kind value = node_kind::null; };
-        template <typename N> struct node_kind_<N, typename N::undefined>   { static constexpr node_kind value = node_kind::undefined; };
-        template <typename N> struct node_kind_<N, typename N::boolean>     { static constexpr node_kind value = node_kind::boolean; };
-        template <typename N> struct node_kind_<N, typename N::real>        { static constexpr node_kind value = node_kind::real; };
-        template <typename N> struct node_kind_<N, typename N::simple>      { static constexpr node_kind value = node_kind::simple; };
-    }
 
     template <typename T, typename N>
         inline bool is(const N& n) noexcept         { return n.template is<T>(); }
@@ -710,18 +704,18 @@ namespace cxon { // hash
             std::size_t operator ()(const cbor::basic_node<Tr>& n) const noexcept {
                 switch (n.kind()) {
 #                   define CXON_CBOR_TYPE_DEF(T)            case cbor::node_kind::T: return make_hash(cbor::get<typename cbor::basic_node<Tr>::T>(n))
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(bytes);
                         CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
                         case cbor::node_kind::null:         return  1; //CXON_CBOR_TYPE_DEF(null); // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
                         case cbor::node_kind::undefined:    return -1;
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
                 return 0; // LCOV_EXCL_LINE

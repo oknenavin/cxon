@@ -40,7 +40,7 @@ namespace cxon { namespace json { // node
 
 namespace cxon { namespace json { // node traits
 
-    enum class node_kind { object, array, string, sint, uint, real, boolean, null };
+    enum class node_kind { object, array, string, real, sint, uint, boolean, null };
 
     template <typename Al>
         struct node_traits {
@@ -69,11 +69,6 @@ namespace std {
 
 namespace cxon { namespace json { // node
 
-    namespace imp {
-        template <typename N, typename T>
-            struct node_kind_; // value
-    }
-
     template <typename Tr>
         struct basic_node {
             using object    = typename Tr::template object_type<basic_node, basic_node>;
@@ -88,14 +83,24 @@ namespace cxon { namespace json { // node
             using allocator_type = alc::rebind_t<typename Tr::allocator_type, basic_node>;
 
             private: // value
+                template <typename N, typename T> struct node_kind_;
+                template <typename N> struct node_kind_<N, typename N::object>  : std::integral_constant<node_kind, node_kind::object>  {};
+                template <typename N> struct node_kind_<N, typename N::array>   : std::integral_constant<node_kind, node_kind::array>   {};
+                template <typename N> struct node_kind_<N, typename N::string>  : std::integral_constant<node_kind, node_kind::string>  {};
+                template <typename N> struct node_kind_<N, typename N::real>    : std::integral_constant<node_kind, node_kind::real>    {};
+                template <typename N> struct node_kind_<N, typename N::sint>    : std::integral_constant<node_kind, node_kind::sint>    {};
+                template <typename N> struct node_kind_<N, typename N::uint>    : std::integral_constant<node_kind, node_kind::uint>    {};
+                template <typename N> struct node_kind_<N, typename N::boolean> : std::integral_constant<node_kind, node_kind::boolean> {};
+                template <typename N> struct node_kind_<N, typename N::null>    : std::integral_constant<node_kind, node_kind::null>    {};
+
                 template <typename T>
                     using is_dynamic_type_ = integer_sequence_contains<
-                        typename Tr::dynamic_types, imp::node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
+                        typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
                     using dt_ = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
 
-#               define CXON_TYPES_DEF dt_<object>, dt_<array>, dt_<string>, dt_<sint>, dt_<uint>, dt_<real>, dt_<boolean>, dt_<null>
+#               define CXON_TYPES_DEF dt_<object>, dt_<array>, dt_<string>, dt_<real>, dt_<sint>, dt_<uint>, dt_<boolean>, dt_<null>
                     using dynamic_types_ = type_sequence<CXON_TYPES_DEF>;
                     using value_type_ = typename std::aligned_union<0, CXON_TYPES_DEF>::type;
 #               undef CXON_TYPES_DEF
@@ -125,9 +130,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -143,9 +148,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -160,9 +165,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -176,9 +181,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -195,9 +200,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -212,9 +217,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -228,9 +233,9 @@ namespace cxon { namespace json { // node
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
@@ -254,9 +259,9 @@ namespace cxon { namespace json { // node
                 CXON_JSON_TYPE_DEF(object)
                 CXON_JSON_TYPE_DEF(array)
                 CXON_JSON_TYPE_DEF(string)
+                CXON_JSON_TYPE_DEF(real)
                 CXON_JSON_TYPE_DEF(sint)
                 CXON_JSON_TYPE_DEF(uint)
-                CXON_JSON_TYPE_DEF(real)
                 CXON_JSON_TYPE_DEF(boolean)
                 CXON_JSON_TYPE_DEF(null)
 #           undef CXON_JSON_TYPE_DEF
@@ -360,14 +365,14 @@ namespace cxon { namespace json { // node
             }
 
             template <typename T> bool  is() const noexcept {
-                return kind_ == imp::node_kind_<basic_node, T>::value;
+                return kind_ == node_kind_<basic_node, T>::value;
             }
 
             template <typename T> T& imbue()
                 noexcept(noexcept(value::construct<T>(std::declval<basic_node&>())))
             {
                 if (!is<T>()) {
-                    reset(), kind_ = imp::node_kind_<basic_node, T>::value;
+                    reset(), kind_ = node_kind_<basic_node, T>::value;
                     value::construct<T>(*this);
                 }
                 return value::get<T>(*this);
@@ -393,12 +398,12 @@ namespace cxon { namespace json { // node
                 using st = void (*)(basic_node& , basic_node&);
                 static constexpr st swap[8][8] = {
 #                   define S(...) value::swap<basic_node, __VA_ARGS__>
-                        {S(object, object), S(object, array), S(object, string), S(object, sint), S(object, uint), S(object, real), S(object,  boolean), S(object,  null)},
-                        {          nullptr, S(array,  array), S(array,  string), S(array,  sint), S(array,  uint), S(array,  real), S(array,   boolean), S(array,   null)},
-                        {          nullptr,          nullptr, S(string, string), S(string, sint), S(string, uint), S(string, real), S(string,  boolean), S(string,  null)},
-                        {          nullptr,          nullptr,           nullptr, S(sint,   sint), S(sint,   uint), S(sint,   real), S(sint,    boolean), S(sint,    null)},
-                        {          nullptr,          nullptr,           nullptr,         nullptr, S(uint,   uint), S(uint,   real), S(uint,    boolean), S(uint,    null)},
-                        {          nullptr,          nullptr,           nullptr,         nullptr,         nullptr, S(real,   real), S(real,    boolean), S(real,    null)},
+                        {S(object, object), S(object, array), S(object, string), S(object, real), S(object, sint), S(object, uint), S(object,  boolean), S(object,  null)},
+                        {          nullptr, S(array,  array), S(array,  string), S(array,  real), S(array,  sint), S(array,  uint), S(array,   boolean), S(array,   null)},
+                        {          nullptr,          nullptr, S(string, string), S(string, real), S(string, sint), S(string, uint), S(string,  boolean), S(string,  null)},
+                        {          nullptr,          nullptr,           nullptr, S(real,   real), S(real,   sint), S(real,   uint), S(real,    boolean), S(real,    null)},
+                        {          nullptr,          nullptr,           nullptr,         nullptr, S(sint,   sint), S(sint,   uint), S(sint,    boolean), S(sint,    null)},
+                        {          nullptr,          nullptr,           nullptr,         nullptr,         nullptr, S(uint,   uint), S(uint,    boolean), S(uint,    null)},
                         {          nullptr,          nullptr,           nullptr,         nullptr,         nullptr,         nullptr, S(boolean, boolean), S(boolean, null)},
                         {          nullptr,          nullptr,           nullptr,         nullptr,         nullptr,         nullptr,             nullptr, S(null,    null)}
 #                   undef S
@@ -418,9 +423,9 @@ namespace cxon { namespace json { // node
                             CXON_JSON_TYPE_DEF(object);
                             CXON_JSON_TYPE_DEF(array);
                             CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(real);
                             CXON_JSON_TYPE_DEF(sint);
                             CXON_JSON_TYPE_DEF(uint);
-                            CXON_JSON_TYPE_DEF(real);
                             CXON_JSON_TYPE_DEF(boolean);
                             case node_kind::null: return true;
 #                       undef CXON_JSON_TYPE_DEF
@@ -439,9 +444,9 @@ namespace cxon { namespace json { // node
                             CXON_JSON_TYPE_DEF(object);
                             CXON_JSON_TYPE_DEF(array);
                             CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(real);
                             CXON_JSON_TYPE_DEF(sint);
                             CXON_JSON_TYPE_DEF(uint);
-                            CXON_JSON_TYPE_DEF(real);
                             CXON_JSON_TYPE_DEF(boolean);
                             case node_kind::null: return false;
 #                       undef CXON_JSON_TYPE_DEF
@@ -529,17 +534,6 @@ namespace cxon { namespace json { // node
 #               undef CXON_JSON_DEF
         };
 
-    namespace imp {
-        template <typename N> struct node_kind_<N, typename N::null>    { static constexpr node_kind value = node_kind::null; };
-        template <typename N> struct node_kind_<N, typename N::boolean> { static constexpr node_kind value = node_kind::boolean; };
-        template <typename N> struct node_kind_<N, typename N::sint>    { static constexpr node_kind value = node_kind::sint; };
-        template <typename N> struct node_kind_<N, typename N::uint>    { static constexpr node_kind value = node_kind::uint; };
-        template <typename N> struct node_kind_<N, typename N::real>    { static constexpr node_kind value = node_kind::real; };
-        template <typename N> struct node_kind_<N, typename N::string>  { static constexpr node_kind value = node_kind::string; };
-        template <typename N> struct node_kind_<N, typename N::array>   { static constexpr node_kind value = node_kind::array; };
-        template <typename N> struct node_kind_<N, typename N::object>  { static constexpr node_kind value = node_kind::object; };
-    }
-
     template <typename T, typename N>
         inline bool is(const N& n) noexcept         { return n.template is<T>(); }
 
@@ -569,9 +563,9 @@ namespace cxon { // hash
                         CXON_JSON_TYPE_DEF(object);
                         CXON_JSON_TYPE_DEF(array);
                         CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
                         CXON_JSON_TYPE_DEF(boolean);
                         case json::node_kind::null:     return 0; //CXON_JSON_TYPE_DEF(null); // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
 #                   undef CXON_JSON_TYPE_DEF
