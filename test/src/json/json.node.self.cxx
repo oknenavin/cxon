@@ -390,7 +390,7 @@ namespace test { namespace kind {
             CHECK(n == "another");
         }
         {   // ex8
-            cxon::json::node n = "one";
+            cxon::json::node const n = "one";
                 auto *v = n.get_if<cxon::json::node::string>(); CHECK(v != nullptr);
             CHECK(n.get_if<cxon::json::node::array>() == nullptr);
         }
@@ -450,6 +450,32 @@ namespace test { namespace kind {
                 b = a; CHECK(a == b);
             }
         }
+        {   // move construction with allocator
+            using node = cxon::json::node;
+            std::allocator<node> al;
+            node n0 = node(node({{"42", 42}}), al); CHECK(n0 == node::object {{"42", 42}});
+            node n1 = node(node({42, 42}), al); CHECK(n1 == node::array {42, 42});
+            node n2 = node(node("42"), al); CHECK(n2 == node::string {"42"});
+            node n3 = node(node(42.0), al); CHECK(n3 == 42.0);
+            node n4 = node(node(42), al); CHECK(n4 == 42);
+            node n5 = node(node(42U), al); CHECK(n5 == 42U);
+            node n6 = node(node(true), al); CHECK(n6 == true);
+            node n7 = node(node(nullptr), al); CHECK(n7 == nullptr);
+
+            node n8  = node({{"42", 42}}, al); CHECK(n8 == node::object {{"42", 42}});
+            node n9  = node({42, 42}, al); CHECK(n9 == node::array {42, 42});
+            node n10 = node(node::string {"42"}, al); CHECK(node::string {"42"} == n10);
+            node n11 = node(42.0, al); CHECK(n11 == 42.0);
+            node n12 = node(42, al); CHECK(n12 == 42);
+            node n13 = node(42U, al); CHECK(n13 == 42U);
+            node n14 = node(true, al); CHECK(n14 == true);
+            node n15 = node(nullptr, al); CHECK(n15 == nullptr);
+
+            node n20 = node({{"42", 42}}, al); CHECK(n20 == node::object {{"42", 42}});
+            node n21 = node("42", al); CHECK(n21 == "42");
+
+            CHECK(n21.get_allocator() == al);
+        }
         {   // move assignment
             using node = cxon::json::node;
             // different kind
@@ -503,6 +529,27 @@ namespace test { namespace kind {
                 a = node(node::object {{"42", 42}}); CHECK(node::object {{"42", 42}} == a);
             }
         }
+        {   // copy construction with allocator
+            using node = cxon::json::node;
+            std::allocator<node> al;
+            node v0 = {{"42", 42}}, n0(v0, al); CHECK(n0 == node::object {{"42", 42}});
+            node v1 = {42, 42}, n1(v1, al); CHECK(n1 == node::array {42, 42});
+            node v2 = "42", n2(v2, al); CHECK(n2 == "42");
+            node v3 = 42.0, n3(v3, al); CHECK(n3 == 42.0);
+            node v4 = 42, n4(v4, al); CHECK(n4 == 42);
+            node v5 = 42U, n5(v5, al); CHECK(n5 == 42U);
+            node v6 = true, n6(v6, al); CHECK(n6 == true);
+            node v7 = nullptr, n7(v7, al); CHECK(n7 == nullptr);
+
+            auto v8  = node::object {{"42", 42}}; node n8(v8, al); CHECK(n8 == node::object {{"42", 42}});
+            auto v9  = node::array {42, 42}; node n9(v9, al); CHECK(n9 == node::array {42, 42});
+            auto v10 = node::string {"42"}; node n10(v10, al); CHECK(n10 == "42");
+            auto v11 = 42.0; node n11(v11, al); CHECK(n11 == 42.0);
+            auto v12 = 42; node n12(v12, al); CHECK(n12 == 42);
+            auto v13 = 42U; node n13(v13, al); CHECK(n13 == 42U);
+            auto v14 = true; node n14(v14, al); CHECK(n14 == true);
+            auto v15 = nullptr; node n15(v15, al); CHECK(n15 == nullptr);
+        }
         {   // copy assignment
             // different kind
             {   node a, b = 42;
@@ -554,6 +601,17 @@ namespace test { namespace kind {
             {   node a = {{"24", 24}}, b = {{"42", 42}};
                 a = b; CHECK(node::object {{"42", 42}} == a);
             }
+        }
+        {   // value comparison
+            node n0 = {{1, 2}}; CHECK(n0 == node::object {{1, 2}} && node::object {{1, 2}} == n0 && n0 != node::array {1} && node::array {1} != n0 && n0 != node::object {{3, 4}} && node::object {{3, 4}} != n0);
+            node n1 = {1, 2}; CHECK(n1 == node::array {1, 2} && node::array {1, 2} == n1 && n1 != 1 && 1 != n1 && n1 != node::array {3, 4} && node::array {3, 4} != n1);
+            node n2 = "42"; CHECK(n2 == node::string {"42"} && node::string {"42"} == n2 && n2 != 1 && 1 != n2 && n2 != node::string {"24"} && node::string {"24"} != n2);
+            node n21 = "42"; CHECK(n21 == "42" && "42" == n21 && n21 != 1 && 1 != n21 && n21 != "24" && "24" != n21);
+            node n3 = 42.0; CHECK(n3 == 42.0 && 42.0 == n3 && n3 != 1 && 1 != n3 && n3 != 24.0 && 24.0 != n3);
+            node n4 = 42; CHECK(n4 == 42 && 42 == n4 && n4 != 1.0 && 1.0 != n4 && n4 != 24 && 24 != n4);
+            node n5 = 42U; CHECK(n5 == 42U && 42U == n5 && n5 != 1.0 && 1.0 != n5 && n5 != 24U && 24U != n5);
+            node n6 = true; CHECK(n6 == true && true == n6 && n6 != 1 && 1 != n6 && n6 != false && false != n6);
+            node n7 = nullptr; CHECK(n7 == nullptr && nullptr == n7 && n7 != 1 && 1 != n7);
         }
         {   // less than
             CHECK(node(node::object{}) < node(node::array{}));
