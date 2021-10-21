@@ -308,17 +308,17 @@ namespace cxon { namespace value {
                         struct ndes_ {
                             template <typename U = F, typename V = S>
                                 static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value &&  propagate_on_container_swap::value> {
-                                    auto tv = std::move(get<U>(f));
-                                    auto ta = f.alloc_;
+                                    auto t = std::move(get<U>(f));
+                                    auto a = std::move(f.alloc_);
                                     destruct<U>(f); construct<V>(f, std::move(get<V>(s)), std::move(s.alloc_));
-                                    destruct<V>(s); construct<U>(s, std::move(tv), std::move(ta));
+                                    destruct<V>(s); construct<U>(s, std::move(t), std::move(a));
                                     swap_(f.kind_, s.kind_);
                                 }
                             template <typename U = F, typename V = S>
                                 static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value && !propagate_on_container_swap::value> {
-                                    auto tv = std::move(get<U>(f));
+                                    auto t = std::move(get<U>(f));
                                     destruct<U>(f); construct<V>(f, std::move(get<V>(s)));
-                                    destruct<V>(s); construct<U>(s, std::move(tv));
+                                    destruct<V>(s); construct<U>(s, std::move(t));
                                     swap_(f.kind_, s.kind_);
                                 }
                         };

@@ -444,7 +444,7 @@ template <typename T>
             {   node a = 24;
                 a = node(42); CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
             }
-            {   node a= 24U;
+            {   node a = 24U;
                 a = node(42U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
             }
             {   node a = 0x18;

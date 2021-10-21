@@ -136,7 +136,7 @@ namespace cxon { namespace json { // node
 
             basic_node(basic_node&& o)
                 noexcept(value::is_nothrow_move_constructible<basic_node>::value)
-            :   kind_(o.kind_)
+            :   kind_(o.kind_), alloc_(std::move(o.alloc_))
             {
                 switch (o.kind_) {
 #                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
