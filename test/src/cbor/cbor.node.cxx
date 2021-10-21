@@ -148,18 +148,11 @@ template <typename T>
         {   // tags
             node n1;
                 auto const r1 = cxon::from_bytes(n1, "\xC1\x83\x01\x02\x03");
-            CHECK(r1 && n1.is<node::tag>() && n1.get<node::tag>().tag == 1 && n1.get<node::tag>().value == (node::array {1U, 2U, 3U}));
+            CHECK(r1 && n1 == node::tag {1, node::array {1U, 2U, 3U}});
 
             node n2;
                 auto const r2 = cxon::from_bytes(n2, "\xC1\xC2\x83\x01\x02\x03");
-            CHECK(
-                r2 &&
-                n2.is<node::tag>() &&
-                n2.get<node::tag>().tag == 1 &&
-                n2.get<node::tag>().value.is<node::tag>() &&
-                n2.get<node::tag>().value.get<node::tag>().tag == 2 &&
-                n2.get<node::tag>().value.get<node::tag>().value == (node::array {1U, 2U, 3U})
-            );
+            CHECK(r2 && n2 == node::tag {1, node::tag {2, node::array {1U, 2U, 3U}}});
 
             node n3;
                 auto const r3 = cxon::from_bytes(n3, "\xDC\x83\x01\x02\x03");
@@ -248,97 +241,97 @@ template <typename T>
             CHECK(n4 == n3);
         }
         {
-            node n1(1);     CHECK(n1.is<node::sint>() && n1.get<node::sint>() == 1);
-            node n2(1L);    CHECK(n2.is<node::sint>() && n2.get<node::sint>() == 1);
-            node n3(1LL);   CHECK(n3.is<node::sint>() && n3.get<node::sint>() == 1);
-            node n4(1U);    CHECK(n4.is<node::uint>() && n4.get<node::uint>() == 1);
-            node n5(1UL);   CHECK(n5.is<node::uint>() && n5.get<node::uint>() == 1);
-            node n6(1ULL);  CHECK(n6.is<node::uint>() && n6.get<node::uint>() == 1);
-            node n7(1.);    CHECK(n7.is<node::real>() && n7.get<node::real>() == 1.);
-            node n8(1.F);   CHECK(n8.is<node::real>() && n8.get<node::real>() == 1.F);
+            node n1(1);     CHECK(n1 == 1);
+            node n2(1L);    CHECK(n2 == 1);
+            node n3(1LL);   CHECK(n3 == 1);
+            node n4(1U);    CHECK(n4 == 1U);
+            node n5(1UL);   CHECK(n5 == 1U);
+            node n6(1ULL);  CHECK(n6 == 1U);
+            node n7(1.);    CHECK(n7 == 1.);
+            node n8(1.F);   CHECK(n8 == 1.F);
         }
         {
-            node n1; n1 = 1;    CHECK(n1.is<node::sint>() && n1.get<node::sint>() == 1);
-            node n2; n2 = 1L;   CHECK(n2.is<node::sint>() && n2.get<node::sint>() == 1);
-            node n3; n3 = 1LL;  CHECK(n3.is<node::sint>() && n3.get<node::sint>() == 1);
-            node n4; n4 = 1U;   CHECK(n4.is<node::uint>() && n4.get<node::uint>() == 1);
-            node n5; n5 = 1UL;  CHECK(n5.is<node::uint>() && n5.get<node::uint>() == 1);
-            node n6; n6 = 1ULL; CHECK(n6.is<node::uint>() && n6.get<node::uint>() == 1);
-            node n7; n7 = 1.;   CHECK(n7.is<node::real>() && n7.get<node::real>() == 1.);
-            node n8; n8 = 1.F;  CHECK(n8.is<node::real>() && n8.get<node::real>() == 1.F);
+            node n1; n1 = 1;    CHECK(n1 == 1);
+            node n2; n2 = 1L;   CHECK(n2 == 1);
+            node n3; n3 = 1LL;  CHECK(n3 == 1);
+            node n4; n4 = 1U;   CHECK(n4 == 1U);
+            node n5; n5 = 1UL;  CHECK(n5 == 1U);
+            node n6; n6 = 1ULL; CHECK(n6 == 1U);
+            node n7; n7 = 1.;   CHECK(n7 == 1.);
+            node n8; n8 = 1.F;  CHECK(n8 == 1.F);
         }
         {   // ex5
             {
-                node n(42); CHECK(n.is<node::sint>() && n.get<node::sint>() == 42);
+                node n(42); CHECK(n == 42);
             }
             {
-                node n(42U); CHECK(n.is<node::uint>() && n.get<node::uint>() == 42U);
+                node n(42U); CHECK(n == 42U);
             }
             {
-                node n(node::bytes {0x01, 0x02}); CHECK(n.is<node::bytes>() && n.get<node::bytes>() == (node::bytes {0x01, 0x02}));
+                node n(node::bytes {0x01, 0x02}); CHECK(n == node::bytes {0x01, 0x02});
             }
             {
-                node n("string"); CHECK(n.is<node::text>() && n.get<node::text>() == "string");
+                node n("string"); CHECK(n == "string");
             }
             {
-                node::array const a = { 1, "string" };
-                node n(a); CHECK(n.is<node::array>() && n.get<node::array>() == a);
+                node::array const o = { 1, "string" };
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {42, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {42U, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {node::bytes {'k','e','y'}, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {"key", "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::tag const o = { 1, "value" };
-                node n(o); CHECK(n.is<node::tag>() && n.get<node::tag>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {0.0, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {true, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {nullptr, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node::map const o = { {node::undefined {}, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
-                node n(42.0); CHECK(n.is<node::real>() && n.get<node::real>() == 42.0);
+                node n(42.0); CHECK(n == 42.0);
             }
             {
                 node::map const o = { {node::simple {255}, "value"} };
-                node n(o); CHECK(n.is<node::map>() && n.get<node::map>() == o);
+                node n(o); CHECK(n == o);
             }
             {
                 node o = true; CHECK(o.is<node::boolean>());
-                node n(o); CHECK(n.is<node::boolean>() && n.get<node::boolean>());
+                node n(o); CHECK(n == true);
             }
             {
-                node n; CHECK(n.is<node::undefined>());
+                node n; CHECK(n == node::undefined {});
             }
             {
-                node n({{1, 2}, {3, 4}}); CHECK(n.is<node::map>() && n.get<node::map>() == (node::map {{1, 2}, {3, 4}}));
+                node n({{1, 2}, {3, 4}}); CHECK(n == node::map {{1, 2}, {3, 4}});
             }
             {
-                node n({1, 2, 3, 4}); CHECK(n.is<node::array>() && n.get<node::array>() == (node::array {1, 2, 3, 4}));
+                node n({1, 2, 3, 4}); CHECK(n == node::array {1, 2, 3, 4});
             }
         }
         {   // ex6
@@ -354,7 +347,7 @@ template <typename T>
         {   // ex7
             node n = "one";
                 n.get<node::text>() = "another";
-            CHECK(n.get<node::text>() == "another");
+            CHECK(n == "another");
         }
         {   // ex8
             node n = "one";
@@ -362,7 +355,7 @@ template <typename T>
             CHECK(n.get_if<node::array>() == nullptr);
         }
         {   // ex9
-            node const n; CHECK(n.kind() == cxon::cbor::node_kind::undefined);
+            node const n; CHECK(n.is<node::undefined>());
         }
         {   // ex10
             {   node a = 42, b;
@@ -405,204 +398,204 @@ template <typename T>
         {   // move assignment
             // different kind
             {   node a;
-                a = node(1); CHECK(a.is<node::sint>() && a.get<node::sint>() == 1);
+                a = node(1); CHECK(a == 1);
             }
             {   node a;
-                a = node(1U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 1);
+                a = node(1U); CHECK(a == 1U);
             }
             {   node a;
-                a = node(node::bytes {0x01}); CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x01}));
+                a = node(node::bytes {0x01}); CHECK(a == node::bytes {0x01});
             }
             {   node a;
-                a = node("x"); CHECK(a.is<node::text>() && a.get<node::text>() == "x");
+                a = node("x"); CHECK(a == "x");
             }
             {   node a;
-                a = node(node::array {1}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {1}));
+                a = node(node::array {1}); CHECK(a == node::array {1});
             }
             {   node a;
-                a = node(node::map {{1, 2}}); CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{1, 2}}));
+                a = node(node::map {{1, 2}}); CHECK(a == node::map {{1, 2}});
             }
             {   node a;
-                a = node(node::tag {1, 2}); CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {1, 2}));
+                a = node(node::tag {1, 2}); CHECK(a == node::tag {1, 2});
             }
             {   node a;
-                a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+                a = node(true); CHECK(a == true);
             }
             {   node a;
-                a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+                a = node(nullptr); CHECK(a == nullptr);
             }
             {   node a;
-                a = node(node::undefined {}); CHECK(a.is<node::undefined>() && a.get<node::undefined>() == node::undefined {});
+                a = node(node::undefined {}); CHECK(a == node::undefined {});
             }
             {   node a;
-                a = node(1.0); CHECK(a.is<node::real>() && a.get<node::real>() == 1.0);
+                a = node(1.0); CHECK(a == 1.0);
             }
             {   node a;
-                a = node(node::simple {}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 0);
+                a = node(node::simple {}); CHECK(a == node::simple {0});
             }
             // same kind
             {   node a = 24;
-                a = node(42); CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+                a = node(42); CHECK(42 == a);
             }
             {   node a = 24U;
-                a = node(42U); CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
+                a = node(42U); CHECK(42U == a);
             }
             {   node a = 0x18;
-                a = node(node::bytes {0x2A}); CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x2A}));
+                a = node(node::bytes {0x2A}); CHECK(node::bytes {0x2A} == a);
             }
             {   node a = "24";
-                a = node("42"); CHECK(a.is<node::text>() && a.get<node::text>() == "42");
+                a = node("42"); CHECK("42" == a);
             }
             {   node a = {24};
-                a = node(node::array {42}); CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+                a = node(node::array {42}); CHECK(node::array {42} == a);
             }
             {   node a = {{"24", 24}};
-                a = node(node::map {{"42", 42}}); CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{"42", 42}}));
+                a = node(node::map {{"42", 42}}); CHECK(node::map {{"42", 42}} == a);
             }
             {   node a = node::tag {24, 24};
-                a = node(node::tag {42, 42}); CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {42, 42}));
+                a = node(node::tag {42, 42}); CHECK(node::tag {42, 42} == a);
             }
             {   node a = false;
-                a = node(true); CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+                a = node(true); CHECK(true == a);
             }
             {   node a = nullptr;
-                a = node(nullptr); CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+                a = node(nullptr); CHECK(nullptr == a);
             }
             {   node a = node::undefined {};
-                a = node(node::undefined {}); CHECK(a.is<node::undefined>() && a.get<node::undefined>() == node::undefined {});
+                a = node(node::undefined {}); CHECK(node::undefined {} == a);
             }
             {   node a = 24.0;
-                a = node(42.0); CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+                a = node(42.0); CHECK(42.0 == a);
             }
             {   node a = node::simple {24};
-                a = node(node::simple {42}); CHECK(a.is<node::simple>() && a.get<node::simple>() == 42);
+            a = node(node::simple {42}); CHECK(node::simple {42} == a);
             }
         }
         {   // copy assignment
             // different kind
             {   node a, b = 42;
-                a = b; CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+                a = b; CHECK(a == 42);
             }
             {   node a, b = 42U;
-                a = b; CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
+                a = b; CHECK(a == 42U);
             }
             {   node a, b = node::bytes {0x2A};
-                a = b; CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x2A}));
+                a = b; CHECK(a == node::bytes {0x2A});
             }
             {   node a, b = "42";
-                a = b; CHECK(a.is<node::text>() && a.get<node::text>() == "42");
+                a = b; CHECK(a == "42");
             }
             {   node a, b = {42};
-                a = b; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+                a = b; CHECK(a == node::array {42});
             }
             {   node a, b = {{"42", 42}};
-                a = b; CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{"42", 42}}));
+                a = b; CHECK(a == node::map {{"42", 42}});
             }
             {   node a, b = node::tag {42, "42"};
-                a = b; CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {42, "42"}));
+                a = b; CHECK(a == node::tag {42, "42"});
             }
             {   node a, b = true;
-                a = b; CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+                a = b; CHECK(a == true);
             }
             {   node a, b = nullptr;
-                a = b; CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+                a = b; CHECK(a == nullptr);
             }
             {   node a = 42, b = node::undefined {};
-                a = b; CHECK(a.is<node::undefined>() && a.get<node::undefined>() == node::undefined {});
+                a = b; CHECK(a == node::undefined {});
             }
             {   node a, b = 42.0;
-                a = b; CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+                a = b; CHECK(a == 42.0);
             }
             {   node a, b = node::simple {42};
-                a = b; CHECK(a.is<node::simple>() && a.get<node::simple>() == 42);
+            a = b; CHECK(a == node::simple {42});
             }
             // same kind
             {   node a = 24, b = 42;
-                a = b; CHECK(a.is<node::sint>() && a.get<node::sint>() == 42);
+                a = b; CHECK(a == 42);
             }
             {   node a = 24U, b = 42U;
-                a = b; CHECK(a.is<node::uint>() && a.get<node::uint>() == 42);
+                a = b; CHECK(a == 42U);
             }
             {   node a = node::bytes {0x18}, b = node::bytes {0x2A};
-                a = b; CHECK(a.is<node::bytes>() && a.get<node::bytes>() == (node::bytes {0x2A}));
+                a = b; CHECK(a == node::bytes {0x2A});
             }
             {   node a = "24", b = "42";
-                a = b; CHECK(a.is<node::text>() && a.get<node::text>() == "42");
+                a = b; CHECK(a == "42");
             }
             {   node a = {24}, b = {42};
-                a = b; CHECK(a.is<node::array>() && a.get<node::array>() == (node::array {42}));
+                a = b; CHECK(a == node::array {42});
             }
             {   node a = {{"24", 24}}, b = {{"42", 42}};
-                a = b; CHECK(a.is<node::map>() && a.get<node::map>() == (node::map {{"42", 42}}));
+                a = b; CHECK(a == node::map {{"42", 42}});
             }
             {   node a = node::tag {24, "24"}, b = node::tag {42, "42"};
-                a = b; CHECK(a.is<node::tag>() && a.get<node::tag>() == (node::tag {42, "42"}));
+                a = b; CHECK(a == node::tag {42, "42"});
             }
             {   node a = false, b = true;
-                a = b; CHECK(a.is<node::boolean>() && a.get<node::boolean>() == true);
+                a = b; CHECK(a == true);
             }
             {   node a = nullptr, b = nullptr;
-                a = b; CHECK(a.is<node::null>() && a.get<node::null>() == nullptr);
+                a = b; CHECK(a == nullptr);
             }
             {   node a = node::undefined {}, b = node::undefined {};
-                a = b; CHECK(a.is<node::undefined>() && a.get<node::undefined>() == node::undefined {});
+                a = b; CHECK(a == node::undefined {});
             }
             {   node a = 24.0, b = 42.0;
-                a = b; CHECK(a.is<node::real>() && a.get<node::real>() == 42.0);
+                a = b; CHECK(a == 42.0);
             }
             {   node a = node::simple {24}, b = node::simple {42};
-                a = b; CHECK(a.is<node::simple>() && a.get<node::simple>() == 42);
+                a = b; CHECK(a == node::simple {42});
             }
         }
         {   // swap
             using node = cxon::cbor::node;
             {   node f = 24, s = 42;
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 42 && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::sint>() && s.get<node::sint>() == 42);
+                f.swap(s); CHECK(f == 42 && s == 24);
+                f.swap(s); CHECK(f == 24 && s == 42);
             }
             {   node f = 24, s = 42U;
-                f.swap(s); CHECK(f.is<node::uint>() && f.get<node::uint>() == 42U && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::uint>() && s.get<node::uint>() == 42U);
+                f.swap(s); CHECK(f == 42U && s == 24);
+                f.swap(s); CHECK(f == 24 && s == 42U);
             }
             {   node f = 24, s = node::bytes {0x2A};
-                f.swap(s); CHECK(f.is<node::bytes>() && f.get<node::bytes>()[0] == 0x2A && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::bytes>() && s.get<node::bytes>()[0] == 0x2A);
+                f.swap(s); CHECK(f == node::bytes {0x2A} && s == 24);
+                f.swap(s); CHECK(f == 24 && s == node::bytes {0x2A});
             }
             {   node f = 24, s = "42";
-                f.swap(s); CHECK(f.is<node::text>() && f.get<node::text>() == "42" && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::text>() && s.get<node::text>() == "42");
+                f.swap(s); CHECK(f == "42" && s == 24);
+                f.swap(s); CHECK(f == 24 && s == "42");
             }
             {   node f = 24, s = {42};
-                f.swap(s); CHECK(f.is<node::array>() && f.get<node::array>()[0] == 42 && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::array>() && s.get<node::array>()[0] == 42);
+                f.swap(s); CHECK(f == node::array {42} && s == 24);
+                f.swap(s); CHECK(f == 24 && s == node::array {42});
             }
             {   node f = 24, s = {{"42", 42}};
-                f.swap(s); CHECK(f.is<node::map>() && f.get<node::map>()["42"] == 42 && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::map>() && s.get<node::map>()["42"] == 42);
+                f.swap(s); CHECK(f == node::map {{"42", 42}} && s == 24);
+                f.swap(s); CHECK(f == 24 && s == node::map {{"42", 42}});
             }
             {   node f = 24, s = node::tag {42, "42"};
-                f.swap(s); CHECK(f.is<node::tag>() && f.get<node::tag>() == (node::tag {42, "42"}) && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::tag>() && s.get<node::tag>() == (node::tag {42, "42"}));
+                f.swap(s); CHECK(f == node::tag {42, "42"} && s == 24);
+                f.swap(s); CHECK(f == 24 && s == node::tag {42, "42"});
             }
             {   node f = 24, s = true;
-                f.swap(s); CHECK(f.is<node::boolean>() && f.get<node::boolean>() == true && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::boolean>() && s.get<node::boolean>() == true);
+                f.swap(s); CHECK(f == true && s == 24);
+                f.swap(s); CHECK(f == 24 && s == true);
             }
             {   node f = 24, s = nullptr;
-                f.swap(s); CHECK(f.is<node::null>() && f.get<node::null>() == nullptr && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::null>() && s.get<node::null>() == nullptr);
+                f.swap(s); CHECK(f == nullptr && s == 24);
+                f.swap(s); CHECK(f == 24 && s == nullptr);
             }
             {   node f = 24, s = node::undefined {};
-                f.swap(s); CHECK(f.is<node::undefined>() && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::undefined>());
+                f.swap(s); CHECK(f == node::undefined {} && s == 24);
+                f.swap(s); CHECK(f == 24 && s == node::undefined {});
             }
             {   node f = 24, s = 42.0;
-                f.swap(s); CHECK(f.is<node::real>() && f.get<node::real>() == 42.0 && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::real>() && s.get<node::real>() == 42.0);
+                f.swap(s); CHECK(f == 42.0 && s == 24);
+                f.swap(s); CHECK(f == 24 && s == 42.0);
             }
             {   node f = 24, s = node::simple {42};
-                f.swap(s); CHECK(f.is<node::simple>() && f.get<node::simple>() == node::simple {42} && s.is<node::sint>() && s.get<node::sint>() == 24);
-                f.swap(s); CHECK(f.is<node::sint>() && f.get<node::sint>() == 24 && s.is<node::simple>() && s.get<node::simple>() == node::simple {42});
+                f.swap(s); CHECK(f == node::simple {42} && s == 24);
+                f.swap(s); CHECK(f == 24 && s == node::simple {42});
             }
         }
         {   // taggle

@@ -409,49 +409,124 @@ namespace cxon { namespace json { // node
                 ;
             }
 
-            bool operator == (const basic_node& n) const noexcept {
-                if (kind() != n.kind()) return false;
-                switch (kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return get<T>() == n.get<T>()
-                        CXON_JSON_TYPE_DEF(object);
-                        CXON_JSON_TYPE_DEF(array);
-                        CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(sint);
-                        CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
-                        CXON_JSON_TYPE_DEF(boolean);
-                        case node_kind::null: return true;
-#                   undef CXON_JSON_TYPE_DEF
-                }
-                return false; // LCOV_EXCL_LINE
-            }
-            bool operator != (const basic_node& n) const noexcept {
-                return !operator ==(n);
-            }
-
-            bool operator < (const basic_node& n) const noexcept {
-                if (kind() != n.kind())
-                    return kind() < n.kind();
-                switch (kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return get<T>() < n.get<T>()
-                        CXON_JSON_TYPE_DEF(object);
-                        CXON_JSON_TYPE_DEF(array);
-                        CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(sint);
-                        CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(real);
-                        CXON_JSON_TYPE_DEF(boolean);
-                        case node_kind::null: return false;
-#                   undef CXON_JSON_TYPE_DEF
-                }
-                return false; // LCOV_EXCL_LINE
-            }
-
             private:
-                friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
-                friend constexpr bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
-                friend constexpr bool operator !=(const basic_node& n, null) noexcept { return !n.is<null>(); }
-                friend constexpr bool operator !=(null, const basic_node& n) noexcept { return !n.is<null>(); }
+                friend bool operator == (const basic_node& f, const basic_node& s) noexcept {
+                    if (f.kind_ != s.kind_)
+                        return false;
+                    switch (f.kind_) {
+#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return f.get<T>() == s.get<T>()
+                            CXON_JSON_TYPE_DEF(object);
+                            CXON_JSON_TYPE_DEF(array);
+                            CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(sint);
+                            CXON_JSON_TYPE_DEF(uint);
+                            CXON_JSON_TYPE_DEF(real);
+                            CXON_JSON_TYPE_DEF(boolean);
+                            case node_kind::null: return true;
+#                       undef CXON_JSON_TYPE_DEF
+                    }
+                    return false; // LCOV_EXCL_LINE
+                }
+                friend bool operator != (const basic_node& f, const basic_node& s) noexcept {
+                    return !(f == s);
+                }
+
+                friend bool operator < (const basic_node& f, const basic_node& s) noexcept {
+                    if (f.kind_ != s.kind_)
+                        return f.kind_ < s.kind_;
+                    switch (f.kind_) {
+#                       define CXON_JSON_TYPE_DEF(T)    case node_kind::T: return f.get<T>() < s.get<T>()
+                            CXON_JSON_TYPE_DEF(object);
+                            CXON_JSON_TYPE_DEF(array);
+                            CXON_JSON_TYPE_DEF(string);
+                            CXON_JSON_TYPE_DEF(sint);
+                            CXON_JSON_TYPE_DEF(uint);
+                            CXON_JSON_TYPE_DEF(real);
+                            CXON_JSON_TYPE_DEF(boolean);
+                            case node_kind::null: return false;
+#                       undef CXON_JSON_TYPE_DEF
+                    }
+                    return false; // LCOV_EXCL_LINE
+                }
+
+#               define CXON_JSON_DEF(T)\
+                    friend constexpr bool operator ==(const basic_node& n, const T& v) noexcept { return  n.is<T>() && n.get<T>() == v; } \
+                    friend constexpr bool operator ==(const T& v, const basic_node& n) noexcept { return  n.is<T>() && n.get<T>() == v; } \
+                    friend constexpr bool operator !=(const basic_node& n, const T& v) noexcept { return !n.is<T>() || n.get<T>() != v; } \
+                    friend constexpr bool operator !=(const T& v, const basic_node& n) noexcept { return !n.is<T>() || n.get<T>() != v; }
+                    CXON_JSON_DEF(object)
+                    CXON_JSON_DEF(array)
+                    CXON_JSON_DEF(string)
+                    //CXON_JSON_DEF(real)
+                    template <typename U = real>
+                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return n.is<real>() && n.get<real>() == v; }
+                    template <typename U = real>
+                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return n.is<real>() && n.get<real>() == v; }
+                    template <typename U = real>
+                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return !n.is<real>() || n.get<real>() != v; }
+                    template <typename U = real>
+                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return !n.is<real>() || n.get<real>() != v; }
+                    //CXON_JSON_DEF(sint)
+                    template <typename U = sint>
+                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return n.is<sint>() && n.get<sint>() == v; }
+                    template <typename U = sint>
+                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return n.is<sint>() && n.get<sint>() == v; }
+                    template <typename U = sint>
+                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return !n.is<sint>() || n.get<sint>() != v; }
+                    template <typename U = sint>
+                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return !n.is<sint>() || n.get<sint>() != v; }
+                    //CXON_JSON_DEF(uint)
+                    template <typename U = uint>
+                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return n.is<uint>() && n.get<uint>() == v; }
+                    template <typename U = uint>
+                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return n.is<uint>() && n.get<uint>() == v; }
+                    template <typename U = uint>
+                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return !n.is<uint>() || n.get<uint>() != v; }
+                    template <typename U = uint>
+                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return !n.is<uint>() || n.get<uint>() != v; }
+                    // const string::value_type*
+                    friend constexpr bool operator ==(const basic_node& n, const typename string::value_type* v) noexcept {
+                        return n.is<string>() && n.get<string>() == v;
+                    }
+                    friend constexpr bool operator ==(const typename string::value_type* v, const basic_node& n) noexcept {
+                        return n.is<string>() && n.get<string>() == v;
+                    }
+                    friend constexpr bool operator !=(const basic_node& n, const typename string::value_type* v) noexcept {
+                        return !n.is<string>() || n.get<string>() != v;
+                    }
+                    friend constexpr bool operator !=(const typename string::value_type* v, const basic_node& n) noexcept {
+                        return !n.is<string>() || n.get<string>() != v;
+                    }
+                    CXON_JSON_DEF(boolean)
+                    friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
+                    friend constexpr bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
+                    friend constexpr bool operator !=(const basic_node& n, null) noexcept { return !n.is<null>(); }
+                    friend constexpr bool operator !=(null, const basic_node& n) noexcept { return !n.is<null>(); }
+#               undef CXON_JSON_DEF
         };
 
     namespace imp {

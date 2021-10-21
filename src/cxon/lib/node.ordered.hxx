@@ -19,6 +19,22 @@
                 using std::vector<std::pair<K, V>, R...>::vector;
             };
 
+        template <typename K, typename V, typename ...R>
+            inline bool operator ==(const object<K, V, R...>& f, const object<K, V, R...>& s) noexcept {
+                using vector = std::vector<std::pair<K, V>, R...>;
+                return (vector&)f == (vector&)s;
+            }
+        template <typename K, typename V, typename ...R>
+            inline bool operator !=(const object<K, V, R...>& f, const object<K, V, R...>& s) noexcept {
+                using vector = std::vector<std::pair<K, V>, R...>;
+                return (vector&)f != (vector&)s;
+            }
+        template <typename K, typename V, typename ...R>
+            inline bool operator <(const object<K, V, R...>& f, const object<K, V, R...>& s) noexcept {
+                using vector = std::vector<std::pair<K, V>, R...>;
+                return (vector&)f < (vector&)s;
+            }
+
     }}
 
 #endif

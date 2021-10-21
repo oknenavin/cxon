@@ -463,51 +463,141 @@ namespace cxon { namespace cbor { // node
                 ;
             }
 
-            bool operator == (const basic_node& n) const noexcept {
-                if (kind() != n.kind()) return false;
-                switch (kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return get<T>() == n.get<T>()
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
-                        CXON_CBOR_TYPE_DEF(bytes);
-                        CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
-                        CXON_CBOR_TYPE_DEF(tag);
-                        CXON_CBOR_TYPE_DEF(boolean);
-                        CXON_CBOR_TYPE_DEF(null);
-                        CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
-#                   undef CXON_CBOR_TYPE_DEF
+            private:
+                friend bool operator == (const basic_node& f, const basic_node& s) noexcept {
+                    if (f.kind_ != s.kind_)
+                        return false;
+                    switch (f.kind_) {
+#                       define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return f.get<T>() == s.get<T>()
+                            CXON_CBOR_TYPE_DEF(sint);
+                            CXON_CBOR_TYPE_DEF(uint);
+                            CXON_CBOR_TYPE_DEF(bytes);
+                            CXON_CBOR_TYPE_DEF(text);
+                            CXON_CBOR_TYPE_DEF(array);
+                            CXON_CBOR_TYPE_DEF(map);
+                            CXON_CBOR_TYPE_DEF(tag);
+                            CXON_CBOR_TYPE_DEF(boolean);
+                            CXON_CBOR_TYPE_DEF(null);
+                            CXON_CBOR_TYPE_DEF(undefined);
+                            CXON_CBOR_TYPE_DEF(real);
+                            CXON_CBOR_TYPE_DEF(simple);
+#                       undef CXON_CBOR_TYPE_DEF
+                    }
+                    return false; // LCOV_EXCL_LINE
                 }
-                return false; // LCOV_EXCL_LINE
-            }
-            bool operator != (const basic_node& n) const noexcept {
-                return !operator ==(n);
-            }
+                friend bool operator != (const basic_node& f, const basic_node& s) noexcept {
+                    return !(f == s);
+                }
 
-            bool operator < (const basic_node& n) const noexcept {
-                if (kind() != n.kind())
-                    return kind() < n.kind();
-                switch (kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return get<T>() < n.get<T>()
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
-                        CXON_CBOR_TYPE_DEF(bytes);
-                        CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(map);
-                        CXON_CBOR_TYPE_DEF(tag);
-                        CXON_CBOR_TYPE_DEF(boolean);
-                        case node_kind::null: return false;
-                        CXON_CBOR_TYPE_DEF(undefined);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(simple);
-#                   undef CXON_CBOR_TYPE_DEF
+                friend bool operator < (const basic_node& f, const basic_node& s) noexcept {
+                    if (f.kind_ != s.kind_)
+                        return f.kind_ < s.kind_;
+                    switch (f.kind_) {
+#                       define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return f.get<T>() < s.get<T>()
+                            CXON_CBOR_TYPE_DEF(sint);
+                            CXON_CBOR_TYPE_DEF(uint);
+                            CXON_CBOR_TYPE_DEF(bytes);
+                            CXON_CBOR_TYPE_DEF(text);
+                            CXON_CBOR_TYPE_DEF(array);
+                            CXON_CBOR_TYPE_DEF(map);
+                            CXON_CBOR_TYPE_DEF(tag);
+                            CXON_CBOR_TYPE_DEF(boolean);
+                            case node_kind::null: return false;
+                            CXON_CBOR_TYPE_DEF(undefined);
+                            CXON_CBOR_TYPE_DEF(real);
+                            CXON_CBOR_TYPE_DEF(simple);
+#                       undef CXON_CBOR_TYPE_DEF
+                    }
+                    return false; // LCOV_EXCL_LINE
                 }
-                return false; // LCOV_EXCL_LINE
-            }
+
+#               define CXON_JSON_DEF(T)\
+                    friend constexpr bool operator ==(const basic_node& n, const T& v) noexcept { return  n.is<T>() && n.get<T>() == v; } \
+                    friend constexpr bool operator ==(const T& v, const basic_node& n) noexcept { return  n.is<T>() && n.get<T>() == v; } \
+                    friend constexpr bool operator !=(const basic_node& n, const T& v) noexcept { return !n.is<T>() || n.get<T>() != v; } \
+                    friend constexpr bool operator !=(const T& v, const basic_node& n) noexcept { return !n.is<T>() || n.get<T>() != v; }
+                    //CXON_JSON_DEF(sint)
+                    template <typename U = sint>
+                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return n.is<sint>() && n.get<sint>() == v; }
+                    template <typename U = sint>
+                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return n.is<sint>() && n.get<sint>() == v; }
+                    template <typename U = sint>
+                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return !n.is<sint>() || n.get<sint>() != v; }
+                    template <typename U = sint>
+                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                        { return !n.is<sint>() || n.get<sint>() != v; }
+                    //CXON_JSON_DEF(uint)
+                    template <typename U = uint>
+                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return n.is<uint>() && n.get<uint>() == v; }
+                    template <typename U = uint>
+                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return n.is<uint>() && n.get<uint>() == v; }
+                    template <typename U = uint>
+                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return !n.is<uint>() || n.get<uint>() != v; }
+                    template <typename U = uint>
+                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                        { return !n.is<uint>() || n.get<uint>() != v; }
+                    CXON_JSON_DEF(bytes)
+                    CXON_JSON_DEF(text)
+                    // const string::value_type*
+                    friend constexpr bool operator ==(const basic_node& n, const typename text::value_type* v) noexcept {
+                        return n.is<text>() && n.get<text>() == v;
+                    }
+                    friend constexpr bool operator ==(const typename text::value_type* v, const basic_node& n) noexcept {
+                        return n.is<text>() && n.get<text>() == v;
+                    }
+                    friend constexpr bool operator !=(const basic_node& n, const typename text::value_type* v) noexcept {
+                        return !n.is<text>() || n.get<text>() != v;
+                    }
+                    friend constexpr bool operator !=(const typename text::value_type* v, const basic_node& n) noexcept {
+                        return !n.is<text>() || n.get<text>() != v;
+                    }
+                    CXON_JSON_DEF(array)
+                    CXON_JSON_DEF(map)
+                    CXON_JSON_DEF(tag)
+                    CXON_JSON_DEF(boolean)
+                    //CXON_JSON_DEF(null)
+                    friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
+                    friend constexpr bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
+                    friend constexpr bool operator !=(const basic_node& n, null) noexcept { return !n.is<null>(); }
+                    friend constexpr bool operator !=(null, const basic_node& n) noexcept { return !n.is<null>(); }
+                    //CXON_JSON_DEF(undefined)
+                    friend constexpr bool operator ==(const basic_node& n, undefined) noexcept { return  n.is<undefined>(); }
+                    friend constexpr bool operator ==(undefined, const basic_node& n) noexcept { return  n.is<undefined>(); }
+                    friend constexpr bool operator !=(const basic_node& n, undefined) noexcept { return !n.is<undefined>(); }
+                    friend constexpr bool operator !=(undefined, const basic_node& n) noexcept { return !n.is<undefined>(); }
+                    //CXON_JSON_DEF(real)
+                    template <typename U = real>
+                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return n.is<real>() && n.get<real>() == v; }
+                    template <typename U = real>
+                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return n.is<real>() && n.get<real>() == v; }
+                    template <typename U = real>
+                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return !n.is<real>() || n.get<real>() != v; }
+                    template <typename U = real>
+                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                        { return !n.is<real>() || n.get<real>() != v; }
+                    CXON_JSON_DEF(simple)
+#               undef CXON_JSON_DEF
         };
 
     namespace imp {
