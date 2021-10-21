@@ -593,14 +593,8 @@ namespace cxon { namespace cbor { // helpers
                 return tag = t.tag, value = t.value, *this;
             }
 
-            taggle& operator =(T&& t) noexcept(std::is_nothrow_move_assignable<T>::value) {
-                return value = std::move(t), *this;
-            }
-            taggle& operator =(const T& t) noexcept(std::is_nothrow_copy_assignable<T>::value) {
-                return value = t, *this;
-            }
-
             bool operator ==(const taggle& t) const noexcept { return tag == t.tag && value == t.value; }
+            bool operator !=(const taggle& t) const noexcept { return tag != t.tag || value != t.value; }
             bool operator  <(const taggle& t) const noexcept { return tag < t.tag || (tag == t.tag && value < t.value); }
         };
 

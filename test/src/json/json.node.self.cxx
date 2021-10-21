@@ -64,10 +64,10 @@ namespace test { namespace kind {
         int a_ = 0;
         int f_ = 0;
 
-#       define CHECK(c)\
+#       define CHECK(...)\
             ++a_;\
-            if (!(c))\
-                std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_, CXON_ASSERT((c), "check failed")
+            if (!(__VA_ARGS__))\
+                std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), std::fflush(stderr), ++f_, CXON_ASSERT(false, "check failed")
 
         {   // custom type binding + equal keys
             using node = cxon::json::basic_node<my_traits>;
