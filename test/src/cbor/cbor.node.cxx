@@ -350,7 +350,7 @@ template <typename T>
             CHECK(n == "another");
         }
         {   // ex8
-            node n = "one";
+            node const n = "one";
                 auto *v = n.get_if<node::text>(); CHECK(v != nullptr);
             CHECK(n.get_if<node::array>() == nullptr);
         }
@@ -394,6 +394,39 @@ template <typename T>
             {   node a = node::simple {}, b;
                 b = a; CHECK(a == b);
             }
+        }
+        {   // move construction with allocator
+            std::allocator<node> al;
+            {
+                node n0  = node(node({{"42", 42}}), al); CHECK(n0 == node::map {{"42", 42}});
+                node n1  = node(node({42, 42}), al); CHECK(n1 == node::array {42, 42});
+                node n2  = node(node(node::bytes {42, 42}), al); CHECK(n2 == node::bytes {42, 42});
+                node n3  = node(node("42"), al); CHECK(n3 == node::text {"42"});
+                node n4  = node(node(node::tag {1, 2}), al); CHECK(n4 == node::tag {1, 2});
+                node n5  = node(node(42.0), al); CHECK(n5 == 42.0);
+                node n6  = node(node(42), al); CHECK(n6 == 42);
+                node n7  = node(node(42U), al); CHECK(n7 == 42U);
+                node n8  = node(node(node::simple {42}), al); CHECK(n8 == node::simple {42});
+                node n9  = node(node(true), al); CHECK(n9 == true);
+                node n10 = node(node(nullptr), al); CHECK(n10 == nullptr);
+                node n11 = node(node(node::undefined {}), al); CHECK(n11 == node::undefined {});
+            }
+            {
+                node n0  = node({{"42", 42}}, al); CHECK(n0 == node::map {{"42", 42}});
+                node n1  = node({42, 42}, al); CHECK(n1 == node::array {42, 42});
+                node n2  = node(node::bytes {42, 42}, al); CHECK(n2 == node::bytes {42, 42});
+                node n3  = node(node::text {"42"}, al); CHECK(node::text {"42"} == n3);
+                node n4  = node(node::tag {1, 2}, al); CHECK(n4 == node::tag {1, 2});
+                node n5  = node(42.0, al); CHECK(n5 == 42.0);
+                node n6  = node(42, al); CHECK(n6 == 42);
+                node n7  = node(42U, al); CHECK(n7 == 42U);
+                node n8  = node(node::simple {42}, al); CHECK(n8 == node::simple {42});
+                node n9  = node(true, al); CHECK(n9 == true);
+                node n10 = node(nullptr, al); CHECK(n10 == nullptr);
+                node n11 = node(node::undefined {}, al); CHECK(n11 == node::undefined {});
+            }
+            node n0 = node("42", al); CHECK(n0 == "42");
+            CHECK(n0.get_allocator() == al);
         }
         {   // move assignment
             // different kind
@@ -468,7 +501,38 @@ template <typename T>
                 a = node(42.0); CHECK(42.0 == a);
             }
             {   node a = node::simple {24};
-            a = node(node::simple {42}); CHECK(node::simple {42} == a);
+                a = node(node::simple {42}); CHECK(node::simple {42} == a);
+            }
+        }
+        {   // copy construction with allocator
+            std::allocator<node> al;
+            {
+                node v0  = node({{"42", 42}}), n0(v0, al); CHECK(n0 == node::map {{"42", 42}});
+                node v1  = node({42, 42}), n1(v1, al); CHECK(n1 == node::array {42, 42});
+                node v2  = node(node::bytes {42, 42}), n2(v2, al); CHECK(n2 == node::bytes {42, 42});
+                node v3  = node("42"), n3(v3, al); CHECK(n3 == node::text {"42"});
+                node v4  = node(node::tag {1, 2}), n4(v4, al); CHECK(n4 == node::tag {1, 2});
+                node v5  = node(42.0), n5(v5, al); CHECK(n5 == 42.0);
+                node v6  = node(42), n6(v6, al); CHECK(n6 == 42);
+                node v7  = node(42U), n7(v7, al); CHECK(n7 == 42U);
+                node v8  = node(node::simple {42}), n8(v8, al); CHECK(n8 == node::simple {42});
+                node v9  = node(true), n9(v9, al); CHECK(n9 == true);
+                node v10 = node(nullptr), n10(v10, al); CHECK(n10 == nullptr);
+                node v11 = node(node::undefined {}), n11(v11, al); CHECK(n11 == node::undefined {});
+            }
+            {
+                auto v0  = node::map {{"42", 42}}; node n0(v0, al); CHECK(n0 == node::map {{"42", 42}});
+                auto v1  = node::array {42, 42}; node n1(v1, al); CHECK(n1 == node::array {42, 42});
+                auto v2  = node::bytes {42, 42}; node n2(v2, al); CHECK(n2 == node::bytes {42, 42});
+                auto v3  = node::text {"42"}; node n3(v3, al); CHECK(node::text {"42"} == n3);
+                auto v4  = node::tag {1, 2}; node n4(v4, al); CHECK(n4 == node::tag {1, 2});
+                auto v5  = 42.0; node n5(v5, al); CHECK(n5 == 42.0);
+                auto v6  = 42; node n6(v6, al); CHECK(n6 == 42);
+                auto v7  = 42U; node n7(v7, al); CHECK(n7 == 42U);
+                auto v8  = node::simple {42}; node n8(v8, al); CHECK(n8 == node::simple {42});
+                auto v9  = true; node n9(v9, al); CHECK(n9 == true);
+                auto v10 = nullptr; node n10(v10, al); CHECK(n10 == nullptr);
+                auto v11 = node::undefined {}; node n11(v11, al); CHECK(n11 == node::undefined {});
             }
         }
         {   // copy assignment
@@ -546,6 +610,8 @@ template <typename T>
             {   node a = node::simple {24}, b = node::simple {42};
                 a = b; CHECK(a == node::simple {42});
             }
+            // value
+            node n; n = "42"; CHECK(n == "42");
         }
         {   // swap
             using node = cxon::cbor::node;
@@ -597,6 +663,21 @@ template <typename T>
                 f.swap(s); CHECK(f == node::simple {42} && s == 24);
                 f.swap(s); CHECK(f == 24 && s == node::simple {42});
             }
+        }
+        {   // value comparison
+            node n0 = {{1, 2}}; CHECK(n0 == node::map {{1, 2}} && node::map {{1, 2}} == n0 && n0 != node::array {1} && node::array {1} != n0 && n0 != node::map {{3, 4}} && node::map {{3, 4}} != n0);
+            node n1 = {1, 2}; CHECK(n1 == node::array {1, 2} && node::array {1, 2} == n1 && n1 != 1 && 1 != n1 && n1 != node::array {3, 4} && node::array {3, 4} != n1);
+            node n2 = node::bytes {1, 2}; CHECK(n2 == node::bytes {1, 2} && node::bytes {1, 2} == n2 && n2 != 1 && 1 != n2 && n2 != node::bytes {3, 4} && node::bytes {3, 4} != n2);
+            node n3 = node::text {"42"}; CHECK(n3 == node::text {"42"} && node::text {"42"} == n3 && n3 != 1 && 1 != n3 && n3 != node::text {"24"} && node::text {"24"} != n3);
+            node n4 = "42"; CHECK(n4 == "42" && "42" == n4 && n4 != 1 && 1 != n4 && n4 != "24" && "24" != n4);
+            node n5 = node::tag {1, 2}; CHECK(n5 == node::tag {1, 2} && node::tag {1, 2} == n5 && n5 != 5 && 1 != n5 && n5 != node::tag {3, 4} && node::tag {3, 4} != n5);
+            node n6 = 42.0; CHECK(n6 == 42.0 && 42.0 == n6 && n6 != 1 && 1 != n6 && n6 != 24.0 && 24.0 != n6);
+            node n7 = 42; CHECK(n7 == 42 && 42 == n7 && n7 != 1.0 && 1.0 != n7 && n7 != 24 && 24 != n7);
+            node n8 = 42U; CHECK(n8 == 42U && 42U == n8 && n8 != 1.0 && 1.0 != n8 && n8 != 24U && 24U != n8);
+            node n9 = node::simple {42}; CHECK(n9 == node::simple {42} && node::simple {42} == n9 && n9 != 1 && 1 != n9 && n9 != node::simple {24}&& node::simple {24} != n9);
+            node n10 = true; CHECK(n10 == true && true == n10 && n10 != 1 && 1 != n10 && n10 != false && false != n10);
+            node n11 = nullptr; CHECK(n11 == nullptr && nullptr == n11 && n11 != 1 && 1 != n11);
+            node n12 = node::undefined {}; CHECK(n12 == node::undefined {} && node::undefined {} == n12 && n12 != 1 && 1 != n12);
         }
         {   // taggle
             using node = cxon::cbor::node;

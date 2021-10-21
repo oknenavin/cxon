@@ -391,7 +391,7 @@ namespace cxon { namespace cbor { // node
                     }
                 template <typename ...>
                     basic_node& operator =(std::nullptr_t) noexcept {
-                        return imbue<null>() = nullptr, *this;
+                        return imbue<null>(), *this;
                     }
             // string
                 basic_node(const typename text::value_type* s)
@@ -599,13 +599,9 @@ namespace cxon { namespace cbor { // node
                     //CXON_JSON_DEF(null)
                     friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
                     friend constexpr bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
-                    friend constexpr bool operator !=(const basic_node& n, null) noexcept { return !n.is<null>(); }
-                    friend constexpr bool operator !=(null, const basic_node& n) noexcept { return !n.is<null>(); }
                     //CXON_JSON_DEF(undefined)
                     friend constexpr bool operator ==(const basic_node& n, undefined) noexcept { return  n.is<undefined>(); }
                     friend constexpr bool operator ==(undefined, const basic_node& n) noexcept { return  n.is<undefined>(); }
-                    friend constexpr bool operator !=(const basic_node& n, undefined) noexcept { return !n.is<undefined>(); }
-                    friend constexpr bool operator !=(undefined, const basic_node& n) noexcept { return !n.is<undefined>(); }
 #               undef CXON_JSON_DEF
         };
 
