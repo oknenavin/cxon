@@ -437,14 +437,14 @@
                             using json::node_kind;
                             switch (t.kind()) {
 #                               define CXON_WRITE(T) write_key_(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
-                                    case node_kind::object  :                       return CXON_WRITE(object);
-                                    case node_kind::array   :                       return CXON_WRITE(array);
+                                    case node_kind::object  : { CXON_NODE_RG();     return CXON_WRITE(object); }
+                                    case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array);  }
                                     case node_kind::string  :                       return CXON_WRITE(string);
+                                    case node_kind::real    :                       return CXON_WRITE(real);
                                     case node_kind::sint    :                       return CXON_WRITE(sint);
                                     case node_kind::uint    :                       return CXON_WRITE(uint);
-                                    case node_kind::real    :                       return CXON_WRITE(real);
-                                    case node_kind::boolean : { CXON_NODE_RG();     return CXON_WRITE(boolean); }
-                                    case node_kind::null    : { CXON_NODE_RG();     return CXON_WRITE(null);   }
+                                    case node_kind::boolean :                       return CXON_WRITE(boolean);
+                                    case node_kind::null    :                       return CXON_WRITE(null);
 #                               undef CXON_WRITE
                             }
                             return false; // LCOV_EXCL_LINE
@@ -497,9 +497,9 @@
                                 case node_kind::object  : { CXON_NODE_RG();     return CXON_WRITE(object); }
                                 case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array);  }
                                 case node_kind::string  :                       return CXON_WRITE(string);
+                                case node_kind::real    :                       return CXON_WRITE(real);
                                 case node_kind::sint    :                       return CXON_WRITE(sint);
                                 case node_kind::uint    :                       return CXON_WRITE(uint);
-                                case node_kind::real    :                       return CXON_WRITE(real);
                                 case node_kind::boolean :                       return CXON_WRITE(boolean);
                                 case node_kind::null    :                       return CXON_WRITE(null);
 #                           undef CXON_WRITE
@@ -539,18 +539,18 @@
                                 using cbor::node_kind;
                                 switch (t.kind()) {
 #                                   define CXON_WRITE(T) write_key_(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
-                                        case node_kind::sint        :                       return CXON_WRITE(sint);
-                                        case node_kind::uint        :                       return CXON_WRITE(uint);
+                                        case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
+                                        case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
                                         case node_kind::bytes       :                       return CXON_WRITE(bytes);
                                         case node_kind::text        :                       return CXON_WRITE(text);
-                                        case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
-                                        case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
                                         case node_kind::tag         :                       return CXON_WRITE(tag);
+                                        case node_kind::real        :                       return CXON_WRITE(real);
+                                        case node_kind::sint        :                       return CXON_WRITE(sint);
+                                        case node_kind::uint        :                       return CXON_WRITE(uint);
+                                        case node_kind::simple      :                       return cio::key::write_key<Y>(o, t.template get<typename cbor::basic_node<Tr>::simple>().value, cx);
                                         case node_kind::boolean     :                       return CXON_WRITE(boolean);
                                         case node_kind::null        :                       return CXON_WRITE(null);
                                         case node_kind::undefined   :                       return CXON_WRITE(undefined);
-                                        case node_kind::real        :                       return CXON_WRITE(real);
-                                        case node_kind::simple      :                       return cio::key::write_key<Y>(o, t.template get<typename cbor::basic_node<Tr>::simple>().value, cx);
 #                                   undef CXON_WRITE
                                 }
                                 return false; // LCOV_EXCL_LINE
@@ -600,18 +600,18 @@
                             using cbor::node_kind;
                             switch (t.kind()) {
 #                               define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
-                                    case node_kind::sint        :                       return CXON_WRITE(sint);
-                                    case node_kind::uint        :                       return CXON_WRITE(uint);
+                                    case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
+                                    case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
                                     case node_kind::bytes       :                       return CXON_WRITE(bytes);
                                     case node_kind::text        :                       return CXON_WRITE(text);
-                                    case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
-                                    case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
                                     case node_kind::tag         :                       return CXON_WRITE(tag);
+                                    case node_kind::real        :                       return CXON_WRITE(real);
+                                    case node_kind::sint        :                       return CXON_WRITE(sint);
+                                    case node_kind::uint        :                       return CXON_WRITE(uint);
+                                    case node_kind::simple      :                       return CXON_WRITE(simple);
                                     case node_kind::boolean     :                       return CXON_WRITE(boolean);
                                     case node_kind::null        :                       return CXON_WRITE(null);
                                     case node_kind::undefined   :                       return CXON_WRITE(undefined);
-                                    case node_kind::real        :                       return CXON_WRITE(real);
-                                    case node_kind::simple      :                       return CXON_WRITE(simple);
 #                               undef CXON_WRITE
                             }
                             return false; // LCOV_EXCL_LINE
@@ -749,18 +749,18 @@
                         using cbor::node_kind;
                         switch (t.kind()) {
 #                           define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
-                                case node_kind::sint        :                       return CXON_WRITE(sint);
-                                case node_kind::uint        :                       return CXON_WRITE(uint);
+                                case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
+                                case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
                                 case node_kind::bytes       :                       return CXON_WRITE(bytes);
                                 case node_kind::text        :                       return CXON_WRITE(text);
-                                case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
-                                case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
-                                case node_kind::boolean     :                       return CXON_WRITE(boolean);
                                 case node_kind::tag         :                       return CXON_WRITE(tag);
+                                case node_kind::real        :                       return CXON_WRITE(real);
+                                case node_kind::sint        :                       return CXON_WRITE(sint);
+                                case node_kind::uint        :                       return CXON_WRITE(uint);
+                                case node_kind::simple      :                       return CXON_WRITE(simple);
+                                case node_kind::boolean     :                       return CXON_WRITE(boolean);
                                 case node_kind::null        :                       return CXON_WRITE(null);
                                 case node_kind::undefined   :                       return CXON_WRITE(undefined);
-                                case node_kind::real        :                       return CXON_WRITE(real);
-                                case node_kind::simple      :                       return CXON_WRITE(simple);
 #                           undef CXON_WRITE
                         }
                         return false; // LCOV_EXCL_LINE
@@ -897,9 +897,9 @@
                                     case node_kind::object  : { CXON_NODE_RG();     return CXON_WRITE(object); }
                                     case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array);  }
                                     case node_kind::string  :                       return CXON_WRITE(string);
+                                    case node_kind::real    :                       return CXON_WRITE(real);
                                     case node_kind::sint    :                       return CXON_WRITE(sint);
                                     case node_kind::uint    :                       return CXON_WRITE(uint);
-                                    case node_kind::real    :                       return CXON_WRITE(real);
                                     case node_kind::boolean :                       return CXON_WRITE(boolean);
                                     case node_kind::null    :                       return CXON_WRITE(null);
 #                               undef CXON_WRITE
