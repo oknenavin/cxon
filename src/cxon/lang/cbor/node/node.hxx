@@ -350,9 +350,9 @@ namespace cxon { namespace cbor { // node
             // literals
                 private:
                     template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
-                        struct int_kind_            { static constexpr node_kind value = node_kind::sint; };
+                        struct int_kind_            : std::integral_constant<node_kind, node_kind::sint> {};
                     template <typename T>
-                        struct int_kind_<T, false>  { static constexpr node_kind value = node_kind::uint; };
+                        struct int_kind_<T, false>  : std::integral_constant<node_kind, node_kind::uint> {};
 
                     template <typename T, bool E = std::is_signed<T>::value && !is_char<T>::value>
                         struct int_type__           { using type = sint; };
