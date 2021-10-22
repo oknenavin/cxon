@@ -6,13 +6,15 @@
 #ifndef CXON_CBOR_LIB_STD_IMP_SET_HXX_
 #define CXON_CBOR_LIB_STD_IMP_SET_HXX_
 
+#include "cxon/lang/cbor/common/container.hxx"
+
 namespace cxon { namespace cbor { namespace imp {
 
     template <typename X, typename S>
         struct set_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(S& t, II& i, II e, Cx& cx) {
-                    typename S::value_type v{};
+                    auto v = alc::create_using_allocator_of<typename S::value_type>(t);
                     return  read_value<X>(v, i, e, cx) &&
                             (t.emplace(std::move(v)), true)
                     ;

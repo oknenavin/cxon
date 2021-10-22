@@ -6,16 +6,19 @@
 #ifndef CXON_CBOR_LIB_STD_IMP_MAP_HXX_
 #define CXON_CBOR_LIB_STD_IMP_MAP_HXX_
 
+#include "cxon/lang/cbor/common/container.hxx"
+
 namespace cxon { namespace cbor { namespace imp {
 
     template <typename X, typename M>
         struct map_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(M& t, II& i, II e, Cx& cx) {
-                    typename M::key_type k{}; typename M::mapped_type v{};
+                    typename M::key_type    k = alc::create_using_allocator_of<typename M::key_type>(t);
+                    typename M::value_type *v;
                     return  read_value<X>(k, i, e, cx) &&
-                            read_value<X>(v, i, e, cx) &&
-                            (t.emplace(std::move(k), std::move(v)), true)
+                            (v = &cxon::cnt::emplace(t, std::move(k), typename M::mapped_type {}), true) &&
+                            read_value<X>(v->second, i, e, cx)
                     ;
                 }
         };

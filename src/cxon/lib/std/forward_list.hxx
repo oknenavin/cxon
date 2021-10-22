@@ -19,13 +19,14 @@ namespace cxon { namespace cnt {
 
     template <typename T, typename ...R>
         struct traits<std::forward_list<T, R...>> {
-            static auto emplace(std::forward_list<T, R...>& c) -> typename std::forward_list<T, R...>::reference {
-#               if __cplusplus < 201703L
-                    return c.emplace_front(), c.front();
-#               else
-                    return c.emplace_front();
-#               endif
-            }
+            template <typename ...A>
+                static auto emplace(std::forward_list<T, R...>& c, A... as) -> typename std::forward_list<T, R...>::reference {
+#                   if __cplusplus < 201703L
+                        return c.emplace_front(std::forward<A>(as)...), c.front();
+#                   else
+                        return c.emplace_front(std::forward<A>(as)...);
+#                   endif
+                }
         };
 
 }}

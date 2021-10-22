@@ -27,8 +27,11 @@ namespace cxon { namespace alc {
     template <typename Al, typename U>
         using rebind_t = typename std::allocator_traits<Al>::template rebind_alloc<U>;
 
-    template< class T, class Al, class... A> // C++20
+    template <typename T, typename Al, typename ...A> // C++20
         constexpr T* uninitialized_construct_using_allocator(T* t, const Al& al, A&&... as);
+
+    template <typename T, typename C, typename ...A>
+        constexpr T create_using_allocator_of(const C& c, A&&... as);
 
     template <typename T, typename Al>
         struct basic_allocator;
@@ -46,24 +49,44 @@ namespace cxon { namespace alc {
 
     namespace imp {
 
-        template< class T, class Al, class... A>
+        template <typename T, typename Al, typename ...A>
             constexpr auto uninitialized_construct_using_allocator_(option<2>, T* t, const Al& al, A&&... as) -> decltype(new T(std::forward<A>(as)..., al)) {
                 return new (t) T(std::forward<A>(as)..., al);
             }
-        template< class T, class Al, class... A>
+        template <typename T, typename Al, typename ...A>
             constexpr auto uninitialized_construct_using_allocator_(option<1>, T* t, const Al& al, A&&... as) -> decltype(new T(std::allocator_arg, al, std::forward<A>(as)...)) {
                 return new (t) T(std::allocator_arg, al, std::forward<A>(as)...);
             }
-        template< class T, class Al, class... A>
+        template <typename T, typename Al, typename ...A>
             constexpr auto uninitialized_construct_using_allocator_(option<0>, T* t, const Al&, A&&... as) -> decltype(new T(std::forward<A>(as)...)) {
                 return new (t) T(std::forward<A>(as)...);
             }
 
     }
-
-    template< class T, class Al, class... A>
+    template <typename T, typename Al, typename ...A>
         constexpr T* uninitialized_construct_using_allocator(T* t, const Al& al, A&&... as) {
             return imp::uninitialized_construct_using_allocator_<T>(option<2>(), t, al, std::forward<A>(as)...);
+        }
+
+    namespace imp {
+
+        template <typename T, typename C, typename ...A>
+            constexpr auto create_using_allocator_of_(option<2>, const C& c, A&&... as) -> decltype(T(std::forward<A>(as)..., c.get_allocator())) {
+                return T(std::forward<A>(as)..., c.get_allocator());
+            }
+        template <typename T, typename C, typename ...A>
+            constexpr auto create_using_allocator_of_(option<1>, const C& c, A&&... as) -> decltype(T(std::allocator_arg, c.get_allocator(), std::forward<A>(as)...)) {
+                return T(std::allocator_arg, c.get_allocator(), std::forward<A>(as)...);
+            }
+        template <typename T, typename C, typename ...A>
+            constexpr auto create_using_allocator_of_(option<0>, const C&, A&&... as) -> decltype(T(std::forward<A>(as)...)) {
+                return T(std::forward<A>(as)...);
+            }
+
+    }
+    template <typename T, typename C, class... A>
+        constexpr T create_using_allocator_of(const C& c, A&&... as) {
+            return imp::create_using_allocator_of_<T>(option<2>(), c, std::forward<A>(as)...);
         }
 
     template <typename T, typename Al>
