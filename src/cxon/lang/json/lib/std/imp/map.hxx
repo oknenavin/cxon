@@ -14,10 +14,11 @@ namespace cxon { namespace json { namespace imp {
         struct map_element_reader_ {
             template <typename II, typename Cx>
                 static bool read(M& t, II& i, II e, Cx& cx) {
-                    typename M::key_type k{}; typename M::mapped_type v{};
+                    typename M::key_type    k = alc::create_using_allocator_of<typename M::key_type>(t);
+                    typename M::value_type *v;
                     return  cio::read_key<X>(k, i, e, cx) &&
-                            read_value<X>(v, i, e, cx) &&
-                            (t.emplace(std::move(k), std::move(v)), true)
+                            (v = &cnt::emplace(t, std::move(k), typename M::mapped_type {}), true) &&
+                            read_value<X>(v->second, i, e, cx)
                     ;
                 }
         };
