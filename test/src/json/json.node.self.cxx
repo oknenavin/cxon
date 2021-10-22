@@ -700,23 +700,35 @@ namespace test { namespace kind {
         }
         {   // node::json::arbitrary_keys
             using node = cxon::json::node;
-            {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, \"inf\": 16, \"-inf\": 17, \"nan\": 18}";
-                node const out = {
-                    {{{1U, 2U}}, 3U},
-                    {{4U}, 5U},
-                    {"6", 7U},
-                    {-8, 9U},
-                    {10U, 11U},
-                    {12.0, 13U},
-                    {true, 14U},
-                    {nullptr, 15U},
-                    {std::numeric_limits<node::real>::infinity(), 16U},
-                    {-std::numeric_limits<node::real>::infinity(), 17U},
-                    {std::numeric_limits<node::real>::quiet_NaN(), 18U}
-                };
-                node n;
-                    cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, in, cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
-                CHECK(n == out);
+            {
+                {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, \"inf\": 16, \"-inf\": 17}";
+                    node const out = {
+                        {{{1U, 2U}}, 3U},
+                        {{4U}, 5U},
+                        {"6", 7U},
+                        {-8, 9U},
+                        {10U, 11U},
+                        {12.0, 13U},
+                        {true, 14U},
+                        {nullptr, 15U},
+                        {std::numeric_limits<node::real>::infinity(), 16U},
+                        {-std::numeric_limits<node::real>::infinity(), 17U}
+                    };
+                    node n;
+                        cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, in, cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
+                    CHECK(n == out);
+                }
+                // probably not a good idea to use NaNs as keys
+                {   char const in[] = "{\"nan\": 18}";
+                    node const out  = { {std::numeric_limits<node::real>::quiet_NaN(), 18U} };
+                    node n;
+                        cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, in, cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
+                    CHECK(
+                        n.is<node::object>() && n.get<node::object>().size() == 1 &&
+                        (n.get<node::object>().begin()->first.is<node::real>() && std::isnan(n.get<node::object>().begin()->first.get<node::real>())) &&
+                        n.get<node::object>().begin()->second == 18U
+                    );
+                }
             }
             {   node n;
                     auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
