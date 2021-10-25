@@ -122,19 +122,19 @@ namespace cxon { namespace cnt {
             }
         template <typename C, typename ...A>
             inline auto emplace_(option<4>, C& c, A... as)
-                -> enable_if_t<has_emplace_back<C>::value, typename C::reference>
+                -> enable_if_t<std::is_same<decltype(c.emplace_back(std::forward<A>(as)...)), typename C::reference>::value, typename C::reference>
             {
                 return c.emplace_back(std::forward<A>(as)...);
             }
         template <typename C, typename ...A>
             inline auto emplace_(option<3>, C& c, A... as)
-                -> enable_if_t<has_emplace_back_void<C>::value && has_back<C>::value, typename C::reference>
+                -> enable_if_t<std::is_same<decltype(c.emplace_back()), void>::value && std::is_same<decltype(c.back()), typename C::reference>::value, typename C::reference>
             {
                 return c.emplace_back(std::forward<A>(as)...), c.back();
             }
         template <typename C, typename ...A>
             inline auto emplace_(option<2>, C& c, A... as)
-                -> enable_if_t<has_push_back<C>::value && has_back<C>::value, typename C::reference>
+                -> enable_if_t<std::is_same<decltype(c.push_back(typename C::value_type {std::forward<A>(as)...})), void>::value && std::is_same<decltype(c.back()), typename C::reference>::value, typename C::reference>
             {
                 return c.push_back(typename C::value_type {std::forward<A>(as)...}), c.back();
             }
