@@ -89,16 +89,7 @@ namespace cxon {
     // container
 
     template <typename C>
-        using has_emplace_back      = std::is_same<decltype(std::declval<C>().emplace_back()), typename C::reference>;
-    template <typename C>
-        using has_emplace_back_void = std::is_same<decltype(std::declval<C>().emplace_back()), void>;
-    template <typename C>
-        using has_back              = std::is_same<decltype(std::declval<C>().back()), typename C::reference>;
-    template <typename C>
-        using has_push_back         = std::is_same<decltype(std::declval<C>().push_back(std::declval<typename C::value_type>())), void>;
-
-    template <typename C>
-        using is_back_insertable    = has_push_back<C>;
+        using is_back_insertable    = std::is_same<decltype(std::declval<C>().push_back(std::declval<typename C::value_type&&>())), void>;
 
     // iterators
 
