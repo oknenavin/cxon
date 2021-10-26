@@ -141,6 +141,8 @@ cxon-lib-std = \
 
 cxon-lib = \
     $(srcdir)/lib/node.hxx \
+    $(srcdir)/lib/node.json.hxx \
+    $(srcdir)/lib/node.cbor.hxx \
     $(srcdir)/lib/node.ordered.hxx
 
 cxon = \
