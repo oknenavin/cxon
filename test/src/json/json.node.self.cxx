@@ -267,17 +267,17 @@ namespace test { namespace kind {
                         { {"object", 0} }, // objects and
                         { 1, 2, 3 },        // arrays must be explicit
                         "4",        // string
+                        3.14,       // real
                         3,          // signed
                         14U,        // unsigned
-                        3.14,       // real
                         true,       // boolean
                         nullptr     // null
                     }
                 },
                 { "string", "string" }, // "key": value
+                { "real", 3.14 },
                 { "sint", 3 },
                 { "uint", 14U },
-                { "real", 3.14 },
                 { "boolean", false },
                 { "null", nullptr }
             };
@@ -290,9 +290,9 @@ namespace test { namespace kind {
                     o["object"] = node::object {};      CHECK(o["object"].is<node::object>());
                     o["array"] = node::array {};        CHECK(o["array"].is<node::array>());
                     o["string"] = "string";             CHECK(o["string"].is<node::string>());
+                    o["real"] = 3.14;                   CHECK(o["real"].is<node::real>());
                     o["sint"] = 3;                      CHECK(o["sint"].is<node::sint>());
                     o["uint"] = 14U;                    CHECK(o["uint"].is<node::uint>());
-                    o["real"] = 3.14;                   CHECK(o["real"].is<node::real>());
                     o["boolean"] = false;               CHECK(o["boolean"].is<node::boolean>());
                     o["null"] = nullptr;                CHECK(o["null"].is<node::null>());
                 auto& o1 = o["object"].get<node::object>(); // get value reference, the type is known
@@ -301,9 +301,9 @@ namespace test { namespace kind {
                     a.push_back(node::object {});       CHECK(a.back().is<node::object>());
                     a.push_back(node::array {1, 2, 3}); CHECK(a.back().is<node::array>());
                     a.push_back("4");                   CHECK(a.back().is<node::string>());
+                    a.push_back(3.14);                  CHECK(a.back().is<node::real>());
                     a.push_back(3);                     CHECK(a.back().is<node::sint>());
                     a.push_back(14U);                   CHECK(a.back().is<node::uint>());
-                    a.push_back(3.14);                  CHECK(a.back().is<node::real>());
                     a.push_back(true);                  CHECK(a.back().is<node::boolean>());
                     a.push_back(nullptr);               CHECK(a.back().is<node::null>());
                 auto* o2 = a[0].get_if<node::object>(); // get value pointer if the type match
@@ -731,7 +731,7 @@ namespace test { namespace kind {
                 }
             }
             {   node n;
-                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
+                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::arbitrary_keys::set<true>());
                 CHECK(!r && r.ec == cxon::json::read_error::unexpected);
             }
             {   node n;
@@ -776,9 +776,9 @@ namespace test { namespace kind {
             {   node n = {
                     { {{1, 0}}, 0 },
                     { {2}, 0 },
-                    { node::bytes {3}, 0 },
-                    { "4", 0 },
-                    { node::tag {5, 6}, 0 },
+                    { node::tag {3, 4}, 0 },
+                    { node::bytes {5}, 0 },
+                    { "6", 0 },
                     { 7.0, 0 },
                     { 8, 0 },
                     { 9U, 0 },
@@ -789,7 +789,7 @@ namespace test { namespace kind {
                 };
                 std::string s;
                     cxon::to_bytes(s, n);
-                CHECK(s == "{\"{\\\"1\\\":0}\":0,\"[2]\":0,\"[3]\":0,\"4\":0,\"6\":0,\"7\":0,\"8\":0,\"9\":0,\"10\":0,\"true\":0,\"null\":0,\"null\":0}");
+                CHECK(s == "{\"{\\\"1\\\":0}\":0,\"[2]\":0,\"4\":0,\"[5]\":0,\"6\":0,\"7\":0,\"8\":0,\"9\":0,\"10\":0,\"true\":0,\"null\":0,\"null\":0}");
             }
         }
         {   // round-trip
@@ -866,7 +866,7 @@ namespace test { namespace kind {
             std::pmr::polymorphic_allocator<node> al(&ar);
             node n(al);
                 n = { 1, 2, 3};
-            CHECK(n.is<node::array>() && n.get<node::array>().size() == 3);
+            CHECK(n == node::array { 1, 2, 3});
         }
 #       endif
 #       undef CHECK

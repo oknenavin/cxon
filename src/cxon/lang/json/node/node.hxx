@@ -44,7 +44,7 @@ namespace cxon { namespace json { // node traits
 
     template <typename Al>
         struct node_traits {
-            using                                       allocator_type  = alc::rebind_t<Al, basic_node<node_traits>>;
+            using                                       allocator_type  = Al;
             template <typename K, typename V> using     object_type     = std::map<K, V, std::less<K>, alc::rebind_t<Al, std::pair<const K, V>>>;
             template <typename T> using                 array_type      = std::vector<T, alc::rebind_t<Al, T>>;
             using                                       string_type     = std::basic_string<char, std::char_traits<char>, alc::rebind_t<Al, char>>;
@@ -71,16 +71,15 @@ namespace cxon { namespace json { // node
 
     template <typename Tr>
         struct basic_node {
-            using object    = typename Tr::template object_type<basic_node, basic_node>;
-            using array     = typename Tr::template array_type<basic_node>;
-            using string    = typename Tr::string_type;
-            using real      = typename Tr::real_type;
-            using sint      = typename Tr::sint_type;
-            using uint      = typename Tr::uint_type;
-            using boolean   = typename Tr::boolean_type;
-            using null      = typename Tr::null_type;
-
-            using allocator_type = alc::rebind_t<typename Tr::allocator_type, basic_node>;
+            using allocator_type    = alc::rebind_t<typename Tr::allocator_type, basic_node>;
+            using object            = typename Tr::template object_type<basic_node, basic_node>;
+            using array             = typename Tr::template array_type<basic_node>;
+            using string            = typename Tr::string_type;
+            using real              = typename Tr::real_type;
+            using sint              = typename Tr::sint_type;
+            using uint              = typename Tr::uint_type;
+            using boolean           = typename Tr::boolean_type;
+            using null              = typename Tr::null_type;
 
             private: // value
                 template <typename N, typename T> struct node_kind_;
@@ -413,7 +412,7 @@ namespace cxon { namespace json { // node
             }
 
             private:
-                friend bool operator == (const basic_node& f, const basic_node& s) noexcept {
+                friend bool operator ==(const basic_node& f, const basic_node& s) noexcept {
                     if (f.kind_ != s.kind_)
                         return false;
                     switch (f.kind_) {
@@ -430,11 +429,11 @@ namespace cxon { namespace json { // node
                     }
                     return false; // LCOV_EXCL_LINE
                 }
-                friend bool operator != (const basic_node& f, const basic_node& s) noexcept {
+                friend bool operator !=(const basic_node& f, const basic_node& s) noexcept {
                     return !(f == s);
                 }
 
-                friend bool operator < (const basic_node& f, const basic_node& s) noexcept {
+                friend bool operator <(const basic_node& f, const basic_node& s) noexcept {
                     if (f.kind_ != s.kind_)
                         return f.kind_ < s.kind_;
                     switch (f.kind_) {
@@ -453,80 +452,80 @@ namespace cxon { namespace json { // node
                 }
 
 #               define CXON_JSON_DEF(T)\
-                    friend constexpr bool operator ==(const basic_node& n, const T& v) noexcept { return  n.is<T>() && n.get<T>() == v; } \
-                    friend constexpr bool operator ==(const T& v, const basic_node& n) noexcept { return  n.is<T>() && n.get<T>() == v; } \
-                    friend constexpr bool operator !=(const basic_node& n, const T& v) noexcept { return !n.is<T>() || n.get<T>() != v; } \
-                    friend constexpr bool operator !=(const T& v, const basic_node& n) noexcept { return !n.is<T>() || n.get<T>() != v; }
+                    friend bool operator ==(const basic_node& n, const T& v) noexcept { return  n.is<T>() && n.get<T>() == v; } \
+                    friend bool operator ==(const T& v, const basic_node& n) noexcept { return  n.is<T>() && n.get<T>() == v; } \
+                    friend bool operator !=(const basic_node& n, const T& v) noexcept { return !n.is<T>() || n.get<T>() != v; } \
+                    friend bool operator !=(const T& v, const basic_node& n) noexcept { return !n.is<T>() || n.get<T>() != v; }
                     CXON_JSON_DEF(object)
                     CXON_JSON_DEF(array)
                     CXON_JSON_DEF(string)
                     // const string::value_type*
-                    friend constexpr bool operator ==(const basic_node& n, const typename string::value_type* v) noexcept {
+                    friend bool operator ==(const basic_node& n, const typename string::value_type* v) noexcept {
                         return n.is<string>() && n.get<string>() == v;
                     }
-                    friend constexpr bool operator ==(const typename string::value_type* v, const basic_node& n) noexcept {
+                    friend bool operator ==(const typename string::value_type* v, const basic_node& n) noexcept {
                         return n.is<string>() && n.get<string>() == v;
                     }
-                    friend constexpr bool operator !=(const basic_node& n, const typename string::value_type* v) noexcept {
+                    friend bool operator !=(const basic_node& n, const typename string::value_type* v) noexcept {
                         return !n.is<string>() || n.get<string>() != v;
                     }
-                    friend constexpr bool operator !=(const typename string::value_type* v, const basic_node& n) noexcept {
+                    friend bool operator !=(const typename string::value_type* v, const basic_node& n) noexcept {
                         return !n.is<string>() || n.get<string>() != v;
                     }
                     //CXON_JSON_DEF(real)
                     template <typename U = real>
-                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                        friend auto operator ==(const basic_node& n, U v) noexcept
                             -> enable_if_t<std::is_floating_point<U>::value, bool>
                         { return n.is<real>() && n.get<real>() == v; }
                     template <typename U = real>
-                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                        friend auto operator ==(U v, const basic_node& n) noexcept
                             -> enable_if_t<std::is_floating_point<U>::value, bool>
                         { return n.is<real>() && n.get<real>() == v; }
                     template <typename U = real>
-                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                        friend auto operator !=(const basic_node& n, U v) noexcept
                             -> enable_if_t<std::is_floating_point<U>::value, bool>
                         { return !n.is<real>() || n.get<real>() != v; }
                     template <typename U = real>
-                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                        friend auto operator !=(U v, const basic_node& n) noexcept
                             -> enable_if_t<std::is_floating_point<U>::value, bool>
                         { return !n.is<real>() || n.get<real>() != v; }
                     //CXON_JSON_DEF(sint)
                     template <typename U = sint>
-                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                        friend auto operator ==(const basic_node& n, U v) noexcept
                             -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return n.is<sint>() && n.get<sint>() == v; }
                     template <typename U = sint>
-                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                        friend auto operator ==(U v, const basic_node& n) noexcept
                             -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return n.is<sint>() && n.get<sint>() == v; }
                     template <typename U = sint>
-                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                        friend auto operator !=(const basic_node& n, U v) noexcept
                             -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return !n.is<sint>() || n.get<sint>() != v; }
                     template <typename U = sint>
-                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                        friend auto operator !=(U v, const basic_node& n) noexcept
                             -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return !n.is<sint>() || n.get<sint>() != v; }
                     //CXON_JSON_DEF(uint)
                     template <typename U = uint>
-                        friend constexpr auto operator ==(const basic_node& n, U v) noexcept
+                        friend auto operator ==(const basic_node& n, U v) noexcept
                             -> enable_if_t<std::is_unsigned<U>::value, bool>
                         { return n.is<uint>() && n.get<uint>() == v; }
                     template <typename U = uint>
-                        friend constexpr auto operator ==(U v, const basic_node& n) noexcept
+                        friend auto operator ==(U v, const basic_node& n) noexcept
                             -> enable_if_t<std::is_unsigned<U>::value, bool>
                         { return n.is<uint>() && n.get<uint>() == v; }
                     template <typename U = uint>
-                        friend constexpr auto operator !=(const basic_node& n, U v) noexcept
+                        friend auto operator !=(const basic_node& n, U v) noexcept
                             -> enable_if_t<std::is_unsigned<U>::value, bool>
                         { return !n.is<uint>() || n.get<uint>() != v; }
                     template <typename U = uint>
-                        friend constexpr auto operator !=(U v, const basic_node& n) noexcept
+                        friend auto operator !=(U v, const basic_node& n) noexcept
                             -> enable_if_t<std::is_unsigned<U>::value, bool>
                         { return !n.is<uint>() || n.get<uint>() != v; }
                     CXON_JSON_DEF(boolean)
-                    friend constexpr bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
-                    friend constexpr bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
+                    friend bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }
+                    friend bool operator ==(null, const basic_node& n) noexcept { return  n.is<null>(); }
 #               undef CXON_JSON_DEF
         };
 

@@ -122,14 +122,14 @@
         template <typename Cx, bool G = recursion_guard::in<napa_type<Cx>>::value>
             struct scinc_ {
                 Cx& cx;
-                scinc_(Cx& cx) : cx(cx)  { ++recursion_guard::reference(cx.px); }
-                ~scinc_()                { --recursion_guard::reference(cx.px); }
+                scinc_(Cx& cx) : cx(cx) { ++recursion_guard::reference(cx.px); }
+                ~scinc_()               { --recursion_guard::reference(cx.px); }
                 bool check() const      { return recursion_guard::value(cx.px) < recursion_depth::constant<napa_type<Cx>>(64); }
             };
         template <typename Cx>
             struct scinc_<Cx, false> {
-                scinc_(Cx&)              {}
-                ~scinc_()                {}
+                scinc_(Cx&)             {}
+                ~scinc_()               {}
                 bool check() const      { return true; }
             };
 
@@ -541,9 +541,9 @@
 #                                   define CXON_WRITE(T) write_key_(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
                                         case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
                                         case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
+                                        case node_kind::tag         : { CXON_NODE_RG();     return CXON_WRITE(tag);   }
                                         case node_kind::bytes       :                       return CXON_WRITE(bytes);
                                         case node_kind::text        :                       return CXON_WRITE(text);
-                                        case node_kind::tag         :                       return CXON_WRITE(tag);
                                         case node_kind::real        :                       return CXON_WRITE(real);
                                         case node_kind::sint        :                       return CXON_WRITE(sint);
                                         case node_kind::uint        :                       return CXON_WRITE(uint);
@@ -602,9 +602,9 @@
 #                               define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
                                     case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
                                     case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
+                                    case node_kind::tag         : { CXON_NODE_RG();     return CXON_WRITE(tag);   }
                                     case node_kind::bytes       :                       return CXON_WRITE(bytes);
                                     case node_kind::text        :                       return CXON_WRITE(text);
-                                    case node_kind::tag         :                       return CXON_WRITE(tag);
                                     case node_kind::real        :                       return CXON_WRITE(real);
                                     case node_kind::sint        :                       return CXON_WRITE(sint);
                                     case node_kind::uint        :                       return CXON_WRITE(uint);
@@ -734,6 +734,7 @@
                                         case X::und     :                           return CXON_READ(undefined);
                                         case X::fp16: case X::fp32: case X::fp64
                                                         :                           return CXON_READ(real);
+                                        case X::brk     :                           return cx/node::error::invalid;
                                         default         :                           return CXON_READ(simple);
                                     }
 #                           undef CXON_READ
@@ -751,9 +752,9 @@
 #                           define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
                                 case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
                                 case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
+                                case node_kind::tag         : { CXON_NODE_RG();     return CXON_WRITE(tag);   }
                                 case node_kind::bytes       :                       return CXON_WRITE(bytes);
                                 case node_kind::text        :                       return CXON_WRITE(text);
-                                case node_kind::tag         :                       return CXON_WRITE(tag);
                                 case node_kind::real        :                       return CXON_WRITE(real);
                                 case node_kind::sint        :                       return CXON_WRITE(sint);
                                 case node_kind::uint        :                       return CXON_WRITE(uint);
@@ -874,6 +875,7 @@
                                             }
                                             case X::fp16: case X::fp32: case X::fp64
                                                             :                       return CXON_READ(real);
+                                            case X::brk     :                       return cx/node::error::invalid;
                                             default         : {
                                                 typename cbor::node::simple s;
                                                                                     return  (read_value<Y>(s, i, e, cx)) &&
