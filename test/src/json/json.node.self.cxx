@@ -731,7 +731,7 @@ namespace test { namespace kind {
                 }
             }
             {   node n;
-                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::arbitrary_keys::set<true>());
+                    auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::arbitrary_keys::set<true>(), cxon::node::json::extract_nans::set<true>());
                 CHECK(!r && r.ec == cxon::json::read_error::unexpected);
             }
             {   node n;
