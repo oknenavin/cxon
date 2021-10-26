@@ -110,7 +110,7 @@ template <typename T>
             }
             {   node n;
                 auto const r = cxon::from_bytes(n, "\xFF");
-                CHECK(!r && r.ec == cxon::cbor::read_error::unexpected);
+                CHECK(!r && r.ec == cxon::node::error::invalid);
             }
             {   node n = node::simple {0x14}; std::string s;
                 auto r = cxon::to_bytes(s, n);
@@ -714,7 +714,7 @@ template <typename T>
             }
             {   node n;
                     auto r = cxon::from_bytes(n, "\xFF");
-                CHECK(!r && r.ec == cxon::cbor::read_error::unexpected);
+                CHECK(!r && r.ec == cxon::node::error::invalid);
             }
             {   node n = { {{"1", 2.0}}, {3.0}, "4", 5.0, true, nullptr };
                 std::string s1;
