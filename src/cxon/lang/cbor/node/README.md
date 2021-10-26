@@ -38,7 +38,7 @@ Major type (MT)             | Default binding
 `floating point / MT7 (5)`  | [`double`][cpp-typ]
 `simple / MT7 (6)`          | [`cbor::simple`](#simple)
 
-*`(1)` essentially a pair of `positive integer` and `node`*  
+*`(1)` essentially a pair of a `positive integer` and a `node`*  
 *`(2)` `0xF4` / `0xF5`*  
 *`(3)` `0xF6`*  
 *`(4)` `0xF7`*  
@@ -183,6 +183,8 @@ namespace cxon::cbor {
 }
 ```
 
+`basic_node` is compliant with [AllocatorAwareContainer][cpp-alaw] requirements.
+
 ###### Aliases
 
 Type               | Definition
@@ -191,30 +193,38 @@ Type               | Definition
 
 ###### Template parameters
 
-  - [`Traits`](#traits) - traits class specifying the mapping type for each `CBOR` value type
+  - [`Traits`](#traits) - traits class specifying the allocator, the mapping between C++ and JSON and whether the storage for
+given type should be allocated on the stack or in the heap.
 
 ###### Non-member types
 
 ```c++
-enum class node_kind { sint, uint, bytes, text, array, map, boolean, null, undefined, real, simple };
+enum class node_kind { map, array, bytes, text, tag, real, sint, uint, simple, boolean, null, undefined };
 ```
 
 ###### Member types
 
-Member type | Definition
-------------|------------------------------------------
-`sint`      | `Traits::sint_type`
-`uint`      | `Traits::uint_type`
-`bytes`     | `Traits::bytes_type`
-`text`      | `Traits::text_type`
-`array`     | `Traits::array_type<basic_node>`
-`map`       | `Traits::map_type<basic_node, basic_node>`
-`tag`       | `Traits::tag_type<uint, basic_node>`
-`boolean`   | `Traits::boolean_type`
-`null`      | `Traits::null_type`
-`undefined` | `Traits::undefined_type`
-`real`      | `Traits::real_type`
-`simple`    | `Traits::simple_type`
+Member type      | Definition
+-----------------|------------------------------------------
+`map`            | `Traits::map_type<basic_node, basic_node>`
+`array`          | `Traits::array_type<basic_node>`
+`tag`            | `Traits::tag_type<uint, basic_node>`
+`bytes`          | `Traits::bytes_type`
+`text`           | `Traits::text_type`
+`real`           | `Traits::real_type`
+`sint`           | `Traits::sint_type`
+`uint`           | `Traits::uint_type`
+`simple`         | `Traits::simple_type`
+`boolean`        | `Traits::boolean_type`
+`null`           | `Traits::null_type`
+`undefined`      | `Traits::undefined_type`
+`allocator_type` | `rebind_t<typename Traits::allocator_type, basic_node>`
+
+where `rebind_t` is defined as:
+``` c++
+template <typename Al, typename T>
+    using rebind_t = typename std::allocator_traits<Al>::template rebind_alloc<T>;
+```
 
 ###### Member functions
 
@@ -227,38 +237,92 @@ Member type | Definition
   - [`imbue`](#imbue) - resets node's value type; returns value reference
   - [`get`](#get) - returns value reference
   - [`get_if`](#get_if) - returns value pointer if node's value type matches
-  - [`operator ==`](#comparison-operators) - compare for equality
-  - [`operator !=`](#comparison-operators) - compare for inequality
-  - [`operator <`](#comparison-operators) - compare for less than
+  - [`swap`](#swap) - swaps the contents of two nodes
 
 ###### Non-member functions
 
-  - `is` - returns `true` if node's value is of given type
-  - `imbue` - resets node's value type; returns value reference
-  - `get` - returns value reference
-  - `get_if` - returns value pointer if node's value type matches
+  - [`operator ==`](#comparison-operators) - compare for equality
+  - [`operator !=`](#comparison-operators) - compare for inequality
+  - [`operator <`](#comparison-operators) - compare for less than
+  - [`hash`](#hash) - function-object implementing [`Hash`](cpp-hash) requirements
+  - `is` - returns `true` if node's value is of given type `(1)`
+  - `imbue` - resets node's value type; returns value reference `(1)`
+  - `get` - returns value reference `(1)`
+  - `get_if` - returns value pointer if node's value type matches `(1)`
 
-Same as the member counterparts with single `basic_node&` argument.
+*`(1)` Same as the member counterparts with single `basic_node&` argument.*
 
 
 --------------------------------------------------------------------------------
 
 ##### Traits
 
+The traits type specifies the allocator, the mapping between C++ and JSON and whether the storage for
+given type should be allocated on the stack or in the heap.
+
+``` c++
+template <typename Al = std::allocator<void>>
+    struct node_traits {
+        // the allocator
+        using                                       allocator_type  = Al;
+        // JSON/C++ mapping
+        template <typename K, typename V> using     map_type        = std::map<K, V, std::less<K>, rebind_t<Al, std::pair<const K, V>>>;
+        template <typename T> using                 array_type      = std::vector<T, rebind_t<Al, T>>;
+        template <typename N, typename T> using     tag_type        = taggle<N, T>;
+        using                                       bytes_type      = std::vector<unsigned char, rebind_t<Al, unsigned char>>;
+        using                                       text_type       = std::basic_string<char, std::char_traits<char>, rebind_t<Al, char>>;
+        using                                       real_type       = double;
+        using                                       sint_type       = long long;
+        using                                       uint_type       = unsigned long long;
+        using                                       simple_type     = simple<unsigned char>;
+        using                                       boolean_type    = bool;
+        using                                       null_type       = std::nullptr_t;
+        using                                       undefined_type  = undefined;
+        // the types listed here will be allocated in the heap
+        using                                       dynamic_types   = integer_sequence<node_kind, node_kind::map, node_kind::array, node_kind::tag>;
+    };
+```
+
+`dynamic_types` serves two purposes:
+  - Support for containers that do not support *incomplete* types.
+    For example, unordered maps and sets implementations in `libstdc++` do not support incomplete types and
+    if for example, `basic_node::object` is mapped to `std::unordered_map`, it must be a dynamic type, otherwise
+    the result will be a compilation error.
+  - To reduce the size of `basic_node` as it's implemented as a union type.
+
 ###### Example
 
 ```c++
+// custom mapping
+
 struct traits : cxon::cbor::node_traits {
-    using                               bytes_type = std::basic_string<unsigned char>;
-    template <class T> using            array_type = std::list<T>;
     template <class K, class V> using   map_type = std::multimap<K, V>;
+    template <class T> using            array_type = std::list<T>;
+    using                               bytes_type = std::basic_string<unsigned char>;
 };
 ...
 using node = cxon::cbor::basic_node<traits>;
 node n;
-cxon::from_bytes(n, "\xA2\x63key\x2A\x63key\x2B");
+    cxon::from_bytes(n, "\xA2\x63key\x2A\x63key\x2B");
 assert(n.is<node::map>() && n.get<node::map>().count("key") == 2);
 ```
+
+``` c++
+// custom allocator
+
+using node = cxon::cbor::basic_node<
+    cxon::json::node_traits<std::pmr::polymorphic_allocator<void>>
+>;
+...
+char bf[4096];
+std::pmr::monotonic_buffer_resource rs(bf, sizeof(bf));
+std::pmr::polymorphic_allocator<node> al(&rs);
+
+node n(al);
+    n = { 1, 2, 3};
+assert(n == node::array { 1, 2, 3});
+```
+
 
 --------------------------------------------------------------------------------
 
@@ -304,6 +368,8 @@ Construct new node from a variety of data sources.
   - `(5)` Constructors from initializer list. Will create an object if empty
           or array(s) of two elements, array otherwise
 
+*Note: Each constructor has its allocator argument companion.*
+
 ###### Example
 
 ``` c++
@@ -312,34 +378,35 @@ using namespace cxon::cbor;
     node n; assert(n.is<node::undefined>());
 }
 {   // (2)
-    node o = true; assert(o.is<node::boolean>());
-    node n(o); assert(n.is<node::boolean>() && n.get<node::boolean>());
+    node n1 = true; assert(n1.is<node::boolean>());
+    node n2(n1); assert(n2 == true);
+    node n3(std::move(n1)); assert(n3 == true);
 }
 {   // (3)
-    node n(42.0); assert(n.is<node::real>() && n.get<node::real>() == 42.0);
+    node n(42.0); assert(n == 42.0);
 }
 {   // (3)
-    node::map const o = { {"key", "value"} };
-    node n(o); assert(n.is<node::map>() && n.get<node::map>() == o);
+    node::map const m = {{"key", "value"}};
+    node n(m); assert(n == m);
 }
 {   // (3)
-    node::array const a = { 1, "string" };
-    node n(a); assert(n.is<node::array>() && n.get<node::array>() == a);
+    node::array const a = {1, "string"};
+    node n(a); assert(n == a);
 }
 {   // (4)
-    node n(42); assert(n.is<node::sint>() && n.get<node::sint>() == 42);
+    node n(42); assert(n == 42);
 }
 {   // (4)
-    node n(42U); assert(n.is<node::uint>() && n.get<node::uint>() == 42);
+    node n(42U); assert(n == 42U);
 }
 {   // (4)
-    node n("string"); assert(n.is<node::text>() && n.get<node::text>() == "string");
+    node n("string"); assert(n == "string");
 }
 {   // (5)
-    node n({{1, 2}, {3, 4}}); CHECK(n.is<node::map>() && n.get<node::map>() == (node::map {{1, 2}, {3, 4}}));
+    node n({{1, 2}, {3, 4}}); assert(n == (node::map {{1, 2}, {3, 4}}));
 }
 {   // (5)
-    node n({1, 2, 3, 4}); CHECK(n.is<node::array>() && n.get<node::array>() == (node::array {1, 2, 3, 4}));
+    node n({1, 2, 3, 4}); CHECK(n == (node::array {1, 2, 3, 4}));
 }
 ```
 
@@ -519,19 +586,88 @@ assert(n.get_if<node::array>() == nullptr);
 
 --------------------------------------------------------------------------------
 
+##### Swap
+
+``` c++
+void swap(basic_node& n);
+```
+
+###### Example
+
+``` c++
+using namespace cxon::cbor;
+node n1 = "text", n2 = {1, 2, 3};
+n1.swap(n2); assert(n1 == node::array {1, 2, 3} && n2 == "text");
+```
+
+
+--------------------------------------------------------------------------------
+
 ##### Comparison operators
 
 ``` c++
-bool operator == (const basic_node& n) const; (1)
-bool operator != (const basic_node& n) const; (2)
-bool operator  < (const basic_node& n) const; (3)
+friend bool operator ==(const basic_node& f, const basic_node& s) noexcept; (1)
+friend bool operator !=(const basic_node& f, const basic_node& s) noexcept; (2)
+friend bool operator  <(const basic_node& f, const basic_node& s) noexcept; (3)
 ```
 
 ###### Return value
 
-  - `(1)` `true` if equal, `false` otherwise
-  - `(2)` `false` if equal, `true` otherwise
-  - `(3)` `true` if less than, `false` otherwise
+  - `(1)` `true` if `f` equals `s`, `false` otherwise
+  - `(2)` `false` if `f` equals `s`, `true` otherwise
+  - `(2)` `true` if `f` is less than `s`, `false` otherwise
+
+Also, `(1)` and `(2)` have overloads for each value type:
+
+``` c++
+friend bool operator ==(const basic_node& n, const basic_node::<value-type>& v) noexcept;                   (1)
+friend bool operator ==(const basic_node::<value-type>& v, const basic_node& n) noexcept;
+friend bool operator !=(const basic_node& n, const basic_node::<value-type>& v) noexcept;
+friend bool operator !=(const basic_node::<value-type>& v, const basic_node& n) noexcept;
+
+friend bool operator ==(const basic_node& n, const basic_node::null& v) noexcept;                           (2)
+friend bool operator ==(const T& basic_node::null, const basic_node& n) noexcept;
+
+friend bool operator ==(const basic_node& n, undefined) noexcept;                                           (2)
+friend bool operator ==(undefined, const basic_node& n) noexcept;
+
+friend bool operator ==(const basic_node& n, const typename basic_node::text::value_type& v) noexcept;      (3)
+friend bool operator ==(const typename basic_node::text::value_type& v, const basic_node& n) noexcept;
+friend bool operator !=(const basic_node& n, const typename basic_node::text::value_type& v) noexcept;
+friend bool operator !=(const typename basic_node::text::value_type& v, const basic_node& n) noexcept;
+```
+  -  `(1)` for one of `map`, `array`, `tag`, `bytes`, `string`, `real`, `sint`, `uint`, `boolean`
+  -  `(2)` for `null` and `undefined`
+  -  `(3)` for `string::value_type**_` - char pointers
+
+###### Example
+
+``` c++
+using namespace cxon::cbor;
+node n = 42;
+assert(n == 42 && 42 == n);
+assert(n != 24 && 24 != n);
+node m = 43;
+assert(n < m);
+```
+
+
+--------------------------------------------------------------------------------
+
+#### hash
+
+``` c++
+namespace cxon {
+    template <typename Tr>              struct hash<cbor::basic_node<Tr>>;
+    template <>                         struct hash<cbor::undefined>;
+    template <typename T>               struct hash<cbor::simple<T>>;
+    template <typename T, typename V>   struct hash<cbor::taggle<T, V>>;
+}
+
+namespace std {
+    template <typename Tr> struct hash<cxon::cbor::basic_node<Tr>>;
+}
+```
 
 
 --------------------------------------------------------------------------------
@@ -561,33 +697,29 @@ template <typename T>
 ##### `taggle`
 
 ``` c++
-template <typename N, typename T, typename A>
+template <typename N, typename T>
     struct taggle {
-        N tag;
-        T& value;
+        public:     N tag;
+        public:     T value;
 
-        taggle(A a = std::allocator<T>());
-        taggle(N n, const T& t, A a = std::allocator<T>());
-        taggle(N n, T&& t, A a = std::allocator<T>())
+        constexpr taggle() noexcept(std::is_nothrow_constructible<T>::value);
+        taggle(N n, T&& t) noexcept(std::is_nothrow_move_constructible<T>::value);
+        taggle(N n, const T& t) noexcept(std::is_nothrow_copy_constructible<T>::value);
 
-        ~taggle();
+        taggle(taggle&& t) noexcept(std::is_nothrow_move_constructible<T>::value);
+        taggle& operator =(taggle&& t) noexcept(std::is_nothrow_move_assignable<T>::value);
 
-        taggle(taggle&& t);
-        taggle& operator =(taggle&& t);
+        taggle(const taggle& t) noexcept(std::is_nothrow_copy_constructible<T>::value);
+        taggle& operator =(const taggle& t) noexcept(std::is_nothrow_copy_assignable<T>::value);
 
-        taggle(const taggle& t);
-        taggle& operator =(const taggle& t);
-
-        taggle& operator =(T&& t);
-        taggle& operator =(const T& t);
-
-        bool operator ==(const taggle& t) const;
-        bool operator  <(const taggle& t) const;
+        bool operator ==(const taggle& t) const noexcept;
+        bool operator !=(const taggle& t) const noexcept;
+        bool operator  <(const taggle& t) const noexcept;
     };
 ```
 
---------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
 
 #### `CXON` integration
 
@@ -621,6 +753,8 @@ template <typename N, typename T, typename A>
       *Note: The bug mentioned above, seems to be resolved somewhere after 9.1,
        at least it's not reproducible with 10.2, but still, 90642 is not yet closed.*
 
+      *Note: The bug mentioned above, is fixed in 11 and back-ported to 10.*
+
 ###### Example
 
 ``` c++
@@ -630,19 +764,15 @@ template <typename N, typename T, typename A>
 
 int main() {
     using namespace cxon::cbor;
-    {   node n;
+    {   // cxon::node::error::invalid
+        node n;
             auto const r = cxon::from_bytes(n, "\xFF");
-        assert(!r &&
-                r.ec.category() == node_error_category::value() &&
-                r.ec == node_error::invalid
-        );
+        assert(!r && r.ec.category() == cxon::node::error_category::value() && r.ec == cxon::node::error::invalid);
     }
-    {   node n;
-            auto const r = cxon::from_bytes(n, "\x81\x81\x81\x81\x01", recursion_depth::set<4>());
-        assert(!r &&
-                r.ec.category() == node_error_category::value() &&
-                r.ec == node_error::recursion_depth_exceeded
-        );
+    {   // cxon::node::error::recursion_depth_exceeded
+        node n;
+            auto const r = cxon::from_bytes(n, "\x81\x81\x81\x81\x01", cxon::node::recursion_depth::set<4>());
+        assert(!r && r.ec.category() == cxon::node::error_category::value() && r.ec == cxon::node::error::recursion_depth_exceeded);
     }
 }
 ```
@@ -661,3 +791,5 @@ Distributed under the MIT license. See [`LICENSE`](../../../../../LICENSE) for m
 [cpp-vec]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
 [cpp-str]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [cpp-typ]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
+[cpp-hash]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Hash&oldid=120791

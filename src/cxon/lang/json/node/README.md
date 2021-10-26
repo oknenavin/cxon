@@ -76,17 +76,17 @@ int main() {
                 { {"object", 0} },  // object if empty or array(s) of two elements
                 { 1, 2, 3 },        // array otherwise
                 "4",                // string
+                3.14,               // real
                 3,                  // signed
                 14U,                // unsigned
-                3.14,               // real
                 true,               // boolean
                 nullptr             // null
             }
         },
         { "string", "string" },
+        { "real", 3.14 },
         { "sint", 3 },
         { "uint", 14U },
-        { "real", 3.14 },
         { "boolean", false },
         { "null", nullptr }
     };
@@ -99,9 +99,9 @@ int main() {
             o["object"] = node::object {};      assert(o["object"].is<node::object>());
             o["array"] = node::array {};        assert(o["array"].is<node::array>());
             o["string"] = "string";             assert(o["string"].is<node::string>());
+            o["real"] = 3.14;                   assert(o["real"].is<node::real>());
             o["sint"] = 3;                      assert(o["sint"].is<node::sint>());
             o["uint"] = 14U;                    assert(o["uint"].is<node::uint>());
-            o["real"] = 3.14;                   assert(o["real"].is<node::real>());
             o["boolean"] = false;               assert(o["boolean"].is<node::boolean>());
             o["null"] = nullptr;                assert(o["null"].is<node::null>());
         auto& o1 = o["object"].get<node::object>(); // get value reference, the type is known
@@ -110,9 +110,9 @@ int main() {
             a.push_back(node::object {});       assert(a.back().is<node::object>());
             a.push_back(node::array {1, 2, 3}); assert(a.back().is<node::array>());
             a.push_back("4");                   assert(a.back().is<node::string>());
+            a.push_back(3.14);                  assert(a.back().is<node::real>());
             a.push_back(3);                     assert(a.back().is<node::sint>());
             a.push_back(14U);                   assert(a.back().is<node::uint>());
-            a.push_back(3.14);                  assert(a.back().is<node::real>());
             a.push_back(true);                  assert(a.back().is<node::boolean>());
             a.push_back(nullptr);               assert(a.back().is<node::null>());
         auto* o2 = a[0].get_if<node::object>(); // get value pointer if the type match
@@ -131,23 +131,23 @@ The resulting `JSON` is (*note, that the default `real` type is `double`*):
 
 ``` json
 {
-    "object": { "object": 0 },
     "array": [
-        { "object": 0 },
-        [ 1, 2, 3 ],
+        {"object": 0},
+        [1, 2, 3],
         "4",
+        3.1400000000000001,
         3,
         14,
-        3.1400000000000001,
         true,
         null
     ],
-    "string": "string",
-    "sint": 3,
-    "uint": 14,
-    "real": 3.1400000000000001,
     "boolean": false,
-    "null": null
+    "null": null,
+    "object": {"object": 0},
+    "real": 3.1400000000000001,
+    "sint": 3,
+    "string": "string",
+    "uint": 14
 }
 ```
 
@@ -166,34 +166,44 @@ namespace cxon::json {
 }
 ```
 
+`basic_node` is compliant with [AllocatorAwareContainer][cpp-alaw] requirements.
+
 ###### Aliases
 
-Type            | Definition
-----------------|---------------------------------------
-`cxon::json::node`  | `using node = basic_node<node_traits>`
+Type                | Definition
+--------------------|---------------------------------------
+`cxon::json::node`  | `using node = basic_node<node_traits<>>`
 
 ###### Template parameters
 
-  - [`Traits`](#traits) - traits class specifying the mapping type for each `JSON` value type
+  - [`Traits`](#traits) - traits class specifying the allocator, the mapping between C++ and JSON and whether the storage for
+given type should be allocated on the stack or in the heap.
 
 ###### Non-member types
 
 ```c++
-enum class node_kind { object, array, string, sint, uint, real, boolean, null };
+enum class node_kind { object, array, string, real, sint, uint, boolean, null };
 ```
 
 ###### Member types
 
-Member type | Definition
-------------|------------------------------------------
-`null`      | `Traits::null_type`
-`boolean`   | `Traits::boolean_type`
-`sint`      | `Traits::sint_type`
-`uint`      | `Traits::uint_type`
-`real`      | `Traits::real_type`
-`string`    | `Traits::string_type`
-`array`     | `Traits::array_type<basic_node>`
-`object`    | `Traits::object_type<basic_node, basic_node>`
+Member type      | Definition
+-----------------|------------------------------------------
+`object`         | `Traits::object_type<basic_node, basic_node>`
+`array`          | `Traits::array_type<basic_node>`
+`string`         | `Traits::string_type`
+`real`           | `Traits::real_type`
+`sint`           | `Traits::sint_type`
+`uint`           | `Traits::uint_type`
+`boolean`        | `Traits::boolean_type`
+`null`           | `Traits::null_type`
+`allocator_type` | `rebind_t<typename Traits::allocator_type, basic_node>`
+
+where `rebind_t` is defined as:
+``` c++
+template <typename Al, typename T>
+    using rebind_t = typename std::allocator_traits<Al>::template rebind_alloc<T>;
+```
 
 ###### Member functions
 
@@ -206,37 +216,88 @@ Member type | Definition
   - [`imbue`](#imbue) - resets node's value type; returns value reference
   - [`get`](#get) - returns value reference
   - [`get_if`](#get_if) - returns value pointer if node's value type matches
-  - [`operator ==`](#comparison-operators) - compare for equality
-  - [`operator !=`](#comparison-operators) - compare for inequality
+  - [`swap`](#swap) - swaps the contents of two nodes
 
 ###### Non-member functions
 
-  - `is` - returns `true` if node's value is of given type
-  - `imbue` - resets node's value type; returns value reference
-  - `get` - returns value reference
-  - `get_if` - returns value pointer if node's value type matches
+  - [`operator ==`](#comparison-operators) - compare for equality
+  - [`operator !=`](#comparison-operators) - compare for inequality
+  - [`operator <`](#comparison-operators) - less than
+  - [`hash`](#hash) - function-object implementing [`Hash`](cpp-hash) requirements
+  - `is` - returns `true` if node's value is of given type `(1)`
+  - `imbue` - resets node's value type; returns value reference `(1)`
+  - `get` - returns value reference `(1)`
+  - `get_if` - returns value pointer if node's value type matches `(1)`
 
-Same as the member counterparts with single `basic_node&` argument.
+*`(1)` Same as the member counterparts with single `basic_node&` argument.*
 
 
 --------------------------------------------------------------------------------
 
 ##### Traits
 
+The traits type specifies the allocator, the mapping between C++ and JSON and whether the storage for
+given type should be allocated on the stack or in the heap.
+
+``` c++
+template <typename Al = std::allocator<void>>
+    struct node_traits {
+        // the allocator
+        using                                       allocator_type  = Al;
+        // JSON/C++ mapping
+        template <typename K, typename V> using     object_type     = std::map<K, V, std::less<K>, rebind_t<Al, std::pair<const K, V>>>;
+        template <typename T> using                 array_type      = std::vector<T, rebind_t<Al, T>>;
+        using                                       string_type     = std::basic_string<char, std::char_traits<char>, rebind_t<Al, char>>;
+        using                                       real_type       = double;
+        using                                       sint_type       = long long;
+        using                                       uint_type       = unsigned long long;
+        using                                       boolean_type    = bool;
+        using                                       null_type       = std::nullptr_t;
+        // the types listed here will be allocated in the heap
+        using                                       dynamic_types   = integer_sequence<node_kind, node_kind::object, node_kind::array>;
+    };
+```
+
+`dynamic_types` serves two purposes:
+  - Support for containers that do not support *incomplete* types.
+    For example, unordered maps and sets implementations in `libstdc++` do not support incomplete types and
+    if for example, `basic_node::object` is mapped to `std::unordered_map`, it must be a dynamic type, otherwise
+    the result will be a compilation error.
+  - To reduce the size of `basic_node` as it's implemented as a union type.
+
 ###### Example
 
 ```c++
-struct traits : cxon::json::node_traits {
-    using                               string_type = std::u16string;
-    template <class T> using            array_type = std::list<T>;
+// custom mapping
+
+struct traits : cxon::json::node_traits<> {
     template <class K, class V> using   object_type = std::multimap<K, V>;
+    template <class T> using            array_type = std::list<T>;
+    using                               string_type = std::u16string;
 };
 ...
 using node = cxon::json::basic_node<traits>;
 node n;
-cxon::from_bytes(n, "{\"k\": 42, \"k\": 43}");
-assert(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
+    cxon::from_bytes(n, "{\"key\": 42, \"key\": 43}");
+assert(n.is<node::object>() && n.get<node::object>().count(u"key") == 2);
 ```
+
+``` c++
+// custom allocator
+
+using node = cxon::json::basic_node<
+    cxon::json::node_traits<std::pmr::polymorphic_allocator<void>>
+>;
+...
+char bf[4096];
+std::pmr::monotonic_buffer_resource rs(bf, sizeof(bf));
+std::pmr::polymorphic_allocator<node> al(&rs);
+
+node n(al);
+    n = { 1, 2, 3};
+assert(n == node::array { 1, 2, 3});
+```
+
 
 --------------------------------------------------------------------------------
 
@@ -271,13 +332,15 @@ basic_node(const char* v);
 basic_node(std::initializer_list l);    (5)
 ```
 
-Construct new node from a variety of data sources.
+Construct new node from a variety of sources.
   - `(1)` Default constructor. Constructs node with `null` value type.
   - `(2)` Move and copy constructors
   - `(3)` Move and copy constructors for each value type
   - `(4)` Constructors for `string` and `integral` value types
-  - `(5)` Constructors from initializer list. Will create an object if empty
-          or array(s) of two elements, array otherwise
+  - `(5)` Constructors from initializer list. Create an object if empty
+          or array(s) of two elements - array otherwise
+
+*Note: Each constructor has its allocator argument companion.*
 
 ###### Example
 
@@ -287,34 +350,35 @@ using namespace cxon::json;
     node n; assert(n.is<node::null>());
 }
 {   // (2)
-    node o = true; assert(o.is<node::boolean>());
-    node n(o); assert(n.is<node::boolean>() && n.get<node::boolean>());
+    node n1 = true; assert(n1 == true);
+    node n2(n1); assert(n2 == true);
+    node n3(std::move(n1)); assert(n3 == true);
 }
 {   // (3)
-    node n(42.0); assert(n.is<node::real>() && n.get<node::real>() == 42.0); // floating-point
+    node n1(42.0); assert(n1 == 42.0); // floating-point
 }
 {   // (3)
-    node::object const o = { {"key", "value"} };
-    node n(o); assert(n.is<node::object>() && n.get<node::object>() == o);
+    node::object const o = {{"key", "value"}};
+    node n(o); assert(n == o);
 }
 {   // (3)
-    node::array const a = { 1, "string" };
-    node n(a); assert(n.is<node::array>() && n.get<node::array>() == a);
+    node::array const a = {1, "string"};
+    node n(a); assert(n == a);
 }
 {   // (4)
-    node n(42); assert(n.is<node::sint>() && n.get<node::sint>() == 42); // signed
+    node n(42); assert(n == 42); // signed
 }
 {   // (4)
-    node n(42U); assert(n.is<node::uint>() && n.get<node::uint>() == 42); // unsigned
+    node n(42U); assert(n == 42U); // unsigned
 }
 {   // (4)
-    node n("string"); assert(n.is<node::string>() && n.get<node::string>() == "string");
+    node n("string"); assert(n == "string");
 }
 {   // (5)
-    node n({{1, 2}, {3, 4}}); CHECK(n.is<node::object>() && n.get<node::object>() == (node::object {{1, 2}, {3, 4}}));
+    node n({{1, 2}, {3, 4}}); assert(n == (node::object {{1, 2}, {3, 4}}));
 }
 {   // (5)
-    node n({1, 2, 3, 4}); CHECK(n.is<node::array>() && n.get<node::array>() == (node::array {1, 2, 3, 4}));
+    node n({1, 2, 3, 4}); assert(n == (node::array {1, 2, 3, 4}));
 }
 ```
 
@@ -492,17 +556,82 @@ assert(n.get_if<node::array>() == nullptr);
 
 --------------------------------------------------------------------------------
 
+##### Swap
+
+``` c++
+void swap(basic_node& n);
+```
+
+###### Example
+
+``` c++
+using namespace cxon::json;
+node n1 = "text", n2 = {1, 2, 3};
+n1.swap(n2); assert(n1 == node::array {1, 2, 3} && n2 == "text");
+```
+
+
+--------------------------------------------------------------------------------
+
 ##### Comparison operators
 
 ``` c++
-bool operator == (const basic_node& n) const; (1)
-bool operator != (const basic_node& n) const; (2)
+friend bool operator ==(const basic_node& f, const basic_node& s) noexcept; (1)
+friend bool operator !=(const basic_node& f, const basic_node& s) noexcept; (2)
+friend bool operator  <(const basic_node& f, const basic_node& s) noexcept; (3)
 ```
 
 ###### Return value
 
-  - `(1)` `true` if equal, `false` otherwise
-  - `(2)` `false` if equal, `true` otherwise
+  - `(1)` `true` if `f` equals `s`, `false` otherwise
+  - `(2)` `false` if `f` equals `s`, `true` otherwise
+  - `(2)` `true` if `f` is less than `s`, `false` otherwise
+
+Also, `(1)` and `(2)` have overloads for each value type:
+
+``` c++
+friend bool operator ==(const basic_node& n, const basic_node::<value-type>& v) noexcept;                   (1)
+friend bool operator ==(const basic_node::<value-type>& v, const basic_node& n) noexcept;
+friend bool operator !=(const basic_node& n, const basic_node::<value-type>& v) noexcept;
+friend bool operator !=(const basic_node::<value-type>& v, const basic_node& n) noexcept;
+
+friend bool operator ==(const basic_node& n, const basic_node::null& v) noexcept;                           (2)
+friend bool operator ==(const T& basic_node::null, const basic_node& n) noexcept;
+
+friend bool operator ==(const basic_node& n, const typename basic_node::string::value_type& v) noexcept;    (3)
+friend bool operator ==(const typename basic_node::string::value_type& v, const basic_node& n) noexcept;
+friend bool operator !=(const basic_node& n, const typename basic_node::string::value_type& v) noexcept;
+friend bool operator !=(const typename basic_node::string::value_type& v, const basic_node& n) noexcept;
+```
+  -  `(1)` for one of `object`, `array`, `string`, `real`, `sint`, `uint`, `boolean`
+  -  `(2)` for `null`
+  -  `(3)` for `string::value_type**_` - char pointers
+
+###### Example
+
+``` c++
+using namespace cxon::json;
+node n = 42;
+assert(n == 42 && 42 == n);
+assert(n != 24 && 24 != n);
+node m = 43;
+assert(n < m);
+```
+
+
+--------------------------------------------------------------------------------
+
+#### hash
+
+``` c++
+namespace cxon {
+    template <typename Tr> struct hash<json::basic_node<Tr>>;
+}
+
+namespace std {
+    template <typename Tr> struct hash<cxon::json::basic_node<Tr>>;
+}
+```
 
 
 --------------------------------------------------------------------------------
@@ -526,7 +655,7 @@ bool operator != (const basic_node& n) const; (2)
       `node::recursion_depth`      | read/write | `unsigned` | 64      | max recursion depth
       `node::json::arbitrary_keys` | read/write | `bool`     | false   | allow `node` as object key
       `node::json::extract_nans`   | read       | `bool`     | false   | convert `inf`/`nan` strings to `node::real`
-  
+
       *Note: The interface is overloaded for `cxon::json::basic_node` and the overload
        passes the `recursion_guard` parameter. If `cxon::json::basic_node` is part of a type
        (e.g. `std::vector<basic_node>`) and guarding against recursion is needed, then
@@ -541,6 +670,8 @@ bool operator != (const basic_node& n) const; (2)
       *Note: The bug mentioned above, seems to be resolved somewhere after 9.1 (at least it's not reproducible
       with 10.2), but still, 90642 is not yet closed.*
 
+      *Note: The bug mentioned above, is fixed in 11 and back-ported to 10.*
+
 ###### Example
 
 ``` c++
@@ -550,21 +681,28 @@ bool operator != (const basic_node& n) const; (2)
 
 int main() {
     using namespace cxon::json;
-    {   node n;
+    {   // cxon::node::error::invalid
+        node n;
             auto const r = cxon::from_bytes(n, "#[1]");
-        assert(!r &&
-                r.ec.category() == node_error_category::value() &&
-                r.ec == node_error::invalid
-        );
+        assert(!r && r.ec.category() == cxon::node::error_category::value() && r.ec == cxon::node::error::invalid);
     }
-    {   node n;
-            auto const r = cxon::from_bytes(n, "[[[[1]]]]", recursion_depth::set<4>());
-        assert(!r &&
-                r.ec.category() == node_error_category::value() &&
-                r.ec == node_error::recursion_depth_exceeded
-        );
+    {   // cxon::node::error::recursion_depth_exceeded
+        node n;
+            auto const r = cxon::from_bytes(n, "[[[[1]]]]", cxon::node::recursion_depth::set<4>());
+        assert(!r && r.ec.category() == cxon::node::error_category::value() && r.ec == cxon::node::error::recursion_depth_exceeded);
+    }
+    {   // cxon::node::arbitrary_keys
+        node n;
+            cxon::from_bytes(n, "{42: \"is the answer\"}", cxon::node::json::arbitrary_keys::set<true>());
+        assert(n == (node::object {{42U, "is the answer"}}));
+    }
+    {   // cxon::node::extract_nans
+        node n;
+            cxon::from_bytes(n, "[\"-inf\", \"inf\"]", cxon::node::json::extract_nans::set<true>());
+        assert(n == (node::array {-std::numeric_limits<node::real>::infinity(), std::numeric_limits<node::real>::infinity()}));
     }
 }
+
 ```
 
 
@@ -581,3 +719,5 @@ Distributed under the MIT license. See [`LICENSE`](../../../../../LICENSE) for m
 [cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
 [cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
 [cpp-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
+[cpp-hash]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Hash&oldid=120791
