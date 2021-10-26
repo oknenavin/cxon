@@ -109,11 +109,15 @@ template <typename T>
                 CHECK(!r && r.ec == cxon::node::error::recursion_depth_exceeded);
             }
             {   node n;
-                auto const r = cxon::from_bytes(n, "\xFF");
+                    auto const r = cxon::from_bytes(n, "\xFF");
                 CHECK(!r && r.ec == cxon::node::error::invalid);
             }
+            {   node n;
+                    auto const r = cxon::from_bytes(n, "\xFE");
+                CHECK(!r && r.ec == cxon::cbor::read_error::unexpected);
+            }
             {   node n = node::simple {0x14}; std::string s;
-                auto r = cxon::to_bytes(s, n);
+                    auto r = cxon::to_bytes(s, n);
                 CHECK(!r && r.ec == cxon::cbor::write_error::argument_invalid);
             }
             {   using namespace cxon::node;
