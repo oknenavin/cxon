@@ -562,7 +562,7 @@ namespace cxon { // hash
                         CXON_JSON_TYPE_DEF(sint);
                         CXON_JSON_TYPE_DEF(uint);
                         CXON_JSON_TYPE_DEF(boolean);
-                        case json::node_kind::null:     return 0; //CXON_JSON_TYPE_DEF(null); // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
+                        CXON_JSON_TYPE_DEF(null);
 #                   undef CXON_JSON_TYPE_DEF
                 }
                 return 0; // LCOV_EXCL_LINE
