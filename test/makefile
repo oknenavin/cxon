@@ -27,7 +27,8 @@ check-cbor-src = \
     $(srcdir)/cbor/cbor.std.cxx
 
 check-cbor-node-src = \
-    $(srcdir)/cbor/cbor.node.cxx
+    $(srcdir)/cbor/cbor.node.cxx \
+    $(srcdir)/cbor/cbor.node.self.cxx
 
 check: check-json check-json-node check-cbor check-cbor-node
 
