@@ -6,8 +6,8 @@
 #include "json.node.hxx"
 
 #include "cxon/json.hxx"
-#include "cxon/lib/node.ordered.hxx"
 #include "cxon/lang/json/tidy.hxx"
+#include "cxon/lib/node.ordered.hxx"
 
 #include <fstream>
 #include <cstdio>

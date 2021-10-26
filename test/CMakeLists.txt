@@ -48,7 +48,7 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.cbor.node src/cbor/cbor.node.cxx
+    cxon.cbor.node src/cbor/cbor.node.cxx src/cbor/cbor.node.self.cxx
 )
 set_target_properties (
     cxon.cbor.node PROPERTIES

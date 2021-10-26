@@ -9,13 +9,9 @@
 
 #include "cxon/json.hxx"
 #include "cxon/cbor.hxx"
-
-#include "../utility.hxx"
-
+#include "cxon/lang/json/tidy.hxx"
 #include "cxon/lib/node.ordered.hxx"
 #include "cxon/lib/std/list.hxx"
-
-#include "cxon/lang/json/tidy.hxx"
 
 #include <unordered_set>
 #include <unordered_map>
