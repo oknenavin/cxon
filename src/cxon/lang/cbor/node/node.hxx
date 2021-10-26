@@ -681,16 +681,22 @@ namespace cxon { namespace cbor { // helpers
 
 namespace cxon { // hash
 
-    template <typename T, typename V>
-        struct hash<cbor::taggle<T, V>> {
-            std::size_t operator ()(const cbor::taggle<T, V>& t) const noexcept {
-                return make_hash(t.tag, t.value);
+    template <>
+        struct hash<cbor::undefined> {
+            std::size_t operator ()(cbor::undefined) const noexcept {
+                return make_hash(-1);
             }
         };
     template <typename T>
         struct hash<cbor::simple<T>> {
             std::size_t operator ()(const cbor::simple<T>& t) const noexcept {
                 return make_hash(t.value);
+            }
+        };
+    template <typename T, typename V>
+        struct hash<cbor::taggle<T, V>> {
+            std::size_t operator ()(const cbor::taggle<T, V>& t) const noexcept {
+                return make_hash(t.tag, t.value);
             }
         };
 
@@ -709,8 +715,8 @@ namespace cxon { // hash
                         CXON_CBOR_TYPE_DEF(uint);
                         CXON_CBOR_TYPE_DEF(simple);
                         CXON_CBOR_TYPE_DEF(boolean);
-                        case cbor::node_kind::null:         return  1; //CXON_CBOR_TYPE_DEF(null); // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
-                        case cbor::node_kind::undefined:    return -1;
+                        CXON_CBOR_TYPE_DEF(null);
+                        CXON_CBOR_TYPE_DEF(undefined);
 #                   undef CXON_CBOR_TYPE_DEF
                 }
                 return 0; // LCOV_EXCL_LINE

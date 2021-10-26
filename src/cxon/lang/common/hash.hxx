@@ -36,6 +36,13 @@ namespace cxon {
             private: std::hash<T> h_;
         };
 
+    template <> // g++-8: error: use of deleted function ‘std::hash<std::nullptr_t>::hash()’
+        struct hash<std::nullptr_t> {
+            std::size_t operator ()(std::nullptr_t) const noexcept {
+                return make_hash(0);
+            }
+        };
+
     template <typename K, typename V>
         struct hash<std::pair<K, V>> {
             std::size_t operator ()(const std::pair<K, V>& t) const noexcept {
