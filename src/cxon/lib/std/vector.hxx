@@ -18,13 +18,6 @@
 namespace cxon { namespace cnt {
 
     template <typename T, typename ...R>
-        struct continuous<std::vector<T, R...>> {
-            static auto range(const std::vector<T, R...>& i) -> decltype(std::make_pair(i.data(), i.data() + i.size())) {
-                return std::make_pair(i.data(), i.data() + i.size());
-            }
-        };
-
-    template <typename T, typename ...R>
         struct traits<std::vector<T, R...>> {
             template <typename II>
                 static bool append(std::vector<T, R...>& c, II f, II l) {

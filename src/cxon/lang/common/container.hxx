@@ -266,8 +266,16 @@ namespace cxon { namespace cnt {
 
     template <typename C>
         struct continuous {
-            static constexpr auto range(const C& c) -> decltype(std::make_pair(std::begin(c), std::end(c))) {
-                return std::make_pair(std::begin(c), std::end(c));
+            template <typename D = C>
+                static constexpr auto range_(option<1>, const D& c) -> decltype(std::make_pair(c.data(), c.data() + c.size())) {
+                    return std::make_pair(c.data(), c.data() + c.size());
+                }
+            template <typename D = C>
+                static constexpr auto range_(option<0>, const D& c) -> decltype(std::make_pair(std::begin(c), std::end(c))) {
+                    return std::make_pair(std::begin(c), std::end(c));
+                }
+            static constexpr auto range(const C& c) -> decltype(range_(option<1>(), c)) {
+                return range_(option<1>(), c);
             }
         };
 
