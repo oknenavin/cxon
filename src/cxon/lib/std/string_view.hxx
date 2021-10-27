@@ -21,17 +21,6 @@
 #           include "cxon/lang/cbor/lib/std/string_view.hxx"
 #       endif
 
-    namespace cxon { namespace cnt {
-
-        template <typename T, typename ...R>
-            struct continuous<std::basic_string_view<T, R...>> {
-                static auto range(const std::basic_string_view<T, R...>& i) -> decltype(std::make_pair(i.data(), i.data() + i.size())) {
-                    return std::make_pair(i.data(), i.data() + i.size());
-                }
-            };
-
-    }}
-
 #   endif // CXON_HAS_LIB_STD_STRING_VIEW
 
 #endif // CXON_LIB_STD_STRING_VIEW_HXX_

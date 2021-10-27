@@ -15,15 +15,4 @@
 #       include "cxon/lang/cbor/lib/std/array.hxx"
 #   endif
 
-namespace cxon { namespace cnt {
-
-    template <typename T, std::size_t N>
-        struct continuous<std::array<T, N>> {
-            static auto range(const std::array<T, N>& i) -> decltype(std::make_pair(i.data(), i.data() + i.size())) {
-                return std::make_pair(i.data(), i.data() + i.size());
-            }
-        };
-
-}}
-
 #endif // CXON_LIB_STD_ARRAY_
