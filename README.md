@@ -20,12 +20,68 @@
 
 --------------------------------------------------------------------------------
 
-`CXON` is a C++ serialization interface  
-`CXON` is a `C++11` compliant, self contained, header-only library  
-`CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format  
-`CXON` implements [`CBOR`](https://cbor.io) as a serialization format  
-`CXON` allows for cross-format serialization and deserialization  
-`CXON` is easy to extend for different formats and types, imposing minimal overhead  
+  - `CXON` is a C++ serialization interface  
+  - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (example for text-based data format)  
+  - `CXON` implements [`CBOR`](https://cbor.io) as a serialization format (example for binary data format)  
+  - `CXON` is easy to extend for different formats and types with [zero-overhead](cpp-zeov)  
+  - `CXON` is a `C++11` compliant, self contained and compact header-only library  
+
+Although `CXON` is a serialization library, its goal is to actually compete with `JSON`/`CBOR`/etc. libraries like
+`Boost.JSON`/`RapidJSON`/etc. and its main advantage is, that no intermediate type is needed to represent the data - 
+any `C++` type that matches it semantically can be used.
+
+###### Example
+``` c++
+#include "cxon/json.hxx"
+#include "cxon/lib/std/vector.hxx" // for <vector>
+
+#include <cassert>
+
+int main() {
+    std::vector<int> cxx; // or std::array, std::list, std::set, etc.
+        // the input is a JSON array and semantically it is an array of integers
+        auto result = cxon::from_bytes(cxx,  "[1, 2, 3]");
+    assert(result && cxx == std::vector<int> ({1, 2, 3}));
+    // the data is loaded successfully, no additional semantic validation is needed
+}
+```
+
+Once the data is loaded successfully it means, that it is syntactically and semantically correct.  
+In contrast, most of the `JSON`/`CBOR`/etc. libraries represent arbitrary data
+with a polymorphic type (called `DOM`, `value`, etc.) and parsing of the input only means,
+that it is syntactically correct.
+
+
+###### Example
+``` c++
+// pseudo code
+value_type json = json_lib::parse("[1, 2, 3]");
+assert(json.has_parsing_erros()); // check for syntax errors
+// check the semantics, expected is an array of integers
+assert(json.is_array()); // check the type
+auto& array = json.get_array();
+assert( // check the values
+    array.size() >= 3 &&
+    array[0].is_integer() &&
+    array[1].is_integer() &&
+    array[2].is_integer()
+);
+// ok, the input is semantically correct
+// however, the values still need special care to access
+int x0 = array[0].get_integer();
+...
+```
+
+For completeness, `CXON` also provides polymorphic types for the supported formats, which are on par
+with the functionality provided by these libraries.  
+The performance is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
+in this respect, `CXON` is close to the best. An important note here, is that many of the libraries emphasize
+the floating-point serialization and deserialization performance, utilizing very fast (and complex) algorithms.
+In contrast, by default, `CXON` uses `<charconv>` (with a fall back for `C++11`) for this. `<charconv>` is
+fast, but especially the parsing can be several times slower than these fantastic algorithms.  
+The memory management is often important, especially for the embedded space, and `CXON` is well suited - 
+`CXON` does not allocate in general; it's up to the types provided. In the first example, the memory management
+will be handled completely by `std::vector` and its allocator (whatever it is).
 
 
 --------------------------------------------------------------------------------
@@ -33,6 +89,7 @@
 #### Contents
   - [Introduction](#introduction)
   - [Formats](#formats)
+  - [Performance](#performance)
   - [Compilation](#compilation)
   - [Installation](#installation)
   - [Documentation](#documentation)
@@ -272,6 +329,13 @@ which can represent arbitrary `JSON` (it's also an example of how `CXON` can be 
 
 --------------------------------------------------------------------------------
 
+#### Performance
+
+TODO
+
+
+--------------------------------------------------------------------------------
+
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
@@ -339,13 +403,14 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [RFC7049]: https://tools.ietf.org/rfc/rfc7049.txt
 [RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt
 [GitHub]: https://github.com/oknenavin/cxon
-[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
 [cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
 [cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
+[cpp-zeov]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/Zero-overhead_principle&oldid=118760
+[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
 [std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
 [std-valarr]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
 [std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
