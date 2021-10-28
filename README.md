@@ -27,7 +27,7 @@
   - `CXON` is a `C++11` compliant, self contained and compact header-only library  
 
 Although `CXON` is a serialization library, its goal is to actually compete with `JSON`/`CBOR`/etc. libraries like
-`Boost.JSON`/`RapidJSON`/etc. and its main advantage is, that no intermediate type is needed to represent the data - 
+`Boost.JSON`/`RapidJSON`/etc. and its main **advantage** is, that no intermediate type is needed to represent the data - 
 any `C++` type that matches it semantically can be used.
 
 ###### Example
@@ -74,12 +74,13 @@ int x0 = array[0].get_integer();
 
 For completeness, `CXON` also provides polymorphic types for the supported formats, which are on par
 with the functionality provided by these libraries.  
-The performance is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
+The **performance** is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
 in this respect, `CXON` is close to the best. An important note here, is that many of the libraries emphasize
 the floating-point serialization and deserialization performance, utilizing very fast (and complex) algorithms.
 In contrast, by default, `CXON` uses `<charconv>` (with a fall back for `C++11`) for this. `<charconv>` is
-fast, but especially the parsing can be several times slower than these fantastic algorithms.  
-The memory management is often important, especially for the embedded space, and `CXON` is well suited - 
+fast, but especially the parsing can be several times slower than these fantastic algorithms - at least the
+implementations currently available.  
+The **memory management** is often important, especially in the embedded space, and `CXON` is well suited - 
 `CXON` does not allocate in general; it's up to the types provided. In the first example, the memory management
 will be handled completely by `std::vector` and its allocator (whatever it is).
 
@@ -87,7 +88,7 @@ will be handled completely by `std::vector` and its allocator (whatever it is).
 --------------------------------------------------------------------------------
 
 #### Contents
-  - [Introduction](#introduction)
+  - [Overview](#overview)
   - [Formats](#formats)
   - [Performance](#performance)
   - [Compilation](#compilation)
@@ -98,13 +99,56 @@ will be handled completely by `std::vector` and its allocator (whatever it is).
 
 --------------------------------------------------------------------------------
 
-#### Introduction
+#### Overview
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] interface.
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] interface.  
+`CXON` extends `C++17`'s [`<charconv>`][std-charconv] interface with:
+
+  - traits template parameter (support for different serialization formats, 
+    see [`Format traits`](src/cxon/README.md#format-traits))
+  - trailing named parameters of arbitrary types (for passing of parameters to specific 
+    type serializers, see [Named parameters](src/cxon/README.md#named-parameters)
+  - input and output iterators for I/O (allowing streams, containers and arrays, 
+    see [`Interface`](src/cxon/README.md#interface))
+
+The traits can be stateful or stateless allowing arbitrary complex formats.  
+Named parameters can be compile time or runtime giving flexibility for the implementations.
+
+`CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box, including:
+
+  - [fundamental types][cpp-fund-types]
+      - `nullptr_t`
+      - `bool`
+      - character types - `char`, `wchar_t`, `char8_t`, `char16_t` and `char32_t`
+      - integral types - `signed` and `unsigned` `char`, `short int`, `int`, `long int`, `long long int`
+      - floating-point types - `float`, `double`, `long double`
+  - compound types
+      - [`pointer types`][cpp-ptr]
+      - [`array types`][cpp-arr]
+      - [`enumeration types`][cpp-enum]
+      - [`class types`][cpp-class]
+  - standard library types
+      - [`containers library`][std-container]
+      - [`std::pair`][std-pair]
+      - [`std::tuple`][std-tuple]
+      - [`std::optional`][std-opt]
+      - [`std::variant`][std-var]
+      - [`std::basic_string`][std-bstr]
+      - [`std::basic_string_view`][std-strv]
+      - [`std::bitset`][std-bitset]
+      - [`std::complex`][std-complex]
+      - [`std::valarray`][std-valarr]
+      - [`std::chrono::duration`][std-duration]
+      - [`std::chrono::time_point`][std-time-pt]
+
+`CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
+(see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
 
 ###### Example
 
 ``` c++
+// common read/write interface
+
 #include "cxon/json.hxx" // included first, JSON will be the default format
 #include "cxon/cbor.hxx" // not the first, CBOR format must be explicitly specified
 
@@ -140,15 +184,6 @@ int main() {
 }
 ```
 
- `CXON` extends `C++17`'s [`<charconv>`][std-charconv] interface with:
-
-  - traits template parameter (support for different serialization formats, 
-    see [`Format traits`](src/cxon/README.md#format-traits))
-  - trailing named parameters of an arbitrary type (for passing of parameters to specific 
-    type serializers, see [Named parameters](src/cxon/README.md#named-parameters)
-  - input and output iterators for I/O (allowing streams, containers and arrays, 
-    see [`Interface`](src/cxon/README.md#interface))
-
 ###### Example
 
 ``` c++
@@ -164,13 +199,10 @@ int main() {
 
 // named parameter
     using namespace cxon::json;
-    std string pi;
+    std::string pi;
         cxon::to_bytes(pi, 3.1415926, fp_precision::set<3>()); // floating-point precision
     assert(pi == "3.14");
 ```
-
-Traits can be stateful or stateless allowing arbitrary complex formats.  
-Named parameters can be compile time or runtime giving flexibility for the implementations.
 
 
 ###### Interface
@@ -210,36 +242,6 @@ namespace cxon {
 
 }
 ```
-
-`CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box, including:
-
-  - [fundamental types][cpp-fund-types]
-      - `nullptr_t`
-      - `bool`
-      - character types - `char`, `wchar_t`, `char8_t`, `char16_t` and `char32_t`
-      - integral types - `signed` and `unsigned` `char`, `short int`, `int`, `long int`, `long long int`
-      - floating-point types - `float`, `double`, `long double`
-  - compound types
-      - [`pointer types`][cpp-ptr]
-      - [`array types`][cpp-arr]
-      - [`enumeration types`][cpp-enum]
-      - [`class types`][cpp-class]
-  - standard library types
-      - [`containers library`][std-container]
-      - [`std::pair`][std-pair]
-      - [`std::tuple`][std-tuple]
-      - [`std::optional`][std-opt]
-      - [`std::variant`][std-var]
-      - [`std::basic_string`][std-bstr]
-      - [`std::basic_string_view`][std-strv]
-      - [`std::bitset`][std-bitset]
-      - [`std::complex`][std-complex]
-      - [`std::valarray`][std-valarr]
-      - [`std::chrono::duration`][std-duration]
-      - [`std::chrono::time_point`][std-time-pt]
-
-`CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
-(see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
 
 ###### Example
 
