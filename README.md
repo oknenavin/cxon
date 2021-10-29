@@ -77,9 +77,9 @@ with the functionality provided by these libraries.
 The **performance** is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
 in this respect, `CXON` is close to the best. An important note here, is that many of the libraries emphasize
 the floating-point serialization and deserialization performance, utilizing very fast (and complex) algorithms.
-In contrast, by default, `CXON` uses `<charconv>` (with a fall back for `C++11`) for this. `<charconv>` is
-fast, but especially the parsing can be several times slower than these fantastic algorithms - at least the
-implementations currently available.  
+In contrast, by default, `CXON` uses [`<charconv>`][std-charconv] (with a fall back for `C++11`) for this.
+[`<charconv>`][std-charconv] is fast, but especially the parsing can be several times slower than
+these algorithms - at least with the implementations currently available.  
 The **memory management** is often important, especially in the embedded space, and `CXON` is well suited - 
 `CXON` does not allocate in general; it's up to the types provided. In the first example, the memory management
 will be handled completely by `std::vector` and its allocator (whatever it is).
@@ -90,7 +90,6 @@ will be handled completely by `std::vector` and its allocator (whatever it is).
 #### Contents
   - [Overview](#overview)
   - [Formats](#formats)
-  - [Performance](#performance)
   - [Compilation](#compilation)
   - [Installation](#installation)
   - [Documentation](#documentation)
@@ -101,12 +100,12 @@ will be handled completely by `std::vector` and its allocator (whatever it is).
 
 #### Overview
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] interface.  
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] [interface](#interface).  
 `CXON` extends `C++17`'s [`<charconv>`][std-charconv] interface with:
 
   - traits template parameter (support for different serialization formats, 
     see [`Format traits`](src/cxon/README.md#format-traits))
-  - trailing named parameters of arbitrary types (for passing of parameters to specific 
+  - trailing named parameters of arbitrary types (passing of parameters to specific 
     type serializers, see [Named parameters](src/cxon/README.md#named-parameters)
   - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](src/cxon/README.md#interface))
@@ -144,10 +143,50 @@ Named parameters can be compile time or runtime giving flexibility for the imple
 `CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
 
+
+###### Interface
+
+```c++
+namespace cxon {
+
+    template <typename It>
+        struct from_bytes_result {
+            std::error_condition ec; // read error
+            It end; // one-past-the-end iterator of the matched range
+        };
+
+    // from input iterator
+    template <typename Traits, typename T, typename InIt, typename ...Parameters>
+        auto from_bytes(T& t, InIt b, InIt e, Parameters... ps)     -> from_bytes_result<InIt>;
+    // from iterable (e.g. std::string)
+    template <typename Traits, typename T, typename Iterable, typename ...Parameters>
+        auto from_bytes(T& t, const Iterable& i, Parameters... ps)  -> from_bytes_result<decltype(std::begin(i))>;
+
+
+    template <typename It>
+        struct to_bytes_result {
+            std::error_condition ec; // write error
+            It end; // one-past-the-end output iterator
+        };
+
+    // to output iterator
+    template <typename Traits, typename T, typename OutIt, typename ...Parameters>
+        auto to_bytes(OutIt o, const T& t, Parameters... ps)        -> to_bytes_result<OutIt>;
+    // to back insertable (e.g. std::string)
+    template <typename Traits, typename T, typename Insertable, typename ...Parameters>
+        auto to_bytes(Insertable& i, const T& t, Parameters... ps)  -> to_bytes_result<decltype(std::begin(i))>;
+    // to range
+    template <typename Traits, typename T, typename FwIt, typename ...Parameters>
+        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps) -> to_bytes_result<FwIt>;
+
+}
+```
+
+
 ###### Example
 
 ``` c++
-// common read/write interface
+// common interface
 
 #include "cxon/json.hxx" // included first, JSON will be the default format
 #include "cxon/cbor.hxx" // not the first, CBOR format must be explicitly specified
@@ -187,74 +226,50 @@ int main() {
 ###### Example
 
 ``` c++
-// customized format
-    struct custom_traits : cxon::json::format_traits {
-        // if the input is trusted, we can disable some checks
-        static constexpr bool read_validate_string_utf8 = false;
-    };
-    using TRJS = cxon::JSON<custom_traits>; // TRusted JSon
-    ...
-    std::vector<std::string> sv;
-        cxon::from_bytes<TRJS>(sv, R"(["trusted", "strings"])");
+// traits and named parameters
 
-// named parameter
-    using namespace cxon::json;
-    std::string pi;
-        cxon::to_bytes(pi, 3.1415926, fp_precision::set<3>()); // floating-point precision
-    assert(pi == "3.14");
-```
+#include "cxon/json.hxx"
 
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/vector.hxx"
 
-###### Interface
+#include <cassert>
 
-```c++
-namespace cxon {
+// custom traits for given format
+struct custom_traits : cxon::json::format_traits {
+    // for example, UTF-8 validation can be disabled
+    static constexpr bool read_validate_string_utf8 = false;
+};
+using TRJS = cxon::JSON<custom_traits>; // TRusted JSon
 
-    template <typename It>
-        struct from_bytes_result {
-            std::error_condition ec; // read error
-            It end; // one-past-the-end iterator of the matched range
-        };
-
-    // from input iterator
-    template <typename Format, typename T, typename InIt, typename ...Parameters>
-        auto from_bytes(T& t, InIt b, InIt e, Parameters... ps)     -> from_bytes_result<InIt>;
-    // from iterable (e.g. std::string)
-    template <typename Format, typename T, typename Iterable, typename ...Parameters>
-        auto from_bytes(T& t, const Iterable& i, Parameters... ps)  -> from_bytes_result<decltype(std::begin(i))>;
-
-
-    template <typename It>
-        struct to_bytes_result {
-            std::error_condition ec; // write error
-            It end; // one-past-the-end output iterator
-        };
-
-    // to output iterator
-    template <typename Format, typename T, typename OutIt, typename ...Parameters>
-        auto to_bytes(OutIt o, const T& t, Parameters... ps)        -> to_bytes_result<OutIt>;
-    // to back insertable (e.g. std::string)
-    template <typename Format, typename T, typename Insertable, typename ...Parameters>
-        auto to_bytes(Insertable& i, const T& t, Parameters... ps)  -> to_bytes_result<decltype(std::begin(i))>;
-    // to range
-    template <typename Format, typename T, typename FwIt, typename ...Parameters>
-        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps) -> to_bytes_result<FwIt>;
-
+int main() {
+    {   // custom traits use
+        std::vector<std::string> cxx;
+            cxon::from_bytes<TRJS>(cxx, R"(["trusted", "strings"])");
+        assert(cxx == std::vector<std::string> ({"trusted", "strings"}));
+    }
+    {   // passing of a named parameter
+        using namespace cxon::json;
+        std::string json;
+            cxon::to_bytes(json, 3.1415926, fp_precision::set<3>()); // floating-point precision
+        assert(json == "3.14");
+    }
 }
 ```
 
 ###### Example
 
-Bind to a library type:
-
 ``` c++
+// using of standard library types
+
 #include "cxon/json.hxx"
-#include "cxon/lib/std/string.hxx" // include cxon/lib/std/<stdlib>.hxx
-#include "cxon/lib/std/vector.hxx" // instead of the standard headers
-#include "cxon/lib/std/map.hxx"    // for any of the supported formats
+
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/map.hxx"
+
 #include <cassert>
 
-// an arbitrary combination of types
 using my_type = std::map<std::string, std::vector<int>>;
 
 int main() {
@@ -265,27 +280,33 @@ int main() {
         cxon::to_bytes(json, mv1);
         // read it from input-iterator, container, buffer, etc. - in this case, std::string
         cxon::from_bytes(mv2, json);
+    // json == "{ \"even\": [2, 4, 6], \"odd\": [1, 3, 5] }"
     assert(mv1 == mv2);
 }
 ```
 
-Binding to a user type:
+###### Example
 
 ``` c++
+// using of user types
+
 #include "cxon/json.hxx"
+
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/list.hxx"
+
 #include <cassert>
 
 struct my_type {
     std::vector<int> even;
     std::list<int> odd;
-    bool operator ==(const my_type& v) const {
+    bool operator ==(const my_type& v) const noexcept {
         return even == v.even && odd == v.odd;
     }
 };
 
 // in this simple case, some trivial macros can be used to implement the type for CXON
+// see cxon/lang/json/class.hxx
 CXON_JSON_CLS(my_type,
     CXON_JSON_CLS_FIELD_ASIS(even),
     CXON_JSON_CLS_FIELD_ASIS(odd)
@@ -297,14 +318,9 @@ int main() {
     std::string json;
         cxon::to_bytes(json, mv1);
         cxon::from_bytes(mv2, json);
+    // json == "{ \"even\": [2, 4, 6], \"odd\": [1, 3, 5] }"
     assert(mv1 == mv2);
 }
-```
-
-In both examples, `my_type` is bound to the same `JSON`:
-
-``` json
-{ "even": [2, 4, 6], "odd": [1, 3, 5] }
 ```
 
 *Somewhat more meaningful example can be found here [`JSON-RPC`](src/cxon/README.md#example-json-rpc).*
@@ -316,24 +332,15 @@ In both examples, `my_type` is bound to the same `JSON`:
 
 ##### [`JSON`](http://json.org)
 
-The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].
-
-Like many similar libraries, `CXON/JSON` implements a polymorphic type [`cxon::json::node`](src/cxon/lang/json/node/README.md),
-which can represent arbitrary `JSON` (it's also an example of how `CXON` can be used).
+The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].  
+`CXON/JSON` also provides a polymorphic type [`cxon::json::node`](src/cxon/lang/json/node/README.md),
+which can represent arbitrary `JSON`.
 
 ##### [`CBOR`](https://cbor.io)
 
-The implementation strictly complies with [`RFC7049`][RFC7049].
-
-Like many similar libraries, `CXON/CBOR` implements a polymorphic type [`cxon::cbor::node`](src/cxon/lang/cbor/node/README.md),
-which can represent arbitrary `JSON` (it's also an example of how `CXON` can be used).
-
-
---------------------------------------------------------------------------------
-
-#### Performance
-
-TODO
+The implementation strictly complies with [`RFC7049`][RFC7049].  
+`CXON/CBOR` also provides a polymorphic type [`cxon::cbor::node`](src/cxon/lang/cbor/node/README.md),
+which can represent arbitrary `JSON`.
 
 
 --------------------------------------------------------------------------------

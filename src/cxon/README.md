@@ -24,12 +24,12 @@
 
 #### Introduction
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] 
-interface with these differences:
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] [interface](#interface).  
+`CXON` extends `C++17`'s [`<charconv>`][std-charconv] interface with:
 
   - traits template parameter (support for different serialization formats, 
     see [`Format traits`](#format-traits))
-  - trailing named parameters of arbitrary type (passing of parameters to specific 
+  - trailing named parameters of arbitrary types (passing of parameters to specific 
     type serializers, see [Named parameters](#named-parameters)
   - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](#interface))
@@ -101,6 +101,7 @@ Does not throw by itself, however specializations may throw or not:
 ``` c++
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx"
+
 #include <cstring>
 #include <cassert>
 
