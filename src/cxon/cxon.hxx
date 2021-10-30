@@ -110,7 +110,7 @@ namespace cxon { // bridge
 
     // read value
 
-    template <typename X, typename T>
+    template <typename X, typename T, typename E = void>
         struct read {
             //template <typename II, typename Cx> static bool value(T& t, II& i, II e, Cx& cx);
         };
@@ -136,7 +136,7 @@ namespace cxon { // bridge
 
     // write value
 
-    template <typename X, typename T>
+    template <typename X, typename T, typename E = void>
         struct write {
             //template <typename O, typename Cx> static bool value(O& o, const T& t, Cx& cx);
         };

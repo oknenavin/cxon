@@ -37,18 +37,24 @@ namespace cxon {
 
     }}
 
-    template <typename X, typename II, typename Cx>
-        inline auto read_value(std::monostate&, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
-            return cbor::tag::read<X>(i, e, cx) && (
-                (bio::peek(i, e) == X::und && (bio::get(i, e), true)) ||
-                (cx/cbor::read_error::unexpected)
-            );
-        }
+    template <typename X>
+        struct read<CBOR<X>, std::monostate> {
+            template <typename II, typename Cx>
+                static bool value(std::monostate&, II& i, II e, Cx& cx) {
+                    return cbor::tag::read<X>(i, e, cx) && (
+                        (bio::peek(i, e) == X::und && (bio::get(i, e), true)) ||
+                        (cx/cbor::read_error::unexpected)
+                    );
+                }
+        };
 
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke<X>(o, X::und, cx);
-        }
+    template <typename X>
+        struct write<CBOR<X>, std::monostate> {
+            template <typename O, typename Cx>
+                static bool value(O& o, std::monostate, Cx& cx) {
+                    return bio::poke<X>(o, X::und, cx);
+                }
+        };
 
     template <typename X, typename ...T>
         struct read<CBOR<X>, std::variant<T...>> {

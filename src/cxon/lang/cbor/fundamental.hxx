@@ -11,36 +11,48 @@
 
 namespace cxon { // nullptr_t
 
-    template <typename X, typename II, typename Cx>
-        inline auto read_value(std::nullptr_t& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
-            II const o = i;
-            return  (bio::get(i, e) == X::nil && (t = nullptr, true)) ||
-                    (bio::rewind(i, o), cx/cbor::read_error::null_invalid)
-            ;
-        }
+    template <typename X>
+        struct read<CBOR<X>, std::nullptr_t> {
+            template <typename II, typename Cx>
+                static bool value(std::nullptr_t& t, II& i, II e, Cx& cx) {
+                    II const o = i;
+                    return  (bio::get(i, e) == X::nil && (t = nullptr, true)) ||
+                            (bio::rewind(i, o), cx/cbor::read_error::null_invalid)
+                    ;
+                }
+    };
 
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, std::nullptr_t, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke<X>(o, X::nil, cx);
-        }
+    template <typename X>
+        struct write<CBOR<X>, std::nullptr_t> {
+            template <typename O, typename Cx>
+                static bool value(O& o, std::nullptr_t, Cx& cx) {
+                    return bio::poke<X>(o, X::nil, cx);
+                }
+        };
 
 }
 
 namespace cxon { // bool
 
-    template <typename X, typename II, typename Cx>
-        inline auto read_value(bool& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {
-            II const o = i;
-                auto const b = bio::get(i, e);
-            return  ((b == X::neg || b == X::pos) && (t = bool(b - X::neg),  true)) ||
-                    (bio::rewind(i, o), cx/cbor::read_error::boolean_invalid)
-            ;
-        }
+    template <typename X>
+        struct read<CBOR<X>, bool> {
+            template <typename II, typename Cx>
+                static bool value(bool& t, II& i, II e, Cx& cx) {
+                    II const o = i;
+                        auto const b = bio::get(i, e);
+                    return  ((b == X::neg || b == X::pos) && (t = bool(b - X::neg),  true)) ||
+                            (bio::rewind(i, o), cx/cbor::read_error::boolean_invalid)
+                    ;
+                }
+        };
 
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, bool t, Cx& cx) -> enable_for_t<X, CBOR> {
-            return bio::poke<X>(o, t ? X::pos : X::neg, cx);
-        }
+    template <typename X>
+        struct write<CBOR<X>, bool> {
+            template <typename O, typename Cx>
+                static bool value(O& o, bool t, Cx& cx) {
+                    return bio::poke<X>(o, t ? X::pos : X::neg, cx);
+                }
+        };
 
 }
 
@@ -83,14 +95,15 @@ namespace cxon { // numeric|character/read
 
     }}
 
-    template <typename X, typename T, typename II, typename Cx>
-        inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && is_same_format<X, CBOR>::value, bool>
-        {
-            return  cbor::tag::read<X>(i, e, cx) &&
-                    cbor::imp::read_integral_<X>(t, i, e, cx)
-            ;
-        }
+    template <typename X, typename T>
+        struct read<CBOR<X>, T, enable_if_t<std::is_integral<T>::value>> {
+            template <typename II, typename Cx>
+                static bool value(T& t, II& i, II e, Cx& cx) {
+                    return  cbor::tag::read<X>(i, e, cx) &&
+                            cbor::imp::read_integral_<X>(t, i, e, cx)
+                    ;
+                }
+        };
 
     namespace cbor { namespace imp {
 
@@ -145,14 +158,15 @@ namespace cxon { // numeric|character/read
 
     }}
 
-    template <typename X, typename T, typename II, typename Cx>
-        inline auto read_value(T& t, II& i, II e, Cx& cx)
-            -> enable_if_t<std::is_floating_point<T>::value && is_same_format<X, CBOR>::value, bool>
-        {
-            return  cbor::tag::read<X>(i, e, cx) &&
-                    cbor::imp::read_floating_point_<X>(t, i, e, cx)
-            ;
-        }
+    template <typename X, typename T>
+        struct read<CBOR<X>, T, enable_if_t<std::is_floating_point<T>::value>> {
+            template <typename II, typename Cx>
+                static bool value(T& t, II& i, II e, Cx& cx) {
+                    return  cbor::tag::read<X>(i, e, cx) &&
+                            cbor::imp::read_floating_point_<X>(t, i, e, cx)
+                    ;
+                }
+        };
 
 }
 
@@ -178,47 +192,50 @@ namespace cxon { // numeric|character/write
 
     }}
 
-    template <typename X, typename T, typename O, typename Cx>
-        inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_unsigned_<T>::value && is_same_format<X, CBOR>::value, bool>
-        {
-            auto const p = cbor::imp::power_(t);
-            return t > 0x17 ?
-                bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
-                bio::poke<X>(o, bio::byte(X::pint + t), cx)
-            ;
-        }
-    template <typename X, typename T, typename O, typename Cx>
-        inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_quantum_<T>::value && is_same_format<X, CBOR>::value, bool>
-        {
-            using Q = typename std::make_unsigned<T>::type;
-            auto const p = cbor::imp::power_(t);
-            return Q(t) > 0x17 ?
-                bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, Q(t), 1 << p, cx) :
-                bio::poke<X>(o, bio::byte(X::pint + Q(t)), cx)
-            ;
-        }
-    template <typename X, typename T, typename O, typename Cx>
-        inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_integral<T>::value && cbor::imp::is_signed_<T>::value && is_same_format<X, CBOR>::value, bool>
-        {
-            auto const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
-            auto const p = cbor::imp::power_(t);
-            return t > 0x17 ?
-                bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
-                bio::poke<X>(o, bio::byte(m + t), cx)
-            ;
-        }
+    template <typename X, typename T>
+        struct write<CBOR<X>, T, enable_if_t<std::is_integral<T>::value && cbor::imp::is_unsigned_<T>::value>> {
+            template <typename O, typename Cx>
+                static bool value(O& o, T t, Cx& cx) {
+                    auto const p = cbor::imp::power_(t);
+                    return t > 0x17 ?
+                        bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
+                        bio::poke<X>(o, bio::byte(X::pint + t), cx)
+                    ;
+                }
+        };
+    template <typename X, typename T>
+        struct write<CBOR<X>, T, enable_if_t<std::is_integral<T>::value && cbor::imp::is_quantum_<T>::value>> {
+            template <typename O, typename Cx>
+                static bool value(O& o, T t, Cx& cx) {
+                    using Q = typename std::make_unsigned<T>::type;
+                    auto const p = cbor::imp::power_(t);
+                    return Q(t) > 0x17 ?
+                        bio::poke<X>(o, bio::byte(X::pint + 0x18 + p), cx) && bio::poke<X>(o, Q(t), 1 << p, cx) :
+                        bio::poke<X>(o, bio::byte(X::pint + Q(t)), cx)
+                    ;
+                }
+        };
+    template <typename X, typename T>
+        struct write<CBOR<X>, T, enable_if_t<std::is_integral<T>::value && cbor::imp::is_signed_<T>::value>> {
+        template <typename O, typename Cx>
+            static bool value(O& o, T t, Cx& cx) {
+                auto const m = t < 0 ? (t = -1 - t, X::nint) : X::pint;
+                auto const p = cbor::imp::power_(t);
+                return t > 0x17 ?
+                    bio::poke<X>(o, bio::byte(m + 0x18 + p), cx) && bio::poke<X>(o, t, 1 << p, cx) :
+                    bio::poke<X>(o, bio::byte(m + t), cx)
+                ;
+            }
+        };
 
-
-    template <typename X, typename T, typename O, typename Cx>
-        inline auto write_value(O& o, T t, Cx& cx)
-            -> enable_if_t<std::is_floating_point<T>::value && is_same_format<X, CBOR>::value, bool>
-        {
-            static constexpr bio::byte m = sizeof(T) == sizeof(float) ? X::fp32 : X::fp64;
-            return bio::poke<X>(o, m, cx) && bio::poke<X>(o, t, cx);
-        }
+    template <typename X, typename T>
+        struct write<CBOR<X>, T, enable_if_t<std::is_floating_point<T>::value>> {
+            template <typename O, typename Cx>
+                static bool value(O& o, T t, Cx& cx) {
+                    static constexpr bio::byte m = sizeof(T) == sizeof(float) ? X::fp32 : X::fp64;
+                    return bio::poke<X>(o, m, cx) && bio::poke<X>(o, t, cx);
+                }
+        };
 
 }
 
