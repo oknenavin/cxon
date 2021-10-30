@@ -241,14 +241,14 @@ The _implementation bridge_ however, bridges three additional methods of extensi
     namespace cxon {
 
         template <typename X>
-            struct read<X, T> {
+            struct read<X, T/*, optional enabler */> {
                 template <typename InIt, typename Cx>
                     static bool value(T& t, InIt& i, InIt e, Cx& cx) {
                         ...
                     }
             };
         template <typename X>
-            struct write<X, T> {
+            struct write<X, T/*, optional enabler */> {
                 template <typename OutIt, typename Cx>
                     static bool value(OutIt&, const T& t, Cx& cx) {
                         ...

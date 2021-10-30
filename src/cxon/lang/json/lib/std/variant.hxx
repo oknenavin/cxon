@@ -35,16 +35,22 @@ namespace cxon {
 
     }}
 
-    template <typename X, typename II, typename Cx>
-        inline auto read_value(std::monostate&, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> {
-            II const o = i;
-            return cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected);
-        }
+    template <typename X>
+        struct read<JSON<X>, std::monostate> {
+            template <typename II, typename Cx>
+                static bool value(std::monostate&, II& i, II e, Cx& cx) {
+                    II const o = i;
+                    return cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected);
+                }
+        };
 
-    template <typename X, typename O, typename Cx>
-        inline auto write_value(O& o, std::monostate, Cx& cx) -> enable_for_t<X, JSON> {
-            return cio::poke<X>(o, X::id::nil, cx);
-        }
+    template <typename X>
+        struct write<JSON<X>, std::monostate> {
+            template <typename O, typename Cx>
+                static bool value(O& o, std::monostate, Cx& cx) {
+                    return cio::poke<X>(o, X::id::nil, cx);
+                }
+        };
 
     template <typename X, typename ...T>
         struct read<JSON<X>, std::variant<T...>> {

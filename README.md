@@ -23,7 +23,7 @@
   - `CXON` is a C++ serialization interface  
   - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (example for text-based data format)  
   - `CXON` implements [`CBOR`](https://cbor.io) as a serialization format (example for binary data format)  
-  - `CXON` is easy to extend for different formats and types with [zero-overhead](cpp-zeov)  
+  - `CXON` is easy to extend for different formats and types with [zero-overhead][cpp-zeov]  
   - `CXON` is a `C++11` compliant, self contained and compact header-only library  
 
 Although `CXON` is a serialization library, its goal is to actually compete with `JSON`/`CBOR`/etc. libraries like
@@ -66,8 +66,8 @@ assert( // check the values
     array[1].is_integer() &&
     array[2].is_integer()
 );
-// ok, the input is semantically correct
-// however, the values still need special care to access
+// the input is semantically correct however,
+// the values still need a special care to access
 int x0 = array[0].get_integer();
 ...
 ```
@@ -157,10 +157,12 @@ namespace cxon {
 
     // from input iterator
     template <typename Traits, typename T, typename InIt, typename ...Parameters>
-        auto from_bytes(T& t, InIt b, InIt e, Parameters... ps)     -> from_bytes_result<InIt>;
+        auto from_bytes(T& t, InIt b, InIt e, Parameters... ps)
+            -> from_bytes_result<InIt>;
     // from iterable (e.g. std::string)
     template <typename Traits, typename T, typename Iterable, typename ...Parameters>
-        auto from_bytes(T& t, const Iterable& i, Parameters... ps)  -> from_bytes_result<decltype(std::begin(i))>;
+        auto from_bytes(T& t, const Iterable& i, Parameters... ps)
+            -> from_bytes_result<decltype(std::begin(i))>;
 
 
     template <typename It>
@@ -171,13 +173,16 @@ namespace cxon {
 
     // to output iterator
     template <typename Traits, typename T, typename OutIt, typename ...Parameters>
-        auto to_bytes(OutIt o, const T& t, Parameters... ps)        -> to_bytes_result<OutIt>;
+        auto to_bytes(OutIt o, const T& t, Parameters... ps)
+            -> to_bytes_result<OutIt>;
     // to back insertable (e.g. std::string)
     template <typename Traits, typename T, typename Insertable, typename ...Parameters>
-        auto to_bytes(Insertable& i, const T& t, Parameters... ps)  -> to_bytes_result<decltype(std::begin(i))>;
+        auto to_bytes(Insertable& i, const T& t, Parameters... ps)
+            -> to_bytes_result<decltype(std::begin(i))>;
     // to range
     template <typename Traits, typename T, typename FwIt, typename ...Parameters>
-        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps) -> to_bytes_result<FwIt>;
+        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps)
+            -> to_bytes_result<FwIt>;
 
 }
 ```
@@ -220,40 +225,6 @@ int main() {
     }
 
     assert(json_out == json_in);
-}
-```
-
-###### Example
-
-``` c++
-// traits and named parameters
-
-#include "cxon/json.hxx"
-
-#include "cxon/lib/std/string.hxx"
-#include "cxon/lib/std/vector.hxx"
-
-#include <cassert>
-
-// custom traits for given format
-struct custom_traits : cxon::json::format_traits {
-    // for example, UTF-8 validation can be disabled
-    static constexpr bool read_validate_string_utf8 = false;
-};
-using TRJS = cxon::JSON<custom_traits>; // TRusted JSon
-
-int main() {
-    {   // custom traits use
-        std::vector<std::string> cxx;
-            cxon::from_bytes<TRJS>(cxx, R"(["trusted", "strings"])");
-        assert(cxx == std::vector<std::string> ({"trusted", "strings"}));
-    }
-    {   // passing of a named parameter
-        using namespace cxon::json;
-        std::string json;
-            cxon::to_bytes(json, 3.1415926, fp_precision::set<3>()); // floating-point precision
-        assert(json == "3.14");
-    }
 }
 ```
 
@@ -322,6 +293,93 @@ int main() {
     assert(mv1 == mv2);
 }
 ```
+
+###### Example
+
+``` c++
+// traits and named parameters
+
+#include "cxon/json.hxx"
+
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/vector.hxx"
+
+#include <cassert>
+
+// custom traits for given format
+struct custom_traits : cxon::json::format_traits {
+    // for example, UTF-8 validation can be disabled
+    static constexpr bool read_validate_string_utf8 = false;
+};
+using TRJS = cxon::JSON<custom_traits>; // TRusted JSon
+
+int main() {
+    {   // custom traits use
+        std::vector<std::string> cxx;
+            cxon::from_bytes<TRJS>(cxx, R"(["trusted", "strings"])");
+        assert(cxx == std::vector<std::string> ({"trusted", "strings"}));
+    }
+    {   // passing of a named parameter
+        using namespace cxon::json;
+        std::string json;
+            cxon::to_bytes(json, 3.1415926, fp_precision::set<3>()); // floating-point precision
+        assert(json == "3.14");
+    }
+}
+```
+
+###### Example
+
+``` c++
+// overriding of a default parser
+
+#include "cxon/json.hxx"
+
+#include <cassert>
+
+namespace cxon {
+    // override the default double parser for JSON<X>
+    template <typename X>
+        struct read<JSON<X>, double> {
+            template <typename II, typename Cx>
+                static bool value(double& t, II& i, II e, Cx& cx) {
+                    // implement fast double parsing for example
+                    return true;
+                }
+        };
+}
+
+struct custom_traits : cxon::json::format_traits {};
+using CUSTOM_JSON = cxon::JSON<custom_traits>;
+
+namespace cxon {
+    // override the default float parser for CUSTOM_JSON, leave the default JSON<> as is
+    template <>
+        struct read<CUSTOM_JSON, float> {
+            template <typename II, typename Cx>
+                static bool value(float& t, II& i, II e, Cx& cx) {
+                    // implement custom float parsing
+                    return true;
+                }
+        };
+}
+
+int main() {
+    double d = 0.0;
+        cxon::from_bytes(d, "42");
+    assert(d == 0.0);   // the override is used for double
+    int i = 0;
+        cxon::from_bytes(i, "42");
+    assert(i == 42);    // the other types are intact
+    float f = 0.0;
+        cxon::from_bytes<CUSTOM_JSON>(f, "42");
+    assert(f == 0.0);   // the override is used for CUSTOM_JSON
+    unsigned u = 0;
+        cxon::from_bytes<CUSTOM_JSON>(i, "42");
+    assert(i == 42);    // the other types are as in JSON<>
+}
+```
+
 
 *Somewhat more meaningful example can be found here [`JSON-RPC`](src/cxon/README.md#example-json-rpc).*
 
