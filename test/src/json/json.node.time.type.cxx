@@ -3,12 +3,11 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "json.node.hxx"
 
-#include "cxon/json.hxx"
-#include "cxon/lib/node.ordered.hxx"
-
+#include "json.node.time.hxx"
 #include "object.hxx"
+
+#include "cxon/lib/node.ordered.hxx"
 
 #include <fstream>
 
@@ -29,7 +28,7 @@ namespace test { namespace kind {
                 std::vector<T> vo;
                 t.time.read.push_back(CXON_MEASURE(
                     vo.emplace_back();
-                    auto const r = cxon::from_bytes(vo.back(), json);
+                    auto const r = cxon::from_bytes<TIME>(vo.back(), json);
                     if (!r) t.error = format_error(r, json.begin());
                 ));
             // write
@@ -37,7 +36,7 @@ namespace test { namespace kind {
                 std::vector<std::string> vs;
                 t.time.write.push_back(CXON_MEASURE(
                     vs.emplace_back();
-                    cxon::to_bytes(vs.back(), o);
+                    cxon::to_bytes<TIME>(vs.back(), o);
                 ));
         }
 
@@ -61,8 +60,10 @@ namespace test { namespace kind {
         { "mesh.pretty.json",       &time_run<mesh::object> },
         { "numbers.json",           &time_run<numbers::object> },
         { "random.json",            &time_run<random::object> },
-        //{ "twitter.json",           &time_run<node> },
-        //{ "twitterescaped.json",    &time_run<node> },
+#       ifdef CXON_HAS_LIB_STD_OPTIONAL
+        { "twitter.json",           &time_run<twitter::object> },
+        { "twitterescaped.json",    &time_run<twitter::object> },
+#       endif
         { "update-center.json",     &time_run<update_center::object> },
     };
 
