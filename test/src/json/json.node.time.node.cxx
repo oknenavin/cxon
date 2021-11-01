@@ -3,9 +3,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "json.node.hxx"
-
-#include "cxon/json.hxx"
+#include "json.node.time.hxx"
 #include "cxon/lib/node.ordered.hxx"
 
 #include <fstream>
@@ -26,7 +24,7 @@ namespace test { namespace kind {
             std::vector<node> vo;
             t.time.read.push_back(CXON_MEASURE(
                 vo.emplace_back();
-                auto const r = cxon::from_bytes(vo.back(), json);
+                auto const r = cxon::from_bytes<TIME>(vo.back(), json);
                 if (!r) t.error = format_error(r, json.begin());
             ));
         // write
@@ -34,7 +32,7 @@ namespace test { namespace kind {
             std::vector<std::string> vs;
             t.time.write.push_back(CXON_MEASURE(
                 vs.emplace_back();
-                cxon::to_bytes(vs.back(), o);
+                cxon::to_bytes<TIME>(vs.back(), o);
             ));
     }
 

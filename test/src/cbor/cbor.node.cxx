@@ -433,6 +433,7 @@ namespace test { namespace kind { // time
                 }
                 line();
             }
+            std::fflush(stdout);
         }
 
         result res;
