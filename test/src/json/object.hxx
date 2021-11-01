@@ -974,7 +974,7 @@ namespace test {
                 std::string display_url;
                 std::string expanded_url;
                 std::string type;
-                sizes sizes;
+                struct sizes sizes;
                 unsigned long long source_status_id;
                 std::string source_status_id_str;
 
@@ -1024,10 +1024,10 @@ namespace test {
                 std::vector<hashtag> hashtags;
                 std::vector<std::string> symbols;
                 std::vector<user_mention> user_mentions;
-                description description;
-                std::vector<url> urls;
+                struct description description;
+                std::vector<struct url> urls;
                 struct urls url;
-                std::vector<media> media;
+                std::vector<struct media> media;
 
                 CXON_JSON_CLS_MEMBER(entity,
                     CXON_JSON_CLS_FIELD_ASIS(hashtags),
@@ -1127,7 +1127,7 @@ namespace test {
             };
 
             struct retweeted_status {
-                metadata metadata;
+                struct metadata metadata;
                 std::string created_at;
                 unsigned long long id;
                 std::string id_str;
@@ -1139,7 +1139,7 @@ namespace test {
                 std::optional<unsigned long long> in_reply_to_user_id;
                 std::optional<std::string> in_reply_to_user_id_str;
                 std::optional<std::string> in_reply_to_screen_name;
-                user user;
+                struct user user;
                 std::nullptr_t geo;
                 std::nullptr_t coordinates;
                 std::nullptr_t place;
@@ -1181,7 +1181,7 @@ namespace test {
             };
 
             struct status {
-                metadata metadata;
+                struct metadata metadata;
                 std::string created_at;
                 unsigned long long id;
                 std::string id_str;
@@ -1193,12 +1193,12 @@ namespace test {
                 std::optional<unsigned long long> in_reply_to_user_id;
                 std::optional<std::string> in_reply_to_user_id_str;
                 std::optional<std::string> in_reply_to_screen_name;
-                user user;
+                struct user user;
                 std::nullptr_t geo;
                 std::nullptr_t coordinates;
                 std::nullptr_t place;
                 std::nullptr_t contributors;
-                retweeted_status retweeted_status; 
+                struct retweeted_status retweeted_status; 
                 unsigned retweet_count;
                 unsigned favorite_count;
                 entity entities;
@@ -1262,7 +1262,7 @@ namespace test {
 
             struct object {
                 std::vector<status> statuses;
-                search_metadata search_metadata;
+                struct search_metadata search_metadata;
 
                 CXON_JSON_CLS_MEMBER(object,
                     CXON_JSON_CLS_FIELD_ASIS(statuses),
