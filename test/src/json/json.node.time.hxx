@@ -9,15 +9,14 @@
 #include "cxon/json.hxx"
 #include "json.node.hxx"
 
-#if defined(CXON_TIME_FAST_FLOAT) && defined(__has_include) && __has_include("fast_float/fast_float.h")
+#ifdef CXON_TIME_FAST_FLOAT
 #   include "fast_float/fast_float.h"
-#   define CXON_HAS_LIB_FAST_FLOAT
 #endif
 
 struct time_traits : cxon::json::format_traits {};
 using TIME = cxon::JSON<time_traits>;
 
-#ifdef CXON_HAS_LIB_FAST_FLOAT
+#ifdef CXON_TIME_FAST_FLOAT
     namespace cxon {
 
         template <>
