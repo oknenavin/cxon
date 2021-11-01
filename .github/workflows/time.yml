@@ -17,7 +17,7 @@ jobs:
     - name: Time
       env:
         CXX: g++-5
-        CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=1000 -std=c++11
+        CXXFLAGS: -std=c++11 -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=750
       run: make time
 
   gcc-11:
@@ -55,13 +55,13 @@ jobs:
     - name: Time
       env:
         CXX: g++-11
-        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=1000 -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN -std=c++20
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=750 -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: make time
     - name: Time (fast_float)
       env:
         CXX: g++-11
-        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -I ../../fast_float/include -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=1000 -DCXON_TIME_FAST_FLOAT -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN -std=c++20
-      run: make time
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=750 -I ../../fast_float/include -DCXON_TIME_FAST_FLOAT -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
+      run: make clean && make time
 
   # clang ######################################################################
 
@@ -76,7 +76,7 @@ jobs:
   #  - name: Time
   #    env:
   #      CXX: clang++-3.5
-  #      CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=1000 -std=c++11
+  #      CXXFLAGS: -std=c++11 -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=750
   #    run: make time
 
   clang-4:
@@ -90,7 +90,7 @@ jobs:
     - name: Time
       env:
         CXX: clang++-4.0
-        CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=1000 -std=c++11
+        CXXFLAGS: -std=c++11 -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=750
       run: make time
 
   clang-12:
@@ -128,10 +128,10 @@ jobs:
     - name: Time
       env:
         CXX: clang++-12
-        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=1000 -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN -std=c++20
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=750 -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: make time
     - name: Time (fast_float)
       env:
         CXX: clang++-12
-        CXXFLAGS: -I ../../boost.json/include -I ../../rapidjson/include -I ../../nlohmann.json/single_include -I ../../fast_float/include -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=1000 -DCXON_TIME_FAST_FLOAT -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN -std=c++20
-      run: make time
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -DCXON_TIME_RUN_FOR=750 -I ../../fast_float/include -DCXON_TIME_FAST_FLOAT -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
+      run: make clean && make time
