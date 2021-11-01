@@ -378,6 +378,7 @@ namespace test { namespace kind {
             }
             line();
         }
+        std::fflush(stdout);
     }
 
 }}

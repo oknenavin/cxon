@@ -9,7 +9,7 @@
 #include "cxon/json.hxx"
 #include "json.node.hxx"
 
-#if defined(__has_include) && __has_include("fast_float/fast_float.h")
+#if defined(CXON_TIME_FAST_FLOAT) && defined(__has_include) && __has_include("fast_float/fast_float.h")
 #   include "fast_float/fast_float.h"
 #   define CXON_HAS_LIB_FAST_FLOAT
 #endif
@@ -20,6 +20,15 @@ using TIME = cxon::JSON<time_traits>;
 #ifdef CXON_HAS_LIB_FAST_FLOAT
     namespace cxon {
 
+        template <>
+            struct read<TIME, float> {
+                template <typename II, typename Cx>
+                    static bool value(float& t, II& i, II e, Cx& cx) {
+                        cio::consume<TIME>(i, e);
+                        auto const r = fast_float::from_chars(i, e, t);
+                        return (r.ec == std::errc() && (i = r.ptr, true)) || cx/json::read_error::floating_point_invalid;
+                    }
+            };
         template <>
             struct read<TIME, double> {
                 template <typename II, typename Cx>
