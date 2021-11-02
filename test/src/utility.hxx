@@ -38,13 +38,31 @@ namespace test {
         }
 #   define CXON_MEASURE(...) ::test::measure([&] { __VA_ARGS__ })
 
+    template <typename II>
+        inline auto position(II b, II e)
+            -> typename std::enable_if<!std::is_same<typename std::iterator_traits<II>::iterator_category, std::input_iterator_tag>::value, std::pair<std::size_t, std::size_t>>::type
+        {
+            std::size_t l = 1, c = 1;
+            for ( ; b != e; ++b, ++c)
+                if (*b == '\n')
+                    ++l, c = 0;
+            return std::make_pair(l, c);
+        }
+    template <typename II>
+        inline auto position(II b, II e)
+            -> typename std::enable_if< std::is_same<typename std::iterator_traits<II>::iterator_category, std::input_iterator_tag>::value, std::pair<std::size_t, std::size_t>>::type
+        {
+            return std::make_pair(1, std::distance(b, e));
+        }
+
     template <typename R, typename I>
         static std::string format_error(const R& r, I b) {
+            auto const p = position(b, r.end);
             return std::string()
                 .append(r.ec.category().name())
-                .append(":")
-                .append(std::to_string(std::distance(b, r.end)))
-                .append(": ")
+                .append(":(")
+                .append(std::to_string(p.first)).append(",").append(std::to_string(p.second))
+                .append("): ")
                 .append(r.ec.message())
             ;
         }

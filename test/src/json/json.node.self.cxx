@@ -810,10 +810,10 @@ namespace test { namespace kind {
             }
         }
         {   // test the test (coverage)
-            int t = 0; std::string const f = "";
+            int t = 0; std::string const f = "\n";
             auto const r = cxon::from_bytes(t, f);
             auto const s = format_error(r, f.begin());
-            CHECK(s == "cxon/json/read:0: invalid integral or value out of range");
+            CHECK(s == "cxon/json/read:(2,1): invalid integral or value out of range");
         }
         {   // hash
             using node = cxon::json::node;
