@@ -166,13 +166,11 @@ namespace cxon { namespace cio { namespace cls {
 
     namespace imp {
 
-        template <typename X, typename S, typename H, typename ...T>
+        template <typename X, typename S, typename ...>
             struct write {
                 template <typename O, typename Cx>
-                    static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        return  write_field<X>(o, t, f.field, cx) && poke<X>(o, X::map::sep, cx) &&
-                                write<X, S, T...>::fields(o, t, f.next, cx)
-                        ;
+                    static bool fields(O&, const S&, const fields<>&, Cx&) {
+                        return true;
                     }
             };
         template <typename X, typename S, typename F>
@@ -180,6 +178,15 @@ namespace cxon { namespace cio { namespace cls {
                 template <typename O, typename Cx>
                     static bool fields(O& o, const S& t, const fields<F>& f, Cx& cx) {
                         return write_field<X>(o, t, f.field, cx);
+                    }
+            };
+        template <typename X, typename S, typename H, typename ...T>
+            struct write<X, S, H, T...> {
+                template <typename O, typename Cx>
+                    static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
+                        return  write_field<X>(o, t, f.field, cx) && poke<X>(o, X::map::sep, cx) &&
+                                write<X, S, T...>::fields(o, t, f.next, cx)
+                        ;
                     }
             };
 
