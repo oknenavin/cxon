@@ -50,7 +50,9 @@ namespace test { namespace kind {
 #       ifdef CXON_HAS_LIB_STD_OPTIONAL
         { "citm_catalog.json",      &time_run<citm_catalog::object> },
 #       endif
-        //{ "github_events.json",     &time_run<node> },
+#       ifdef CXON_HAS_LIB_STD_OPTIONAL
+        { "github_events.json",     &time_run<github_events::object> },
+#       endif
         { "gsoc-2018.json",         &time_run<gsoc_2018::object> },
 #       ifdef CXON_HAS_LIB_STD_OPTIONAL
         { "instruments.json",       &time_run<instruments::object> },
