@@ -1293,7 +1293,7 @@ namespace test {
             unsigned id;
             std::string jsonrpc;
             unsigned total;
-            std::vector<result> result;
+            std::vector<struct result> result;
 
             CXON_JSON_CLS_MEMBER(object,
                 CXON_JSON_CLS_FIELD_ASIS(id),
