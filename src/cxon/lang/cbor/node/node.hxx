@@ -205,7 +205,8 @@ namespace cxon { namespace cbor { // node
 #                   undef CXON_CBOR_TYPE_DEF
                 }
             }
-            basic_node& operator =(basic_node&& o)
+            basic_node& operator =(basic_node&& o)  // lgtm [cpp/assignment-does-not-return-this]
+                                                    // false-positive: https://github.com/github/codeql/issues/7035
                 noexcept(value::is_nothrow_move_assignable<basic_node>::value)
             {
                 switch (o.kind_) {
@@ -270,11 +271,12 @@ namespace cxon { namespace cbor { // node
 #                   undef CXON_CBOR_TYPE_DEF
                 }
             }
-            basic_node& operator =(const basic_node& o)
+            basic_node& operator =(const basic_node& o) // lgtm [cpp/assignment-does-not-return-this]
+                                                        // false-positive: https://github.com/github/codeql/issues/7035
                 noexcept(value::is_nothrow_copy_assignable<basic_node>::value)
             {
                 switch (o.kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o), *this
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::copy_assign<T>(*this, o)
                         CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(tag);
