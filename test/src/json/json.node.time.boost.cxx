@@ -7,8 +7,10 @@
 
 #ifdef CXON_TIME_BOOST_JSON
 
-#define BOOST_JSON_STANDALONE
-#include <boost/json/src.hpp>
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+#   define BOOST_JSON_STANDALONE /* temporary, deprecated */
+#endif
+#include "boost/json/src.hpp"
 
 #include <fstream>
 
