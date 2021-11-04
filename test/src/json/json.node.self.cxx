@@ -860,9 +860,42 @@ namespace test { namespace kind {
             char bf[4096];
             std::pmr::monotonic_buffer_resource ar(bf, sizeof(bf));
             std::pmr::polymorphic_allocator<node> al(&ar);
-            node n(al);
-                n = { 1, 2, 3};
-            CHECK(n == node::array { 1, 2, 3});
+            {   node n(al);
+                    n = { 1, 2, 3};
+                CHECK(n == node::array { 1, 2, 3});
+            }
+            {   node n0("42", al), n1(al);
+                    n1 = std::move(n0);
+                CHECK(n1 == "42");
+            }
+            {   node n0("42", al), n1;
+                    n1 = std::move(n0);
+                CHECK(n1 == "42");
+            }
+            {   node n0("42", al);
+                node n1(std::move(n0), al);
+                CHECK(n1 == "42");
+            }
+            {   node n0("42", al);
+                node n1(std::move(n0));
+                CHECK(n1 == "42");
+            }
+            {   node n(al);
+                    auto const r = cxon::from_bytes(n, "{\"1\": \"2\"}");
+                CHECK(r && n == node::object {{"1", "2"}});
+            }
+            {   node n(al);
+                    auto const r = cxon::from_bytes(n, "{\"1\": [2, 3]}");
+                CHECK(r && n == node::object {{"1", {2U, 3U}}});
+            }
+            {   node n(al);
+                    auto const r = cxon::from_bytes(n, "{\"1\": [\"2\", \"3\"]}");
+                CHECK(r && n == node::object {{"1", {"2", "3"}}});
+            }
+            {   node n(al);
+                    auto const r = cxon::from_bytes(n, "{\"1\": {\"2\": 3.0}}");
+                CHECK(r && n == node::object {{"1", {{"2", 3.0}}}});
+            }
         }
 #       endif
 #       undef CHECK
