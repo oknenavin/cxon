@@ -180,9 +180,9 @@ namespace cxon { namespace value {
                         else {
                             n.~N(), n.kind_ = o.kind_;
                             if (n.alloc_ == o.alloc_) // TODO: likely
-                                construct(n, std::move(get<T>(o)));
+                                construct<T>(n, std::move(get<T>(o)));
                             else
-                                construct(n, get<T>(o));
+                                construct<T>(n, get<T>(o));
                         }
                         return n;
                     }
