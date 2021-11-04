@@ -31,7 +31,7 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
     template <typename ...>
         struct fields;
     template <typename ...F> 
-        constexpr fields<F...> make_fields(F... f);
+        constexpr fields<F...> make_fields(F&&... f);
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx);
@@ -110,7 +110,7 @@ namespace cxon { namespace cio { namespace cls {
             H const field;
             fields<T...> const next;
             template <typename ...U>
-                constexpr fields(H e, U ...t) : field(e), next(t...) {}
+                constexpr fields(H e, U&&... t) : field(e), next(std::forward<U>(t)...) {}
         };
     template <typename T>
         struct fields<T> {
@@ -120,7 +120,7 @@ namespace cxon { namespace cio { namespace cls {
         };
 
     template <typename ...F> 
-        constexpr fields<F...> make_fields(F... f) { return { f... }; }
+        constexpr fields<F...> make_fields(F&&... f) { return { std::forward<F>(f)... }; }
 
     // read
 

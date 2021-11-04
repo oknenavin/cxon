@@ -29,7 +29,7 @@ namespace cxon { namespace cnt { // container mutation
     template <typename C>
         inline bool reserve(C& c, std::size_t s);
     template <typename C, typename ...A>
-        inline auto emplace(C& c, A... as) -> typename C::reference;
+        inline auto emplace(C& c, A&&... as) -> typename C::reference;
     template <typename C, typename II>
         inline bool append(C& c, II f, II l);
     template <typename C, typename T = typename C::value_type>
@@ -115,37 +115,37 @@ namespace cxon { namespace cnt {
     namespace imp {
 
         template <typename C, typename ...A>
-            inline auto emplace_(option<5>, C& c, A... as)
+            inline auto emplace_(option<5>, C& c, A&&... as)
                 -> enable_if_t<std::is_same<decltype(traits<C>::emplace(c, std::forward<A>(as)...)), typename C::reference>::value, typename C::reference>
             {
                 return traits<C>::emplace(c, std::forward<A>(as)...);
             }
         template <typename C, typename ...A>
-            inline auto emplace_(option<4>, C& c, A... as)
+            inline auto emplace_(option<4>, C& c, A&&... as)
                 -> enable_if_t<std::is_same<decltype(c.emplace_back(std::forward<A>(as)...)), typename C::reference>::value, typename C::reference>
             {
                 return c.emplace_back(std::forward<A>(as)...);
             }
         template <typename C, typename ...A>
-            inline auto emplace_(option<3>, C& c, A... as)
+            inline auto emplace_(option<3>, C& c, A&&... as)
                 -> enable_if_t<std::is_same<decltype(c.emplace_back()), void>::value && std::is_same<decltype(c.back()), typename C::reference>::value, typename C::reference>
             {
                 return c.emplace_back(std::forward<A>(as)...), c.back();
             }
         template <typename C, typename ...A>
-            inline auto emplace_(option<2>, C& c, A... as)
+            inline auto emplace_(option<2>, C& c, A&&... as)
                 -> enable_if_t<std::is_same<decltype(c.push_back(typename C::value_type {std::forward<A>(as)...})), void>::value && std::is_same<decltype(c.back()), typename C::reference>::value, typename C::reference>
             {
                 return c.push_back(typename C::value_type {std::forward<A>(as)...}), c.back();
             }
         template <typename C, typename ...A>
-            inline auto emplace_(option<1>, C& c, A... as)
+            inline auto emplace_(option<1>, C& c, A&&... as)
                 -> enable_if_t<std::is_same<decltype(c.emplace(std::forward<A>(as)...)), std::pair<typename C::iterator, bool>>::value, typename C::reference>
             {
                 return *c.emplace(std::forward<A>(as)...).first;
             }
         template <typename C, typename ...A>
-            inline auto emplace_(option<0>, C& c, A... as)
+            inline auto emplace_(option<0>, C& c, A&&... as)
                 -> enable_if_t<std::is_same<decltype(c.emplace(std::forward<A>(as)...)), typename C::iterator>::value, typename C::reference>
             {
                 return *c.emplace(std::forward<A>(as)...);
@@ -153,7 +153,7 @@ namespace cxon { namespace cnt {
 
     }
     template <typename C, typename ...A>
-        inline auto emplace(C& c, A... as) -> typename C::reference {
+        inline auto emplace(C& c, A&&... as) -> typename C::reference {
             return imp::emplace_(option<5>(), c, std::forward<A>(as)...);
         }
 

@@ -300,8 +300,8 @@ namespace jsonrpc {
             char const*const        method;
             std::tuple<P...> const  params;
 
-            constexpr request(std::size_t id, const char* method, P... params) noexcept
-            :   id(id), method(method), params(params...) { }
+            constexpr request(std::size_t id, const char* method, P&&... params) noexcept
+            :   id(id), method(method), params(std::forward<P>(params)...) { }
 
             CXON_JSON_CLS_WRITE_MEMBER(request,
                 CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
@@ -314,12 +314,12 @@ namespace jsonrpc {
         char const*const request<P...>::jsonrpc = "2.0";
 
     template <typename ...P>
-        constexpr request<P...> make_request(std::size_t id, const char* method, P... params) {
-            return request<P...>(id, method, params...);
+        constexpr request<P...> make_request(std::size_t id, const char* method, P&&... params) {
+            return request<P...>(id, method, std::forward<P>(params)...);
         }
     template <typename ...P>
-        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>... params) {
-            return request<napa<P>...>(id, method, params...);
+        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>&&... params) {
+            return request<napa<P>...>(id, method, std::forward<napa<P>>(params)...);
         }
 
     // response

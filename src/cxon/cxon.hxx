@@ -41,9 +41,9 @@ namespace cxon { // interface
         };
 
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename InIt, typename ...NaPa>
-        inline auto     from_bytes(T& t, InIt b, InIt e, NaPa... p)     -> from_bytes_result<InIt>;
+        inline auto     from_bytes(T& t, InIt b, InIt e, NaPa&&... p)       -> from_bytes_result<InIt>;
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename Iterable, typename ...NaPa>
-        inline auto     from_bytes(T& t, const Iterable& i, NaPa... p)  -> from_bytes_result<decltype(std::begin(i))>;
+        inline auto     from_bytes(T& t, const Iterable& i, NaPa&&... p)    -> from_bytes_result<decltype(std::begin(i))>;
 
     // write
 
@@ -55,11 +55,11 @@ namespace cxon { // interface
         };
 
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename OutIt, typename ...NaPa>
-        inline auto     to_bytes(OutIt o, const T& t, NaPa... p)        -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
+        inline auto     to_bytes(OutIt o, const T& t, NaPa&&... p)          -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename Insertable, typename ...NaPa>
-        inline auto     to_bytes(Insertable& i, const T& t, NaPa... p)  -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
+        inline auto     to_bytes(Insertable& i, const T& t, NaPa&&... p)    -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename FwIt, typename ...NaPa>
-        inline auto     to_bytes(FwIt b, FwIt e, const T& t, NaPa... p) -> to_bytes_result<FwIt>;
+        inline auto     to_bytes(FwIt b, FwIt e, const T& t, NaPa&&... p)   -> to_bytes_result<FwIt>;
 
 }
 
@@ -175,13 +175,13 @@ namespace cxon { // interface
     namespace interface {
 
         template <typename X, typename T, typename II, typename ...NaPa>
-            inline auto from_bytes(T& t, II b, II e, NaPa... p) -> from_bytes_result<II> {
+            inline auto from_bytes(T& t, II b, II e, NaPa&&... p) -> from_bytes_result<II> {
                 read_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
                     bool const r = read_value<X>(t, b, e, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, b };
             }
         template <typename X, typename T, typename I, typename ...NaPa>
-            inline auto from_bytes(T& t, const I& i, NaPa... p) -> from_bytes_result<decltype(std::begin(i))> {
+            inline auto from_bytes(T& t, const I& i, NaPa&&... p) -> from_bytes_result<decltype(std::begin(i))> {
                 auto const c = cnt::continuous<I>::range(i);
                 auto const r = interface::from_bytes<X>(t, c.first, c.second, std::forward<NaPa>(p)...);
                 auto b = std::begin(i); std::advance(b, std::distance(c.first, r.end));
@@ -191,11 +191,11 @@ namespace cxon { // interface
     }
 
     template <typename X, typename T, typename II, typename ...NaPa>
-        inline auto from_bytes(T& t, II b, II e, NaPa... p) -> from_bytes_result<II> {
+        inline auto from_bytes(T& t, II b, II e, NaPa&&... p) -> from_bytes_result<II> {
             return interface::from_bytes<X>(t, b, e, std::forward<NaPa>(p)...);
         }
     template <typename X, typename T, typename I, typename ...NaPa>
-        inline auto from_bytes(T& t, const I& i, NaPa... p) -> from_bytes_result<decltype(std::begin(i))> {
+        inline auto from_bytes(T& t, const I& i, NaPa&&... p) -> from_bytes_result<decltype(std::begin(i))> {
             return interface::from_bytes<X>(t, i, std::forward<NaPa>(p)...);
         }
 
@@ -209,13 +209,13 @@ namespace cxon { // interface
     namespace interface {
 
         template <typename X, typename T, typename OI, typename ...NaPa>
-            inline auto to_bytes(OI o, const T& t, NaPa... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
+            inline auto to_bytes(OI o, const T& t, NaPa&&... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
                 write_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
         template <typename X, typename T, typename I, typename ...NaPa>
-            inline auto to_bytes(I& i, const T& t, NaPa... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
+            inline auto to_bytes(I& i, const T& t, NaPa&&... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
                 write_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
                     auto const s = std::distance(std::begin(i), std::end(i));
                     bool const r = write_value<X>(i, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
@@ -223,7 +223,7 @@ namespace cxon { // interface
                 return { cx.ec, b };
             }
         template <typename X, typename T, typename FI, typename ...NaPa>
-            inline auto to_bytes(FI b, FI e, const T& t, NaPa... p) -> to_bytes_result<FI> {
+            inline auto to_bytes(FI b, FI e, const T& t, NaPa&&... p) -> to_bytes_result<FI> {
                 write_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
                     auto c = cnt::make_range_container(b, e);
                     bool const r = write_value<X>(c, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
@@ -233,15 +233,15 @@ namespace cxon { // interface
     }
 
     template <typename X, typename T, typename OI, typename ...NaPa>
-        inline auto to_bytes(OI o, const T& t, NaPa... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
+        inline auto to_bytes(OI o, const T& t, NaPa&&... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
             return interface::to_bytes<X>(o, t, std::forward<NaPa>(p)...);
         }
     template <typename X, typename T, typename I, typename ...NaPa>
-        inline auto to_bytes(I& i, const T& t, NaPa... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
+        inline auto to_bytes(I& i, const T& t, NaPa&&... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
             return interface::to_bytes<X>(i, t, std::forward<NaPa>(p)...);
         }
     template <typename X, typename T, typename FI, typename ...NaPa>
-        inline auto to_bytes(FI b, FI e, const T& t, NaPa... p) -> to_bytes_result<FI> {
+        inline auto to_bytes(FI b, FI e, const T& t, NaPa&&... p) -> to_bytes_result<FI> {
             return interface::to_bytes<X>(b, e, t, std::forward<NaPa>(p)...);
         }
 

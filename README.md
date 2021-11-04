@@ -157,11 +157,11 @@ namespace cxon {
 
     // from input iterator
     template <typename Traits, typename T, typename InIt, typename ...Parameters>
-        auto from_bytes(T& t, InIt b, InIt e, Parameters... ps)
+        auto from_bytes(T& t, InIt b, InIt e, Parameters&&... ps)
             -> from_bytes_result<InIt>;
     // from iterable (e.g. std::string)
     template <typename Traits, typename T, typename Iterable, typename ...Parameters>
-        auto from_bytes(T& t, const Iterable& i, Parameters... ps)
+        auto from_bytes(T& t, const Iterable& i, Parameters&&... ps)
             -> from_bytes_result<decltype(std::begin(i))>;
 
 
@@ -173,15 +173,15 @@ namespace cxon {
 
     // to output iterator
     template <typename Traits, typename T, typename OutIt, typename ...Parameters>
-        auto to_bytes(OutIt o, const T& t, Parameters... ps)
+        auto to_bytes(OutIt o, const T& t, Parameters&&... ps)
             -> to_bytes_result<OutIt>;
     // to back insertable (e.g. std::string)
     template <typename Traits, typename T, typename Insertable, typename ...Parameters>
-        auto to_bytes(Insertable& i, const T& t, Parameters... ps)
+        auto to_bytes(Insertable& i, const T& t, Parameters&&... ps)
             -> to_bytes_result<decltype(std::begin(i))>;
     // to range
     template <typename Traits, typename T, typename FwIt, typename ...Parameters>
-        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters... ps)
+        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters&&... ps)
             -> to_bytes_result<FwIt>;
 
 }

@@ -37,7 +37,7 @@ namespace cxon { namespace cbor { namespace cls {
     template <typename ...F>
         using fields = std::tuple<F...>;
     template <typename ...F> 
-        inline CXON_CBOR_CLS_CONSTEXPR fields<F...> make_fields(F... f);
+        inline CXON_CBOR_CLS_CONSTEXPR fields<F...> make_fields(F&&... f);
 
 }}}
 
@@ -106,8 +106,8 @@ namespace cxon { namespace cbor { namespace cls {
     // fields
 
     template <typename ...F> 
-        inline CXON_CBOR_CLS_CONSTEXPR fields<F...> make_fields(F... f) {
-            return std::make_tuple(f...);
+        inline CXON_CBOR_CLS_CONSTEXPR fields<F...> make_fields(F&&... f) {
+            return std::make_tuple(std::forward<F>(f)...);
         }
 
     namespace imp {
