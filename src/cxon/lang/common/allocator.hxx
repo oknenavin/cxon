@@ -72,15 +72,15 @@ namespace cxon { namespace alc {
 
         template <typename T, typename C, typename ...A>
             constexpr auto create_using_allocator_of_(option<2>, const C& c, A&&... as) -> decltype(T(std::forward<A>(as)..., c.get_allocator())) {
-                return T(std::forward<A>(as)..., c.get_allocator());
+                return T {std::forward<A>(as)..., c.get_allocator()};
             }
         template <typename T, typename C, typename ...A>
             constexpr auto create_using_allocator_of_(option<1>, const C& c, A&&... as) -> decltype(T(std::allocator_arg, c.get_allocator(), std::forward<A>(as)...)) {
-                return T(std::allocator_arg, c.get_allocator(), std::forward<A>(as)...);
+                return T {std::allocator_arg, c.get_allocator(), std::forward<A>(as)...};
             }
         template <typename T, typename C, typename ...A>
             constexpr auto create_using_allocator_of_(option<0>, const C&, A&&... as) -> decltype(T(std::forward<A>(as)...)) {
-                return T(std::forward<A>(as)...);
+                return T {std::forward<A>(as)...};
             }
 
     }
