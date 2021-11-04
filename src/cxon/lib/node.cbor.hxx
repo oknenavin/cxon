@@ -17,16 +17,16 @@
 namespace cxon {
 
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename InIt, typename ...CxPs>
-        inline auto     from_bytes(cbor::basic_node<Tr>& t, InIt b, InIt e, CxPs... p)      -> from_bytes_result<InIt>;
+        inline auto     from_bytes(cbor::basic_node<Tr>& t, InIt b, InIt e, CxPs&&... p)        -> from_bytes_result<InIt>;
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename Iterable, typename ...CxPs>
-        inline auto     from_bytes(cbor::basic_node<Tr>& t, const Iterable& i, CxPs... p)   -> from_bytes_result<decltype(std::begin(i))>;
+        inline auto     from_bytes(cbor::basic_node<Tr>& t, const Iterable& i, CxPs&&... p)     -> from_bytes_result<decltype(std::begin(i))>;
 
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename OutIt, typename ...CxPs>
-        inline auto     to_bytes(OutIt o, const cbor::basic_node<Tr>& t, CxPs... p)         -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
+        inline auto     to_bytes(OutIt o, const cbor::basic_node<Tr>& t, CxPs&&... p)           -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename Insertable, typename ...CxPs>
-        inline auto     to_bytes(Insertable& i, const cbor::basic_node<Tr>& t, CxPs... p)   -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
+        inline auto     to_bytes(Insertable& i, const cbor::basic_node<Tr>& t, CxPs&&... p)     -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename FwIt, typename ...CxPs>
-        inline auto     to_bytes(FwIt b, FwIt e, const cbor::basic_node<Tr>& t, CxPs... p)  -> to_bytes_result<FwIt>;
+        inline auto     to_bytes(FwIt b, FwIt e, const cbor::basic_node<Tr>& t, CxPs&&... p)    -> to_bytes_result<FwIt>;
 
 }
 
@@ -35,24 +35,24 @@ namespace cxon {
 namespace cxon {
 
     template <typename X, typename Tr, typename II, typename ...CxPs>
-        inline auto from_bytes(cbor::basic_node<Tr>& t, II b, II e, CxPs... p) -> from_bytes_result<II> {
+        inline auto from_bytes(cbor::basic_node<Tr>& t, II b, II e, CxPs&&... p) -> from_bytes_result<II> {
             return interface::from_bytes<X>(t, b, e, node::recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
-        inline auto from_bytes(cbor::basic_node<Tr>& t, const I& i, CxPs... p) -> from_bytes_result<decltype(std::begin(i))> {
+        inline auto from_bytes(cbor::basic_node<Tr>& t, const I& i, CxPs&&... p) -> from_bytes_result<decltype(std::begin(i))> {
             return interface::from_bytes<X>(t, i, node::recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
 
     template <typename X, typename Tr, typename OI, typename ...CxPs>
-        inline auto to_bytes(OI o, const cbor::basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
+        inline auto to_bytes(OI o, const cbor::basic_node<Tr>& t, CxPs&&... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
             return interface::to_bytes<X>(o, t, node::recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...CxPs>
-        inline auto to_bytes(I& i, const cbor::basic_node<Tr>& t, CxPs... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
+        inline auto to_bytes(I& i, const cbor::basic_node<Tr>& t, CxPs&&... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
             return interface::to_bytes<X>(i, t, node::recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
     template <typename X, typename Tr, typename FI, typename ...CxPs>
-        inline auto to_bytes(FI b, FI e, const cbor::basic_node<Tr>& t, CxPs... p) -> to_bytes_result<FI> {
+        inline auto to_bytes(FI b, FI e, const cbor::basic_node<Tr>& t, CxPs&&... p) -> to_bytes_result<FI> {
             return interface::to_bytes<X>(b, e, t, node::recursion_guard::set(0), std::forward<CxPs>(p)...);
         }
 

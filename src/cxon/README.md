@@ -47,9 +47,9 @@
 namespace cxon {
 
     template <typename Traits, typename T, typename InIt, typename ...NaPa>
-        from_bytes_result<It>  from_bytes(T& t, InIt b, InIt e, NaPa... p);           (1)
+        from_bytes_result<It>  from_bytes(T& t, InIt b, InIt e, NaPa&&... p);       (1)
     template <typename Traits, typename T, typename Iterable, typename ...NaPa>
-        from_bytes_result<It)> from_bytes(T& t, const Iterable& i, NaPa... p);        (2)
+        from_bytes_result<It)> from_bytes(T& t, const Iterable& i, NaPa&&... p);    (2)
 
     template <typename It>
         struct from_bytes_result {
@@ -132,11 +132,11 @@ int main() {
 namespace cxon {
 
     template <typename Traits, typename T, typename OutIt, typename ...NaPa>
-        to_bytes_result<It> to_bytes(OutIt o, const T& t, NaPa... p);                 (1)
+        to_bytes_result<It> to_bytes(OutIt o, const T& t, NaPa&&... p);             (1)
     template <typename Traits, typename T, typename Insertable, typename ...NaPa>
-        to_bytes_result<It> to_bytes(Insertable& i, const T& t, NaPa... p);           (2)
+        to_bytes_result<It> to_bytes(Insertable& i, const T& t, NaPa&&... p);       (2)
     template <typename Traits, typename T, typename FwIt, typename ...NaPa>
-        to_bytes_result<It> to_bytes(FwIt b, FwIt e, const T& t, NaPa... p);          (3)
+        to_bytes_result<It> to_bytes(FwIt b, FwIt e, const T& t, NaPa&&... p);      (3)
 
     template <typename It>
         struct to_bytes_result {
@@ -586,8 +586,8 @@ namespace jsonrpc {
             char const*const        method;
             std::tuple<P...> const  params;
 
-            constexpr request(std::size_t id, const char* method, P... params) noexcept
-            :   id(id), method(method), params(params...) { }
+            constexpr request(std::size_t id, const char* method, P&&... params) noexcept
+            :   id(id), method(method), params(std::forward<P>(params)...) { }
 
             CXON_JSON_CLS_WRITE_MEMBER(request,
                 CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
@@ -600,12 +600,12 @@ namespace jsonrpc {
         char const*const request<P...>::jsonrpc = "2.0";
 
     template <typename ...P>
-        constexpr request<P...> make_request(std::size_t id, const char* method, P... params) {
-            return request<P...>(id, method, params...);
+        constexpr request<P...> make_request(std::size_t id, const char* method, P&&... params) {
+            return request<P...>(id, method, std::forward<P>(params)...);
         }
     template <typename ...P>
-        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>... params) {
-            return request<napa<P>...>(id, method, params...);
+        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>&&... params) {
+            return request<napa<P>...>(id, method, std::forward<napa<P>>(params)...);
         }
 
     // response
