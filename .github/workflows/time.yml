@@ -28,31 +28,31 @@ jobs:
       with:
         repository: oknenavin/store
         ref: master
-        path: store
+        path: ../store
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
         repository: boostorg/json
         ref: master
-        path: boost.json
+        path: ../boost.json
     - name: Checkout RapidJSON
       uses: actions/checkout@v2
       with:
         repository: tencent/rapidjson
         ref: master
-        path: rapidjson
+        path: ../rapidjson
     - name: Checkout nlohmann/json
       uses: actions/checkout@v2
       with:
         repository: nlohmann/json
         ref: master
-        path: nlohmann.json
+        path: ../nlohmann.json
     - name: Checkout fastfloat/fast_float
       uses: actions/checkout@v2
       with:
         repository: fastfloat/fast_float
         ref: main
-        path: fast_float
+        path: ../fast_float
     - name: Compiler setup
       run: |
         sudo apt-get update
