@@ -28,31 +28,31 @@ jobs:
       with:
         repository: oknenavin/store
         ref: master
-        path: ../store
+        path: store
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
         repository: boostorg/json
         ref: master
-        path: ../boost.json
+        path: boost.json
     - name: Checkout RapidJSON
       uses: actions/checkout@v2
       with:
         repository: tencent/rapidjson
         ref: master
-        path: ../rapidjson
+        path: rapidjson
     - name: Checkout nlohmann/json
       uses: actions/checkout@v2
       with:
         repository: nlohmann/json
         ref: master
-        path: ../nlohmann.json
+        path: nlohmann.json
     - name: Checkout fastfloat/fast_float
       uses: actions/checkout@v2
       with:
         repository: fastfloat/fast_float
         ref: main
-        path: ../fast_float
+        path: fast_float
     - name: Compiler setup
       run: |
         sudo apt-get update
@@ -60,22 +60,22 @@ jobs:
     - name: Time
       env:
         CXX: g++-11
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../boost.json/include -DCXON_TIME_BOOST_JSON -I ../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "$(date -u --iso-8601=seconds) / g++11 / defualt" >> ../store/cxon/benchmarks/tables.txt
-        make -s time | tee -a ../store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / g++11 / defualt" >> store/cxon/benchmarks/tables.txt
+        make -s time | tee -a store/cxon/benchmarks/tables.txt
         printf "\n"
     - name: Time (fast_float)
       env:
         CXX: g++-11
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../fast_float/include -DCXON_TIME_FAST_FLOAT -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../fast_float/include -DCXON_TIME_FAST_FLOAT -I ../boost.json/include -DCXON_TIME_BOOST_JSON -I ../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "$(date -u --iso-8601=seconds) / g++11 / fast_float" >> ../store/cxon/benchmarks/tables.txt
-        make -s clean && make -s time | tee -a ../store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / g++11 / fast_float" >> store/cxon/benchmarks/tables.txt
+        make -s clean && make -s time | tee -a store/cxon/benchmarks/tables.txt
         printf "\n"
     - name: Store the results
       run: |
-        cd ../store
+        cd store
         git config user.email "oknenavin@outlook.com"
         git config user.name "oknenavin"
         git commit -am "$(date -u --iso-8601=seconds)"
