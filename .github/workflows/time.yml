@@ -77,6 +77,8 @@ jobs:
     - name: Commit
       run: |
         cd ../store
+        git config user.email "oknenavin@outlook.com"
+        git config user.name "oknenavin"
         git commit -m "$(date -u --iso-8601=seconds)"
         git push 
 
