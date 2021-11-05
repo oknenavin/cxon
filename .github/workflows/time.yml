@@ -63,7 +63,7 @@ jobs:
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
         ls -la ..
-        date -u --iso-8601=seconds / g++11 / defualt >> ../store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / g++11 / defualt" >> ../store/cxon/benchmarks/tables.txt
         make -s time 2>&1 | tee -a ../store/cxon/benchmarks/tables.txt
         printf "\n"
     - name: Time (fast_float)
@@ -71,7 +71,7 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../fast_float/include -DCXON_TIME_FAST_FLOAT -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
-        date -u --iso-8601=seconds / g++11 / fast_float >> ../store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / g++11 / fast_float" >> ../store/cxon/benchmarks/tables.txt
         make -s clean && make -s time 2>&1 | tee -a ../store/cxon/benchmarks/tables.txt
         printf "\n"
     - name: Commit
