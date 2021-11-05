@@ -66,7 +66,7 @@ assert( // check the values
     array[1].is_integer() &&
     array[2].is_integer()
 );
-// the input is semantically correct however,
+// the input is semantically correct, however
 // the values still need a special care to access
 int x0 = array[0].get_integer();
 ...
@@ -75,15 +75,18 @@ int x0 = array[0].get_integer();
 For completeness, `CXON` also provides polymorphic types for the supported formats, which are on par
 with the functionality provided by these libraries.  
 The **performance** is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
-in this respect, `CXON` is close to the best. An important note here, is that many of the libraries emphasize
-the floating-point serialization and deserialization performance, utilizing very fast (and complex) algorithms.
-In contrast, by default, `CXON` uses [`<charconv>`][std-charconv] (with a fall back for `C++11`) for this.
-[`<charconv>`][std-charconv] is fast, but especially the parsing can be several times slower than
-these algorithms - at least with the implementations currently available.  
+in this respect, `CXON` is close to the best (*TODO: provide data*). An important note here, is that many of
+the libraries emphasize the floating-point serialization and deserialization performance, utilizing very fast
+(and complex) algorithms. In contrast, by default, `CXON` uses [`<charconv>`][std-charconv]
+(with a fall back for `C++11`). [`<charconv>`][std-charconv] is fast, but especially the parsing can be
+significantly slower than these algorithms - at least with the implementations currently in the wild.
+Another important note, is that the libraries based on a polymorphic types, in contrast to `CXON`,
+have validation and use overhead that should be taken into account.  
 The **memory management** is often important, especially in the embedded space, and `CXON` is well suited - 
 `CXON` does not allocate in general; it's up to the types provided. In the first example, the memory management
-will be handled completely by `std::vector` and its allocator (whatever it is).
-
+will be handled completely by `std::vector` and its allocator (whatever it is). In the same spirit, the
+polymorphic types provided by `CXON` are [AllocatorAware][cpp-alaw] compliant.  
+Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the serializers involved do not throw.
 
 --------------------------------------------------------------------------------
 
@@ -471,6 +474,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt
 [GitHub]: https://github.com/oknenavin/cxon
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
+[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
 [cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
 [cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
