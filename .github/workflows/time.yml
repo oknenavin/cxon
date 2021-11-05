@@ -24,11 +24,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
-    - uses: actions/checkout@v1
-      with:
-        repository: oknenavin/store
-        ref: master
-        path: store
     - name: Checkout Boost/JSON
       uses: actions/checkout@v1
       with:
@@ -57,12 +52,13 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-11 g++-11
+    - name: Store
+      run: git clone https://github.com/oknenavin/store.git ..
     - name: Time
       env:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
-        ls -la ..
         echo "$(date -u --iso-8601=seconds) / g++11 / defualt" >> ../store/cxon/benchmarks/tables.txt
         make -s time 2>&1 | tee -a ../store/cxon/benchmarks/tables.txt
         printf "\n"
