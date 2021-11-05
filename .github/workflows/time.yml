@@ -52,7 +52,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-11 g++-11
-    - name: Store
+    - name: Prepare the storage
       run: git clone https://github.com/oknenavin/store.git ../store
     - name: Time
       env:
@@ -60,7 +60,7 @@ jobs:
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
         echo "$(date -u --iso-8601=seconds) / g++11 / defualt" >> ../store/cxon/benchmarks/tables.txt
-        make -s time 2>&1 | tee -a ../store/cxon/benchmarks/tables.txt
+        make -s time | tee -a ../store/cxon/benchmarks/tables.txt
         printf "\n"
     - name: Time (fast_float)
       env:
@@ -68,9 +68,9 @@ jobs:
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../fast_float/include -DCXON_TIME_FAST_FLOAT -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
         echo "$(date -u --iso-8601=seconds) / g++11 / fast_float" >> ../store/cxon/benchmarks/tables.txt
-        make -s clean && make -s time 2>&1 | tee -a ../store/cxon/benchmarks/tables.txt
+        make -s clean && make -s time | tee -a ../store/cxon/benchmarks/tables.txt
         printf "\n"
-    - name: Commit
+    - name: Store the results
       run: |
         cd ../store
         git config user.email "oknenavin@outlook.com"
