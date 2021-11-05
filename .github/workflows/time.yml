@@ -62,6 +62,7 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../../boost.json/include -DCXON_TIME_BOOST_JSON -I ../../rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../nlohmann.json/single_include -DCXON_TIME_NLOHMANN
       run: |
+        ls -la && ls store
         date -u --iso-8601=seconds / g++11 / defualt >> store/cxon/benchmarks/tables.txt
         make -s time 2>&1 | tee -a store/cxon/benchmarks/tables.txt
         printf "\n"
