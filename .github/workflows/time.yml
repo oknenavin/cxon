@@ -9,7 +9,7 @@ jobs:
   gcc-5:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: |
         sudo apt-get update
@@ -23,27 +23,32 @@ jobs:
   gcc-11:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: oknenavin/store
+        ref: master
+        path: store
     - name: Checkout Boost/JSON
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
       with:
         repository: boostorg/json
         ref: master
         path: boost.json
     - name: Checkout RapidJSON
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
       with:
         repository: tencent/rapidjson
         ref: master
         path: rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
       with:
         repository: nlohmann/json
         ref: master
         path: nlohmann.json
     - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
       with:
         repository: fastfloat/fast_float
         ref: main
@@ -52,8 +57,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-11 g++-11
-    - name: Prepare the storage
-      run: git clone https://github.com/oknenavin/store.git ../store
     - name: Time
       env:
         CXX: g++-11
