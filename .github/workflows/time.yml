@@ -25,13 +25,13 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout cxon-store
+    - name: Checkout workflows-data
       uses: actions/checkout@v2
       with:
-        repository: oknenavin/store
-        token: ${{ secrets.CXON_STORE_TOKEN }}
+        repository: oknenavin/workflows-data
+        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
         ref: master
-        path: .dep/store
+        path: .dep/workflows-data
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
@@ -65,18 +65,18 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / g++11 / defualt" >> .dep/store/cxon/benchmarks/tables.g++
-        make -s time | tee -a .dep/store/cxon/benchmarks/tables.g++
+        echo "# $(date -u --iso-8601=seconds) / g++11 / default" >> .dep/workflows-data/cxon/benchmarks/tables.g++
+        make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.g++
     - name: Time (fast_float)
       env:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_TIME_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / g++11 / fast_float" >> .dep/store/cxon/benchmarks/tables.g++
-        make -s clean && make -s time | tee -a .dep/store/cxon/benchmarks/tables.g++
+        echo "# $(date -u --iso-8601=seconds) / g++11 / fast_float" >> .dep/workflows-data/cxon/benchmarks/tables.g++
+        make -s clean && make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.g++
     - name: Store the results
       run: |
-        cd .dep/store
+        cd .dep/workflows-data/cxon/benchmarks
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
         cat tables.g++.txt >> tables.g++ && mv -f tables.g++ tables.g++.txt
         git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
@@ -117,13 +117,13 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout cxon-store
+    - name: Checkout workflows-data
       uses: actions/checkout@v2
       with:
-        repository: oknenavin/store
-        token: ${{ secrets.CXON_STORE_TOKEN }}
+        repository: oknenavin/workflows-data
+        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
         ref: master
-        path: .dep/store
+        path: .dep/workflows-data
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
@@ -157,18 +157,18 @@ jobs:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / clang++12 / defualt" >> .dep/store/cxon/benchmarks/tables.clang++
-        make -s time | tee -a .dep/store/cxon/benchmarks/tables.clang++
+        echo "# $(date -u --iso-8601=seconds) / clang++12 / default" >> .dep/workflows-data/cxon/benchmarks/tables.clang++
+        make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.clang++
     - name: Time (fast_float)
       env:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_TIME_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / clang++11 / fast_float" >> .dep/store/cxon/benchmarks/tables.clang++
-        make -s clean && make -s time | tee -a .dep/store/cxon/benchmarks/tables.clang++
+        echo "# $(date -u --iso-8601=seconds) / clang++11 / fast_float" >> .dep/workflows-data/cxon/benchmarks/tables.clang++
+        make -s clean && make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.clang++
     - name: Store the results
       run: |
-        cd .dep/store
+        cd .dep/workflows-data/cxon/benchmarks
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
         cat tables.clang++.txt >> tables.clang++ && mv -f tables.clang++ tables.clang++.txt
         git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
