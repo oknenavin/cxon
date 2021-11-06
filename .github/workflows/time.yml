@@ -65,24 +65,23 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "$(date -u --iso-8601=seconds) / g++11 / defualt" >> .dep/store/cxon/benchmarks/tables.txt
-        make -s time | tee -a .dep/store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / g++11 / defualt" >> .dep/store/cxon/benchmarks/tables.g++.txt
+        make -s time | tee -a .dep/store/cxon/benchmarks/tables.g++.txt
         printf "\n"
     - name: Time (fast_float)
       env:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_TIME_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "$(date -u --iso-8601=seconds) / g++11 / fast_float" >> .dep/store/cxon/benchmarks/tables.txt
-        make -s clean && make -s time | tee -a .dep/store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / g++11 / fast_float" >> .dep/store/cxon/benchmarks/tables.g++.txt
+        make -s clean && make -s time | tee -a .dep/store/cxon/benchmarks/tables.g++.txt
         printf "\n"
     - name: Store the results
       run: |
         cd .dep/store
-        git config user.email ${{ secrets.CXON_MAIL }}
-        git config user.name "oknenavin"
+        git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
         git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
-        git push
+        git pull --rebase && git push
 
   # clang ######################################################################
 
@@ -159,21 +158,20 @@ jobs:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "$(date -u --iso-8601=seconds) / clang++12 / defualt" >> .dep/store/cxon/benchmarks/tables.txt
-        make -s time | tee -a .dep/store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / clang++12 / defualt" >> .dep/store/cxon/benchmarks/tables.clang++.txt
+        make -s time | tee -a .dep/store/cxon/benchmarks/tables.clang++.txt
         printf "\n"
     - name: Time (fast_float)
       env:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_TIME_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "$(date -u --iso-8601=seconds) / clang++11 / fast_float" >> .dep/store/cxon/benchmarks/tables.txt
-        make -s clean && make -s time | tee -a .dep/store/cxon/benchmarks/tables.txt
+        echo "$(date -u --iso-8601=seconds) / clang++11 / fast_float" >> .dep/store/cxon/benchmarks/tables.clang++.txt
+        make -s clean && make -s time | tee -a .dep/store/cxon/benchmarks/tables.clang++.txt
         printf "\n"
     - name: Store the results
       run: |
         cd .dep/store
-        git config user.email ${{ secrets.CXON_MAIL }}
-        git config user.name "oknenavin"
+        git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
         git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
-        git push
+        git pull --rebase && git push
