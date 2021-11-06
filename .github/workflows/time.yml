@@ -23,10 +23,13 @@ jobs:
   gcc-11:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/checkout@v2
+    - name: Checkout cxon
+      uses: actions/checkout@v2
+    - name: Checkout cxon-store
+      uses: actions/checkout@v2
       with:
         repository: oknenavin/store
+        token: ${{ secrets.CXON_STORE_TOKEN }}
         ref: master
         path: store
     - name: Checkout Boost/JSON
@@ -76,9 +79,9 @@ jobs:
     - name: Store the results
       run: |
         cd store
-        git config user.email "oknenavin@outlook.com"
+        git config user.email ${{ secrets.CXON_MAIL }}
         git config user.name "oknenavin"
-        git commit -am "$(date -u --iso-8601=seconds)"
+        git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
         git push 
 
   # clang ######################################################################
