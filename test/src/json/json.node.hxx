@@ -28,7 +28,7 @@ namespace test {
 
     using cases = std::vector<test>;
 
-    bool parse_cl(int argc, char *argv[], cases& pass, cases& fail, cases& diff, cases& time);
+    bool parse_cl(int argc, char *argv[], cases& pass, cases& fail, cases& diff, cases& time_node, cases& time_native);
 
 }
 
@@ -44,7 +44,8 @@ namespace test { namespace kind {
 
 namespace test { namespace kind {
 
-    void time(cases& cases);
+    template <typename TIME_CXON>
+        void time(cases& cases, TIME_CXON time_cxon);
 
     void time_cxon_node(test&);
     void time_cxon_type(test&);

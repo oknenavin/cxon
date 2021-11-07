@@ -51,7 +51,8 @@ check-json-node: $(outdir)/check-json-node
                                     | xargs -n2 diff -q)
 
 time-json: $(outdir)/check-json-node
-	@(cd $(outdir) && ../$< time @$(datdir)/json/time.in)
+	@(cd $(outdir) && ../$< time-node   @$(datdir)/json/time.in)
+	@(cd $(outdir) && ../$< time-native @$(datdir)/json/time.in)
 
 check-cbor: $(outdir)/check-cbor
 	@(cd $(outdir) && ../$<)
