@@ -24,10 +24,10 @@ int main(int argc, char *argv[]) {
             return -1;
 #       endif
 
-    test::cases pass, fail, diff, time;
+    test::cases pass, fail, diff, time_node, time_native;
 
-    if (!test::parse_cl(argc, argv, pass, fail, diff, time))
-        return std::fprintf(stderr, "usage: cxon/json/node ((pass|fail|diff|time) (file|@file)+)+\n"), std::fflush(stderr), 1;
+    if (!test::parse_cl(argc, argv, pass, fail, diff, time_node, time_native))
+        return std::fprintf(stderr, "usage: cxon/json/node ((pass|fail|diff|time-node|time-native) (file|@file)+)+\n"), std::fflush(stderr), 1;
 
     int err = 0;
 
@@ -40,19 +40,22 @@ int main(int argc, char *argv[]) {
             err += test::kind::diff(diff);
 #   endif // CXON_TIME_ONLY
 
-    if (!time.empty())
-        test::kind::time(time);
+    if (!time_node.empty())
+        test::kind::time(time_node, test::kind::time_cxon_node);
+    if (!time_native.empty())
+        test::kind::time(time_native, test::kind::time_cxon_type);
 
     return err;
 }
 
 namespace test {
 
-    bool parse_cl(int argc, char *argv[], cases& pass, cases& fail, cases& diff, cases& time) {
+    bool parse_cl(int argc, char *argv[], cases& pass, cases& fail, cases& diff, cases& time_node, cases& time_native) {
         if (argc < 2) return false;
         static auto const key = [](const char* v) {
             return  std::strcmp("pass", v) == 0 || std::strcmp("fail", v) == 0 ||
-                    std::strcmp("time", v) == 0 || std::strcmp("diff", v) == 0
+                    std::strcmp("time-node", v) == 0 || std::strcmp("time-native", v) == 0 ||
+                    std::strcmp("diff", v) == 0
             ;
         };
         static auto const add = [](const char* v, cases& c) {
@@ -75,19 +78,20 @@ namespace test {
         };
         for (int i = 1; i < argc; ++i) {
             restart:
-#           define CXON_JSON_PROC(k)\
+#           define CXON_JSON_PROC(k, c)\
                 if (std::strcmp(#k, argv[i]) == 0) {\
                     if (++i == argc || key(argv[i])) return false;\
                     do {\
                         if (key(argv[i])) goto restart;\
-                        add(argv[i], k);\
+                        add(argv[i], c);\
                     }   while (++i < argc);\
                     continue;\
                 }
-                CXON_JSON_PROC(pass)
-                CXON_JSON_PROC(fail)
-                CXON_JSON_PROC(diff)
-                CXON_JSON_PROC(time)
+                CXON_JSON_PROC(pass, pass)
+                CXON_JSON_PROC(fail, fail)
+                CXON_JSON_PROC(diff, diff)
+                CXON_JSON_PROC(time-node, time_node)
+                CXON_JSON_PROC(time-native, time_native)
 #           undef CXON_JSON_PROC
         }
         return true;
@@ -227,43 +231,34 @@ namespace test {
 
 namespace test { namespace kind {
 
-    void time(cases& cases) {
-        struct {
-            std::vector<std::string> name;
-            std::vector<void(*)(test&)> func;
-        }   cnts;
-            cnts.name.push_back("CXON/JSON/NODE");
-            cnts.func.push_back(&time_cxon_node);
-#       ifdef CXON_TIME_BOOST_JSON
-            cnts.name.push_back("Boost/JSON");
-            cnts.func.push_back(&time_boostjson);
-#       endif
-#       ifdef CXON_TIME_RAPIDJSON
-            cnts.name.push_back("RapidJSON");
-            cnts.func.push_back(&time_rapidjson);
-#       endif
-#       ifdef CXON_TIME_NLOHMANN
-            cnts.name.push_back("nlohmann/JSON");
-            cnts.func.push_back(&time_nlohmannjson);
-#       endif
-
-        {   // node
-            auto time_node = cases;
-            for (auto& test: time_node)
-                for (auto& func: cnts.func)
-                    func(test);
-            time_print(cnts.name, time_node);
+    template <typename TIME_CXON>
+        void time(cases& cases, TIME_CXON time_cxon) {
+            struct {
+                std::vector<std::string> name;
+                std::vector<void(*)(test&)> func;
+            }   cnts;
+                cnts.name.push_back("#");
+                cnts.func.push_back(time_cxon);
+    #       ifdef CXON_TIME_BOOST_JSON
+                cnts.name.push_back("Boost/JSON");
+                cnts.func.push_back(&time_boostjson);
+    #       endif
+    #       ifdef CXON_TIME_RAPIDJSON
+                cnts.name.push_back("RapidJSON");
+                cnts.func.push_back(&time_rapidjson);
+    #       endif
+    #       ifdef CXON_TIME_NLOHMANN
+                cnts.name.push_back("nlohmann/JSON");
+                cnts.func.push_back(&time_nlohmannjson);
+    #       endif
+            {   // time
+                auto time_node = cases;
+                for (auto& test: time_node)
+                    for (auto& func: cnts.func)
+                        func(test);
+                time_print(cnts.name, time_node);
+            }
         }
-        {   // type
-            auto time_type = cases;
-            cnts.name[0] = "CXON/JSON";
-            cnts.func[0] = &time_cxon_type;
-            for (auto& test: time_type)
-                for (auto& func : cnts.func)
-                    func(test);
-            time_print(cnts.name, time_type);
-        }
-    }
 
 }}
 
@@ -289,7 +284,7 @@ namespace test { namespace kind {
                 for (size_t i = 1, is = names.size(); i != is; ++i)
                     tab.back().insert(tab.back().end(), {"x", names[i]});
             }
-            ::test::time total;
+            ::test::time total; double total_size = 0;
                 total.read.resize(c.front().time.read.size());
                 total.write.resize(c.front().time.write.size());
             {   // body
@@ -317,12 +312,13 @@ namespace test { namespace kind {
                         tab.back().push_back(fmt(size / (t.time.write[i] / 1000)));
                         total.write[i] += size / (t.time.write[i] / 1000);
                     }
+                    total_size += size;
                 }
             }
             {   // average
                 tab.push_back({
-                    "Average",
-                    ""
+                    "AVERAGE",
+                    fmt(total_size / c.size())
                 });
                 tab.back().push_back(fmt(total.read[0] / c.size()));
                 for (std::size_t i = 1, is  = total.read.size(); i != is; ++i) {
@@ -345,38 +341,20 @@ namespace test { namespace kind {
         }
 
         {   // print
-            auto const line = [&wid]() {
-                static auto const s = std::string(128, '-');
-                std::fputc('+', stdout);
-                for (auto s : wid)
-                    std::fprintf(stdout, "-%s-+", std::string(s, '-').c_str());
-                std::fputc('\n', stdout);
-            };
-
-            line();
             {   // header
-                std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.front()[0].c_str());
+                std::fprintf(stdout, "%-*s", (unsigned)wid[0], tab.front()[0].c_str());
                 for (std::size_t i = 1, is = tab.front().size(); i != is; ++i)
-                    std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.front()[i].c_str());
+                    std::fprintf(stdout, "  %*s", (unsigned)wid[i], tab.front()[i].c_str());
                 std::fputc('\n', stdout);
             }
-            line();
             {   // body
-                for (std::size_t i = 1, is = tab.size() - 1; i != is; ++i) {
-                    std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab[i][0].c_str());
+                for (std::size_t i = 1, is = tab.size(); i != is; ++i) {
+                    std::fprintf(stdout, "%-*s", (unsigned)wid[0], tab[i][0].c_str());
                     for (std::size_t j = 1, js = tab[i].size(); j != js; ++j)
-                        std::fprintf(stdout, " %*s |", (unsigned)wid[j], tab[i][j].c_str());
+                        std::fprintf(stdout, "  %*s", (unsigned)wid[j], tab[i][j].c_str());
                     std::fputc('\n', stdout);
                 }
             }
-            line();
-            {   // average
-                std::fprintf(stdout, "| %-*s |", (unsigned)wid[0], tab.back()[0].c_str());
-                for (std::size_t i = 1, is = tab.back().size(); i != is; ++i)
-                    std::fprintf(stdout, " %*s |", (unsigned)wid[i], tab.back()[i].c_str());
-                std::fputc('\n', stdout);
-            }
-            line();
         }
         std::fflush(stdout);
     }
