@@ -30,40 +30,47 @@ check-cbor-node-src = \
     $(srcdir)/cbor/cbor.node.cxx \
     $(srcdir)/cbor/cbor.node.self.cxx
 
+
 check: check-json check-json-node check-cbor check-cbor-node
-
 time: time-json time-cbor
+build: build-json build-json-node build-cbor build-cbor-node
 
-check-json: $(outdir)/check-json
-	@(cd $(outdir) && ../$<)
 
-check-json-node: $(outdir)/check-json-node
-	@(cd $(outdir) && ../$<)
-	@(cd $(outdir) && ../$< \
-                            pass    @$(datdir)/json/set.1-pass.in \
-                                    @$(datdir)/json/set.2-pass.in \
-                            fail    @$(datdir)/json/set.1-fail.in \
-                                    @$(datdir)/json/set.2-fail.in)
-	@(cd $(outdir) && ../$< \
-                            diff    @$(datdir)/json/set.3-diff.in \
-                                    @$(datdir)/json/set.4-diff.in \
-                                    @$(datdir)/json/set.5-diff.in \
-                                    | xargs -n2 diff -q)
+check-json: build-json
+	@(cd $(outdir) && ./check-json)
+check-json-node: build-json-node
+	@(cd $(outdir) && ./check-json-node)
+	@(cd $(outdir) && ./check-json-node \
+                                            pass    @$(datdir)/json/set.1-pass.in \
+                                                    @$(datdir)/json/set.2-pass.in \
+                                            fail    @$(datdir)/json/set.1-fail.in \
+                                                    @$(datdir)/json/set.2-fail.in)
+	@(cd $(outdir) && ./check-json-node \
+                                            diff    @$(datdir)/json/set.3-diff.in \
+                                                    @$(datdir)/json/set.4-diff.in \
+                                                    @$(datdir)/json/set.5-diff.in \
+                                                    | xargs -n2 diff -q)
+check-cbor: build-cbor
+	@(cd $(outdir) && ./check-cbor)
+check-cbor-node: build-cbor-node
+	@(cd $(outdir) && ./check-cbor-node)
+	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/test-vector.in)
+	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/round-trip.in | xargs -n2 diff -q)
 
-time-json: $(outdir)/check-json-node
-	@(cd $(outdir) && ../$< time-node   @$(datdir)/json/time.in)
-	@(cd $(outdir) && ../$< time-native @$(datdir)/json/time.in)
 
-check-cbor: $(outdir)/check-cbor
-	@(cd $(outdir) && ../$<)
+time-json: time-json-node time-json-native
+time-json-node: build-json-node
+	@(cd $(outdir) && ./check-json-node time-node   @$(datdir)/json/time.in)
+time-json-native: build-json-node
+	@(cd $(outdir) && ./check-json-node time-native @$(datdir)/json/time.in)
+time-cbor: build-cbor-node
+	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/time.in)
 
-check-cbor-node: $(outdir)/check-cbor-node
-	@(cd $(outdir) && ../$<)
-	@(cd $(outdir) && ../$< $(datdir)/cbor/test-vector.in)
-	@(cd $(outdir) && ../$< $(datdir)/cbor/round-trip.in | xargs -n2 diff -q)
 
-time-cbor: $(outdir)/check-cbor-node
-	@(cd $(outdir) && ../$< $(datdir)/cbor/time.in)
+build-json: $(outdir)/check-json
+build-json-node: $(outdir)/check-json-node
+build-cbor: $(outdir)/check-cbor
+build-cbor-node: $(outdir)/check-cbor-node
 
 $(outdir)/check-json: $(check-json-src)
 	@mkdir -p $(outdir)
@@ -81,7 +88,9 @@ $(outdir)/check-cbor-node: $(check-cbor-node-src)
 	@mkdir -p $(outdir)
 	$(CXX) -I $(incdir) -DNDEBUG -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $(check-cbor-node-src) -o $@
 
+
 clean:
 	@rm -fr $(outdir)
 
-.PHONY: check check-json check-json-node check-cbor check-cbor-node time time-json clean
+
+.PHONY: check check-json check-json-node check-cbor check-cbor-node time time-json time-json-node time-json-native time-cbor build build-json build-json-node build-cbor build-cbor-node clean
