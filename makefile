@@ -151,27 +151,39 @@ cxon = \
 
 check:
 	@$(MAKE) -C test check
-
 check-json:
 	@$(MAKE) -C test check-json
-
 check-json-node:
 	@$(MAKE) -C test check-json-node
-
 check-cbor:
 	@$(MAKE) -C test check-cbor
-
 check-cbor-node:
 	@$(MAKE) -C test check-cbor-node
 
+
 time:
 	@$(MAKE) -C test time
-
 time-json:
 	@$(MAKE) -C test time-json
-
+time-json-node:
+	@$(MAKE) -C test time-json-node
+time-json-native:
+	@$(MAKE) -C test time-json-native
 time-cbor:
 	@$(MAKE) -C test time-cbor
+
+
+build:
+	@$(MAKE) -C test build
+build-json:
+	@$(MAKE) -C test build-json
+build-json-node:
+	@$(MAKE) -C test build-json-node
+build-cbor:
+	@$(MAKE) -C test build-cbor
+build-cbor-node:
+	@$(MAKE) -C test build-cbor-node
+
 
 install: install-lang
 
@@ -211,4 +223,4 @@ uninstall:
 clean:
 	@$(MAKE) -C test clean
 
-.PHONY: check check-json check-json-node check-cbor install install-cxon install-common install-lang uninstall clean
+.PHONY: check check-json check-json-node check-cbor check-cbor-node time time-json time-json-node time-json-native time-cbor build build-json build-json-node build-cbor build-cbor-node install install-cxon install-common install-lang uninstall clean

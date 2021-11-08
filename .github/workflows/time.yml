@@ -65,20 +65,38 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / g++11 / default" >> .dep/workflows-data/cxon/benchmarks/tables.g++
-        make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.g++
+        make -sj build-json-node
+        echo "# $(date -u --iso-8601=seconds) / g++11 / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
+        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / g++11 / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
+        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
+        make -sj build-cbor-node
+        echo "# $(date -u --iso-8601=seconds) / g++11" > .dep/workflows-data/cxon/benchmarks/g++.head.cbor
+        make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.cbor
     - name: Time (fast_float)
       env:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_TIME_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / g++11 / fast_float" >> .dep/workflows-data/cxon/benchmarks/tables.g++
-        make -s clean && make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.g++
+        make -sj build-json-node
+        echo "# $(date -u --iso-8601=seconds) / g++11 / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
+        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / g++11 / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
+        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
     - name: Store the results
       run: |
         cd .dep/workflows-data/cxon/benchmarks
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cat tables.g++.txt >> tables.g++ && mv -f tables.g++ tables.g++.txt
+        cp -f g++.head.default.json.node g++.head.default.json.node.data
+        cat g++.tail.default.json.node.data >> g++.head.default.json.node && mv -f g++.head.default.json.node g++.tail.default.json.node.data
+        cp -f g++.head.default.json.native g++.head.default.json.native.data
+        cat g++.tail.default.json.native.data >> g++.head.default.json.native && mv -f g++.head.default.json.native g++.tail.default.json.native.data
+        cp -f g++.head.fast_float.json.node g++.head.fast_float.json.node.data
+        cat g++.tail.fast_float.json.node.data >> g++.head.fast_float.json.node && mv -f g++.head.fast_float.json.node g++.tail.fast_float.json.node.data
+        cp -f g++.head.fast_float.json.native g++.head.fast_float.json.native.data
+        cat g++.tail.fast_float.json.native.data >> g++.head.fast_float.json.native && mv -f g++.head.fast_float.json.native g++.tail.fast_float.json.native.data
+        cp -f g++.head.cbor g++.head.cbor.data
+        cat g++.tail.cbor.data >> g++.head.cbor && mv -f g++.head.cbor g++.tail.cbor.data
         git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
         git pull --rebase && git push
 
@@ -157,19 +175,37 @@ jobs:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / clang++12 / default" >> .dep/workflows-data/cxon/benchmarks/tables.clang++
-        make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.clang++
+        make -sj build-json-node
+        echo "# $(date -u --iso-8601=seconds) / clang++12 / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
+        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / clang++12 / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
+        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
+        make -sj build-cbor-node
+        echo "# $(date -u --iso-8601=seconds) / clang++12" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
+        make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
     - name: Time (fast_float)
       env:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_TIME_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        echo "# $(date -u --iso-8601=seconds) / clang++11 / fast_float" >> .dep/workflows-data/cxon/benchmarks/tables.clang++
-        make -s clean && make -s time | tee -a .dep/workflows-data/cxon/benchmarks/tables.clang++
+        make -sj build-json-node
+        echo "# $(date -u --iso-8601=seconds) / clang++12 / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
+        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / clang++12 / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
+        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
     - name: Store the results
       run: |
         cd .dep/workflows-data/cxon/benchmarks
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cat tables.clang++.txt >> tables.clang++ && mv -f tables.clang++ tables.clang++.txt
+        cp -f clang++.head.default.json.node clang++.head.default.json.node.data
+        cat clang++.tail.default.json.node.data >> clang++.head.default.json.node && mv -f clang++.head.default.json.node clang++.tail.default.json.node.data
+        cp -f clang++.head.default.json.native clang++.head.default.json.native.data
+        cat clang++.tail.default.json.native.data >> clang++.head.default.json.native && mv -f clang++.head.default.json.native clang++.tail.default.json.native.data
+        cp -f clang++.head.fast_float.json.node clang++.head.fast_float.json.node.data
+        cat clang++.tail.fast_float.json.node.data >> clang++.head.fast_float.json.node && mv -f clang++.head.fast_float.json.node clang++.tail.fast_float.json.node.data
+        cp -f clang++.head.fast_float.json.native clang++.head.fast_float.json.native.data
+        cat clang++.tail.fast_float.json.native.data >> clang++.head.fast_float.json.native && mv -f clang++.head.fast_float.json.native clang++.tail.fast_float.json.native.data
+        cp -f clang++.head.cbor clang++.head.cbor.data
+        cat clang++.tail.cbor.data >> clang++.head.cbor && mv -f clang++.head.cbor clang++.tail.cbor.data
         git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
         git pull --rebase && git push

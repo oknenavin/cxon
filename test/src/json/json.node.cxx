@@ -237,7 +237,7 @@ namespace test { namespace kind {
                 std::vector<std::string> name;
                 std::vector<void(*)(test&)> func;
             }   cnts;
-                cnts.name.push_back("#");
+                cnts.name.push_back(time_cxon == &time_cxon_node ? "# cxon/node" : "# cxon/native");
                 cnts.func.push_back(time_cxon);
     #       ifdef CXON_TIME_BOOST_JSON
                 cnts.name.push_back("Boost/JSON");
@@ -317,7 +317,7 @@ namespace test { namespace kind {
             }
             {   // average
                 tab.push_back({
-                    "AVERAGE",
+                    "<average>",
                     fmt(total_size / c.size())
                 });
                 tab.back().push_back(fmt(total.read[0] / c.size()));
