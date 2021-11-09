@@ -413,15 +413,15 @@ which can represent arbitrary `JSON`.
 
 - `CXON` using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   The difference is noticeable with number-heavy data (like `canada.json` or `numbers.json`).
-  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.png)
+  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
 
 - `CXON` using [fast_float][ff] for floating-point conversion.  
   With the bottleneck removed, the performance of `CXON` is close *(see \<average\>)*.
-  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.png)
+  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
 
 - `CXON` write using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   `CXON` is consistently slower, but not by much.
-  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.png)
+  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
 
 More results and historic data can be found [here](https://github.com/oknenavin/workflows-data/tree/master/cxon).
 
