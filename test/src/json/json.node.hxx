@@ -48,7 +48,7 @@ namespace test { namespace kind {
         void time(cases& cases, TIME_CXON time_cxon);
 
     void time_cxon_node(test&);
-    void time_cxon_type(test&);
+    void time_cxon_native(test&);
     void time_boostjson(test&);
     void time_rapidjson(test&);
     void time_nlohmannjson(test&);
