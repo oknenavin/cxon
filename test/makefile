@@ -15,7 +15,7 @@ check-json-node-src = \
     $(srcdir)/json/json.node.cxx \
     $(srcdir)/json/json.node.self.cxx \
     $(srcdir)/json/json.node.time.node.cxx \
-    $(srcdir)/json/json.node.time.type.cxx \
+    $(srcdir)/json/json.node.time.native.cxx \
     $(srcdir)/json/json.node.time.boost.cxx \
     $(srcdir)/json/json.node.time.rapidjson.cxx \
     $(srcdir)/json/json.node.time.nlohmann.cxx
