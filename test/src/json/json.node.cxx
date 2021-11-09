@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     if (!time_node.empty())
         test::kind::time(time_node, test::kind::time_cxon_node);
     if (!time_native.empty())
-        test::kind::time(time_native, test::kind::time_cxon_type);
+        test::kind::time(time_native, test::kind::time_cxon_native);
 
     return err;
 }

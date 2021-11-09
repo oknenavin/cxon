@@ -5,7 +5,7 @@
 
 
 #include "json.node.time.hxx"
-#include "json.node.time.type.hxx"
+#include "json.node.time.native.hxx"
 
 #include "cxon/lib/node.ordered.hxx"
 
@@ -69,7 +69,7 @@ namespace test { namespace kind {
         { "update-center.json",     &time_run<update_center::object> },
     };
 
-    void time_cxon_type(test& t) {
+    void time_cxon_native(test& t) {
         auto i = executors_.find(t.source.substr(t.source.rfind('/') + 1));
         i != executors_.end() ?
             i->second(t) :
