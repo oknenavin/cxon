@@ -28,7 +28,7 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.json.node src/json/json.node.cxx src/json/json.node.self.cxx src/json/json.node.time.node.cxx src/json/json.node.time.type.cxx src/json/json.node.time.boost.cxx src/json/json.node.time.rapidjson.cxx src/json/json.node.time.nlohmann.cxx
+    cxon.json.node src/json/json.node.cxx src/json/json.node.self.cxx src/json/json.node.time.node.cxx src/json/json.node.time.native.cxx src/json/json.node.time.boost.cxx src/json/json.node.time.rapidjson.cxx src/json/json.node.time.nlohmann.cxx
 )
 set_target_properties (
     cxon.json.node PROPERTIES
