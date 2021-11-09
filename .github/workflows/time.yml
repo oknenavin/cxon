@@ -97,7 +97,7 @@ jobs:
         cat g++.tail.fast_float.json.native.data >> g++.head.fast_float.json.native && mv -f g++.head.fast_float.json.native g++.tail.fast_float.json.native.data
         cp -f g++.head.cbor g++.head.cbor.data
         cat g++.tail.cbor.data >> g++.head.cbor && mv -f g++.head.cbor g++.tail.cbor.data
-        git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
+        git commit -am "$(date -u --iso-8601=seconds / $(git rev-parse --short "$GITHUB_SHA"))" -m "${{ github.event.head_commit.message }}"
         git pull --rebase && git push
 
   # clang ######################################################################
@@ -207,5 +207,5 @@ jobs:
         cat clang++.tail.fast_float.json.native.data >> clang++.head.fast_float.json.native && mv -f clang++.head.fast_float.json.native clang++.tail.fast_float.json.native.data
         cp -f clang++.head.cbor clang++.head.cbor.data
         cat clang++.tail.cbor.data >> clang++.head.cbor && mv -f clang++.head.cbor clang++.tail.cbor.data
-        git commit -am "$(git rev-parse --short "$GITHUB_SHA") / $(date -u --iso-8601=seconds)"
+        git commit -am "$(date -u --iso-8601=seconds / $(git rev-parse --short "$GITHUB_SHA"))" -m "${{ github.event.head_commit.message }}"
         git pull --rebase && git push
