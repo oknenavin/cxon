@@ -51,7 +51,6 @@ In contrast, most of the `JSON`/`CBOR`/etc. libraries represent arbitrary data
 with a polymorphic type (called `DOM`, `value`, etc.) and parsing of the input only means,
 that it is syntactically correct.
 
-
 ###### Example
 ``` c++
 // pseudo code
@@ -72,10 +71,13 @@ int x0 = array[0].get_integer();
 ...
 ```
 
+To help with this, some of the libraries provide tools to convert the value type to a
+`C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to` for this.
+
 For completeness, `CXON` also provides polymorphic types for the supported formats, which are on par
 with the functionality provided by these libraries.  
 The **performance** is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
-in this respect, `CXON` is close to the best (*TODO: provide data*). An important note here, is that many of
+in this respect, `CXON` is [close to the best](#performance). An important note here, is that many of
 the libraries emphasize the floating-point serialization and deserialization performance, utilizing very fast
 (and complex) algorithms. In contrast, by default, `CXON` uses [`<charconv>`][std-charconv]
 (with a fall back for `C++11`). [`<charconv>`][std-charconv] is fast, but especially the parsing can be
@@ -93,6 +95,7 @@ Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the
 #### Contents
   - [Overview](#overview)
   - [Formats](#formats)
+  - [Performance](#performance)
   - [Compilation](#compilation)
   - [Installation](#installation)
   - [Documentation](#documentation)
@@ -406,6 +409,24 @@ which can represent arbitrary `JSON`.
 
 --------------------------------------------------------------------------------
 
+#### Performance
+
+- `CXON` using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
+  The difference is noticeable with number-heavy data (like `canada.json` or `numbers.json`).
+  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.png)
+
+- `CXON` using [fast_float][ff] for floating-point conversion.  
+  With the bottleneck removed, the performance of `CXON` is close *(see \<average\>)*.
+  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.png)
+
+- `CXON` write using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
+  `CXON` is consistently slower, but not by much.
+  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.png)
+
+More results and historic data can be found [here](https://github.com/oknenavin/workflows-data/tree/master/cxon).
+
+--------------------------------------------------------------------------------
+
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
@@ -494,3 +515,4 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [std-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
 [std-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
+[ff]: https://github.com/fastfloat/fast_float
