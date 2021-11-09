@@ -49,44 +49,100 @@ namespace cxon { namespace alc {
 
     namespace imp {
 
-        template <typename T, typename Al, typename ...A>
-            constexpr auto uninitialized_construct_using_allocator_(option<2>, T* t, const Al& al, A&&... as) -> decltype(new T(std::forward<A>(as)..., al)) {
-                return new (t) T(std::forward<A>(as)..., al);
-            }
-        template <typename T, typename Al, typename ...A>
-            constexpr auto uninitialized_construct_using_allocator_(option<1>, T* t, const Al& al, A&&... as) -> decltype(new T(std::allocator_arg, al, std::forward<A>(as)...)) {
-                return new (t) T(std::allocator_arg, al, std::forward<A>(as)...);
-            }
-        template <typename T, typename Al, typename ...A>
-            constexpr auto uninitialized_construct_using_allocator_(option<0>, T* t, const Al&, A&&... as) -> decltype(new T(std::forward<A>(as)...)) {
-                return new (t) T(std::forward<A>(as)...);
-            }
+        template <typename T>
+            struct uninitialized_ {
+                template <typename Al, typename ...A>
+                    static constexpr auto construct_using_allocator_(option<2>, T* t, const Al& al, A&&... as) -> decltype(new T(std::forward<A>(as)..., al)) {
+                        return new (t) T(std::forward<A>(as)..., al);
+                    }
+                template <typename Al, typename ...A>
+                    static constexpr auto construct_using_allocator_(option<1>, T* t, const Al& al, A&&... as) -> decltype(new T(std::allocator_arg, al, std::forward<A>(as)...)) {
+                        return new (t) T(std::allocator_arg, al, std::forward<A>(as)...);
+                    }
+                template <typename Al, typename ...A>
+                    static constexpr auto construct_using_allocator_(option<0>, T* t, const Al&, A&&... as) -> decltype(new T(std::forward<A>(as)...)) {
+                        return new (t) T(std::forward<A>(as)...);
+                    }
+                template <typename Al, typename ...A>
+                    static constexpr T* construct_using_allocator(T* t, const Al& al, A&&... as) {
+                        return construct_using_allocator_(option<2>(), t, al, std::forward<A>(as)...);
+                    }
+            };
+        template <typename F, typename S>
+            struct uninitialized_<std::pair<F, S>> {
+                template <typename Al>
+                    static constexpr std::pair<F, S>* construct_using_allocator(std::pair<F, S>* t, const Al& al) {
+                        return  uninitialized_<F>::construct_using_allocator(&t->first, al),
+                                uninitialized_<S>::construct_using_allocator(&t->second, al),
+                                t
+                        ;
+                    }
+                template <typename Al, typename AF, typename AS>
+                    static constexpr std::pair<F, S>* construct_using_allocator(std::pair<F, S>* t, const Al& al, AF&& af, AS&& as) {
+                        return  uninitialized_<F>::construct_using_allocator(&t->first, al, std::forward<AF>(af)),
+                                uninitialized_<S>::construct_using_allocator(&t->second, al, std::forward<AS>(as)),
+                                t
+                        ;
+                    }
+                // TODO
+                //template <typename Al, typename ...AF, typename ...AS>
+                //    static constexpr std::pair<F, S> construct_using_allocator(std::pair<F, S>* t, const Al& al, std::piecewise_construct_t, std::tuple<AF...>&& af, std::tuple<AS...>&& as) {
+                //    }
+            };
 
     }
     template <typename T, typename Al, typename ...A>
         constexpr T* uninitialized_construct_using_allocator(T* t, const Al& al, A&&... as) {
-            return imp::uninitialized_construct_using_allocator_<T>(option<2>(), t, al, std::forward<A>(as)...);
+            return imp::uninitialized_<T>::construct_using_allocator(t, al, std::forward<A>(as)...);
         }
 
     namespace imp {
 
-        template <typename T, typename C, typename ...A>
-            constexpr auto create_using_allocator_of_(option<2>, const C& c, A&&... as) -> decltype(T(std::forward<A>(as)..., c.get_allocator())) {
-                return T {std::forward<A>(as)..., c.get_allocator()};
-            }
-        template <typename T, typename C, typename ...A>
-            constexpr auto create_using_allocator_of_(option<1>, const C& c, A&&... as) -> decltype(T(std::allocator_arg, c.get_allocator(), std::forward<A>(as)...)) {
-                return T {std::allocator_arg, c.get_allocator(), std::forward<A>(as)...};
-            }
-        template <typename T, typename C, typename ...A>
-            constexpr auto create_using_allocator_of_(option<0>, const C&, A&&... as) -> decltype(T(std::forward<A>(as)...)) {
-                return T {std::forward<A>(as)...};
-            }
+        template <typename T>
+            struct using_allocator_of_ {
+                template <typename C, typename ...A>
+                    static constexpr auto create_(option<2>, const C& c, A&&... as) -> decltype(T(std::forward<A>(as)..., c.get_allocator())) {
+                        return T {std::forward<A>(as)..., c.get_allocator()};
+                    }
+                template <typename C, typename ...A>
+                    static constexpr auto create_(option<1>, const C& c, A&&... as) -> decltype(T(std::allocator_arg, c.get_allocator(), std::forward<A>(as)...)) {
+                        return T {std::allocator_arg, c.get_allocator(), std::forward<A>(as)...};
+                    }
+                template <typename C, typename ...A>
+                    static constexpr auto create_(option<0>, const C&, A&&... as) -> decltype(T(std::forward<A>(as)...)) {
+                        return T {std::forward<A>(as)...};
+                    }
+                template <typename C, typename ...A>
+                    static constexpr T create(const C& c, A&&... as) {
+                        return create_(option<2>(), c, std::forward<A>(as)...);
+                    }
+            };
+        template <typename F, typename S>
+            struct using_allocator_of_<std::pair<F, S>> {
+                template <typename C>
+                    static constexpr std::pair<F, S> create(const C& c) {
+                        return std::make_pair(
+                            using_allocator_of_<F>::create(c),
+                            using_allocator_of_<S>::create(c)
+                        );
+                    }
+                template <typename C, typename AF, typename AS>
+                    static constexpr std::pair<F, S> create(const C& c, AF&& af, AS&& as) {
+                        return std::make_pair(
+                            using_allocator_of_<F>::create(c, std::forward<AF>(af)),
+                            using_allocator_of_<S>::create(c, std::forward<AS>(as))
+                        );
+                    }
+                // TODO
+                //template <typename C, typename ...AF, typename ...AS>
+                //    static constexpr std::pair<F, S> create(const C& c, std::piecewise_construct_t, std::tuple<AF...>&& af, std::tuple<AS...>&& as) {
+                //    }
+            };
 
     }
     template <typename T, typename C, class... A>
         constexpr T create_using_allocator_of(const C& c, A&&... as) {
-            return imp::create_using_allocator_of_<T>(option<2>(), c, std::forward<A>(as)...);
+            return imp::using_allocator_of_<T>::create(c, std::forward<A>(as)...);
         }
 
     template <typename T, typename Al>

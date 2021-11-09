@@ -54,6 +54,12 @@ namespace test { namespace kind {
     template <typename T>
         struct my_allocator : std::allocator<T> {
             using std::allocator<T>::allocator;
+            my_allocator(int id = 0) : id(id) {}
+            template <typename U>
+                my_allocator(const my_allocator<U>& al) : id(al.id) {}
+            template <class U>
+                struct rebind { using other = my_allocator<U>; };
+            int id;
         };
 
     int self() {
@@ -898,6 +904,27 @@ namespace test { namespace kind {
             }
         }
 #       endif
+        {   // alc::create_using_allocator_of
+            using string = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
+            my_allocator<string> al(42);
+            std::vector<string, my_allocator<string>> of(al);
+            auto x1 = cxon::alc::create_using_allocator_of<string>(of, "42");
+            CHECK(of.get_allocator().id == x1.get_allocator().id);
+            auto x2 = cxon::alc::create_using_allocator_of<std::tuple<string>>(of);
+            CHECK(of.get_allocator().id == std::get<0>(x2).get_allocator().id);
+            auto x3 = cxon::alc::create_using_allocator_of<my_type>(of);
+            //CHECK(...);
+            auto x4 = cxon::alc::create_using_allocator_of<std::pair<string, int>>(of, "42", 24);
+            CHECK(of.get_allocator().id == x4.first.get_allocator().id && x4.first == "42" && x4.second == 24);
+        }
+        {   // alc::uninitialized_construct_using_allocator
+            using string = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
+            using pair = std::pair<int, string>;
+            typename std::aligned_union<0, pair>::type s;
+            my_allocator<string> al(42);
+            pair *p = cxon::alc::uninitialized_construct_using_allocator<pair>((pair*)&s, al, 42, "24");
+            CHECK(al.id == p->second.get_allocator().id && p->first == 42 && p->second == "24");
+        }
 #       undef CHECK
 
         std::fprintf(stdout, "cxon/json/node/self:  %i of %3i failed\n", f_, a_); std::fflush(stdout);
