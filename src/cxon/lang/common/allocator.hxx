@@ -84,7 +84,6 @@ namespace cxon { namespace alc {
                                 t
                         ;
                     }
-                // TODO
                 template <typename T, typename Al, typename Tp, std::size_t ...I>
                     static constexpr T* construct_with_(T* t, const Al& al, Tp&& tp, index_sequence<I...>) {
                         return uninitialized_<T>::construct_using_allocator(t, al, std::forward<typename std::tuple_element<I, Tp>::type>(std::get<I>(tp))...);
