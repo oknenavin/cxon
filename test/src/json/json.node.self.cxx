@@ -916,6 +916,10 @@ namespace test { namespace kind {
             //CHECK(...);
             auto x4 = cxon::alc::create_using_allocator_of<std::pair<string, int>>(of, "42", 24);
             CHECK(of.get_allocator().id == x4.first.get_allocator().id && x4.first == "42" && x4.second == 24);
+            auto x5 = cxon::alc::create_using_allocator_of<std::pair<string, string>>(
+                of, std::piecewise_construct, std::forward_as_tuple("42"), std::forward_as_tuple(3U, 'x')
+            );
+            CHECK(of.get_allocator().id == x5.first.get_allocator().id && of.get_allocator().id == x5.second.get_allocator().id && x5.first == "42" && x5.second == "xxx");
         }
         {   // alc::uninitialized_construct_using_allocator
             using string = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
@@ -924,6 +928,16 @@ namespace test { namespace kind {
             my_allocator<string> al(42);
             pair *p = cxon::alc::uninitialized_construct_using_allocator<pair>((pair*)&s, al, 42, "24");
             CHECK(al.id == p->second.get_allocator().id && p->first == 42 && p->second == "24");
+        }
+        {   // alc::uninitialized_construct_using_allocator
+            using string = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
+            using pair = std::pair<string, string>;
+            typename std::aligned_union<0, pair>::type s;
+            my_allocator<string> al(42);
+            pair *p = cxon::alc::uninitialized_construct_using_allocator<pair>(
+                (pair*)&s, al, std::piecewise_construct, std::forward_as_tuple("42"), std::forward_as_tuple(3U, 'x')
+            );
+            CHECK(al.id == p->first.get_allocator().id && al.id == p->second.get_allocator().id && p->first == "42" && p->second == "xxx");
         }
 #       undef CHECK
 
