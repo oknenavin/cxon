@@ -91,7 +91,7 @@ namespace cxon { namespace cio { namespace val {
     template <>
         struct sink<void> {
             using value_type = char; // for is_back_insertable
-            void push_back(value_type) {}
+            void push_back(value_type) const {}
         };
 
     template <typename T>
