@@ -177,15 +177,8 @@ namespace cxon { namespace cio { namespace cls {
         template <typename X, typename S, typename ...>
             struct write_next_ {
                 template <typename O, typename Cx>
-                    static bool fields(O&, const S&, const fields<>&, Cx&) {
+                    static constexpr bool fields(O&, const S&, const fields<>&, Cx&) {
                         return true;
-                    }
-            };
-        template <typename X, typename S, typename F>
-            struct write_next_<X, S, F> {
-                template <typename O, typename Cx>
-                    static bool fields(O& o, const S& t, const fields<F>& f, Cx& cx) {
-                        return f.field.dflt(t) || (poke<X>(o, X::map::sep, cx) && write_field<X>(o, t, f.field, cx));
                     }
             };
         template <typename X, typename S, typename H, typename ...T>
@@ -201,24 +194,17 @@ namespace cxon { namespace cio { namespace cls {
         template <typename X, typename S, typename ...>
             struct write_ {
                 template <typename O, typename Cx>
-                    static bool fields(O&, const S&, const fields<>&, Cx&) {
+                    static constexpr bool fields(O&, const S&, const fields<>&, Cx&) {
                         return true;
-                    }
-            };
-        template <typename X, typename S, typename F>
-            struct write_<X, S, F> {
-                template <typename O, typename Cx>
-                    static bool fields(O& o, const S& t, const fields<F>& f, Cx& cx) {
-                        return f.field.dflt(t) || write_field<X>(o, t, f.field, cx);
                     }
             };
         template <typename X, typename S, typename H, typename ...T>
             struct write_<X, S, H, T...> {
                 template <typename O, typename Cx>
                     static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        return !f.field.dflt(t) ?
-                            write_field<X>(o, t, f.field, cx) && write_next_<X, S, T...>::fields(o, t, f.next, cx) :
-                            write_<X, S, T...>::fields(o, t, f.next, cx)
+                        bool const dflt = f.field.dflt(t);
+                        return   (!dflt && write_field<X>(o, t, f.field, cx) && write_next_<X, S, T...>::fields(o, t, f.next, cx)) ||
+                                 ( dflt && write_<X, S, T...>::fields(o, t, f.next, cx))
                         ;
                     }
             };
