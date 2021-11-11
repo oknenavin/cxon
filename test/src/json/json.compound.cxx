@@ -467,18 +467,18 @@ namespace {
         template <typename X, typename II, typename C>
             static bool read_value(Struct8& t, II& i, II e, C& ctx) {
                 using namespace cxon::json::cls;
-                static constexpr auto f = make_fields(
-                    make_field("a", &Struct8::a),
-                    make_field("b", &Struct8::b)
+                static auto const f = make_fields(
+                    make_field<Struct8>("a", &Struct8::a),
+                    make_field<Struct8>("b", &Struct8::b)
                 );
                 return read_fields<X>(t, f, i, e, ctx);
             }
         template <typename X, typename OI, typename C>
             static bool write_value(OI& o, const Struct8& t, C& ctx) {
                 using namespace cxon::json::cls;
-                static constexpr auto f = make_fields(
-                    make_field("a", &Struct8::a),
-                    make_field("b", &Struct8::b)
+                static auto const f = make_fields(
+                    make_field<Struct8>("a", &Struct8::a),
+                    make_field<Struct8>("b", &Struct8::b)
                 );
                 return write_fields<X>(o, t, f, ctx);
             }
@@ -595,7 +595,7 @@ CXON_JSON_CLS_READ(Struct11,
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 CXON_JSON_CLS_WRITE(Struct11,
-    CXON_JSON_CLS_FIELD_ASIS(a),
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(a, [](const T& s) { return s.a != 0; }),
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 
@@ -604,6 +604,7 @@ TEST_BEG(cxon::JSON<>) // skip field
     R_TEST(Struct11(1, {" \"1, 2, 3\""}), "{\"a\": 1, \"b\": \"1, 2, 3\"}");
     R_TEST(Struct11(1, {" {\"x\": 1, \"y\": 2}"}), "{\"a\": 1, \"b\": {\"x\": 1, \"y\": 2}}");
     W_TEST("{\"a\":1,\"b\":[1, 2, 3]}", Struct11(1, {"[1, 2, 3]"}));
+    W_TEST("{\"b\":[1, 2, 3]}", Struct11(0, {"[1, 2, 3]"}));
 TEST_END()
 
 

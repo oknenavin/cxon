@@ -415,7 +415,7 @@ namespace test {
                 std::string keys_url;
                 std::string git_url;
                 std::string contributors_url;
-                unsigned size;
+                unsigned size = 0;
                 unsigned watchers;
 
                 CXON_JSON_CLS_MEMBER(forkee,
@@ -588,7 +588,7 @@ namespace test {
                 unsigned long long push_id;
                 std::string head;
                 std::string before;
-                unsigned size;
+                unsigned size = 0;
                 // CreateEvent
                 std::string description;
                 std::string master_branch;
@@ -607,21 +607,22 @@ namespace test {
                 // CreateEvent
 
                 CXON_JSON_CLS_MEMBER(payload,
-                    CXON_JSON_CLS_FIELD_ASIS(commits),
-                    CXON_JSON_CLS_FIELD_ASIS(distinct_size),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(commits       , [](const T& s) { return !s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(distinct_size , [](const T& s) { return !s.commits.empty(); }),
                     CXON_JSON_CLS_FIELD_ASIS(ref),
-                    CXON_JSON_CLS_FIELD_ASIS(push_id),
-                    CXON_JSON_CLS_FIELD_ASIS(head),
-                    CXON_JSON_CLS_FIELD_ASIS(before),
-                    CXON_JSON_CLS_FIELD_ASIS(size),
-                    CXON_JSON_CLS_FIELD_ASIS(description),
-                    CXON_JSON_CLS_FIELD_ASIS(master_branch),
-                    CXON_JSON_CLS_FIELD_ASIS(ref_type),
-                    CXON_JSON_CLS_FIELD_ASIS(forkee),
-                    CXON_JSON_CLS_FIELD_ASIS(action),
-                    CXON_JSON_CLS_FIELD_ASIS(issue),
-                    CXON_JSON_CLS_FIELD_ASIS(comment),
-                    CXON_JSON_CLS_FIELD_ASIS(pages)
+                    //CXON_JSON_CLS_FIELD_ASIS_DFLT(ref           , [](const T& s) { return s.forkee.size != 0 && !s.action.empty() && !s.issue.created_at.empty() && !s.pages.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(push_id       , [](const T& s) { return !s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(head          , [](const T& s) { return !s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(before        , [](const T& s) { return !s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(size          , [](const T& s) { return s.size != 0; }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(description   , [](const T& s) { return !s.description.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(master_branch , [](const T& s) { return !s.master_branch.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(ref_type      , [](const T& s) { return !s.ref_type.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(forkee        , [](const T& s) { return s.forkee.size != 0; }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(action        , [](const T& s) { return !s.action.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(issue         , [](const T& s) { return !s.issue.created_at.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(comment       , [](const T& s) { return !s.issue.created_at.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(pages         , [](const T& s) { return !s.pages.empty(); })
                 )
             };
 
