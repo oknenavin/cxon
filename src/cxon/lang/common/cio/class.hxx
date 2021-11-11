@@ -14,14 +14,17 @@
 
 namespace cxon { namespace cio { namespace cls { // structured types reader/writer construction helpers
 
-    template <typename F>
+    template <typename F, typename D>
         struct field {
             using type = F;
             char const*const name;
             type const value;
+            D dflt;
         };
-    template <typename F = val::sink<>>
-        constexpr field<F> make_field(const char* name, F f = {});
+    template <typename S, typename F = val::sink<>>
+        constexpr auto make_field(const char* name, F f) -> field<F, bool(*)(const S&)>;
+    template <typename S, typename F, typename D>
+        constexpr auto make_field(const char* name, F f) -> field<F, D>;
 
     template <typename X, typename S, typename F, typename II, typename Cx>
         inline bool read_field(S& s, const F& f, II& i, II e, Cx& cx);
@@ -46,8 +49,14 @@ namespace cxon { namespace cio { namespace cls {
 
     // field
 
-    template <typename F>
-        constexpr field<F> make_field(const char* name, F f) { return { name, f }; }
+    template <typename S, typename F>
+        constexpr auto make_field(const char* name, F f) -> field<F, bool(*)(const S&)> {
+            return { name, f, [](const S&) { return true; } };
+        }
+    template <typename S, typename F, typename D>
+        constexpr auto make_field(const char* name, F f, D dflt) -> field<F, D> {
+            return { name, f, dflt };
+        }
 
     namespace imp {
 
@@ -183,7 +192,7 @@ namespace cxon { namespace cio { namespace cls {
             struct write<X, S, H, T...> {
                 template <typename O, typename Cx>
                     static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        return  write_field<X>(o, t, f.field, cx) && poke<X>(o, X::map::sep, cx) &&
+                        return  (!f.field.dflt(t) || (write_field<X>(o, t, f.field, cx) && poke<X>(o, X::map::sep, cx))) &&
                                 write<X, S, T...>::fields(o, t, f.next, cx)
                         ;
                     }
