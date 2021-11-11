@@ -22,7 +22,7 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
             D dflt;
         };
     template <typename S, typename F = val::sink<>>
-        constexpr auto make_field(const char* name, F f) -> field<F, bool(*)(const S&)>;
+        constexpr auto make_field(const char* name, F f) -> field<F, bool (*)(const S&)>;
     template <typename S, typename F, typename D>
         constexpr auto make_field(const char* name, F f) -> field<F, D>;
 
@@ -50,8 +50,8 @@ namespace cxon { namespace cio { namespace cls {
     // field
 
     template <typename S, typename F>
-        constexpr auto make_field(const char* name, F f) -> field<F, bool(*)(const S&)> {
-            return { name, f, [](const S&) { return true; } };
+        constexpr auto make_field(const char* name, F f) -> field<F, bool (*)(const S&)> {
+            return { name, f, [](const S&) { return false; } };
         }
     template <typename S, typename F, typename D>
         constexpr auto make_field(const char* name, F f, D dflt) -> field<F, D> {
@@ -135,19 +135,19 @@ namespace cxon { namespace cio { namespace cls {
     namespace imp {
 
         template <typename X, typename S, typename ...>
-            struct read {
+            struct read_ {
                 template <typename II, typename Cx>
                     static constexpr bool fields(S&, const char*, const fields<>&, II&, II, Cx&) {
                         return false;
                     }
             };
         template <typename X, typename S, typename H, typename ...T>
-            struct read<X, S, H, T...> {
+            struct read_<X, S, H, T...> {
                 template <typename II, typename Cx>
                     static bool fields(S& t, const char* name, const fields<H, T...>& f, II& i, II e, Cx& cx) {
                         return std::strcmp(f.field.name, name) == 0 ?
                             read_field<X>(t, f.field, i, e, cx) :
-                            read<X, S, T...>::fields(t, name, f.next, i, e, cx)
+                            read_<X, S, T...>::fields(t, name, f.next, i, e, cx)
                         ;
                     }
             };
@@ -162,7 +162,7 @@ namespace cxon { namespace cio { namespace cls {
                 consume<X>(i, e);
                 II const o = i;
                     if (!read_key<X>(id, i, e, cx)) return false;
-                    if (!imp::read<X, S, F...>::fields(s, id, f, i, e, cx))
+                    if (!imp::read_<X, S, F...>::fields(s, id, f, i, e, cx))
                         return cx && (rewind(i, o), cx/X::read_error::unexpected);
                     if (consume<X>(X::map::sep, i, e)) continue;
                 return consume<X>(X::map::end, i, e, cx);
@@ -175,25 +175,50 @@ namespace cxon { namespace cio { namespace cls {
     namespace imp {
 
         template <typename X, typename S, typename ...>
-            struct write {
+            struct write_next_ {
                 template <typename O, typename Cx>
                     static bool fields(O&, const S&, const fields<>&, Cx&) {
                         return true;
                     }
             };
         template <typename X, typename S, typename F>
-            struct write<X, S, F> {
+            struct write_next_<X, S, F> {
                 template <typename O, typename Cx>
                     static bool fields(O& o, const S& t, const fields<F>& f, Cx& cx) {
-                        return write_field<X>(o, t, f.field, cx);
+                        return f.field.dflt(t) || (poke<X>(o, X::map::sep, cx) && write_field<X>(o, t, f.field, cx));
                     }
             };
         template <typename X, typename S, typename H, typename ...T>
-            struct write<X, S, H, T...> {
+            struct write_next_<X, S, H, T...> {
                 template <typename O, typename Cx>
                     static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        return  (!f.field.dflt(t) || (write_field<X>(o, t, f.field, cx) && poke<X>(o, X::map::sep, cx))) &&
-                                write<X, S, T...>::fields(o, t, f.next, cx)
+                        return  (f.field.dflt(t) || (poke<X>(o, X::map::sep, cx) && write_field<X>(o, t, f.field, cx))) &&
+                                write_next_<X, S, T...>::fields(o, t, f.next, cx)
+                        ;
+                    }
+            };
+
+        template <typename X, typename S, typename ...>
+            struct write_ {
+                template <typename O, typename Cx>
+                    static bool fields(O&, const S&, const fields<>&, Cx&) {
+                        return true;
+                    }
+            };
+        template <typename X, typename S, typename F>
+            struct write_<X, S, F> {
+                template <typename O, typename Cx>
+                    static bool fields(O& o, const S& t, const fields<F>& f, Cx& cx) {
+                        return f.field.dflt(t) || write_field<X>(o, t, f.field, cx);
+                    }
+            };
+        template <typename X, typename S, typename H, typename ...T>
+            struct write_<X, S, H, T...> {
+                template <typename O, typename Cx>
+                    static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
+                        return !f.field.dflt(t) ?
+                            write_field<X>(o, t, f.field, cx) && write_next_<X, S, T...>::fields(o, t, f.next, cx) :
+                            write_<X, S, T...>::fields(o, t, f.next, cx)
                         ;
                     }
             };
@@ -203,7 +228,7 @@ namespace cxon { namespace cio { namespace cls {
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx) {
             return  poke<X>(o, X::map::beg, cx) &&
-                        imp::write<X, S, F...>::fields(o, s, f, cx) &&
+                        imp::write_<X, S, F...>::fields(o, s, f, cx) &&
                     poke<X>(o, X::map::end, cx)
             ;
         }
