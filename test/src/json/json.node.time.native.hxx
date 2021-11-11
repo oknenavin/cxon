@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_JSON_TEST_OBJECT_HXX_
-#define CXON_JSON_TEST_OBJECT_HXX_
+#ifndef CXON_JSON_TEST_NATIVE_HXX_
+#define CXON_JSON_TEST_NATIVE_HXX_
 
 #include "cxon/json.hxx"
 
@@ -607,22 +607,22 @@ namespace test {
                 // CreateEvent
 
                 CXON_JSON_CLS_MEMBER(payload,
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(commits       , [](const T& s) { return !s.commits.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(distinct_size , [](const T& s) { return !s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(commits       , [](const T& s) { return s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(distinct_size , [](const T& s) { return s.commits.empty(); }),
                     CXON_JSON_CLS_FIELD_ASIS(ref),
-                    //CXON_JSON_CLS_FIELD_ASIS_DFLT(ref           , [](const T& s) { return s.forkee.size != 0 && !s.action.empty() && !s.issue.created_at.empty() && !s.pages.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(push_id       , [](const T& s) { return !s.commits.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(head          , [](const T& s) { return !s.commits.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(before        , [](const T& s) { return !s.commits.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(size          , [](const T& s) { return s.size != 0; }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(description   , [](const T& s) { return !s.description.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(master_branch , [](const T& s) { return !s.master_branch.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(ref_type      , [](const T& s) { return !s.ref_type.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(forkee        , [](const T& s) { return s.forkee.size != 0; }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(action        , [](const T& s) { return !s.action.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(issue         , [](const T& s) { return !s.issue.created_at.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(comment       , [](const T& s) { return !s.issue.created_at.empty(); }),
-                    CXON_JSON_CLS_FIELD_ASIS_DFLT(pages         , [](const T& s) { return !s.pages.empty(); })
+                    //CXON_JSON_CLS_FIELD_ASIS_DFLT(ref           , [](const T& s) { return s.forkee.size == 0 && s.action.empty() && s.issue.created_at.empty() && s.pages.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(push_id       , [](const T& s) { return s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(head          , [](const T& s) { return s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(before        , [](const T& s) { return s.commits.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(size          , [](const T& s) { return s.size == 0; }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(description   , [](const T& s) { return s.description.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(master_branch , [](const T& s) { return s.master_branch.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(ref_type      , [](const T& s) { return s.ref_type.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(forkee        , [](const T& s) { return s.forkee.size == 0; }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(action        , [](const T& s) { return s.action.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(issue         , [](const T& s) { return s.issue.created_at.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(comment       , [](const T& s) { return s.issue.created_at.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(pages         , [](const T& s) { return s.pages.empty(); })
                 )
             };
 
@@ -1363,15 +1363,15 @@ namespace test {
 
             struct sizes {
                 size medium;
-                size small;
-                size thumb;
                 size large;
+                size thumb;
+                size small;
 
                 CXON_JSON_CLS_MEMBER(sizes,
                     CXON_JSON_CLS_FIELD_ASIS(medium),
-                    CXON_JSON_CLS_FIELD_ASIS(small),
+                    CXON_JSON_CLS_FIELD_ASIS(large),
                     CXON_JSON_CLS_FIELD_ASIS(thumb),
-                    CXON_JSON_CLS_FIELD_ASIS(large)
+                    CXON_JSON_CLS_FIELD_ASIS(small)
                 )
             };
 
@@ -1400,8 +1400,8 @@ namespace test {
                     CXON_JSON_CLS_FIELD_ASIS(expanded_url),
                     CXON_JSON_CLS_FIELD_ASIS(type),
                     CXON_JSON_CLS_FIELD_ASIS(sizes),
-                    CXON_JSON_CLS_FIELD_ASIS(source_status_id),
-                    CXON_JSON_CLS_FIELD_ASIS(source_status_id_str)
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(source_status_id      , [](const T& s) { return s.source_status_id == 0; }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(source_status_id_str  , [](const T& s) { return s.source_status_id_str.empty(); })
                 )
             };
 
@@ -1434,20 +1434,20 @@ namespace test {
             struct entity {
                 std::vector<hashtag> hashtags;
                 std::vector<std::string> symbols;
-                std::vector<user_mention> user_mentions;
-                struct description description;
                 std::vector<struct url> urls;
+                std::vector<user_mention> user_mentions;
                 struct urls url;
+                struct description description;
                 std::vector<struct media> media;
 
                 CXON_JSON_CLS_MEMBER(entity,
-                    CXON_JSON_CLS_FIELD_ASIS(hashtags),
-                    CXON_JSON_CLS_FIELD_ASIS(symbols),
-                    CXON_JSON_CLS_FIELD_ASIS(user_mentions),
-                    CXON_JSON_CLS_FIELD_ASIS(description),
-                    CXON_JSON_CLS_FIELD_ASIS(urls),
-                    CXON_JSON_CLS_FIELD_ASIS(url),
-                    CXON_JSON_CLS_FIELD_ASIS(media)
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(hashtags          , [](const T& s) { return s.hashtags.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(symbols           , [](const T& s) { return s.symbols.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(urls              , [](const T& s) { return s.urls.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(user_mentions     , [](const T& s) { return s.user_mentions.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(url               , [](const T& s) { return s.url.urls_.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(description       , [](const T& s) { return s.description.urls.empty(); }),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(media             , [](const T& s) { return s.media.empty(); })
                 )
             };
 
@@ -1523,7 +1523,7 @@ namespace test {
                     CXON_JSON_CLS_FIELD_ASIS(profile_background_tile),
                     CXON_JSON_CLS_FIELD_ASIS(profile_image_url),
                     CXON_JSON_CLS_FIELD_ASIS(profile_image_url_https),
-                    CXON_JSON_CLS_FIELD_ASIS(profile_banner_url),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(profile_banner_url, [](const T& s) { return s.profile_banner_url.empty(); }),
                     CXON_JSON_CLS_FIELD_ASIS(profile_link_color),
                     CXON_JSON_CLS_FIELD_ASIS(profile_sidebar_border_color),
                     CXON_JSON_CLS_FIELD_ASIS(profile_sidebar_fill_color),
@@ -1586,7 +1586,7 @@ namespace test {
                     CXON_JSON_CLS_FIELD_ASIS(entities),
                     CXON_JSON_CLS_FIELD_ASIS(favorited),
                     CXON_JSON_CLS_FIELD_ASIS(retweeted),
-                    CXON_JSON_CLS_FIELD_ASIS(possibly_sensitive),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(possibly_sensitive, [](const T& s) { return !s.possibly_sensitive; }),
                     CXON_JSON_CLS_FIELD_ASIS(lang)
                 )
             };
@@ -1636,13 +1636,13 @@ namespace test {
                     CXON_JSON_CLS_FIELD_ASIS(coordinates),
                     CXON_JSON_CLS_FIELD_ASIS(place),
                     CXON_JSON_CLS_FIELD_ASIS(contributors),
-                    CXON_JSON_CLS_FIELD_ASIS(retweeted_status),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(retweeted_status      , [](const T& s) { return s.retweeted_status.created_at.empty(); }),
                     CXON_JSON_CLS_FIELD_ASIS(retweet_count),
                     CXON_JSON_CLS_FIELD_ASIS(favorite_count),
                     CXON_JSON_CLS_FIELD_ASIS(entities),
                     CXON_JSON_CLS_FIELD_ASIS(favorited),
                     CXON_JSON_CLS_FIELD_ASIS(retweeted),
-                    CXON_JSON_CLS_FIELD_ASIS(possibly_sensitive),
+                    CXON_JSON_CLS_FIELD_ASIS_DFLT(possibly_sensitive    , [](const T& s) { return !s.possibly_sensitive; }),
                     CXON_JSON_CLS_FIELD_ASIS(lang)
                 )
             };
@@ -1806,4 +1806,4 @@ namespace test {
 
 }
 
-#endif // CXON_JSON_TEST_OBJECT_HXX_
+#endif // CXON_JSON_TEST_NATIVE_HXX_

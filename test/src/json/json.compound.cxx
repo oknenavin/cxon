@@ -595,7 +595,7 @@ CXON_JSON_CLS_READ(Struct11,
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 CXON_JSON_CLS_WRITE(Struct11,
-    CXON_JSON_CLS_FIELD_ASIS_DFLT(a, [](const T& s) { return s.a != 0; }),
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(a, [](const T& s) { return s.a == 0; }),
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 
