@@ -30,9 +30,9 @@ namespace cxon { namespace cbor { namespace cls {
         constexpr field<F> make_field(const char* name, F f = {});
 
     template <typename X, typename S, typename F, typename II, typename Cx>
-        inline bool read_field(S& s, F f, II& i, II e, Cx& cx);
+        inline bool read_field(S& s, const F& f, II& i, II e, Cx& cx);
     template <typename X, typename O, typename S, typename F, typename Cx>
-        inline bool write_field(O& o, const S& s, F f, Cx& cx);
+        inline bool write_field(O& o, const S& s, const F& f, Cx& cx);
 
     template <typename ...F>
         using fields = std::tuple<F...>;
@@ -54,52 +54,52 @@ namespace cxon { namespace cbor { namespace cls {
 
     namespace imp {
 
-        template <typename X, typename S, typename F, typename II, typename Cx>
-            inline auto read_field_(S& s, F f, II& i, II e, Cx& cx)
-                -> enable_if_t<!is_sink<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return read_value<X>(s.*f.value, i, e, cx);
-            }
-        template <typename X, typename S, typename F, typename II, typename Cx>
-            inline auto read_field_(S&, F f, II& i, II e, Cx& cx)
-                -> enable_if_t<!is_sink<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return read_value<X>(*f.value, i, e, cx);
-            }
+        template <typename S, typename F>
+            constexpr auto field_value_(S& s, const F& f)
+                -> enable_if_t< std::is_member_pointer<typename F::type>::value, decltype(s.*f.value)&>
+            { return s.*f.value; }
+        template <typename S, typename F>
+            constexpr auto field_value_(S&, const F& f)
+                -> enable_if_t<!std::is_member_pointer<typename F::type>::value, decltype(*f.value)&>
+            { return   *f.value; }
 
-        template <typename X, typename O, typename S, typename F, typename Cx>
-            inline auto write_field_(O& o, const S& s, F f, Cx& cx)
-                -> enable_if_t<!is_sink<typename F::type>::value &&  std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return write_value<X>(o, f.name, cx) && write_value<X>(o, s.*f.value, cx);
-            }
-        template <typename X, typename O, typename S, typename F, typename Cx>
-            inline auto write_field_(O& o, const S&, F f, Cx& cx)
-                -> enable_if_t<!is_sink<typename F::type>::value && !std::is_member_pointer<typename F::type>::value, bool>
-            {
-                return write_value<X>(o, f.name, cx) && write_value<X>(o, *f.value, cx);
-            }
+    }
+
+    namespace imp {
 
         template <typename X, typename S, typename F, typename II, typename Cx>
-            inline auto read_field_(S&, F f, II& i, II e, Cx& cx)
+            inline auto read_field_(S& s, const F& f, II& i, II e, Cx& cx)
+                -> enable_if_t<!is_sink<typename F::type>::value, bool>
+            {
+                return read_value<X>(field_value_(s, f), i, e, cx);
+            }
+        template <typename X, typename S, typename F, typename II, typename Cx>
+            inline auto read_field_(S&, const F& f, II& i, II e, Cx& cx)
                 -> enable_if_t< is_sink<typename F::type>::value, bool>
             {
                 return sink_read<X>(f.value, i, e, cx);
             }
-        //template <typename X, typename O, typename S, typename F, typename Cx>
-        //    constexpr auto write_field_(O&, const S&, F, Cx&)
-        //        -> enable_if_t< is_sink<typename F::type>::value, bool>
-        //    {
-        //        return true;
-        //    }
+
+        template <typename X, typename O, typename S, typename F, typename Cx>
+            inline auto write_field_(O& o, const S& s, const F& f, Cx& cx)
+                -> enable_if_t<!is_sink<typename F::type>::value, bool>
+            {
+                return write_value<X>(o, f.name, cx) && write_value<X>(o, field_value_(s, f), cx);
+            }
+        template <typename X, typename O, typename S, typename F, typename Cx>
+            constexpr auto write_field_(O&, const S&, const F&, Cx&)
+                -> enable_if_t< is_sink<typename F::type>::value, bool>
+            {
+                return true;
+            }
 
     }
     template <typename X, typename S, typename F, typename II, typename Cx>
-        inline bool read_field(S& s, F f, II& i, II e, Cx& cx) {
+        inline bool read_field(S& s, const F& f, II& i, II e, Cx& cx) {
             return imp::read_field_<X>(s, f, i, e, cx);
         }
     template <typename X, typename O, typename S, typename F, typename Cx>
-        inline bool write_field(O& o, const S& s, F f, Cx& cx) {
+        inline bool write_field(O& o, const S& s, const F& f, Cx& cx) {
             return imp::write_field_<X>(o, s, f, cx);
         }
 

@@ -43,7 +43,7 @@ namespace cxon { namespace cbor {
     template <>
         struct sink<void> {
             using value_type = bio::byte;
-            void push_back(value_type) {}
+            void push_back(value_type) const {}
         };
 
     template <typename T>
