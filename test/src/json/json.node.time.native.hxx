@@ -35,13 +35,13 @@ namespace test {
             std::string ios_version;
 
             CXON_JSON_CLS_MEMBER(entry,
-                CXON_JSON_CLS_FIELD_ASIS(emoji),
-                CXON_JSON_CLS_FIELD_ASIS(description),
-                CXON_JSON_CLS_FIELD_ASIS(category),
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(emoji             , [](const T& s) { return s.emoji.empty(); }),
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(description       , [](const T& s) { return s.description.empty(); }),
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(category          , [](const T& s) { return s.category.empty(); }),
                 CXON_JSON_CLS_FIELD_ASIS(aliases),
                 CXON_JSON_CLS_FIELD_ASIS(tags),
-                CXON_JSON_CLS_FIELD_ASIS(unicode_version),
-                CXON_JSON_CLS_FIELD_ASIS(ios_version)
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(unicode_version   , [](const T& s) { return s.emoji.empty(); }),
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(ios_version       , [](const T& s) { return s.ios_version.empty(); })
             )
         };
 
