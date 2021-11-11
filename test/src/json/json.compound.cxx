@@ -608,6 +608,34 @@ TEST_BEG(cxon::JSON<>) // skip field
 TEST_END()
 
 
+namespace {
+
+    struct Struct12 {
+        int x;
+        int y;
+        int z;
+        bool operator ==(const Struct12& t) const { return x == t.x && y == t.y && z == t.z; }
+    };
+
+}
+
+CXON_JSON_CLS(Struct12,
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(x, [](const T& t) { return t.x == 0; }),
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(y, [](const T& t) { return t.y == 0; }),
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(z, [](const T& t) { return t.z == 0; })
+)
+
+TEST_BEG(cxon::JSON<>) // defaults
+    W_TEST("{\"x\":1,\"y\":1,\"z\":1}", Struct12 {1, 1, 1});
+    W_TEST("{\"y\":1,\"z\":1}", Struct12 {0, 1, 1});
+    W_TEST("{\"x\":1,\"z\":1}", Struct12 {1, 0, 1});
+    W_TEST("{\"x\":1,\"y\":1}", Struct12 {1, 1, 0});
+    W_TEST("{\"z\":1}", Struct12 {0, 0, 1});
+    W_TEST("{\"x\":1}", Struct12 {1, 0, 0});
+    W_TEST("{}", Struct12 {0, 0, 0});
+TEST_END()
+
+
 TEST_BEG(cxon::JSON<>) // sink
     {   char o[2];
         auto const r = to_bytes(std::begin(o), std::end(o), cio::val::sink<std::string>{"\01\02\03"});
