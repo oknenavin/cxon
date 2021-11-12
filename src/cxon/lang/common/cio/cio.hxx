@@ -20,27 +20,33 @@ namespace cxon { namespace cio { // format traits
 
     struct format_traits {
         struct map {
-            static constexpr char           beg     = '{';
-            static constexpr char           end     = '}';
-            static constexpr char           div     = ':';
-            static constexpr char           sep     = ',';
+            static constexpr char               beg     = '{';
+            static constexpr char               end     = '}';
+            static constexpr char               div     = ':';
+            static constexpr char               sep     = ',';
         };
         struct list {
-            static constexpr char           beg     = '[';
-            static constexpr char           end     = ']';
-            static constexpr char           sep     = ',';
+            static constexpr char               beg     = '[';
+            static constexpr char               end     = ']';
+            static constexpr char               sep     = ',';
         };
         struct string {
-            static constexpr char           beg     = '"';
-            static constexpr char           end     = '"';
+            static constexpr char               beg     = '"';
+            static constexpr char               end     = '"';
         };
         struct number {
-            static constexpr bool           strict  = false;
+            static constexpr bool               strict  = false;
         };
         struct id {
-            static constexpr char const*    nil     = "null";
-            static constexpr char const*    pos     = "true";
-            static constexpr char const*    neg     = "false";
+#           if __cplusplus >= 201703L
+                static constexpr char           nil[]   = "null";
+                static constexpr char           pos[]   = "true";
+                static constexpr char           neg[]   = "false";
+#           else
+                static constexpr char const*    nil     = "null";
+                static constexpr char const*    pos     = "true";
+                static constexpr char const*    neg     = "false";
+#           endif
         };
     };
 
