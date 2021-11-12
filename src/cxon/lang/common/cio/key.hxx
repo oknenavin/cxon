@@ -120,20 +120,19 @@ namespace cxon { namespace cio { namespace key {
                 escape_iterator& operator  *() noexcept { return *this; }
 
                 escape_iterator& operator =(value_type c) {
-                    p_ != '\\' && c == '\"' ? poke(o_, "\\\"") : poke(o_, c);
-                    return p_ = c, *this;
+                    return (p_ != '\\' && c == '\"' && (poke(o_, "\\\"", 2), true)) || poke(o_, c), p_ = c, *this;
                 }
 
-                constexpr bool good(option<0>) const {
+                constexpr bool good() const noexcept {
                     return good_(option<1>());
                 }
 
                 private:
-                    template <typename U = O> auto good_(option<1>) const
+                    template <typename U = O> auto good_(option<1>) const noexcept
                         -> enable_if_t<std::is_same<decltype(std::declval<U>().good()), bool>::value, bool>
-                    { return o_.good(); }
-                    constexpr bool good_(option<0>) const
-                    { return true; }
+                        { return o_.good(); }
+                    constexpr bool good_(option<0>) const noexcept
+                        { return true; }
 
                 private:
                     O& o_;
