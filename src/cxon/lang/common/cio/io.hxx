@@ -47,6 +47,8 @@ namespace cxon { namespace cio {
 
     template <typename O>
         inline bool poke(O& o, char c);
+    template <typename O, std::size_t N>
+        inline bool poke(O& o, char (&s)[N]);
     template <typename O>
         inline bool poke(O& o, const char* f, const char* l);
     template <typename O>
@@ -60,6 +62,8 @@ namespace cxon { namespace cio {
 
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx);
+    template <typename X, typename O, std::size_t N, typename Cx>
+        inline bool poke(O& o, char (&s)[N], Cx& cx);
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, const char* f, const char* l, Cx& cx);
     template <typename X, typename O, typename Cx>
@@ -179,6 +183,8 @@ namespace cxon { namespace cio {
 
     template <typename O>
         inline bool poke(O& o, char c)                          { return imp::poke_(o, c); }
+    template <typename O, std::size_t N>
+        inline bool poke(O& o, char (&s)[N])                    { return imp::poke_(o, s, s + N - 1); }
     template <typename O>
         inline bool poke(O& o, const char* f, const char* l)    { return imp::poke_(o, f, l); }
     template <typename O>
@@ -192,6 +198,8 @@ namespace cxon { namespace cio {
 
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx)                          { return poke(o, c)     || cx/X::write_error::output_failure; }
+    template <typename X, typename O, std::size_t N, typename Cx>
+        inline bool poke(O& o, char (&s)[N], Cx& cx)                    { return poke(o, s)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, const char* f, const char* l, Cx& cx)    { return poke(o, f, l)  || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
