@@ -51,7 +51,7 @@ namespace cxon { // bool
         struct write<JSON<X>, bool> {
             template <typename O, typename Cx>
                 static bool value(O& o, bool t, Cx& cx) {
-                    return cio::poke<X>(o, t ? X::id::pos : X::id::neg, cx);
+                    return t ? cio::poke<X>(o, X::id::pos, cx) : cio::poke<X>(o, X::id::neg, cx);
                 }
         };
 
