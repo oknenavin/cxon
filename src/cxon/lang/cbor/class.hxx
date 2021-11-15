@@ -9,13 +9,6 @@
 #include "common/sink.hxx"
 #include <tuple>
 
-// std::make_tuple is constexpr since C++14
-#if __cplusplus < 201402L
-#   define CXON_CBOR_CLS_CONSTEXPR
-#else
-#   define CXON_CBOR_CLS_CONSTEXPR constexpr
-#endif
-
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cbor { namespace cls {
@@ -37,7 +30,7 @@ namespace cxon { namespace cbor { namespace cls {
     template <typename ...F>
         using fields = std::tuple<F...>;
     template <typename ...F> 
-        inline CXON_CBOR_CLS_CONSTEXPR fields<F...> make_fields(F&&... f);
+        constexpr fields<F...> make_fields(F&&... f);
 
 }}}
 
@@ -106,7 +99,7 @@ namespace cxon { namespace cbor { namespace cls {
     // fields
 
     template <typename ...F> 
-        inline CXON_CBOR_CLS_CONSTEXPR fields<F...> make_fields(F&&... f) {
+        constexpr fields<F...> make_fields(F&&... f) {
             return std::make_tuple(std::forward<F>(f)...);
         }
 
@@ -115,60 +108,72 @@ namespace cxon { namespace cbor { namespace cls {
         template <typename X, std::size_t N, std::size_t L>
             struct read_ {
                 template <typename S, typename F, typename II, typename Cx>
-                    static bool fields(S& s, const char* name, const F& f, II& i, II e, Cx& cx) {
-                        return std::strcmp(std::get<N>(f).name, name) == 0 ?
-                            read_field<X>(s, std::get<N>(f), i, e, cx) :
-                            read_<X, N + 1, L>::fields(s, name, f, i, e, cx)
+                    static bool field(S& s, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) {
+                        return st[N] == 0 && std::strcmp(std::get<N>(fs).name, name) == 0 ?
+                            (st[N] = 1,read_field<X>(s, std::get<N>(fs), i, e, cx)) :
+                            read_<X, N + 1, L>::field(s, name, fs, st, i, e, cx)
                         ;
                     }
             };
         template <typename X, std::size_t N>
             struct read_<X, N, N> {
                 template <typename S, typename F, typename II, typename Cx>
-                    static constexpr bool fields(S&, const char*, const F&, II&, II, Cx&) {
+                    static constexpr bool field(S&, const char*, const F&, int (&)[N], II&, II, Cx&) {
                         return false;
                     }
             };
 
+        template <typename X, std::size_t N, typename S, typename F, typename II, typename Cx>
+            constexpr bool read_field_(S& s, const char* name, const F& fs, int (&st)[N], II& i, II e, Cx& cx) {
+                return read_<X, 0, N>::field(s, name, fs, st, i, e, cx);
+            }
+
+    }
+    template <typename X, typename S, typename ...F, typename II, typename Cx>
+        inline bool read_fields(S& s, const fields<F...>& fs, II& i, II e, Cx& cx) {
+            std::size_t n;
+            if (cbor::cnt::read_size_le<X>(n, std::tuple_size<fields<F...>>::value, i, e, cx)) {
+                int st[std::tuple_size<fields<F...>>::value] = {0};
+                for (char id[bio::ids_len_max::constant<napa_type<Cx>>(64)]; n; --n) {
+                    II const o = i;
+                        if (!read_value<X>(id, i, e, cx))
+                            return false;
+                        if (!imp::read_field_<X>(s, id, fs, st, i, e, cx))
+                            return cx && (bio::rewind(i, o), cx/cbor::read_error::unexpected);
+                }
+            }
+            return n == 0;
+        }
+
+    namespace imp {
+
         template <typename X, std::size_t N, std::size_t L>
             struct write_ {
                 template <typename S, typename F, typename O, typename Cx>
-                    static bool fields(O& o, const S& s, const F& f, Cx& cx) {
-                        return  write_field<X>(o, s, std::get<N>(f), cx) &&
-                                write_<X, N + 1, L>::fields(o, s, f, cx)
+                    static bool field(O& o, const S& s, const F& fs, Cx& cx) {
+                        return  write_field<X>(o, s, std::get<N>(fs), cx) &&
+                                write_<X, N + 1, L>::field(o, s, fs, cx)
                         ;
                     }
             };
         template <typename X, std::size_t N>
             struct write_<X, N, N> {
                 template <typename S, typename F, typename O, typename Cx>
-                    static constexpr bool fields(O&, const S&, const F&, Cx&) {
+                    static constexpr bool field(O&, const S&, const F&, Cx&) {
                         return true;
                     }
             };
 
+        template <typename X, typename S, typename F, typename O, typename Cx>
+            constexpr bool write_fields_(O& o, const S& s, const F& fs, Cx& cx) {
+                return write_<X, 0, std::tuple_size<F>::value>::field(o, s, fs, cx);
+            }
+
     }
-
-    template <typename X, typename S, typename ...F, typename II, typename Cx>
-        inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
-            std::size_t n;
-            if (cbor::cnt::read_size_le<X>(n, std::tuple_size<fields<F...>>::value, i, e, cx))
-                for ( ; n; --n) {
-                    char id[bio::ids_len_max::constant<napa_type<Cx>>(64)];
-                    {   II const o = i;
-                        if (!read_value<X>(id, i, e, cx))
-                            return false;
-                        if (!imp::read_<X, 0, std::tuple_size<fields<F...>>::value>::fields(s, id, f, i, e, cx))
-                            return cx && (bio::rewind(i, o), cx/cbor::read_error::unexpected);
-                    }
-                }
-            return n == 0;
-        }
-
     template <typename X, typename S, typename ...F, typename O, typename Cx>
-        inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx) {
+        inline bool write_fields(O& o, const S& s, const fields<F...>& fs, Cx& cx) {
             return  cbor::cnt::write_size<X>(o, X::map, std::tuple_size<fields<F...>>::value, cx) &&
-                    imp::write_<X, 0, std::tuple_size<fields<F...>>::value>::fields(o, s, f, cx)
+                    imp::write_fields_<X>(o, s, fs, cx)
             ;
         }
 
@@ -184,7 +189,7 @@ namespace cxon { namespace cbor { namespace cls {
         template <typename X, typename II, typename Cx>\
             inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {\
                 using T = Type;\
-                static CXON_CBOR_CLS_CONSTEXPR auto f = cbor::cls::make_fields(__VA_ARGS__);\
+                static auto const f = cbor::cls::make_fields(__VA_ARGS__);\
                 return  cbor::tag::read<X>(i, e, cx) &&\
                         cbor::cls::read_fields<X>(t, f, i, e, cx)\
                 ;\
@@ -195,7 +200,7 @@ namespace cxon { namespace cbor { namespace cls {
         template <typename X, typename O, typename Cx>\
             inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, CBOR> {\
                 using T = Type;\
-                static CXON_CBOR_CLS_CONSTEXPR auto f = cbor::cls::make_fields(__VA_ARGS__);\
+                static auto const f = cbor::cls::make_fields(__VA_ARGS__);\
                 return cbor::cls::write_fields<X>(o, t, f, cx);\
             }\
     }
@@ -207,7 +212,7 @@ namespace cxon { namespace cbor { namespace cls {
     template <typename X, typename II, typename Cx>\
         static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
             using T = Type;\
-            static CXON_CBOR_CLS_CONSTEXPR auto f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
+            static auto const f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
             return  cxon::cbor::tag::read<X>(i, e, cx) &&\
                     cxon::cbor::cls::read_fields<X>(t, f, i, e, cx)\
             ;\
@@ -216,7 +221,7 @@ namespace cxon { namespace cbor { namespace cls {
     template <typename X, typename O, typename Cx>\
         static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
             using T = Type;\
-            static CXON_CBOR_CLS_CONSTEXPR auto f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
+            static auto const f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
             return cxon::cbor::cls::write_fields<X>(o, t, f, cx);\
         }
 #define CXON_CBOR_CLS_MEMBER(Type, ...)\

@@ -31,8 +31,8 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
     template <typename X, typename O, typename S, typename F, typename Cx>
         inline bool write_field(O& o, const S& s, const F& f, Cx& cx);
 
-    template <typename ...>
-        struct fields;
+    template <typename ...F>
+        using fields = std::tuple<F...>;
     template <typename ...F> 
         constexpr fields<F...> make_fields(F&&... f);
 
@@ -111,60 +111,54 @@ namespace cxon { namespace cio { namespace cls {
 
     // fields
 
-    template <>
-        struct fields<> {};
-    template <typename H, typename ...T>
-        struct fields<H, T...> {
-            H const field;
-            fields<T...> const next;
-            template <typename ...U>
-                constexpr fields(H e, U&&... t) : field(e), next(std::forward<U>(t)...) {}
-        };
-    template <typename T>
-        struct fields<T> {
-            T const field;
-            fields<> const next;
-            constexpr fields(T e) : field(e), next() {}
-        };
-
     template <typename ...F> 
-        constexpr fields<F...> make_fields(F&&... f) { return { std::forward<F>(f)... }; }
+        constexpr fields<F...> make_fields(F&&... f) {
+            return std::make_tuple(std::forward<F>(f)...);
+        }
 
     // read
 
     namespace imp {
 
-        template <typename X, typename S, typename ...>
+        template <typename X, std::size_t N, std::size_t L>
             struct read_ {
-                template <typename II, typename Cx>
-                    static constexpr bool fields(S&, const char*, const fields<>&, II&, II, Cx&) {
-                        return false;
-                    }
-            };
-        template <typename X, typename S, typename H, typename ...T>
-            struct read_<X, S, H, T...> {
-                template <typename II, typename Cx>
-                    static bool fields(S& t, const char* name, const fields<H, T...>& f, II& i, II e, Cx& cx) {
-                        return std::strcmp(f.field.name, name) == 0 ?
-                            read_field<X>(t, f.field, i, e, cx) :
-                            read_<X, S, T...>::fields(t, name, f.next, i, e, cx)
+                template <typename S, typename F, typename II, typename Cx>
+                    static bool field(S& t, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) {
+                        return st[N] == 0 && std::strcmp(std::get<N>(fs).name, name) == 0?
+                            (st[N] = 1, read_field<X>(t, std::get<N>(fs), i, e, cx)) :
+                            read_<X, N + 1, L>::field(t, name, fs, st, i, e, cx)
                         ;
                     }
             };
+        template <typename X, std::size_t N>
+            struct read_<X, N, N> {
+                template <typename S, typename F, typename II, typename Cx>
+                    static constexpr bool field(S&, const char*, const F&, int (&)[N], II&, II, Cx&) {
+                        return false;
+                    }
+            };
+
+        template <typename X, std::size_t N, typename S, typename F, typename II, typename Cx>
+            constexpr bool read_field_(S& s, const char* name, const F& fs, int (&st)[N], II& i, II e, Cx& cx) {
+                return read_<X, 0, N>::field(s, name, fs, st, i, e, cx);
+            }
 
     }
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
-        inline bool read_fields(S& s, const fields<F...>& f, II& i, II e, Cx& cx) {
+        inline bool read_fields(S& s, const fields<F...>& fs, II& i, II e, Cx& cx) {
             if (!consume<X>(X::map::beg, i, e, cx)) return false;
-            if ( consume<X>(X::map::end, i, e))     return true;
+                if ( consume<X>(X::map::end, i, e)) return true;
+            int st[std::tuple_size<fields<F...>>::value] = {0};
             for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
                 consume<X>(i, e);
                 II const o = i;
-                    if (!read_key<X>(id, i, e, cx)) return false;
-                    if (!imp::read_<X, S, F...>::fields(s, id, f, i, e, cx))
+                    if (!read_key<X>(id, i, e, cx))
+                        return false;
+                    if (!imp::read_field_<X>(s, id, fs, st, i, e, cx))
                         return cx && (rewind(i, o), cx/X::read_error::unexpected);
-                    if (consume<X>(X::map::sep, i, e)) continue;
+                    if (consume<X>(X::map::sep, i, e))
+                        continue;
                 return consume<X>(X::map::end, i, e, cx);
             }
             return true;
@@ -174,47 +168,51 @@ namespace cxon { namespace cio { namespace cls {
 
     namespace imp {
 
-        template <typename X, typename S, typename ...>
+        template <typename X, std::size_t N, std::size_t L>
             struct write_next_ {
-                template <typename O, typename Cx>
-                    static constexpr bool fields(O&, const S&, const fields<>&, Cx&) {
-                        return true;
+                template <typename S, typename F, typename O, typename Cx>
+                    static bool field(O& o, const S& s, const F& fs, Cx& cx) {
+                        return  (std::get<N>(fs).dflt(s) || (poke<X>(o, X::map::sep, cx) && write_field<X>(o, s, std::get<N>(fs), cx))) &&
+                                write_next_<X, N + 1, L>::field(o, s, fs, cx)
+                        ;
                     }
             };
-        template <typename X, typename S, typename H, typename ...T>
-            struct write_next_<X, S, H, T...> {
-                template <typename O, typename Cx>
-                    static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        return  (f.field.dflt(t) || (poke<X>(o, X::map::sep, cx) && write_field<X>(o, t, f.field, cx))) &&
-                                write_next_<X, S, T...>::fields(o, t, f.next, cx)
-                        ;
+        template <typename X, std::size_t N>
+            struct write_next_<X, N, N> {
+                template <typename S, typename F, typename O, typename Cx>
+                    static constexpr bool field(O&, const S&, const F&, Cx&) {
+                        return true;
                     }
             };
 
-        template <typename X, typename S, typename ...>
+        template <typename X, std::size_t N, std::size_t L>
             struct write_ {
-                template <typename O, typename Cx>
-                    static constexpr bool fields(O&, const S&, const fields<>&, Cx&) {
-                        return true;
-                    }
-            };
-        template <typename X, typename S, typename H, typename ...T>
-            struct write_<X, S, H, T...> {
-                template <typename O, typename Cx>
-                    static bool fields(O& o, const S& t, const fields<H, T...>& f, Cx& cx) {
-                        bool const dflt = f.field.dflt(t);
-                        return   (!dflt && write_field<X>(o, t, f.field, cx) && write_next_<X, S, T...>::fields(o, t, f.next, cx)) ||
-                                 ( dflt && write_<X, S, T...>::fields(o, t, f.next, cx))
+                template <typename S, typename F, typename O, typename Cx>
+                    static bool field(O& o, const S& s, const F& fs, Cx& cx) {
+                        return   (!std::get<N>(fs).dflt(s) && write_field<X>(o, s, std::get<N>(fs), cx) && write_next_<X, N + 1, L>::field(o, s, fs, cx)) ||
+                                 ( std::get<N>(fs).dflt(s) && write_<X, N + 1, L>::field(o, s, fs, cx))
                         ;
                     }
             };
+        template <typename X, std::size_t N>
+            struct write_<X, N, N> {
+                template <typename S, typename F, typename O, typename Cx>
+                    static constexpr bool field(O&, const S&, const F&, Cx&) {
+                        return true;
+                    }
+            };
+
+        template <typename X, typename S, typename F, typename O, typename Cx>
+            constexpr bool write_fields_(O& o, const S& s, const F& fs, Cx& cx) {
+                return write_<X, 0, std::tuple_size<F>::value>::field(o, s, fs, cx);
+            }
 
     }
 
     template <typename X, typename S, typename ...F, typename O, typename Cx>
-        inline bool write_fields(O& o, const S& s, const fields<F...>& f, Cx& cx) {
+        inline bool write_fields(O& o, const S& s, const fields<F...>& fs, Cx& cx) {
             return  poke<X>(o, X::map::beg, cx) &&
-                        imp::write_<X, S, F...>::fields(o, s, f, cx) &&
+                        imp::write_fields_<X>(o, s, fs, cx) &&
                     poke<X>(o, X::map::end, cx)
             ;
         }
