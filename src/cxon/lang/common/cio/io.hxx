@@ -48,9 +48,9 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, char c);
     template <typename O>
-        inline bool poke(O& o, const char* f, const char* l);
-    template <typename O>
         inline bool poke(O& o, const char* s, std::size_t n);
+    template <typename O>
+        inline bool poke(O& o, const char* f, const char* l);
     template <typename O>
         inline bool poke(O& o, const char* s);
     template <typename O>
@@ -61,9 +61,9 @@ namespace cxon { namespace cio {
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx);
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* f, const char* l, Cx& cx);
-    template <typename X, typename O, typename Cx>
         inline bool poke(O& o, const char* s, std::size_t n, Cx& cx);
+    template <typename X, typename O, typename Cx>
+        inline bool poke(O& o, const char* f, const char* l, Cx& cx);
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, const char* s, Cx& cx);
     template <typename X, typename O, typename Cx>
@@ -133,16 +133,16 @@ namespace cxon { namespace cio {
             }
 
         template <typename O>
-            inline auto push_(option<1>, O& o, const char* f, const char* l) -> decltype(o.append(f, l), void()) {
-                o.append(f, l);
+            inline auto push_(option<1>, O& o, const char* s, std::size_t n) -> decltype(o.append(s, n), void()) {
+                o.append(s, n);
             }
         template <typename O>
-            inline void push_(option<0>, O& o, const char* f, const char* l) {
-                for ( ; f != l; ++f) push_(o, *f);
+            inline void push_(option<0>, O& o, const char* s, std::size_t n) {
+                for (auto const e = s + n ; s != e; ++s) push_(o, *s);
             }
         template <typename O>
-            inline void push_(O& o, const char* f, const char* l) {
-                push_(option<1>(), o, f, l);
+            inline void push_(O& o, const char* s, std::size_t n) {
+                push_(option<1>(), o, s, n);
             }
 
         template <typename O>
@@ -180,11 +180,11 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, char c)                          { return imp::poke_(o, c); }
     template <typename O>
-        inline bool poke(O& o, const char* f, const char* l)    { return imp::poke_(o, f, l); }
+        inline bool poke(O& o, const char* s, std::size_t n)    { return imp::poke_(o, s, n); }
     template <typename O>
-        inline bool poke(O& o, const char* s)                   { return imp::poke_(o, s, s + std::strlen(s)); }
+        inline bool poke(O& o, const char* f, const char* l)    { return imp::poke_(o, f, l - f); }
     template <typename O>
-        inline bool poke(O& o, const char* s, std::size_t n)    { return imp::poke_(o, s, s + n); }
+        inline bool poke(O& o, const char* s)                   { return imp::poke_(o, s, std::strlen(s)); }
     template <typename O>
         inline bool poke(O& o, unsigned n, char c)              { return imp::poke_(o, n, c); }
     template <typename O>
@@ -193,9 +193,9 @@ namespace cxon { namespace cio {
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx)                          { return poke(o, c)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* f, const char* l, Cx& cx)    { return poke(o, f, l)  || cx/X::write_error::output_failure; }
-    template <typename X, typename O, typename Cx>
         inline bool poke(O& o, const char* s, std::size_t n, Cx& cx)    { return poke(o, s, n)  || cx/X::write_error::output_failure; }
+    template <typename X, typename O, typename Cx>
+        inline bool poke(O& o, const char* f, const char* l, Cx& cx)    { return poke(o, f, l)  || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, const char* s, Cx& cx)                   { return poke(o, s)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
