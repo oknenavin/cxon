@@ -424,10 +424,10 @@ which can represent arbitrary `JSON`.
 
 More results and historic data can be found [here](https://github.com/oknenavin/workflows-data/tree/master/cxon).
 
-*Given the benchmark results and assuming that the libraries `CXON` is compared to, are reasonably well written,
+*Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
 it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.  
 Of course, the benchmarks only cover the time overhead; the space overhead is similar to that of the libraries
-being benchmarked, though no specific data is available yet.
+being benchmarked, though no specific data is available yet.  
 It is important to note, that no specific attempts has been made to optimize `CXON` for time or space - 
 there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 
