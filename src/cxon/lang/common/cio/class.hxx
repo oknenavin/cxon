@@ -176,7 +176,9 @@ namespace cxon { namespace cio { namespace cls {
             struct write_next_ {
                 template <typename S, typename F, typename O, typename Cx>
                     static bool field(O& o, const S& s, const F& fs, Cx& cx) {
-                        return  (std::get<N>(fs).dflt(s) || (poke<X>(o, X::map::sep, cx) && write_field<X>(o, s, std::get<N>(fs), cx))) &&
+                        using T = typename std::tuple_element<N, F>::type;
+                        bool const skip = std::get<N>(fs).dflt(s) || val::is_sink<typename T::type>::value;
+                        return  (skip || (poke<X>(o, X::map::sep, cx) && write_field<X>(o, s, std::get<N>(fs), cx))) &&
                                 write_next_<X, N + 1, L>::field(o, s, fs, cx)
                         ;
                     }
@@ -193,8 +195,10 @@ namespace cxon { namespace cio { namespace cls {
             struct write_ {
                 template <typename S, typename F, typename O, typename Cx>
                     static bool field(O& o, const S& s, const F& fs, Cx& cx) {
-                        return   (!std::get<N>(fs).dflt(s) && write_field<X>(o, s, std::get<N>(fs), cx) && write_next_<X, N + 1, L>::field(o, s, fs, cx)) ||
-                                 ( std::get<N>(fs).dflt(s) && write_<X, N + 1, L>::field(o, s, fs, cx))
+                        using T = typename std::tuple_element<N, F>::type;
+                        bool const skip = std::get<N>(fs).dflt(s) || val::is_sink<typename T::type>::value;
+                        return   (!skip && write_field<X>(o, s, std::get<N>(fs), cx) && write_next_<X, N + 1, L>::field(o, s, fs, cx)) ||
+                                 ( skip && write_<X, N + 1, L>::field(o, s, fs, cx))
                         ;
                     }
             };
