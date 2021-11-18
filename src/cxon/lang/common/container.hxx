@@ -53,7 +53,7 @@ namespace cxon { namespace cnt { // container element read/write
     template <typename X, typename C>
         struct element_reader {
             template <typename II, typename Cx>
-                static bool read(C& c, II& i, II e, Cx& cx);
+                static inline bool read(C& c, II& i, II e, Cx& cx);
         };
     template <typename X, typename C, typename II, typename Cx>
         inline bool element_read(C& c, II& i, II e, Cx& cx);
@@ -61,7 +61,7 @@ namespace cxon { namespace cnt { // container element read/write
     template <typename X, typename C>
         struct element_writer {
             template <typename O, typename E, typename Cx>
-                static bool write(O& o, const E& e, Cx& cx);
+                static inline bool write(O& o, const E& e, Cx& cx);
         };
     template <typename X, typename C, typename E, typename O, typename Cx>
         inline bool element_write(O& o, const E& e, Cx& cx);
@@ -285,7 +285,7 @@ namespace cxon { namespace cnt {
 
     template <typename X, typename C>
         template <typename II, typename Cx>
-            bool element_reader<X, C>::read(C& c, II& i, II e, Cx& cx) {
+            inline bool element_reader<X, C>::read(C& c, II& i, II e, Cx& cx) {
                 return read_value<X>(emplace(c), i, e, cx);
             }
     template <typename X, typename C, typename II, typename Cx>
@@ -295,7 +295,7 @@ namespace cxon { namespace cnt {
 
     template <typename X, typename C>
         template <typename O, typename E, typename Cx>
-            bool element_writer<X, C>::write(O& o, const E& e, Cx& cx) {
+            inline bool element_writer<X, C>::write(O& o, const E& e, Cx& cx) {
                 return write_value<X>(o, e, cx);
             }
     template <typename X, typename C, typename E, typename O, typename Cx>
