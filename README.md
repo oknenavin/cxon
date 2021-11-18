@@ -21,8 +21,8 @@
 --------------------------------------------------------------------------------
 
   - `CXON` is a C++ serialization interface  
-  - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (example for text-based data format)  
-  - `CXON` implements [`CBOR`](https://cbor.io) as a serialization format (example for binary data format)  
+  - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (an example of text-based data format)  
+  - `CXON` implements [`CBOR`](https://cbor.io) as a serialization format (an example of binary data format)  
   - `CXON` is easy to extend for different formats and types with [zero-overhead][cpp-zeov]  
   - `CXON` is a `C++11` compliant, self contained and compact header-only library  
 
@@ -34,12 +34,11 @@ any `C++` type that matches it semantically can be used.
 ``` c++
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx" // for <vector>
-
 #include <cassert>
 
 int main() {
     std::vector<int> cxx; // or std::array, std::list, std::set, etc.
-        // the input is a JSON array and semantically it is an array of integers
+        // the input is a JSON array and semantically it is a list of integers
         auto result = cxon::from_bytes(cxx,  "[1, 2, 3]");
     assert(result && cxx == std::vector<int> ({1, 2, 3}));
     // the data is loaded successfully, no additional semantic validation is needed
@@ -56,18 +55,18 @@ that it is syntactically correct.
 // pseudo code
 value_type json = json_lib::parse("[1, 2, 3]");
 assert(json.has_parsing_erros()); // check for syntax errors
-// check the semantics, expected is an array of integers
+// check the semantics, expected is a list of integers
 assert(json.is_array()); // check the type
 auto& array = json.get_array();
 assert( // check the values
-    array.size() >= 3 &&
     array[0].is_integer() &&
     array[1].is_integer() &&
-    array[2].is_integer()
+    array[2].is_integer() &&
+    ...
 );
 // the input is semantically correct, however
-// the values still need a special care to access
-int x0 = array[0].get_integer();
+// the values still need special care to
+int x0 = array[0].get_integer(); // it's an int, but not quite
 ...
 ```
 
@@ -85,7 +84,7 @@ significantly slower than these algorithms - at least with the implementations c
 Another important note, is that the libraries based on a polymorphic types, in contrast to `CXON`,
 have validation and use overhead that should be taken into account.  
 The **memory management** is often important, especially in the embedded space, and `CXON` is well suited - 
-`CXON` does not allocate in general; it's up to the types provided. In the first example, the memory management
+`CXON` does not allocate in general; it's up to the types provided. In the example above, the memory management
 will be handled completely by `std::vector` and its allocator (whatever it is). In the same spirit, the
 polymorphic types provided by `CXON` are [AllocatorAware][cpp-alaw] compliant.  
 Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the serializers involved do not throw.
@@ -420,10 +419,17 @@ which can represent arbitrary `JSON`.
   ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
 
 - `CXON` write using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  `CXON` is consistently slower, but not by much.
+  `CXON` is somewhat slower, but not by much.
   ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
 
 More results and historic data can be found [here](https://github.com/oknenavin/workflows-data/tree/master/cxon).
+
+*Given the benchmark results and assuming that the libraries `CXON` is compared to, are reasonably well written,
+it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.  
+Of course, the benchmarks only cover the time overhead; the space overhead is similar to that of the libraries
+being benchmarked, though no specific data is available yet.
+It is important to note, that no specific attempts has been made to optimize `CXON` for time or space - 
+there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 
 --------------------------------------------------------------------------------
 
