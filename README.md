@@ -59,13 +59,14 @@ assert(json.has_parsing_erros()); // check for syntax errors
 assert(json.is_array()); // check the type
 auto& array = json.get_array();
 assert( // check the values
+    array.size() > ... &&
     array[0].is_integer() &&
     array[1].is_integer() &&
     array[2].is_integer() &&
     ...
 );
 // the input is semantically correct, however
-// the values still need special care to
+// the values still need special care
 int x0 = array[0].get_integer(); // it's an int, but not quite
 ...
 ```
