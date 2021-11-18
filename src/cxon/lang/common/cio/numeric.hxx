@@ -292,21 +292,24 @@ namespace cxon { namespace cio { namespace num { // write
 
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
-                if (std::isinf(t)) {
-                    if (!poke<X>(o, X::string::beg, cx)) return false;
-                    if (std::signbit(t) && !poke<X>(o, '-', cx)) return false;
-                    return poke<X>(o, "inf", cx) && poke<X>(o, X::string::end, cx);
+                if (std::isfinite(t)) {
+                    char s[std::numeric_limits<T>::max_digits10 * 2];
+                    auto const r = charconv::to_chars(
+                        std::begin(s), std::end(s), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
+                    );
+                    return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
+                            poke<X>(o, s, r.ptr, cx)
+                    ;
                 }
-                if (std::isnan(t))
+                else {
+                    if (std::isinf(t)) {
+                        if (!poke<X>(o, X::string::beg, cx))            return false;
+                        if (std::signbit(t) && !poke<X>(o, '-', cx))    return false;
+                        return poke<X>(o, "inf", cx) && poke<X>(o, X::string::end, cx);
+                    }
+                    CXON_ASSERT(std::isnan(t), "unexpected");
                     return poke<X>(o, X::string::beg, cx) && poke<X>(o, "nan", cx) && poke<X>(o, X::string::end, cx);
-                CXON_ASSERT(std::isfinite(t), "unexpected");
-                char s[std::numeric_limits<T>::max_digits10 * 2];
-                auto const r = charconv::to_chars(
-                    std::begin(s), std::end(s), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
-                );
-                return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
-                        poke<X>(o, s, r.ptr, cx)
-                ;
+                }
             }
 
     }
