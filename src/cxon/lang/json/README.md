@@ -186,43 +186,52 @@ macros for binding of enumeration and class types:
     #define CXON_JSON_CLS_READ_MEMBER(Type, ...)
     #define CXON_JSON_CLS_WRITE_MEMBER(Type, ...)
     #define CXON_JSON_CLS_MEMBER(Type, ...)
-    
+
     // defines field `Field`, which will be serialized as Name
     #define CXON_JSON_CLS_FIELD_NAME(Name, Field)
+    // defines field `Field`, which will be serialized as Name and a
+    // lambda as a last parameter to evaluate if the field has a default
+    // value and must not be written (only meaningful for writing)
+    #define CXON_JSON_CLS_FIELD_NAME_DFLT(Name, Field, ...)
     // defines field `Field`, which will be serialized as ##Field
     #define CXON_JSON_CLS_FIELD_ASIS(Field)
-    // defines the key Name, which will be skipped during serialization (only meaningful for reading)
+    // defines field `Field`, which will be serialized as ##Field and a
+    // lambda as a last parameter to evaluate if the field has a default
+    // value and must not be written (only meaningful for writing)
+    #define CXON_JSON_CLS_FIELD_ASIS_DFLT(Field, ...)
+    // defines a key Name, which will be ignored when reading (only meaningful for reading)
     #define CXON_JSON_CLS_FIELD_SKIP(Name)
     ```
 
     ###### Example
 
     ``` c++
+    #include "cxon/json.hxx"
+    #include <cassert>
+
     struct my_struct {
-        int first;
-        int second;
-        int skip;
-        bool operator ==(const my_struct& s) const { return first == s.first && second == s.second; }
+        int x, y;
+        int z = 0; // default
+        bool operator ==(const my_struct& s) const { return x == s.x && y == s.y && z == s.z; }
     };
-    CXON_JSON_CLS_READ(my_struct,
-        CXON_JSON_CLS_FIELD_ASIS(first),
-        CXON_JSON_CLS_FIELD_NAME("second field", second),
+    CXON_JSON_CLS(my_struct,
+        CXON_JSON_CLS_FIELD_ASIS(x),
+        CXON_JSON_CLS_FIELD_NAME("field y", y),
+        // 'z' will not be written if 0
+        CXON_JSON_CLS_FIELD_ASIS_DFLT(z, [](const T& t) { return t.z == 0; }),
+        // 'skip' will be ignored
         CXON_JSON_CLS_FIELD_SKIP("skip")
     )
-    CXON_JSON_CLS_WRITE(my_struct,
-        CXON_JSON_CLS_FIELD_ASIS(first),
-        CXON_JSON_CLS_FIELD_NAME("second field", second)
-    )
 
-    ...
-
-    my_struct v0 = { 1, 2, 3 };
-    std::string s0;
-        cxon::to_bytes(s0, v0);
-    assert(s0 == "{\"first\":1,\"second field\":2}");
-    my_struct v1;
-        cxon::from_bytes(v1, "{\"first\":1,\"second field\":2,\"skip\":42}");
-    assert(v1 == v0);
+    int main() {
+        my_struct v0 = { 1, 2, 0 };
+        std::string s0;
+            cxon::to_bytes(s0, v0);
+        assert(s0 == "{\"x\":1,\"field y\":2}");
+        my_struct v1;
+            cxon::from_bytes(v1, "{\"x\":1,\"field y\":2,\"skip\":42}");
+        assert(v1 == v0);
+    }
     ```
 
 
