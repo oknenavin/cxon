@@ -12,6 +12,11 @@
 
 #include <cmath> // isfinite, ...
 
+#ifdef CXON_USE_FAST_FLOAT
+#   include "fast_float/fast_float.h"
+#   define CXON_HAS_FAST_FLOAT
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace num { // number conversion
@@ -230,7 +235,11 @@ namespace cxon { namespace cio { namespace num { // read
                         ;
                     }
                 }
-                auto const r = charconv::from_chars(b, e, t);
+#               ifdef CXON_HAS_FAST_FLOAT
+                    auto const r = fast_float::from_chars(b, e, t);
+#               else
+                    auto const r = charconv::from_chars(b, e, t);
+#               endif
                 return { r.ptr, r.ec };
             }
         template <typename X, typename T, typename II, typename Cx>
