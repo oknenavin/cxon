@@ -415,7 +415,7 @@ which can represent arbitrary `JSON`.
   The difference is noticeable with number-heavy data (like `canada.json` or `numbers.json`).
   ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
 
-- `CXON` using [fast_float][ff] for floating-point conversion.  
+- `CXON` using [`fast_float`][ff] for floating-point conversion.  
   With the bottleneck removed, the performance of `CXON` is close *(see \<average\>)*.
   ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
 
@@ -439,6 +439,10 @@ there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
 `clang++ >= 3.5` and `msvc++ >= 14.1` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
+*`CXON` uses [`<charconv>`][std-charconv] for floating-point conversions by default. By defining
+`CXON_USE_FAST_FLOAT` and [`fast_float`][ff] present in the include path, the floating-point parsing
+can be switched to it, and this will give a good performance boost over current implementations of
+[`<charconv>`][std-charconv] - see [performance](#performance) for details.*
 
 --------------------------------------------------------------------------------
 
