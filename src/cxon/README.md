@@ -214,7 +214,7 @@ int main() {
 
 The interface communicates the implementation via the so-called *implementation bridge*.  
 Read/write interfaces instantiate the [*context*](#context) with the named parameters (if any) 
-and then calls the *implementation bridge* with it:
+and then call the *implementation bridge* with it:
 
 ``` c++
 namespace cxon {
@@ -335,7 +335,7 @@ namespace cxon { namespace json {
 }}
 ```
 
-As changing the `Traits` parameters  can only be done by introducing a new type,
+Because changing of `Traits` parameters  can only be done by introducing a new type,
  specialization of a serializer for a given format is not easy possible and because of this, 
 `CXON` uses so-called *format-selectors* 
 defined like this:
@@ -343,18 +343,18 @@ defined like this:
 ``` c++
 namespace cxon {
 
-    template <typename T>
-        struct format_selector : T { using traits = T; };
+    template <typename Traits>
+        struct format_selector : Traits { using traits = Traits; };
 
     ...
 
-    template <typename T>
-        struct JSON : format_selector<T> {};
+    template <typename Traits>
+        struct JSON : format_selector<Traits> {};
 
 }
 ```
 
-and the interface is called with a *format-selector* instead of bare traits:
+and the interface is called with a *format-selector* instead of a bare traits:
 
 ``` c++
 struct my_json_traits : cxon::json::format_traits {
@@ -368,7 +368,7 @@ auto const result = cxon::from_bytes<my_json>(...);
 ...
 ```
 
-By using of this mechanism, specialization for a given type and format can be done with 
+With this mechanism, specialization for a given type and format can be done with 
 code like this:
 
 ``` c++
@@ -434,9 +434,9 @@ namespace cxon::napa {
 }
 ```
 
-- `(1)` - `value` member is `true` if parameter `Tag` is set and `false` otherwise
-- `(2)` - creates `constexpr` parameter `Tag` and type `Type`
-- `(3)`, `(4)` - creates parameter `Tag` and type `Type`
+- `(1)` - `value` member is `true` if parameter `Tag` is in `Pk` and `false` otherwise
+- `(2)` - creates `constexpr` parameter `Tag` with type `Type`
+- `(3)`, `(4)` - create parameter `Tag` with type `Type`
 - `(5)` - returns the value of the `constexpr` parameter `Tag` if set, `dflt` otherwise
 - `(6)` - returns a reference of the value of parameter `Tag`, compilation error if not set
 - `(7)` - returns the value of parameter `Tag`, compilation error if not set
@@ -496,8 +496,8 @@ int main() {
 
 ##### Context
 
-The context is created by the interface with the format traits & optional named parameters and 
-passed to the implementation bridge.
+The context is created by the interface with the format traits and the named parameters
+and then passed to the implementation bridge.
 
 ``` c++
 namespace cxon {
