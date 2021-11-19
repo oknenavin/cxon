@@ -71,7 +71,7 @@ int x0 = array[0].get_integer(); // it's an int, but not quite
 ...
 ```
 
-To help with this, some of the libraries provide tools to convert the value type to a
+To help with this, some of the libraries provide utilities to convert the value type to a
 `C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to` for this.
 
 For completeness, `CXON` also provides polymorphic types for the supported formats, which are on par
@@ -81,7 +81,7 @@ in this respect, `CXON` is [close to the best](#performance). An important note 
 the libraries emphasize the floating-point serialization and deserialization performance, utilizing very fast
 (and complex) algorithms. In contrast, by default, `CXON` uses [`<charconv>`][std-charconv]
 (with a fall back for `C++11`). [`<charconv>`][std-charconv] is fast, but especially the parsing can be
-significantly slower than these algorithms - at least with the implementations currently in the wild.
+significantly slower than with these algorithms - at least with the implementations currently in the wild.
 Another important note, is that the libraries based on a polymorphic types, in contrast to `CXON`,
 have validation and use overhead that should be taken into account.  
 The **memory management** is often important, especially in the embedded space, and `CXON` is well suited - 
