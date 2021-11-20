@@ -604,8 +604,8 @@ namespace {
             static bool read_value(Struct8& t, II& i, II e, C& ctx) {
                 using namespace cxon::cbor::cls;
                 static auto const f = make_fields(
-                    make_field("x", &Struct8::x),
-                    make_field("y", &Struct8::y)
+                    make_field<Struct8>("x", &Struct8::x),
+                    make_field<Struct8>("y", &Struct8::y)
                 );
                 return read_fields<X>(t, f, i, e, ctx);
             }
@@ -613,8 +613,8 @@ namespace {
             static bool write_value(OI& o, const Struct8& t, C& ctx) {
                 using namespace cxon::cbor::cls;
                 static auto const f = make_fields(
-                    make_field("x", &Struct8::x),
-                    make_field("y", &Struct8::y)
+                    make_field<Struct8>("x", &Struct8::x),
+                    make_field<Struct8>("y", &Struct8::y)
                 );
                 return write_fields<X>(o, t, f, ctx);
             }
