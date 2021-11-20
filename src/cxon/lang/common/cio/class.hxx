@@ -8,6 +8,7 @@
 
 #include "cio.hxx"
 #include "value.hxx"
+#include <tuple>
 #include <cstring> // strlen, strncmp
 
 // interface ///////////////////////////////////////////////////////////////////
@@ -25,7 +26,7 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
     template <typename S, typename F = val::sink<>>
         constexpr auto make_field(const char* name, F f) -> field<F, bool (*)(const S&)>;
     template <typename S, typename F, typename D>
-        constexpr auto make_field(const char* name, F f) -> field<F, D>;
+        constexpr auto make_field(const char* name, F f, D dflt) -> field<F, D>;
 
     template <typename X, typename S, typename F, typename II, typename Cx>
         inline bool read_field(S& s, const F& f, II& i, II e, Cx& cx);
@@ -97,7 +98,7 @@ namespace cxon { namespace cio { namespace cls {
                 ;
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
-            constexpr auto write_field_(O&, const S&, const F&, Cx&)
+            constexpr auto write_field_(O&, const S&, const F&, Cx&) noexcept
                 -> enable_if_t< val::is_sink<typename F::type>::value, bool>
             {
                 return true;
@@ -137,7 +138,7 @@ namespace cxon { namespace cio { namespace cls {
         template <typename X, std::size_t N>
             struct read_<X, N, N> {
                 template <typename S, typename F, typename II, typename Cx>
-                    static constexpr bool field(S&, const char*, const F&, int (&)[N], II&, II, Cx&) {
+                    static constexpr bool field(S&, const char*, const F&, int (&)[N], II&, II, Cx&) noexcept {
                         return false;
                     }
             };
@@ -186,7 +187,7 @@ namespace cxon { namespace cio { namespace cls {
         template <typename X, std::size_t N>
             struct write_next_<X, N, N> {
                 template <typename S, typename F, typename O, typename Cx>
-                    static constexpr bool field(O&, const S&, const F&, Cx&) {
+                    static constexpr bool field(O&, const S&, const F&, Cx&) noexcept {
                         return true;
                     }
             };
@@ -205,7 +206,7 @@ namespace cxon { namespace cio { namespace cls {
         template <typename X, std::size_t N>
             struct write_<X, N, N> {
                 template <typename S, typename F, typename O, typename Cx>
-                    static constexpr bool field(O&, const S&, const F&, Cx&) {
+                    static constexpr bool field(O&, const S&, const F&, Cx&) noexcept {
                         return true;
                     }
             };
