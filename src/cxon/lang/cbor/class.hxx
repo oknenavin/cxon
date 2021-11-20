@@ -8,19 +8,24 @@
 
 #include "common/sink.hxx"
 #include <tuple>
+#include <cstring> // strlen, strncmp
 
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cbor { namespace cls {
 
-    template <typename F>
+    template <typename F, typename D>
         struct field {
             using type = F;
             char const*const name;
+            std::size_t nlen;
             type value;
+            D dflt;
         };
-    template <typename F = sink<>>
-        constexpr field<F> make_field(const char* name, F f = {});
+    template <typename S, typename F = sink<>>
+        constexpr auto make_field(const char* name, F f) -> field<F, bool (*)(const S&)>;
+    template <typename S, typename F, typename D>
+        constexpr auto make_field(const char* name, F f, D dflt) -> field<F, D>;
 
     template <typename X, typename S, typename F, typename II, typename Cx>
         inline bool read_field(S& s, const F& f, II& i, II e, Cx& cx);
@@ -40,9 +45,13 @@ namespace cxon { namespace cbor { namespace cls {
 
     // field
 
-    template <typename F>
-        constexpr field<F> make_field(const char* name, F f) {
-            return { name, f };
+    template <typename S, typename F>
+        constexpr auto make_field(const char* name, F f) -> field<F, bool (*)(const S&)> {
+            return { name, std::strlen(name), f, [](const S&) { return false; } };
+        }
+    template <typename S, typename F, typename D>
+        constexpr auto make_field(const char* name, F f, D dflt) -> field<F, D> {
+            return { name, std::strlen(name), f, dflt };
         }
 
     namespace imp {
@@ -80,7 +89,7 @@ namespace cxon { namespace cbor { namespace cls {
                 return write_value<X>(o, f.name, cx) && write_value<X>(o, field_value_(s, f), cx);
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
-            constexpr auto write_field_(O&, const S&, const F&, Cx&)
+            constexpr auto write_field_(O&, const S&, const F&, Cx&) noexcept
                 -> enable_if_t< is_sink<typename F::type>::value, bool>
             {
                 return true;
@@ -109,7 +118,7 @@ namespace cxon { namespace cbor { namespace cls {
             struct read_ {
                 template <typename S, typename F, typename II, typename Cx>
                     static bool field(S& s, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) {
-                        return st[N] == 0 && std::strcmp(std::get<N>(fs).name, name) == 0 ?
+                        return st[N] == 0 && std::strncmp(std::get<N>(fs).name, name, std::get<N>(fs).nlen) == 0 ?
                             (st[N] = 1,read_field<X>(s, std::get<N>(fs), i, e, cx)) :
                             read_<X, N + 1, L>::field(s, name, fs, st, i, e, cx)
                         ;
@@ -118,7 +127,7 @@ namespace cxon { namespace cbor { namespace cls {
         template <typename X, std::size_t N>
             struct read_<X, N, N> {
                 template <typename S, typename F, typename II, typename Cx>
-                    static constexpr bool field(S&, const char*, const F&, int (&)[N], II&, II, Cx&) {
+                    static constexpr bool field(S&, const char*, const F&, int (&)[N], II&, II, Cx&) noexcept {
                         return false;
                     }
             };
@@ -147,42 +156,67 @@ namespace cxon { namespace cbor { namespace cls {
 
     namespace imp {
 
+        template <std::size_t N, std::size_t L>
+            struct field_ {
+                template <typename S, typename F>
+                    static unsigned state(const S& s, const F& fs, int (&st)[L]) {
+                        using T = typename std::tuple_element<N, F>::type;
+                            st[N] = !std::get<N>(fs).dflt(s) && !is_sink<T>::value;
+                        return st[N] + field_<N + 1, L>::state(s, fs, st);
+                    }
+            };
+        template <std::size_t N>
+            struct field_<N, N> {
+                template <typename S, typename F>
+                    static constexpr unsigned state(const S&, const F&, int (&)[N]) noexcept {
+                        return 0;
+                    }
+            };
+        template <std::size_t N, typename S, typename F>
+            constexpr unsigned field_state_(const S& s, const F& fs, int (&st)[N]) {
+                return field_<0, N>::state(s, fs, st);
+            }
+
         template <typename X, std::size_t N, std::size_t L>
             struct write_ {
                 template <typename S, typename F, typename O, typename Cx>
-                    static bool field(O& o, const S& s, const F& fs, Cx& cx) {
-                        return  write_field<X>(o, s, std::get<N>(fs), cx) &&
-                                write_<X, N + 1, L>::field(o, s, fs, cx)
+                    static bool field(O& o, const S& s, const F& fs, int (&st)[L], Cx& cx) {
+                        return  (std::get<N>(fs).dflt(s) || write_field<X>(o, s, std::get<N>(fs), cx)) &&
+                                write_<X, N + 1, L>::field(o, s, fs, st, cx)
                         ;
                     }
             };
         template <typename X, std::size_t N>
             struct write_<X, N, N> {
                 template <typename S, typename F, typename O, typename Cx>
-                    static constexpr bool field(O&, const S&, const F&, Cx&) {
+                    static constexpr bool field(O&, const S&, const F&, int (&)[N], Cx&) noexcept {
                         return true;
                     }
             };
-
-        template <typename X, typename S, typename F, typename O, typename Cx>
-            constexpr bool write_fields_(O& o, const S& s, const F& fs, Cx& cx) {
-                return write_<X, 0, std::tuple_size<F>::value>::field(o, s, fs, cx);
+        template <typename X, typename S, typename F, std::size_t N, typename O, typename Cx>
+            constexpr bool write_fields_(O& o, const S& s, const F& fs, int (&st)[N], Cx& cx) {
+                return write_<X, 0, N>::field(o, s, fs, st, cx);
             }
 
     }
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& fs, Cx& cx) {
-            return  cbor::cnt::write_size<X>(o, X::map, std::tuple_size<fields<F...>>::value, cx) &&
-                    imp::write_fields_<X>(o, s, fs, cx)
+            int st[std::tuple_size<fields<F...>>::value] = {0};
+                auto const ct = imp::field_state_<std::tuple_size<fields<F...>>::value>(s, fs, st);
+            return  cbor::cnt::write_size<X>(o, X::map, ct, cx) &&
+                    imp::write_fields_<X>(o, s, fs, st, cx)
             ;
         }
 
 }}}
 
-#define CXON_CBOR_CLS_FIELD(T, N, F)     cxon::cbor::cls::make_field(N, &T::F)
-#define CXON_CBOR_CLS_FIELD_NAME(N, F)   CXON_CBOR_CLS_FIELD(T, N, F)
-#define CXON_CBOR_CLS_FIELD_ASIS(F)      CXON_CBOR_CLS_FIELD(T, #F, F)
-#define CXON_CBOR_CLS_FIELD_SKIP(N)      cxon::cbor::cls::make_field(N)
+#define CXON_CBOR_CLS_FIELD(T, N, F)                cxon::cbor::cls::make_field<T>(N, &T::F)
+#define CXON_CBOR_CLS_FIELD_DFLT(T, N, F, ...)      cxon::json::cls::make_field<T>(N, &T::F, __VA_ARGS__)
+#define CXON_CBOR_CLS_FIELD_NAME(N, F)              CXON_CBOR_CLS_FIELD(T, N, F)
+#define CXON_CBOR_CLS_FIELD_NAME_DFLT(N, F, ...)    CXON_CBOR_CLS_FIELD_DFLT(T, N, F, __VA_ARGS__)
+#define CXON_CBOR_CLS_FIELD_ASIS(F)                 CXON_CBOR_CLS_FIELD(T, #F, F)
+#define CXON_CBOR_CLS_FIELD_ASIS_DFLT(F, ...)       CXON_CBOR_CLS_FIELD_DFLT(T, #F, F, __VA_ARGS__)
+#define CXON_CBOR_CLS_FIELD_SKIP(N)                 cxon::cbor::cls::make_field<T>(N, {})
 
 #define CXON_CBOR_CLS_READ(Type, ...)\
     namespace cxon {\
