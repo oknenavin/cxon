@@ -145,23 +145,27 @@ macros for binding of enumeration and class types:
     ###### Example
 
     ``` c++
+    #include "cxon/cbor.hxx"
+    #include "cxon/lib/std/vector.hxx"
+    #include <cassert>
+
     enum rgb { red, green, blue };
 
     CXON_CBOR_ENM(rgb,
         CXON_CBOR_ENM_VALUE_ASIS(red),
-        CXON_CBOR_ENM_VALUE_NAME(42, green),
+        CXON_CBOR_ENM_VALUE_NAME(4, green),
         CXON_CBOR_ENM_VALUE_ASIS(blue)
     )
 
-    ...
-
-    std::vector<rgb> v0 = { rgb::red, rgb::green, rgb::blue };
-    std::string s0;
-        cxon::to_bytes(s0, v0);
-    assert(s0 == "TODO");
-    std::vector<rgb> v1;
-        cxon::from_bytes(v1, s0);
-    assert(v1 == v0);
+    int main() {
+        std::vector<rgb> v0 = { rgb::red, rgb::green, rgb::blue };
+        std::vector<unsigned char> s0;
+            cxon::to_bytes(s0, v0);
+        assert(s0 == (std::vector<unsigned char> {0x83, 0x00, 0x04, 0x02}));
+        std::vector<rgb> v1;
+            cxon::from_bytes(v1, s0);
+        assert(v1 == v0);
+    }
     ```
   - [`class types`][cpp-class]
     ``` c++
@@ -195,7 +199,8 @@ macros for binding of enumeration and class types:
     ###### Example
 
     ``` c++
-    #include "cxon/json.hxx"
+    #include "cxon/cbor.hxx"
+    #include "cxon/lib/std/vector.hxx"
     #include <cassert>
 
     struct my_struct {
@@ -205,7 +210,7 @@ macros for binding of enumeration and class types:
     };
     CXON_CBOR_CLS(my_struct,
         CXON_CBOR_CLS_FIELD_ASIS(x),
-        CXON_CBOR_CLS_FIELD_NAME("field y", y),
+        CXON_CBOR_CLS_FIELD_NAME("my y", y),
         // 'z' will not be written if 0
         CXON_CBOR_CLS_FIELD_ASIS_DFLT(z, [](const T& t) { return t.z == 0; }),
         // 'skip' will be ignored
@@ -214,11 +219,11 @@ macros for binding of enumeration and class types:
 
     int main() {
         my_struct v0 = { 1, 2, 0 };
-        std::string s0;
+        std::vector<unsigned char> s0;
             cxon::to_bytes(s0, v0);
-        assert(s0 == "{\"x\":1,\"field y\":2}");
+        assert(s0 == (std::vector<unsigned char> {0xA2, 0x62, 0x78, 0x00, 0x01, 0x65, 0x6D, 0x79, 0x20, 0x79, 0x00, 0x02}));
         my_struct v1;
-            cxon::from_bytes(v1, "{\"x\":1,\"field y\":2,\"skip\":42}");
+            cxon::from_bytes(v1, "\xA2\x62x\0\x01\x65my y\0\x02\x65skip\0\x03");
         assert(v1 == v0);
     }
     ```

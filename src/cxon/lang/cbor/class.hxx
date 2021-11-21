@@ -161,7 +161,7 @@ namespace cxon { namespace cbor { namespace cls {
                 template <typename S, typename F>
                     static unsigned state(const S& s, const F& fs, int (&st)[L]) {
                         using T = typename std::tuple_element<N, F>::type;
-                            st[N] = !std::get<N>(fs).dflt(s) && !is_sink<T>::value;
+                            st[N] = !std::get<N>(fs).dflt(s) && !is_sink<typename T::type>::value;
                         return st[N] + field_<N + 1, L>::state(s, fs, st);
                     }
             };
@@ -211,7 +211,7 @@ namespace cxon { namespace cbor { namespace cls {
 }}}
 
 #define CXON_CBOR_CLS_FIELD(T, N, F)                cxon::cbor::cls::make_field<T>(N, &T::F)
-#define CXON_CBOR_CLS_FIELD_DFLT(T, N, F, ...)      cxon::json::cls::make_field<T>(N, &T::F, __VA_ARGS__)
+#define CXON_CBOR_CLS_FIELD_DFLT(T, N, F, ...)      cxon::cbor::cls::make_field<T>(N, &T::F, __VA_ARGS__)
 #define CXON_CBOR_CLS_FIELD_NAME(N, F)              CXON_CBOR_CLS_FIELD(T, N, F)
 #define CXON_CBOR_CLS_FIELD_NAME_DFLT(N, F, ...)    CXON_CBOR_CLS_FIELD_DFLT(T, N, F, __VA_ARGS__)
 #define CXON_CBOR_CLS_FIELD_ASIS(F)                 CXON_CBOR_CLS_FIELD(T, #F, F)

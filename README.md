@@ -416,7 +416,7 @@ which can represent arbitrary `JSON`.
   ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
 
 - `CXON` using [`fast_float`][ff] for floating-point conversion.  
-  With the bottleneck removed, the performance of `CXON` is close *(see \<average\>)*.
+  With the bottleneck removed, `CXON` is close *(see \<average\>)*.
   ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
 
 - `CXON` write using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
