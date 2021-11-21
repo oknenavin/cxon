@@ -630,8 +630,9 @@ TEST_BEG(cxon::JSON<>) // defaults
     W_TEST("{\"y\":1,\"z\":1}", Struct12 {0, 1, 1});
     W_TEST("{\"x\":1,\"z\":1}", Struct12 {1, 0, 1});
     W_TEST("{\"x\":1,\"y\":1}", Struct12 {1, 1, 0});
-    W_TEST("{\"z\":1}", Struct12 {0, 0, 1});
     W_TEST("{\"x\":1}", Struct12 {1, 0, 0});
+    W_TEST("{\"y\":1}", Struct12 {0, 1, 0});
+    W_TEST("{\"z\":1}", Struct12 {0, 0, 1});
     W_TEST("{}", Struct12 {0, 0, 0});
 TEST_END()
 
