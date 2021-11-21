@@ -940,3 +940,32 @@ TEST_BEG(cxon::CBOR<>) // tags
         R_TEST(Enum1::one, BS("\xDE"), cbor::read_error::tag_invalid, 0);
         R_TEST(Struct9(), BS("\xDF"), cbor::read_error::tag_invalid, 0);
 TEST_END()
+
+
+namespace {
+
+    struct Struct12 {
+        int x;
+        int y;
+        int z;
+        bool operator ==(const Struct12& t) const { return x == t.x && y == t.y && z == t.z; }
+    };
+
+}
+
+CXON_CBOR_CLS(Struct12,
+    CXON_CBOR_CLS_FIELD_ASIS_DFLT(x, [](const T& t) { return t.x == 0; }),
+    CXON_CBOR_CLS_FIELD_ASIS_DFLT(y, [](const T& t) { return t.y == 0; }),
+    CXON_CBOR_CLS_FIELD_ASIS_DFLT(z, [](const T& t) { return t.z == 0; })
+)
+
+TEST_BEG(cxon::CBOR<>)
+    W_TEST(BS("\xA3\x62x\0\x01\x62y\0\x01\x62z\0\x01"), Struct12 {1, 1, 1});
+    W_TEST(BS("\xA2\x62y\0\x01\x62z\0\x01"), Struct12 {0, 1, 1});
+    W_TEST(BS("\xA2\x62x\0\x01\x62z\0\x01"), Struct12 {1, 0, 1});
+    W_TEST(BS("\xA2\x62x\0\x01\x62y\0\x01"), Struct12 {1, 1, 0});
+    W_TEST(BS("\xA1\x62x\0\x01"), Struct12 {1, 0, 0});
+    W_TEST(BS("\xA1\x62y\0\x01"), Struct12 {0, 1, 0});
+    W_TEST(BS("\xA1\x62z\0\x01"), Struct12 {0, 0, 1});
+    W_TEST(BS("\xA0"), Struct12 {0, 0, 0});
+TEST_END()
