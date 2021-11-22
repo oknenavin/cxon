@@ -190,13 +190,13 @@ macros for binding of enumeration and class types:
     // defines field `Field`, which will be serialized as Name
     #define CXON_JSON_CLS_FIELD_NAME(Name, Field)
     // defines field `Field`, which will be serialized as Name and a
-    // lambda as a last parameter to evaluate if the field has a default
+    // boolean expression as a last parameter to evaluate if the field has a default
     // value and must not be written (only meaningful for writing)
     #define CXON_JSON_CLS_FIELD_NAME_DFLT(Name, Field, ...)
     // defines field `Field`, which will be serialized as ##Field
     #define CXON_JSON_CLS_FIELD_ASIS(Field)
     // defines field `Field`, which will be serialized as ##Field and a
-    // lambda as a last parameter to evaluate if the field has a default
+    // boolean expression as a last parameter to evaluate if the field has a default
     // value and must not be written (only meaningful for writing)
     #define CXON_JSON_CLS_FIELD_ASIS_DFLT(Field, ...)
     // defines a key Name, which will be ignored when reading (only meaningful for reading)
@@ -217,8 +217,8 @@ macros for binding of enumeration and class types:
     CXON_JSON_CLS(my_struct,
         CXON_JSON_CLS_FIELD_ASIS(x),
         CXON_JSON_CLS_FIELD_NAME("field y", y),
-        // 'z' will not be written if 0
-        CXON_JSON_CLS_FIELD_ASIS_DFLT(z, [](const T& t) { return t.z == 0; }),
+        // 'z' will not be written if 0, 'self' is a reference to 'my_struct'
+        CXON_JSON_CLS_FIELD_ASIS_DFLT(z, self.z == 0),
         // 'skip' will be ignored
         CXON_JSON_CLS_FIELD_SKIP("skip")
     )

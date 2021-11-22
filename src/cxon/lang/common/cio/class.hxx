@@ -9,11 +9,16 @@
 #include "cio.hxx"
 #include "value.hxx"
 #include <tuple>
-#include <cstring> // strlen, strncmp
+#include <cstring> // strncmp
 
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace cls { // structured types reader/writer construction helpers
+
+    template <typename S>
+        struct default_false {
+            constexpr bool operator ()(const S&) const noexcept { return false; }
+        };
 
     template <typename F, typename D>
         struct field {
@@ -23,10 +28,10 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
             type const value;
             D dflt;
         };
-    template <typename S, typename F = val::sink<>>
-        constexpr auto make_field(const char* name, F f) -> field<F, bool (*)(const S&)>;
-    template <typename S, typename F, typename D>
-        constexpr auto make_field(const char* name, F f, D dflt) -> field<F, D>;
+    template <typename S, std::size_t N, typename F = val::sink<>>
+        constexpr auto make_field(const char (&name)[N], F f) -> field<F, default_false<S>>;
+    template <typename S, std::size_t N, typename F, typename D>
+        constexpr auto make_field(const char (&name)[N], F f, D dflt) -> field<F, D>;
 
     template <typename X, typename S, typename F, typename II, typename Cx>
         inline bool read_field(S& s, const F& f, II& i, II e, Cx& cx);
@@ -51,13 +56,13 @@ namespace cxon { namespace cio { namespace cls {
 
     // field
 
-    template <typename S, typename F>
-        constexpr auto make_field(const char* name, F f) -> field<F, bool (*)(const S&)> {
-            return { name, std::strlen(name), f, [](const S&) { return false; } };
+    template <typename S, std::size_t N, typename F>
+        constexpr auto make_field(const char (&name)[N], F f) -> field<F, default_false<S>> {
+            return { name, N - 1, f, {} };
         }
-    template <typename S, typename F, typename D>
-        constexpr auto make_field(const char* name, F f, D dflt) -> field<F, D> {
-            return { name, std::strlen(name), f, dflt };
+    template <typename S, std::size_t N, typename F, typename D>
+        constexpr auto make_field(const char (&name)[N], F f, D dflt) -> field<F, D> {
+            return { name, N - 1, f, dflt };
         }
 
     namespace imp {
