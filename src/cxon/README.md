@@ -566,10 +566,10 @@ namespace jsonrpc {
             char const*const key;
             T const value;
 
-            template <typename X, typename O, typename Cx, typename J = X>
-                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<J, cxon::JSON> {
-                    return  cxon::cio::write_key<J>(o, key, cx) &&
-                            cxon::write_value<J>(o, value, cx)
+            template <typename X, typename O, typename Cx, typename Y = X>
+                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<Y, cxon::JSON> {
+                    return  cxon::cio::write_key<Y>(o, key, cx) &&
+                            cxon::write_value<Y>(o, value, cx)
                     ;
                 }
         };
@@ -587,7 +587,9 @@ namespace jsonrpc {
             std::tuple<P...> const  params;
 
             constexpr request(std::size_t id, const char* method, P&&... params) noexcept
-            :   id(id), method(method), params(std::forward<P>(params)...) { }
+            :   id(id), method(method), params(std::forward<P>(params)...)
+            {
+            }
 
             CXON_JSON_CLS_WRITE_MEMBER(request,
                 CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
@@ -631,7 +633,9 @@ namespace jsonrpc {
             struct error<D> error;
 
             constexpr response() noexcept
-            :   jsonrpc{0}, id(), result(), error() { }
+            :   jsonrpc{0}, id(), result(), error()
+            {
+            }
 
             CXON_JSON_CLS_READ_MEMBER(response,
                 CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
@@ -664,23 +668,26 @@ int main() {
         auto const call = jsonrpc::make_request(1, "sub", 42, 23);
         std::string req; // serialize call to req
             auto const w = to_bytes(req, call);
-        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":[42,23]}");
+        assert(w && req == R"({"jsonrpc":"2.0","id":1,"method":"sub","params":[42,23]})");
     }
     {   // params object
         auto const call = jsonrpc::make_request(1, "sub", jsonrpc::make_napa("x", 42), jsonrpc::make_napa("y", 23));
         std::string req; // serialize call to req
             auto const w = to_bytes(req, call);
-        assert(w && req == "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"sub\",\"params\":{\"x\":42,\"y\":23}}");
+        assert(w && req == R"({"jsonrpc":"2.0","id":1,"method":"sub","params":{"x":42,"y":23}})");
     }
-    {   // round-trip: req -> res ok
-        char const res[] = "{\"jsonrpc\": \"2.0\", \"result\": 19, \"id\": 1}";
+    {   // round-trip: req -> res success
+        char const res[] = R"({"jsonrpc": "2.0", "result": 19, "id": 1})";
         jsonrpc::response<int> ret; // serialize res to ret
             auto const r = from_bytes(ret, res);
         assert(r && ret.id == 1 && ret.result == 19);
     }
-    {   // round-trip: req -> res ko
-        char const res[] =  "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": 42, \"message\": \"divide by zero\","
-                            "\"data\": \"a black hole has been created somewhere\"}, \"id\": 1}";
+    {   // round-trip: req -> res failure
+        char const res[] = R"({
+            "jsonrpc": "2.0",
+            "error": {"code": 42, "message": "divide by zero", "data": "a black hole has been created somewhere"},
+            "id": 1
+        })";
         {   // serialize res to ret, error's data will be skipped
             jsonrpc::response<int> ret;
                 auto const r = from_bytes(ret, res);
