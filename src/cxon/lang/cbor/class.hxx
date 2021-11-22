@@ -8,7 +8,7 @@
 
 #include "common/sink.hxx"
 #include <tuple>
-#include <string>
+#include <cstring> // strncmp
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -123,7 +123,7 @@ namespace cxon { namespace cbor { namespace cls {
             struct read_ {
                 template <typename S, typename F, typename II, typename Cx>
                     static bool field(S& s, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) {
-                        return st[N] == 0 && std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nlen) == 0 ?
+                        return st[N] == 0 && std::strncmp(std::get<N>(fs).name, name, std::get<N>(fs).nlen) == 0 ?
                             (st[N] = 1,read_field<X>(s, std::get<N>(fs), i, e, cx)) :
                             read_<X, N + 1, L>::field(s, name, fs, st, i, e, cx)
                         ;
