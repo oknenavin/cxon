@@ -954,9 +954,9 @@ namespace {
 }
 
 CXON_CBOR_CLS(Struct12,
-    CXON_CBOR_CLS_FIELD_ASIS_DFLT(x, [](const T& t) { return t.x == 0; }),
-    CXON_CBOR_CLS_FIELD_ASIS_DFLT(y, [](const T& t) { return t.y == 0; }),
-    CXON_CBOR_CLS_FIELD_ASIS_DFLT(z, [](const T& t) { return t.z == 0; })
+    CXON_CBOR_CLS_FIELD_ASIS_DFLT(x, self.x == 0),
+    CXON_CBOR_CLS_FIELD_ASIS_DFLT(y, self.y == 0),
+    CXON_CBOR_CLS_FIELD_ASIS_DFLT(z, self.z == 0)
 )
 
 TEST_BEG(cxon::CBOR<>)

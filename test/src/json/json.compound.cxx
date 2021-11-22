@@ -595,7 +595,7 @@ CXON_JSON_CLS_READ(Struct11,
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 CXON_JSON_CLS_WRITE(Struct11,
-    CXON_JSON_CLS_FIELD_ASIS_DFLT(a, [](const T& s) { return s.a == 0; }),
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(a, self.a == 0),
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 
@@ -620,9 +620,9 @@ namespace {
 }
 
 CXON_JSON_CLS(Struct12,
-    CXON_JSON_CLS_FIELD_ASIS_DFLT(x, [](const T& t) { return t.x == 0; }),
-    CXON_JSON_CLS_FIELD_ASIS_DFLT(y, [](const T& t) { return t.y == 0; }),
-    CXON_JSON_CLS_FIELD_ASIS_DFLT(z, [](const T& t) { return t.z == 0; })
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(x, self.x == 0),
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(y, self.y == 0),
+    CXON_JSON_CLS_FIELD_ASIS_DFLT(z, self.z == 0)
 )
 
 TEST_BEG(cxon::JSON<>) // defaults
