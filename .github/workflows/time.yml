@@ -254,12 +254,12 @@ jobs:
         ref: main
         path: .dep/fast_float
     - name: Configure
-      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS="/std:c++20 /O2 /D CXON_TIME_ONLY"
+      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS="/std:c++20 /O2 /EHsc /D CXON_TIME_ONLY"
     - name: Build
       run: cd test ; cmake --build build --parallel
     - name: Time
       run: |
         pwd
-        ls
+        dir
 
   # xcode ######################################################################
