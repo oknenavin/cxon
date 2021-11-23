@@ -1,8 +1,11 @@
 name: Time
 
-on: [ push, pull_request, workflow_dispatch ]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
   schedule:
-    - cron: '0 3 * * 1'
+    - cron: '0 3 * * 6'
 
 jobs:
 
