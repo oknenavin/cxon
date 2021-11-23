@@ -1,6 +1,8 @@
 name: Time
 
 on: [ push, pull_request, workflow_dispatch ]
+  schedule:
+    - cron: '0 3 * * 1'
 
 jobs:
 
@@ -209,3 +211,51 @@ jobs:
         cat clang++.tail.cbor.data >> clang++.head.cbor && mv -f clang++.head.cbor clang++.tail.cbor.data
         git commit -a -m "$(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "${{ github.event.head_commit.message }}"
         git pull --rebase && git push
+
+  # msvc ######################################################################
+
+  msvc++:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout cxon
+      uses: actions/checkout@v2
+    - name: Checkout workflows-data
+      uses: actions/checkout@v2
+      with:
+        repository: oknenavin/workflows-data
+        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
+        ref: master
+        path: .dep/workflows-data
+    - name: Checkout Boost/JSON
+      uses: actions/checkout@v2
+      with:
+        repository: boostorg/json
+        ref: master
+        path: .dep/boost
+    - name: Checkout RapidJSON
+      uses: actions/checkout@v2
+      with:
+        repository: tencent/rapidjson
+        ref: master
+        path: .dep/rapidjson
+    - name: Checkout nlohmann/json
+      uses: actions/checkout@v2
+      with:
+        repository: nlohmann/json
+        ref: master
+        path: .dep/nlohmann
+    - name: Checkout fastfloat/fast_float
+      uses: actions/checkout@v2
+      with:
+        repository: fastfloat/fast_float
+        ref: main
+        path: .dep/fast_float
+    - name: Configure
+      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS="/std:c++20 /O2 /D CXON_TIME_ONLY"
+    - name: Build
+      run: cd test ; cmake --build build --parallel
+    - name: Time
+      run: |
+        pwd ; ls -la
+
+  # xcode ######################################################################
