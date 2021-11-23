@@ -291,3 +291,76 @@ jobs:
         git pull --rebase && git push
 
   # xcode ######################################################################
+
+  xcode:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout cxon
+      uses: actions/checkout@v2
+    - name: Checkout workflows-data
+      uses: actions/checkout@v2
+      with:
+        repository: oknenavin/workflows-data
+        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
+        ref: master
+        path: .dep/workflows-data
+    - name: Checkout Boost/JSON
+      uses: actions/checkout@v2
+      with:
+        repository: boostorg/json
+        ref: master
+        path: .dep/boost
+    - name: Checkout RapidJSON
+      uses: actions/checkout@v2
+      with:
+        repository: tencent/rapidjson
+        ref: master
+        path: .dep/rapidjson
+    - name: Checkout nlohmann/json
+      uses: actions/checkout@v2
+      with:
+        repository: nlohmann/json
+        ref: master
+        path: .dep/nlohmann
+    - name: Checkout fastfloat/fast_float
+      uses: actions/checkout@v2
+      with:
+        repository: fastfloat/fast_float
+        ref: main
+        path: .dep/fast_float
+    - name: Time (default)
+      run: |
+        cd test
+        cmake --build .bld --target clean
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
+        cmake --build .bld --target cxon.json.node --parallel
+        cd .out
+        echo "# $(date -u --iso-8601=seconds) / xcode / default" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
+        ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / xcode / default" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
+        ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
+    - name: Time (fast_float)
+      run: |
+        cd test
+        cmake --build .bld --target clean
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
+        cmake --build .bld --target cxon.json.node --parallel
+        cd .out
+        echo "# $(date -u --iso-8601=seconds) / xcode / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
+        ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / xcode / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
+        ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
+    - name: Store the results
+      run: |
+        cd .dep/workflows-data/cxon/benchmarks
+        git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
+        cp -f xcode.head.default.json.node xcode.head.default.json.node.data
+        cat xcode.tail.default.json.node.data >> xcode.head.default.json.node && mv -f xcode.head.default.json.node xcode.tail.default.json.node.data
+        cp -f xcode.head.default.json.native xcode.head.default.json.native.data
+        cat xcode.tail.default.json.native.data >> xcode.head.default.json.native && mv -f xcode.head.default.json.native xcode.tail.default.json.native.data
+        cp -f xcode.head.fast_float.json.node xcode.head.fast_float.json.node.data
+        cat xcode.tail.fast_float.json.node.data >> xcode.head.fast_float.json.node && mv -f xcode.head.fast_float.json.node xcode.tail.fast_float.json.node.data
+        cp -f xcode.head.fast_float.json.native xcode.head.fast_float.json.native.data
+        cat xcode.tail.fast_float.json.native.data >> xcode.head.fast_float.json.native && mv -f xcode.head.fast_float.json.native xcode.tail.fast_float.json.native.data
+        git commit -a -m "- $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
+        git pull --rebase && git push
