@@ -259,6 +259,7 @@ jobs:
       run: cd test ; cmake --build build --parallel
     - name: Time
       run: |
-        pwd ; ls -la
+        pwd
+        ls
 
   # xcode ######################################################################
