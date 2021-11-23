@@ -259,8 +259,7 @@ jobs:
       run: cd test ; cmake --build .bld --parallel
     - name: Time
       run: |
-        ls | Format-Table
         cd test/.out
-        cxon.json.node time-node @../data/json/time.in time-native @../data/json/time.in
+        ./cxon.json.node time-node '@../data/json/time.in' time-native '@../data/json/time.in'
 
   # xcode ######################################################################
