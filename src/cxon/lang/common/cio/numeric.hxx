@@ -216,7 +216,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
 
         template <typename T>
-            inline charconv::imp::from_chars_result from_chars_(const char* b, const char* e, T& t) {
+            inline charconv::imp::from_chars_result from_chars_(const char* b, const char* e, T& t) noexcept {
                 if (*b == '"') {
                     if (b[1] == '-' && e - b >= 6) { // (false-positive [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
                         if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<T>::infinity(),
@@ -236,11 +236,18 @@ namespace cxon { namespace cio { namespace num { // read
                     }
                 }
 #               ifdef CXON_HAS_FAST_FLOAT
-                    auto const r = fast_float::from_chars(b, e, t);
+                    CXON_IF_CONSTEXPR (!(std::is_same<T, long double>::value)) {
+                        auto const r = fast_float::from_chars(b, e, t);
+                        return { r.ptr, r.ec };
+                    }
+                    else {
+                        auto const r = charconv::from_chars(b, e, t);
+                        return { r.ptr, r.ec };
+                    }
 #               else
                     auto const r = charconv::from_chars(b, e, t);
+                    return { r.ptr, r.ec };
 #               endif
-                return { r.ptr, r.ec };
             }
         template <typename X, typename T, typename II, typename Cx>
             inline auto number_read_(T& t, II& i, II e, Cx& cx)

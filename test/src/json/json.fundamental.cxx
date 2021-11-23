@@ -382,7 +382,7 @@ TEST_END()
 
 namespace cxon { namespace test {
     struct strict_number_traits : cxon::json::format_traits {
-        struct number {
+        struct number : cxon::json::format_traits::number {
             static constexpr bool strict = true;
         };
     };

@@ -110,7 +110,7 @@ namespace cxon { namespace cio { namespace str {
                         a = i, --i;
                     }
                     else {
-                        CXON_IF_CONSTEXPR(X::read_validate_string_utf8) {
+                        CXON_IF_CONSTEXPR (X::read_validate_string_utf8) {
                             if ((unsigned char)*i > 0x7F) {
                                 auto const bs = chr::utf8_check(i, e);
                                 if (bs > 3)
@@ -118,7 +118,7 @@ namespace cxon { namespace cio { namespace str {
                                 i += bs;
                             }
                         }
-                        CXON_IF_CONSTEXPR(X::read_validate_string_ctrl) {
+                        CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
                             if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
                                 return rewind(i, o), cx/X::read_error::unexpected;
                         }
