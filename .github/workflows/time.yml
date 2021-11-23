@@ -256,7 +256,7 @@ jobs:
     - name: Time (default)
       run: |
         cd test
-        rm -rf .bld .out
+        rm -r -force .bld .out
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
@@ -267,7 +267,7 @@ jobs:
     - name: Time (fast_float)
       run: |
         cd test
-        rm -rf .bld .out
+        rm -r -force .bld .out
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
@@ -279,16 +279,14 @@ jobs:
       run: |
         cd .dep/workflows-data/cxon/benchmarks
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cp -f msvc++.head.default.json.node msvc++.head.default.json.node.data
-        cat msvc++.tail.default.json.node.data >> msvc++.head.default.json.node && mv -f msvc++.head.default.json.node msvc++.tail.default.json.node.data
-        cp -f msvc++.head.default.json.native msvc++.head.default.json.native.data
-        cat msvc++.tail.default.json.native.data >> msvc++.head.default.json.native && mv -f msvc++.head.default.json.native msvc++.tail.default.json.native.data
-        cp -f msvc++.head.fast_float.json.node msvc++.head.fast_float.json.node.data
-        cat msvc++.tail.fast_float.json.node.data >> msvc++.head.fast_float.json.node && mv -f msvc++.head.fast_float.json.node msvc++.tail.fast_float.json.node.data
-        cp -f msvc++.head.fast_float.json.native msvc++.head.fast_float.json.native.data
-        cat msvc++.tail.fast_float.json.native.data >> msvc++.head.fast_float.json.native && mv -f msvc++.head.fast_float.json.native msvc++.tail.fast_float.json.native.data
-        cp -f msvc++.head.cbor msvc++.head.cbor.data
-        cat msvc++.tail.cbor.data >> msvc++.head.cbor && mv -f msvc++.head.cbor msvc++.tail.cbor.data
+        cp -force msvc++.head.default.json.node msvc++.head.default.json.node.data
+        cat msvc++.tail.default.json.node.data >> msvc++.head.default.json.node && mv -force msvc++.head.default.json.node msvc++.tail.default.json.node.data
+        cp -force msvc++.head.default.json.native msvc++.head.default.json.native.data
+        cat msvc++.tail.default.json.native.data >> msvc++.head.default.json.native && mv -force msvc++.head.default.json.native msvc++.tail.default.json.native.data
+        cp -force msvc++.head.fast_float.json.node msvc++.head.fast_float.json.node.data
+        cat msvc++.tail.fast_float.json.node.data >> msvc++.head.fast_float.json.node && mv -force msvc++.head.fast_float.json.node msvc++.tail.fast_float.json.node.data
+        cp -force msvc++.head.fast_float.json.native msvc++.head.fast_float.json.native.data
+        cat msvc++.tail.fast_float.json.native.data >> msvc++.head.fast_float.json.native && mv -force msvc++.head.fast_float.json.native msvc++.tail.fast_float.json.native.data
         git commit -a -m "$((date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00")) / $(git rev-parse --short "$GITHUB_SHA")" -m "${{ github.event.head_commit.message }}"
         git pull --rebase && git push
 
