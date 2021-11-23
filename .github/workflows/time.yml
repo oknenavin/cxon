@@ -217,7 +217,7 @@ jobs:
 
   # msvc ######################################################################
 
-  msvc++:
+  msvc:
     runs-on: windows-latest
     steps:
     - name: Checkout cxon
