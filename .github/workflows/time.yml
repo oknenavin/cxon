@@ -261,9 +261,9 @@ jobs:
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
-        echo "# $((date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00")) / msvc++ / default" > .dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
+        echo "# $(date -f 'yyyy-MM-ddTHH:mm:ssK') / msvc++ / default" > .dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a .dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
-        echo "# $((date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00")) / msvc++ / default" > .dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
+        echo "# $(date -f 'yyyy-MM-ddTHH:mm:ssK') / msvc++ / default" > .dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a .dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
     - name: Time (fast_float)
       run: |
@@ -273,9 +273,9 @@ jobs:
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
-        echo "# $((date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00")) / msvc++ / fast_float" > .dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
+        echo "# $(date -f 'yyyy-MM-ddTHH:mm:ssK') / msvc++ / fast_float" > .dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a .dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
-        echo "# $((date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00")) / msvc++ / fast_float" > .dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
+        echo "# $(date -f 'yyyy-MM-ddTHH:mm:ssK') / msvc++ / fast_float" > .dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a .dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
     - name: Store the results
       run: |
@@ -289,7 +289,7 @@ jobs:
         cat msvc++.tail.fast_float.json.node.data >> msvc++.head.fast_float.json.node && mv -force msvc++.head.fast_float.json.node msvc++.tail.fast_float.json.node.data
         cp -force msvc++.head.fast_float.json.native msvc++.head.fast_float.json.native.data
         cat msvc++.tail.fast_float.json.native.data >> msvc++.head.fast_float.json.native && mv -force msvc++.head.fast_float.json.native msvc++.tail.fast_float.json.native.data
-        git commit -a -m "$((date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00")) / $(git rev-parse --short "$GITHUB_SHA")" -m "${{ github.event.head_commit.message }}"
+        git commit -a -m "$(date -f 'yyyy-MM-ddTHH:mm:ssK') / $(git rev-parse --short "$GITHUB_SHA")" -m "${{ github.event.head_commit.message }}"
         git pull --rebase && git push
 
   # xcode ######################################################################
