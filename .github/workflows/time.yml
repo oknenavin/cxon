@@ -256,7 +256,8 @@ jobs:
     - name: Time (default)
       run: |
         cd test
-        rm -r -force .bld .out
+        #rm -r -force .bld, .out
+        cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
@@ -267,7 +268,8 @@ jobs:
     - name: Time (fast_float)
       run: |
         cd test
-        rm -r -force .bld .out
+        #rm -r -force .bld, .out
+        cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
