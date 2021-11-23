@@ -256,13 +256,7 @@ jobs:
     - name: Configure
       run: |
         cd test
-        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS="\
-            /std:c++20 /GS- /GL /analyze- /W3 /Gy /Gm- /O2 /Ob2 /sdl- /Zc:inline /Zc:rvalueCast /Zc:wchar_t /Zc:forScope /Zi /fp:precise /D _MBCS /D NDEBUG /WX- /GR- /Gd /Oi /MD /FC /EHsc /nologo /Za /Ot \
-            /D CXON_TIME_ONLY \
-            /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT \
-            /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON \
-            /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON \
-            /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS="/std:c++20 /GS- /GL /analyze- /W3 /Gy /Gm- /O2 /Ob2 /sdl- /Zc:inline /Zc:rvalueCast /Zc:wchar_t /Zc:forScope /Zi /fp:precise /D _MBCS /D NDEBUG /WX- /GR- /Gd /Oi /MD /FC /EHsc /nologo /Za /Ot /D CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
     - name: Build
       run: cd test ; cmake --build .bld --parallel
     - name: Time
