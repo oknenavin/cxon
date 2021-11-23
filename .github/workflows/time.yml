@@ -254,12 +254,13 @@ jobs:
         ref: main
         path: .dep/fast_float
     - name: Configure
-      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS="/std:c++20 /O2 /EHsc /D CXON_TIME_ONLY"
+      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS="/std:c++20 /O2 /EHsc /D CXON_TIME_ONLY /I ../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
     - name: Build
       run: cd test ; cmake --build build --parallel
     - name: Time
       run: |
-        pwd
-        dir
+        ls | Format-Table
+        cd test/.out
+        cxon.json.node time-node @../../data/json/time.in time-native @../../data/json/time.in
 
   # xcode ######################################################################
