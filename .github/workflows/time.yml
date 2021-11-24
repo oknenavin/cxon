@@ -349,9 +349,9 @@ jobs:
         cmake --build .bld --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S%:z') / clang++-$COMPILER_VERSION / node (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S%:z') / clang++-$COMPILER_VERSION / native (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
     - name: Time (fast_float)
       run: |
@@ -361,9 +361,9 @@ jobs:
         cmake --build .bld --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S%:z') / clang++-$COMPILER_VERSION / node (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S%:z') / clang++-$COMPILER_VERSION / native (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
     - name: Store the results
       run: |
@@ -377,5 +377,5 @@ jobs:
         cat xcode.tail.fast_float.json.node.data >> xcode.head.fast_float.json.node && mv -f xcode.head.fast_float.json.node xcode.tail.fast_float.json.node.data
         cp -f xcode.head.fast_float.json.native xcode.head.fast_float.json.native.data
         cat xcode.tail.fast_float.json.native.data >> xcode.head.fast_float.json.native && mv -f xcode.head.fast_float.json.native xcode.tail.fast_float.json.native.data
-        git commit -a -m "- xcode / $(date -u +'%Y-%m-%dT%H:%M:%S%:z') / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
+        git commit -a -m "- xcode / $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
         git pull --rebase && git push
