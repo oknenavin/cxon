@@ -26,7 +26,7 @@ jobs:
       run: make time
 
   gcc-11:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
@@ -71,12 +71,12 @@ jobs:
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / g++11 / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / g++11 / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / g++11" > .dep/workflows-data/cxon/benchmarks/g++.head.cbor
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1)" > .dep/workflows-data/cxon/benchmarks/g++.head.cbor
         make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.cbor
     - name: Time (fast_float)
       env:
@@ -84,9 +84,9 @@ jobs:
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / g++11 / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / g++11 / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
     - name: Store the results
       run: |
@@ -136,7 +136,7 @@ jobs:
       run: make time
 
   clang-12:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
@@ -181,12 +181,12 @@ jobs:
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++12 / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / clang++12 / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / clang++12" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1)" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
         make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
     - name: Time (fast_float)
       env:
@@ -194,9 +194,9 @@ jobs:
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++12 / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / clang++12 / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
     - name: Store the results
       run: |
