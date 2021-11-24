@@ -104,7 +104,7 @@ jobs:
         cat g++.tail.fast_float.json.native.data >> g++.head.fast_float.json.native && mv -f g++.head.fast_float.json.native g++.tail.fast_float.json.native.data
         cp -f g++.head.cbor g++.head.cbor.data
         cat g++.tail.cbor.data >> g++.head.cbor && mv -f g++.head.cbor g++.tail.cbor.data
-        git commit -a -m "- $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
+        git commit -a -m "- g++ / $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
         git pull --rebase && git push
 
   # clang ######################################################################
@@ -184,12 +184,12 @@ jobs:
       run: |
         COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / node (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / native (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
         make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
     - name: Time (fast_float)
       env:
@@ -198,9 +198,9 @@ jobs:
       run: |
         COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / node (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / native (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
     - name: Store the results
       run: |
@@ -216,7 +216,7 @@ jobs:
         cat clang++.tail.fast_float.json.native.data >> clang++.head.fast_float.json.native && mv -f clang++.head.fast_float.json.native clang++.tail.fast_float.json.native.data
         cp -f clang++.head.cbor clang++.head.cbor.data
         cat clang++.tail.cbor.data >> clang++.head.cbor && mv -f clang++.head.cbor clang++.tail.cbor.data
-        git commit -a -m "- $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
+        git commit -a -m "- clang++ / $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
         git pull --rebase && git push
 
   # msvc ######################################################################
@@ -300,7 +300,7 @@ jobs:
         cat msvc++.tail.fast_float.json.node.data >> msvc++.head.fast_float.json.node && mv -f msvc++.head.fast_float.json.node msvc++.tail.fast_float.json.node.data
         cp -f msvc++.head.fast_float.json.native msvc++.head.fast_float.json.native.data
         cat msvc++.tail.fast_float.json.native.data >> msvc++.head.fast_float.json.native && mv -f msvc++.head.fast_float.json.native msvc++.tail.fast_float.json.native.data
-        git commit -a -m "- $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
+        git commit -a -m "- msvc / $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
         git pull --rebase && git push
 
   # xcode ######################################################################
@@ -377,5 +377,5 @@ jobs:
         cat xcode.tail.fast_float.json.node.data >> xcode.head.fast_float.json.node && mv -f xcode.head.fast_float.json.node xcode.tail.fast_float.json.node.data
         cp -f xcode.head.fast_float.json.native xcode.head.fast_float.json.native.data
         cat xcode.tail.fast_float.json.native.data >> xcode.head.fast_float.json.native && mv -f xcode.head.fast_float.json.native xcode.tail.fast_float.json.native.data
-        git commit -a -m "- $(date -u +'%Y-%m-%dT%H:%M:%SZ') / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
+        git commit -a -m "- xcode / $(date -u +'%Y-%m-%dT%H:%M:%SZ') / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
         git pull --rebase && git push
