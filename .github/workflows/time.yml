@@ -70,23 +70,25 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
+        COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (default)" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (default)" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1)" > .dep/workflows-data/cxon/benchmarks/g++.head.cbor
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION" > .dep/workflows-data/cxon/benchmarks/g++.head.cbor
         make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.cbor
     - name: Time (fast_float)
       env:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
+        COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (fast_float)" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (fast_float)" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
     - name: Store the results
       run: |
@@ -180,23 +182,25 @@ jobs:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
+        COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / node (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / default" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / native (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1)" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
+        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
         make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
     - name: Time (fast_float)
       env:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
+        COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / node (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
         make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / $($CXX --version | head -n1) / fast_float" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / clang++-COMPILER_VERSION / native (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
         make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
     - name: Store the results
       run: |
@@ -260,13 +264,13 @@ jobs:
       run: |
         cd test
         #cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
+        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_EXE_LINKER_FLAGS="-LTCG"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc-$COMPILER_VERSION / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (default)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / msvc-$COMPILER_VERSION / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (default)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
     - name: Time (fast_float)
       shell: bash
@@ -275,13 +279,13 @@ jobs:
       run: |
         cd test
         cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
+        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_EXE_LINKER_FLAGS="-LTCG"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc-$COMPILER_VERSION / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / msvc-$COMPILER_VERSION / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
     - name: Store the results
       shell: bash
@@ -343,10 +347,11 @@ jobs:
         #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
         cmake --build .bld --target cxon.json.node --parallel
+        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / xcode / default" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / clang++-$COMPILER_VERSION / node (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / xcode / default" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / clang++-$COMPILER_VERSION / native (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
     - name: Time (fast_float)
       run: |
@@ -354,10 +359,11 @@ jobs:
         cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
         cmake --build .bld --target cxon.json.node --parallel
+        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / xcode / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / clang++-$COMPILER_VERSION / node (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / xcode / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%SZ') / clang++-$COMPILER_VERSION / native (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
     - name: Store the results
       run: |
