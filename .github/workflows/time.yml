@@ -256,7 +256,7 @@ jobs:
     - name: Time (default)
       shell: bash
       env:
-        CXXFLAGS: /EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN
+        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost/include -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
       run: |
         cd test
         #cmake --build .bld --target clean
@@ -270,7 +270,7 @@ jobs:
     - name: Time (fast_float)
       shell: bash
       env:
-        CXXFLAGS: /EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN
+        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/fast_float/include -D CXON_USE_FAST_FLOAT -I ../../.dep/boost/include -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
       run: |
         cd test
         cmake --build .bld --target clean
