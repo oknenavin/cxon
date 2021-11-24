@@ -256,7 +256,7 @@ jobs:
     - name: Time (default)
       run: |
         cd test
-        cmake --build .bld --target clean
+        #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
@@ -331,7 +331,7 @@ jobs:
     - name: Time (default)
       run: |
         cd test
-        cmake --build .bld --target clean
+        #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
         cmake --build .bld --target cxon.json.node --parallel
         cd .out
