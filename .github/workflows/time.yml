@@ -262,10 +262,11 @@ jobs:
         #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
         cmake --build .bld --config Release --target cxon.json.node --parallel
+        CXXVER=$(grep -Prho 'CMAKE_CXX_COMPILER_VERSION "\K.*(?=")' .bld)
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / msvc-$CXXVER / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / msvc-$CXXVER / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
     - name: Time (fast_float)
       shell: bash
@@ -276,10 +277,11 @@ jobs:
         cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
         cmake --build .bld --config Release --target cxon.json.node --parallel
+        CXXVER=$(grep -Prho 'CMAKE_CXX_COMPILER_VERSION "\K.*(?=")' .bld)
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / msvc-$CXXVER / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / msvc-$CXXVER / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
     - name: Store the results
       shell: bash
