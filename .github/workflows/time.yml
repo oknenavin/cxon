@@ -254,39 +254,46 @@ jobs:
         ref: main
         path: .dep/fast_float
     - name: Time (default)
+      shell: bash
+      env:
+        CXXFLAGS: /EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN
       run: |
         cd test
         #cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
+        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc++ / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
+        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / msvc++ / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
     - name: Time (fast_float)
+      shell: bash
+      env:
+        CXXFLAGS: /EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN
       run: |
         cd test
         cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="/EHsc /Oi /Ot /GR- /GS- /GL /D CXON_TIME_ONLY /I ../../.dep/fast_float/include /D CXON_USE_FAST_FLOAT /I ../../.dep/boost/include /D CXON_TIME_BOOST_JSON /I ../../.dep/rapidjson/include /D CXON_TIME_RAPIDJSON /I ../../.dep/nlohmann/single_include /D CXON_TIME_NLOHMANN"
+        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc++ / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
+        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / msvc++ / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
+        echo "# $(date -u --iso-8601=seconds) / $(cl | head -n1) / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
     - name: Store the results
+      shell: bash
       run: |
         cd .dep/workflows-data/cxon/benchmarks
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cp -force msvc++.head.default.json.node msvc++.head.default.json.node.data
-        cat msvc++.tail.default.json.node.data >> msvc++.head.default.json.node && mv -force msvc++.head.default.json.node msvc++.tail.default.json.node.data
-        cp -force msvc++.head.default.json.native msvc++.head.default.json.native.data
-        cat msvc++.tail.default.json.native.data >> msvc++.head.default.json.native && mv -force msvc++.head.default.json.native msvc++.tail.default.json.native.data
-        cp -force msvc++.head.fast_float.json.node msvc++.head.fast_float.json.node.data
-        cat msvc++.tail.fast_float.json.node.data >> msvc++.head.fast_float.json.node && mv -force msvc++.head.fast_float.json.node msvc++.tail.fast_float.json.node.data
-        cp -force msvc++.head.fast_float.json.native msvc++.head.fast_float.json.native.data
-        cat msvc++.tail.fast_float.json.native.data >> msvc++.head.fast_float.json.native && mv -force msvc++.head.fast_float.json.native msvc++.tail.fast_float.json.native.data
+        cp -f msvc++.head.default.json.node msvc++.head.default.json.node.data
+        cat msvc++.tail.default.json.node.data >> msvc++.head.default.json.node && mv -f msvc++.head.default.json.node msvc++.tail.default.json.node.data
+        cp -f msvc++.head.default.json.native msvc++.head.default.json.native.data
+        cat msvc++.tail.default.json.native.data >> msvc++.head.default.json.native && mv -f msvc++.head.default.json.native msvc++.tail.default.json.native.data
+        cp -f msvc++.head.fast_float.json.node msvc++.head.fast_float.json.node.data
+        cat msvc++.tail.fast_float.json.node.data >> msvc++.head.fast_float.json.node && mv -f msvc++.head.fast_float.json.node msvc++.tail.fast_float.json.node.data
+        cp -f msvc++.head.fast_float.json.native msvc++.head.fast_float.json.native.data
+        cat msvc++.tail.fast_float.json.native.data >> msvc++.head.fast_float.json.native && mv -f msvc++.head.fast_float.json.native msvc++.tail.fast_float.json.native.data
         git commit -a -m "- $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
         git pull --rebase && git push
 
