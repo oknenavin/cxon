@@ -262,7 +262,7 @@ jobs:
         #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
         cmake --build .bld --config Release --target cxon.json.node --parallel
-        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | grep -n1)
+        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
         echo "# $(date -u --iso-8601=seconds) / msvc-$COMPILER_VERSION / default" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
@@ -277,7 +277,7 @@ jobs:
         cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS"
         cmake --build .bld --config Release --target cxon.json.node --parallel
-        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | grep -n1)
+        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
         echo "# $(date -u --iso-8601=seconds) / msvc-$COMPILER_VERSION / fast_float" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
