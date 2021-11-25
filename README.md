@@ -38,14 +38,14 @@ any `C++` type that matches it semantically can be used.
 
 int main() {
     std::vector<int> cxx; // or std::array, std::list, std::set, etc.
-        // the input is a JSON array and semantically it is a list of integers
+        // the input is a JSON array, semantically a list of integers
         auto result = cxon::from_bytes(cxx,  "[1, 2, 3]");
     assert(result && cxx == std::vector<int> ({1, 2, 3}));
     // the data is loaded successfully, no additional semantic validation is needed
 }
 ```
 
-Once the data is loaded successfully it means, that it is syntactically and semantically correct.  
+Once the data is loaded successfully it means, that it is syntactically and semantically correct - ready for use.  
 In contrast, most of the `JSON`/`CBOR`/etc. libraries represent arbitrary data
 with a polymorphic type (called `DOM`, `value`, etc.) and parsing of the input only means,
 that it is syntactically correct.
@@ -74,16 +74,16 @@ int x0 = array[0].get_integer(); // it's an int, but not quite
 To help with this, some of the libraries provide utilities to convert the value type to a
 `C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to` for this.
 
-For completeness, `CXON` also provides polymorphic types for the supported formats, which are on par
-with the functionality provided by these libraries.  
+For completeness, `CXON` also provides polymorphic types (called `node`) for the supported formats,
+which match the functionality provided by these libraries.  
 The **performance** is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
 in this respect, `CXON` is [close to the best](#performance). An important note here, is that many of
 the libraries emphasize the floating-point serialization and deserialization performance, utilizing very fast
 (and complex) algorithms. In contrast, by default, `CXON` uses [`<charconv>`][std-charconv]
 (with a fall back for `C++11`). [`<charconv>`][std-charconv] is fast, but especially the parsing can be
 significantly slower than with these algorithms - at least with the implementations currently in the wild.
-Another important note, is that the libraries based on a polymorphic types, in contrast to `CXON`,
-have validation and use overhead that should be taken into account.  
+Another important note, is that the libraries based on polymorphic types have validation and use overhead
+that should be taken into account.  
 The **memory management** is often important, especially in the embedded space, and `CXON` is well suited - 
 `CXON` does not allocate in general; it's up to the types provided. In the example above, the memory management
 will be handled completely by `std::vector` and its allocator (whatever it is). In the same spirit, the
@@ -398,28 +398,28 @@ int main() {
 
 The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].  
 `CXON/JSON` also provides a polymorphic type [`cxon::json::node`](src/cxon/lang/json/node/README.md),
-which can represent arbitrary `JSON`.
+which can represent arbitrary `JSON` data.
 
 ##### [`CBOR`](https://cbor.io)
 
 The implementation strictly complies with [`RFC7049`][RFC7049].  
 `CXON/CBOR` also provides a polymorphic type [`cxon::cbor::node`](src/cxon/lang/cbor/node/README.md),
-which can represent arbitrary `JSON`.
+which can represent arbitrary `CBOR` data.
 
 
 --------------------------------------------------------------------------------
 
 #### Performance
 
-- `CXON` using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
+- `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   The difference is noticeable with number-heavy data (like `canada.json` or `numbers.json`).
   ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
 
-- `CXON` using [`fast_float`][ff] for floating-point conversion.  
+- `CXON` deserialization using [`fast_float`][ff] for floating-point conversion.  
   With the bottleneck removed, `CXON` is close *(see \<average\>)*.
   ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
 
-- `CXON` write using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
+- `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   `CXON` is somewhat slower, but not by much.
   ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
 
@@ -441,7 +441,7 @@ there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 
 *`CXON` uses [`<charconv>`][std-charconv] for floating-point conversions by default. By defining
 `CXON_USE_FAST_FLOAT` and [`fast_float`][ff] present in the include path, the floating-point parsing
-can be switched to it, and this will give a good performance boost over current implementations of
+can be switched to it. This will give a good performance boost over current implementations of
 [`<charconv>`][std-charconv] - see [performance](#performance) for details.*
 
 --------------------------------------------------------------------------------
