@@ -350,5 +350,5 @@ jobs:
         done
         cd $data
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        git add . && git commit -a -m ">${{ github.event.head_commit.message }}" -m "> $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")"
+        git add . && git commit -a -m "<${{ github.event.head_commit.message }}" -m "<- $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")"
         git pull --rebase && git push
