@@ -30,13 +30,6 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout workflows-data
-      uses: actions/checkout@v2
-      with:
-        repository: oknenavin/workflows-data
-        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
-        ref: master
-        path: .dep/workflows-data
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
@@ -72,13 +65,13 @@ jobs:
       run: |
         COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (default)" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
-        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (default)" > .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
-        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (default)" > test/.out/g++.head.default.json.node.data
+        make -s time-json-node | tee -a test/.out/g++.head.default.json.node.data
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (default)" > test/.out/g++.head.default.json.native.data
+        make -s time-json-native | tee -a test/.out/g++.head.default.json.native.data
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION" > .dep/workflows-data/cxon/benchmarks/g++.head.cbor
-        make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.cbor
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION" > test/.out/g++.head.cbor.data
+        make -s time-cbor | tee -a test/.out/g++.head.cbor.data
     - name: Time (fast_float)
       env:
         CXX: g++-11
@@ -86,26 +79,15 @@ jobs:
       run: |
         COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (fast_float)" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
-        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (fast_float)" > .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
-        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/g++.head.fast_float.json.native
-    - name: Store the results
-      run: |
-        cd .dep/workflows-data/cxon/benchmarks
-        git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cp -f g++.head.default.json.node g++.head.default.json.node.data
-        cat g++.tail.default.json.node.data >> g++.head.default.json.node && mv -f g++.head.default.json.node g++.tail.default.json.node.data
-        cp -f g++.head.default.json.native g++.head.default.json.native.data
-        cat g++.tail.default.json.native.data >> g++.head.default.json.native && mv -f g++.head.default.json.native g++.tail.default.json.native.data
-        cp -f g++.head.fast_float.json.node g++.head.fast_float.json.node.data
-        cat g++.tail.fast_float.json.node.data >> g++.head.fast_float.json.node && mv -f g++.head.fast_float.json.node g++.tail.fast_float.json.node.data
-        cp -f g++.head.fast_float.json.native g++.head.fast_float.json.native.data
-        cat g++.tail.fast_float.json.native.data >> g++.head.fast_float.json.native && mv -f g++.head.fast_float.json.native g++.tail.fast_float.json.native.data
-        cp -f g++.head.cbor g++.head.cbor.data
-        cat g++.tail.cbor.data >> g++.head.cbor && mv -f g++.head.cbor g++.tail.cbor.data
-        git commit -a -m "- g++ / $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
-        git pull --rebase && git push
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (fast_float)" > test/.out/g++.head.fast_float.json.node.data
+        make -s time-json-node | tee -a test/.out/g++.head.fast_float.json.node.data
+        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (fast_float)" > test/.out/g++.head.fast_float.json.native.data
+        make -s time-json-native | tee -a test/.out/g++.head.fast_float.json.native.data
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-data
+        path: test/.out/*.data
 
   # clang ######################################################################
 
@@ -142,13 +124,6 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout workflows-data
-      uses: actions/checkout@v2
-      with:
-        repository: oknenavin/workflows-data
-        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
-        ref: master
-        path: .dep/workflows-data
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
@@ -184,13 +159,13 @@ jobs:
       run: |
         COMPILER_VERSION=$($CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
-        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (default)" > .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
-        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (default)" > test/.out/clang++.head.default.json.node.data
+        make -s time-json-node | tee -a test/.out/clang++.head.default.json.node.data
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (default)" > test/.out/clang++.head.default.json.native.data
+        make -s time-json-native | tee -a test/.out/clang++.head.default.json.native.data
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION" > .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
-        make -s time-cbor | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.cbor
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION" > test/.out/clang++.head.cbor.data
+        make -s time-cbor | tee -a test/.out/clang++.head.cbor.data
     - name: Time (fast_float)
       env:
         CXX: clang++-12
@@ -198,26 +173,15 @@ jobs:
       run: |
         COMPILER_VERSION=$($CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1)
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
-        make -s time-json-node | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (fast_float)" > .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
-        make -s time-json-native | tee -a .dep/workflows-data/cxon/benchmarks/clang++.head.fast_float.json.native
-    - name: Store the results
-      run: |
-        cd .dep/workflows-data/cxon/benchmarks
-        git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cp -f clang++.head.default.json.node clang++.head.default.json.node.data
-        cat clang++.tail.default.json.node.data >> clang++.head.default.json.node && mv -f clang++.head.default.json.node clang++.tail.default.json.node.data
-        cp -f clang++.head.default.json.native clang++.head.default.json.native.data
-        cat clang++.tail.default.json.native.data >> clang++.head.default.json.native && mv -f clang++.head.default.json.native clang++.tail.default.json.native.data
-        cp -f clang++.head.fast_float.json.node clang++.head.fast_float.json.node.data
-        cat clang++.tail.fast_float.json.node.data >> clang++.head.fast_float.json.node && mv -f clang++.head.fast_float.json.node clang++.tail.fast_float.json.node.data
-        cp -f clang++.head.fast_float.json.native clang++.head.fast_float.json.native.data
-        cat clang++.tail.fast_float.json.native.data >> clang++.head.fast_float.json.native && mv -f clang++.head.fast_float.json.native clang++.tail.fast_float.json.native.data
-        cp -f clang++.head.cbor clang++.head.cbor.data
-        cat clang++.tail.cbor.data >> clang++.head.cbor && mv -f clang++.head.cbor clang++.tail.cbor.data
-        git commit -a -m "- clang++ / $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
-        git pull --rebase && git push
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (fast_float)" > test/.out/clang++.head.fast_float.json.node.data
+        make -s time-json-node | tee -a test/.out/clang++.head.fast_float.json.node.data
+        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (fast_float)" > test/.out/clang++.head.fast_float.json.native.data
+        make -s time-json-native | tee -a test/.out/clang++.head.fast_float.json.native.data
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-data
+        path: test/.out/*.data
 
   # msvc ######################################################################
 
@@ -226,13 +190,6 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout workflows-data
-      uses: actions/checkout@v2
-      with:
-        repository: oknenavin/workflows-data
-        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
-        ref: master
-        path: .dep/workflows-data
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
@@ -268,10 +225,10 @@ jobs:
         cmake --build .bld --config Release --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (default)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
-        ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.node
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (default)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
-        ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.default.json.native
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (default)" > msvc++.head.default.json.node.data
+        ./cxon.json.node time-node '@../data/json/time.in' | tee -a msvc++.head.default.json.node.data
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (default)" > msvc++.head.default.json.native.data
+        ./cxon.json.node time-native '@../data/json/time.in' | tee -a msvc++.head.default.json.native.data
     - name: Time (fast_float)
       shell: bash
       env:
@@ -283,25 +240,15 @@ jobs:
         cmake --build .bld --config Release --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
-        ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.node
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
-        ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/msvc++.head.fast_float.json.native
-    - name: Store the results
-      shell: bash
-      run: |
-        cd .dep/workflows-data/cxon/benchmarks
-        git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cp -f msvc++.head.default.json.node msvc++.head.default.json.node.data
-        cat msvc++.tail.default.json.node.data >> msvc++.head.default.json.node && mv -f msvc++.head.default.json.node msvc++.tail.default.json.node.data
-        cp -f msvc++.head.default.json.native msvc++.head.default.json.native.data
-        cat msvc++.tail.default.json.native.data >> msvc++.head.default.json.native && mv -f msvc++.head.default.json.native msvc++.tail.default.json.native.data
-        cp -f msvc++.head.fast_float.json.node msvc++.head.fast_float.json.node.data
-        cat msvc++.tail.fast_float.json.node.data >> msvc++.head.fast_float.json.node && mv -f msvc++.head.fast_float.json.node msvc++.tail.fast_float.json.node.data
-        cp -f msvc++.head.fast_float.json.native msvc++.head.fast_float.json.native.data
-        cat msvc++.tail.fast_float.json.native.data >> msvc++.head.fast_float.json.native && mv -f msvc++.head.fast_float.json.native msvc++.tail.fast_float.json.native.data
-        git commit -a -m "- msvc / $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
-        git pull --rebase && git push
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (fast_float)" > msvc++.head.fast_float.json.node.data
+        ./cxon.json.node time-node '@../data/json/time.in' | tee -a msvc++.head.fast_float.json.node.data
+        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (fast_float)" > msvc++.head.fast_float.json.native.data
+        ./cxon.json.node time-native '@../data/json/time.in' | tee -a msvc++.head.fast_float.json.native.data
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-data
+        path: test/.out/*.data
 
   # xcode ######################################################################
 
@@ -310,13 +257,6 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout workflows-data
-      uses: actions/checkout@v2
-      with:
-        repository: oknenavin/workflows-data
-        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
-        ref: master
-        path: .dep/workflows-data
     - name: Checkout Boost/JSON
       uses: actions/checkout@v2
       with:
@@ -349,10 +289,10 @@ jobs:
         cmake --build .bld --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
-        ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.node
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (default)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
-        ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.default.json.native
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (default)" > xcode.head.default.json.node.data
+        ./cxon.json.node time-node '@../data/json/time.in' | tee -a xcode.head.default.json.node.data
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (default)" > xcode.head.default.json.native.data
+        ./cxon.json.node time-native '@../data/json/time.in' | tee -a xcode.head.default.json.native.data
     - name: Time (fast_float)
       run: |
         cd test
@@ -361,21 +301,45 @@ jobs:
         cmake --build .bld --target cxon.json.node --parallel
         COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
-        ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.node
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (fast_float)" > ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
-        ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../../.dep/workflows-data/cxon/benchmarks/xcode.head.fast_float.json.native
-    - name: Store the results
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (fast_float)" > xcode.head.fast_float.json.node.data
+        ./cxon.json.node time-node '@../data/json/time.in' | tee -a xcode.head.fast_float.json.node.data
+        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (fast_float)" > xcode.head.fast_float.json.native.data
+        ./cxon.json.node time-native '@../data/json/time.in' | tee -a xcode.head.fast_float.json.native.data
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-data
+        path: test/.out/*.data
+
+  # commit #####################################################################
+
+  commit:
+    needs: [gcc-5, gcc-11, clang-4, clang-12, msvc, xcode]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout cxon
+      uses: actions/checkout@v2
+    - name: Checkout workflows-data
+      uses: actions/checkout@v2
+      with:
+        repository: oknenavin/workflows-data
+        token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
+        ref: master
+        path: .dep/workflows-data
+    - name: Download Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: benchmark-data
+        path: test/.out
+    - name: Commit
       run: |
-        cd .dep/workflows-data/cxon/benchmarks
+        data=.dep/workflows-data/cxon/benchmarks
+        for i in test/.out/*.data; do
+            name=$(basename $i)
+            cp -f $i $data/$name
+            cat $data/${name/head/tail} >> $i && mv -f $i $data/${name/head/tail}
+        done
+        cd $data
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
-        cp -f xcode.head.default.json.node xcode.head.default.json.node.data
-        cat xcode.tail.default.json.node.data >> xcode.head.default.json.node && mv -f xcode.head.default.json.node xcode.tail.default.json.node.data
-        cp -f xcode.head.default.json.native xcode.head.default.json.native.data
-        cat xcode.tail.default.json.native.data >> xcode.head.default.json.native && mv -f xcode.head.default.json.native xcode.tail.default.json.native.data
-        cp -f xcode.head.fast_float.json.node xcode.head.fast_float.json.node.data
-        cat xcode.tail.fast_float.json.node.data >> xcode.head.fast_float.json.node && mv -f xcode.head.fast_float.json.node xcode.tail.fast_float.json.node.data
-        cp -f xcode.head.fast_float.json.native xcode.head.fast_float.json.native.data
-        cat xcode.tail.fast_float.json.native.data >> xcode.head.fast_float.json.native && mv -f xcode.head.fast_float.json.native xcode.tail.fast_float.json.native.data
-        git commit -a -m "- xcode / $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / $(git rev-parse --short "$GITHUB_SHA")" -m "- ${{ github.event.head_commit.message }}"
+        git add . && git commit -a -m ">${{ github.event.head_commit.message }}" -m "> $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")"
         git pull --rebase && git push
