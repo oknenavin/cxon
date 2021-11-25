@@ -3,12 +3,8 @@ name: macOS
 on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
-
-  # xcode ######################################################################
-
   xcode:
     runs-on: macos-latest
-
     steps:
     - uses: actions/checkout@v1
     - name: Configure
