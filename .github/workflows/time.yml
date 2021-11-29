@@ -291,7 +291,7 @@ jobs:
       with:
         repository: oknenavin/workflows-data
         token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
-        ref: master
+        ref: develop
         path: .dep/workflows-data
     - name: Download Artifacts
       uses: actions/download-artifact@v2
@@ -300,7 +300,7 @@ jobs:
         path: test/.time
     - name: Commit
       run: |
-        data=.dep/workflows-data/cxon/benchmarks
+        data=.dep/workflows-data/cxon/benchmarks/data-time
         for i in test/.time/*.data; do
             name=$(basename $i)
             cp -f $i $data/$name
