@@ -70,7 +70,7 @@ namespace cxon { namespace cio { namespace cls {
         template <typename S, typename F>
             constexpr auto field_value_(S& s, const F& f)
                 -> enable_if_t< std::is_member_pointer<typename F::type>::value, decltype(s.*f.value)&>
-            { return s.*f.value; }
+            { return s.*f.value; } // lgtm [cpp/missing-return]
         template <typename S, typename F>
             constexpr auto field_value_(S&, const F& f)
                 -> enable_if_t<!std::is_member_pointer<typename F::type>::value, decltype(*f.value)&>
