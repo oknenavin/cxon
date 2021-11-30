@@ -40,8 +40,9 @@ int main() {
     std::vector<int> cxx; // or std::array, std::list, std::set, etc.
         // the input is a JSON array, semantically a list of integers
         auto result = cxon::from_bytes(cxx,  "[1, 2, 3]");
-    assert(result && cxx == std::vector<int> ({1, 2, 3}));
-    // the data is loaded successfully, no additional semantic validation is needed
+    assert(result);
+    // the data is loaded successfully, no additional semantic validation is needed, so
+    assert(cxx == (std::vector<int> {1, 2, 3}));
 }
 ```
 
@@ -423,12 +424,13 @@ which can represent arbitrary `CBOR` data.
   `CXON` is somewhat slower, but not by much.
   ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
 
+- `CXON` binary size and compilation times.  
+  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default-space.svg)
+
 More results and historic data can be found [here](https://github.com/oknenavin/workflows-data/tree/master/cxon).
 
 *Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
 it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.  
-Of course, the benchmarks only cover the time overhead; the space overhead is similar to that of the libraries
-being benchmarked, though no specific data is available yet.  
 It is important to note, that no specific attempts has been made to optimize `CXON` for time or space - 
 there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 
