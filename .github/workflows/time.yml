@@ -51,31 +51,47 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
+        COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (default)" > test/.time/g++.head.default.json.node.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION / node (default)" > test/.time/g++.head.default.json.node.data
         make -s time-json-node | tee -a test/.time/g++.head.default.json.node.data
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (default)" > test/.time/g++.head.default.json.native.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION / native (default)" > test/.time/g++.head.default.json.native.data
         make -s time-json-native | tee -a test/.time/g++.head.default.json.native.data
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION" > test/.time/g++.head.cbor.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION" > test/.time/g++.head.cbor.data
         make -s time-cbor | tee -a test/.time/g++.head.cbor.data
     - name: Time (fast_float)
       env:
         CXX: g++-11
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=$($CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1)
+        COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / node (fast_float)" > test/.time/g++.head.fast_float.json.node.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION / node (fast_float)" > test/.time/g++.head.fast_float.json.node.data
         make -s time-json-node | tee -a test/.time/g++.head.fast_float.json.node.data
-        echo "# $(date -u --iso-8601=seconds) / g++-$COMPILER_VERSION / native (fast_float)" > test/.time/g++.head.fast_float.json.native.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION / native (fast_float)" > test/.time/g++.head.fast_float.json.native.data
         make -s time-json-native | tee -a test/.time/g++.head.fast_float.json.native.data
+    - name: Space setup
+      run: |
+        chmod +x test/benchmark-space.sh
+        mkdir test/.space
+    - name: Space (default)
+      env:
+        CXX: g++-11
+        CPPFLAGS: -I ../.dep/boost/include -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
+        CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
+      run: |
+        COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
+        cd test
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS" > .space/g++.head.default.data
+        ./benchmark-space.sh | tee -a .space/g++.head.default.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: benchmark-data
-        path: test/.time/*.data
+        path: |
+            test/.time/*.data
+            test/.space/*.data
 
   # clang ######################################################################
 
@@ -119,31 +135,47 @@ jobs:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=$($CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1)
+        COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (default)" > test/.time/clang++.head.default.json.node.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION / node (default)" > test/.time/clang++.head.default.json.node.data
         make -s time-json-node | tee -a test/.time/clang++.head.default.json.node.data
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (default)" > test/.time/clang++.head.default.json.native.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION / native (default)" > test/.time/clang++.head.default.json.native.data
         make -s time-json-native | tee -a test/.time/clang++.head.default.json.native.data
         make clean && make -j build-cbor-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION" > test/.time/clang++.head.cbor.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION" > test/.time/clang++.head.cbor.data
         make -s time-cbor | tee -a test/.time/clang++.head.cbor.data
     - name: Time (fast_float)
       env:
         CXX: clang++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=$($CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1)
+        COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
         make clean && make -j build-json-node
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / node (fast_float)" > test/.time/clang++.head.fast_float.json.node.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION / node (fast_float)" > test/.time/clang++.head.fast_float.json.node.data
         make -s time-json-node | tee -a test/.time/clang++.head.fast_float.json.node.data
-        echo "# $(date -u --iso-8601=seconds) / clang++-$COMPILER_VERSION / native (fast_float)" > test/.time/clang++.head.fast_float.json.native.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION / native (fast_float)" > test/.time/clang++.head.fast_float.json.native.data
         make -s time-json-native | tee -a test/.time/clang++.head.fast_float.json.native.data
+    - name: Space setup
+      run: |
+        chmod +x test/benchmark-space.sh
+        mkdir test/.space
+    - name: Space (default)
+      env:
+        CXX: clang++-12
+        CPPFLAGS: -I ../.dep/boost/include -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
+        CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
+      run: |
+        COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
+        cd test
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION $CXXFLAGS" > .space/clang++.head.default.data
+        ./benchmark-space.sh | tee -a .space/clang++.head.default.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: benchmark-data
-        path: test/.time/*.data
+        path: |
+            test/.time/*.data
+            test/.space/*.data
 
   # msvc ######################################################################
 
@@ -188,11 +220,11 @@ jobs:
         #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_EXE_LINKER_FLAGS="-LTCG"
         cmake --build .bld --config Release --target cxon.json.node --parallel
-        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
+        COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (default)" > ../.time/msvc++.head.default.json.node.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION / node (default)" > ../.time/msvc++.head.default.json.node.data
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../.time/msvc++.head.default.json.node.data
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (default)" > ../.time/msvc++.head.default.json.native.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION / native (default)" > ../.time/msvc++.head.default.json.native.data
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../.time/msvc++.head.default.json.native.data
     - name: Time (fast_float)
       shell: bash
@@ -203,11 +235,11 @@ jobs:
         cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_EXE_LINKER_FLAGS="-LTCG"
         cmake --build .bld --config Release --target cxon.json.node --parallel
-        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
+        COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / node (fast_float)" > ../.time/msvc++.head.fast_float.json.node.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION / node (fast_float)" > ../.time/msvc++.head.fast_float.json.node.data
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../.time/msvc++.head.fast_float.json.node.data
-        echo "# $(date -u --iso-8601=seconds) / msvc++-$COMPILER_VERSION / native (fast_float)" > ../.time/msvc++.head.fast_float.json.native.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION / native (fast_float)" > ../.time/msvc++.head.fast_float.json.native.data
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../.time/msvc++.head.fast_float.json.native.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
@@ -254,11 +286,11 @@ jobs:
         #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
         cmake --build .bld --target cxon.json.node --parallel
-        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
+        COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (default)" > ../.time/xcode.head.default.json.node.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION / node (default)" > ../.time/xcode.head.default.json.node.data
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../.time/xcode.head.default.json.node.data
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (default)" > ../.time/xcode.head.default.json.native.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION / native (default)" > ../.time/xcode.head.default.json.native.data
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../.time/xcode.head.default.json.native.data
     - name: Time (fast_float)
       run: |
@@ -266,11 +298,11 @@ jobs:
         cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
         cmake --build .bld --target cxon.json.node --parallel
-        COMPILER_VERSION=$(grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1)
+        COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / node (fast_float)" > ../.time/xcode.head.fast_float.json.node.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION / node (fast_float)" > ../.time/xcode.head.fast_float.json.node.data
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../.time/xcode.head.fast_float.json.node.data
-        echo "# $(date -u +'%Y-%m-%dT%H:%M:%S+00:00') / clang++-$COMPILER_VERSION / native (fast_float)" > ../.time/xcode.head.fast_float.json.native.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION / native (fast_float)" > ../.time/xcode.head.fast_float.json.native.data
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../.time/xcode.head.fast_float.json.native.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
@@ -297,17 +329,22 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: benchmark-data
-        path: test/.time
+        path: test/.data
     - name: Commit
       run: |
-        data=.dep/workflows-data/cxon/benchmarks/data-time
-        for i in test/.time/*.data; do
-            name=$(basename $i)
-            cp -f $i $data/$name
-            cat $data/${name/head/tail} >> $i && mv -f $i $data/${name/head/tail}
+        data=.dep/workflows-data/cxon/benchmarks/data
+        for i in test/.data/.time/*.data; do
+            name=`basename $i`
+            cp -f $i $data/time/$name
+            cat $data/time/${name/head/tail} >> $i && mv -f $i $data/time/${name/head/tail}
+        done
+        for i in test/.data/.space/*.data; do
+            name=`basename $i`
+            cp -f $i $data/space/$name
+            cat $data/space/${name/head/tail} >> $i && mv -f $i $data/space/${name/head/tail}
         done
         cd $data
         git config user.name "oknenavin" && git config user.email ${{ secrets.CXON_MAIL }}
         git pull
-        git add . && git commit -a -m "<${{ github.event.head_commit.message }}" -m "<- $(date -u --iso-8601=seconds) / $(git rev-parse --short "$GITHUB_SHA")"
+        git add . && git commit -a -m "<${{ github.event.head_commit.message }}" -m "<- `date -u --iso-8601=seconds` / `git rev-parse --short $GITHUB_SHA`"
         git push
