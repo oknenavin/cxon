@@ -83,8 +83,8 @@ jobs:
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
         cd test
-        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS" > .space/g++.head.default.data
-        ./benchmark-space.sh | tee -a .space/g++.head.default.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS" > .space/g++.head.default.json.data
+        ./benchmark-space.sh | tee -a .space/g++.head.default.json.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -167,8 +167,8 @@ jobs:
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
         cd test
-        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION $CXXFLAGS" > .space/clang++.head.default.data
-        ./benchmark-space.sh | tee -a .space/clang++.head.default.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION $CXXFLAGS" > .space/clang++.head.default.json.data
+        ./benchmark-space.sh | tee -a .space/clang++.head.default.json.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
