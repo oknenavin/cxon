@@ -1,3 +1,5 @@
+// JSON array as a vector of integers
+
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx"
 

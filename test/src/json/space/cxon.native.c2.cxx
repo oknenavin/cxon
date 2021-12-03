@@ -1,3 +1,5 @@
+// JSON object as a map
+
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/string.hxx"

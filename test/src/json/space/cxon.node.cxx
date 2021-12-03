@@ -1,3 +1,5 @@
+// JSON object as a polymorphic type
+
 #include "cxon/json.hxx"
 #include "cxon/lib/node.hxx"
 
