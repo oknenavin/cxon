@@ -1,3 +1,5 @@
+// JSON object as a struct
+
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/list.hxx"
