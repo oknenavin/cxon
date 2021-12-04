@@ -414,18 +414,18 @@ which can represent arbitrary `CBOR` data.
 
 - `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   The difference is noticeable with number-heavy data (like `canada.json` or `numbers.json`).
-  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
+  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
 
 - `CXON` deserialization using [`fast_float`][ff] for floating-point conversion.  
   With the bottleneck removed, `CXON` is close *(see \<average\>)*.
-  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
+  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
 
 - `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   `CXON` is somewhat slower, but not by much.
-  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
+  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
 
 - `CXON` binary size and compilation times.  
-  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json-space.svg)
+  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg)
 
 Information about the benchmarks and additional benchmark results can be found [here](https://github.com/oknenavin/workflows-data/tree/develop/cxon).
 
