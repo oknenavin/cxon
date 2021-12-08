@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Coverity setup
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
