@@ -9,7 +9,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(arrays, cxon::JSON<>, "/core")
     // T[]
         {   int a[] = {1, 2, 3};
             R_TEST(a, "[1,2,3]");
@@ -175,6 +175,10 @@ TEST_BEG(cxon::JSON<>)
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
         }
+TEST_END()
+
+
+TEST_BEG(pointers, cxon::JSON<>, "/core")
     // T*
         {   int x = 42;
             R_TEST(&x, "42");
@@ -242,6 +246,7 @@ TEST_BEG(cxon::JSON<>)
         W_TEST(QS("test"), (char32_t*)U"test");
 TEST_END()
 
+
 namespace {
     enum Enum1 { one, two, three, four };
 }
@@ -252,7 +257,7 @@ CXON_JSON_ENM(Enum1,
     CXON_JSON_ENM_VALUE_ASIS(three)
 )
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(enum, cxon::JSON<>, "/core")
     R_TEST(Enum1::one, QS("one"));
     W_TEST(QS("one"), Enum1::one);
     R_TEST(Enum1::two, QS("Two (2)"));
@@ -262,7 +267,7 @@ TEST_BEG(cxon::JSON<>)
     W_TEST("", Enum1::four, json::write_error::argument_invalid);
 TEST_END()
 
-TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>)
+TEST_BEG(enum_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core")
     R_TEST(Enum1::one, QS("one"));
     W_TEST(QS("one"), Enum1::one);
     R_TEST(Enum1::two, QS("Two (2)"));
@@ -306,7 +311,7 @@ CXON_JSON_CLS(Struct2,
     CXON_JSON_CLS_FIELD_NAME("B", b)
 )
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(struct_1, cxon::JSON<>, "/core")
     R_TEST(Struct1(0, Enum1::one), "{\"A\": 0, \"b\": \"one\"}");
     R_TEST(Struct1(0, Enum1::two), "{\"b\": \"Two (2)\", \"A\": 0}");
     R_TEST(Struct1(0, Enum1::three), "{\"b\": \"three\"}");
@@ -340,7 +345,7 @@ CXON_JSON_CLS(Struct3,
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(struct_3, cxon::JSON<>, "/core")
     R_TEST(Struct3(1, new Struct3(2, nullptr)), "{\"a\": 1, \"b\": {\"a\": 2}}");
     R_TEST(Struct3(1, nullptr), "{\"a\": 1, \"b\": null}");
     W_TEST("{\"a\":1,\"b\":{\"a\":2,\"b\":null}}", Struct3(1, new Struct3(2, nullptr)));
@@ -371,7 +376,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(struct_4, cxon::JSON<>, "/core")
     R_TEST(Struct4(1), "1");
     W_TEST("3", Struct4(3));
 TEST_END()
@@ -398,7 +403,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(struct_5, cxon::JSON<>, "/core")
     R_TEST(Struct5(1), "1");
     W_TEST("3", Struct5(3));
 TEST_END()
@@ -425,7 +430,7 @@ namespace cxon {
         }
 }
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(struct_6, cxon::JSON<>, "/core")
     R_TEST(Struct6(1), "1");
     W_TEST("3", Struct6(3));
 TEST_END()
@@ -449,7 +454,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::JSON<>) // macros inside
+TEST_BEG(struct_7, cxon::JSON<>, "/core") // macros inside
     R_TEST(Struct7(1, 2), "{\"a\": 1, \"b\": 2}");
     R_TEST(Struct7(3, 0), "{\"a\": 3}");
     R_TEST(Struct7(0, 6), "{\"b\": 6}");
@@ -490,7 +495,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(struct_8, cxon::JSON<>, "/core")
     R_TEST(Struct8(1, 2), "{\"a\": 1, \"b\": 2}");
     R_TEST(Struct8(1, 2), "{\"a\": 1, \"x\": 2}", json::read_error::unexpected, 9);
     W_TEST("{\"a\":3,\"b\":4}", Struct8(3, 4));
@@ -518,7 +523,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::JSON<>) // static field
+TEST_BEG(struct_9, cxon::JSON<>, "/core") // static field
     R_TEST(Struct9(), "{\"a\":0}");
     W_TEST("{\"a\":0,\"b\":3}", Struct9());
     R_TEST(Struct9(), "{\"a\": 1}");
@@ -556,7 +561,7 @@ CXON_JSON_CLS_WRITE(Struct10,
     CXON_JSON_CLS_FIELD_NAME("* \"':*", b)
 )
 
-TEST_BEG(cxon::JSON<>) // skip field
+TEST_BEG(struct_10, cxon::JSON<>, "/core") // skip field
     R_TEST(Struct10(1), "{\"skip1\": true, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip2\": 1, \"a\": 1}");
     R_TEST(Struct10(1), "{\"skip3\": \"2\", \"a\": 1}");
@@ -599,7 +604,7 @@ CXON_JSON_CLS_WRITE(Struct11,
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
 
-TEST_BEG(cxon::JSON<>) // skip field
+TEST_BEG(struct_11, cxon::JSON<>, "/core") // skip field
     R_TEST(Struct11(1, {" [1, 2, 3]"}), "{\"a\": 1, \"b\": [1, 2, 3]}");
     R_TEST(Struct11(1, {" \"1, 2, 3\""}), "{\"a\": 1, \"b\": \"1, 2, 3\"}");
     R_TEST(Struct11(1, {" {\"x\": 1, \"y\": 2}"}), "{\"a\": 1, \"b\": {\"x\": 1, \"y\": 2}}");
@@ -625,7 +630,7 @@ CXON_JSON_CLS(Struct12,
     CXON_JSON_CLS_FIELD_ASIS_DFLT(z, self.z == 0)
 )
 
-TEST_BEG(cxon::JSON<>) // defaults
+TEST_BEG(struct_12, cxon::JSON<>, "/core") // defaults
     W_TEST("{\"x\":1,\"y\":1,\"z\":1}", Struct12 {1, 1, 1});
     W_TEST("{\"y\":1,\"z\":1}", Struct12 {0, 1, 1});
     W_TEST("{\"x\":1,\"z\":1}", Struct12 {1, 0, 1});
@@ -637,7 +642,7 @@ TEST_BEG(cxon::JSON<>) // defaults
 TEST_END()
 
 
-TEST_BEG(cxon::JSON<>) // sink
+TEST_BEG(sink, cxon::JSON<>, "/core") // sink
     {   char o[2];
         auto const r = to_bytes(std::begin(o), std::end(o), cio::val::sink<std::string>{"\01\02\03"});
         TEST_CHECK(!r && r.ec == json::write_error::output_failure);

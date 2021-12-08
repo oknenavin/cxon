@@ -38,7 +38,7 @@ TEST_BEG(cxon::JSON<>)
     ++suite::all();
     int r; char const i[] = "1";
     if (!cxon::from_bytes(r, std::begin(i), std::end(i)) || r != 1) {
-        ++suite::err(), fprintf(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+        ++suite::err(), std::fflush(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
         CXON_ASSERT(false, "check failed");
     }
 TEST_END()

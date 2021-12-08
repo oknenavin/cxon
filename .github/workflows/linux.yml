@@ -11,9 +11,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-5 g++-5
+      run: sudo apt update; sudo apt install gcc-5 g++-5
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-5
@@ -25,9 +25,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-6 g++-6
+      run: sudo apt update; sudo apt install gcc-6 g++-6
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-6
@@ -39,9 +39,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-7 g++-7
+      run: sudo apt update; sudo apt install gcc-7 g++-7
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-7
@@ -53,9 +53,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-8 g++-8
+      run: sudo apt update; sudo apt install gcc-8 g++-8
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-8
@@ -67,9 +67,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-9 g++-9
+      run: sudo apt update; sudo apt install gcc-9 g++-9
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-9
@@ -81,9 +81,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-10 g++-10
+      run: sudo apt update; sudo apt install gcc-10 g++-10
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-10
@@ -95,9 +95,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-11 g++-11
+      run: sudo apt update; sudo apt install gcc-11 g++-11
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-11
@@ -111,9 +111,9 @@ jobs:
   #  steps:
   #  - uses: actions/checkout@v1
   #  - name: Compiler setup
-  #    run: |
-  #      sudo apt-get update
-  #      sudo apt-get install clang-3.5
+  #    run: sudo apt update; sudo apt install clang-3.5
+  #  - name: Boost setup
+  #    run: sudo apt update; sudo apt install libboost-container-dev
   #  - name: Check
   #    env:
   #      CXX: clang++-3.5
@@ -125,9 +125,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-4.0
+      run: sudo apt update; sudo apt install clang-4.0
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-4.0
@@ -139,9 +139,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-5.0
+      run: sudo apt update; sudo apt install clang-5.0
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-5.0
@@ -153,9 +153,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-6.0
+      run: sudo apt update; sudo apt install clang-6.0
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-6.0
@@ -167,9 +167,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-7
+      run: sudo apt update; sudo apt install clang-7
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-7
@@ -181,9 +181,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-8
+      run: sudo apt update; sudo apt install clang-8
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-8
@@ -195,9 +195,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-9
+      run: sudo apt update; sudo apt install clang-9
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-9
@@ -209,9 +209,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-10
+      run: sudo apt update; sudo apt install clang-10
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-10
@@ -223,9 +223,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-11
+      run: sudo apt update; sudo apt install clang-11
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-11
@@ -237,9 +237,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-12
+      run: sudo apt update; sudo apt install clang-12
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-12

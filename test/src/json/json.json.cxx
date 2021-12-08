@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::JSON<>) // interface/read
+TEST_BEG(interface_read, cxon::JSON<>, "/core") // interface/read
     // iterator
     {   int r; char const i[] = "1";
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
@@ -50,7 +50,7 @@ TEST_BEG(cxon::JSON<>) // interface/read
     }
 TEST_END()
 
-TEST_BEG(cxon::JSON<>) // interface/write
+TEST_BEG(interface_write, cxon::JSON<>, "/core") // interface/write
     // output iterator
     {   std::string r; std::string const e = QS("1");
         TEST_CHECK(to_bytes(std::back_inserter(r), "1") && r == e);
@@ -144,7 +144,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::JSON<>) // interface/parameters
+TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
     {   std::string r; std::string const e = "3.142";
         TEST_CHECK(to_bytes(r, 3.1415926, json::fp_precision::set<4>()) && r == e);
     }
@@ -184,7 +184,7 @@ TEST_BEG(cxon::JSON<>) // interface/parameters
     }
 TEST_END()
 
-TEST_BEG(cxon::JSON<>) // errors
+TEST_BEG(interface_errors, cxon::JSON<>, "/core") // errors
     using namespace cxon;
     {   std::error_condition ec;
             ec = json::read_error::ok;
@@ -224,7 +224,7 @@ TEST_BEG(cxon::JSON<>) // errors
     }
 TEST_END()
 
-TEST_BEG(cxon::JSON<>) // pretty
+TEST_BEG(interface_pretty, cxon::JSON<>, "/core") // pretty
     {   std::map<std::string, std::vector<int>> const m = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} };
         char const s0[] =
             "{\n"
@@ -376,7 +376,7 @@ namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON obj
 
 }
 
-TEST_BEG(cxon::JSON<>) // json-rpc
+TEST_BEG(json_rpc, cxon::JSON<>, "/core") // json-rpc
     {   // params array
         auto const call = jsonrpc::make_request(1, "sub", 42, 23);
         std::string req; // serialize call to req
@@ -427,8 +427,10 @@ TEST_END()
 
 int main() {
     using cxon::test::suite;
-    for (auto t : suite::get())
-        t->test();
-    fprintf(stdout, "cxon/json: %u of %4u failed\n", suite::err(), suite::all()); fflush(stdout);
+    for (auto& c : suite::get()) {
+        for (auto s : c.second)
+            s->test();
+        std::fprintf(stdout, "cxon/json%-12s: %u of %4u failed\n", c.first.c_str(), suite::err(c.first.c_str()), suite::all(c.first.c_str())); std::fflush(stdout);
+    }
     return suite::err();
 }

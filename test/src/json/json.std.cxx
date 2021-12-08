@@ -29,7 +29,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::JSON<>) // string
+TEST_BEG(basic_string, cxon::JSON<>, "/std")
     using namespace std;
     // std::basic_string<char> / std::string
         R_TEST(string("test"), QS("test"));
@@ -82,7 +82,7 @@ TEST_BEG(cxon::JSON<>) // string
 TEST_END()
 
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(tuple, cxon::JSON<>, "/std")
     using namespace std;
     // std::tuple<>
         R_TEST((tuple<>{}), "[]");
@@ -92,16 +92,21 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((tuple<>{}), " ", json::read_error::unexpected, 1);
         R_TEST((tuple<>{}), "[", json::read_error::unexpected, 1);
     // std::tuple<int, double, std::string>
-        R_TEST((tuple<int, double, string>{0, 0, "0"}), "[0, 0, \"0\"]");
-        W_TEST("[0,0,\"0\"]", (tuple<int, double, string>{0, 0, "0"}));
+        R_TEST((tuple<int, double, string>{0, 0, "0"}), R"([0, 0, "0"])");
+        W_TEST(R"([0,0,"0"])", (tuple<int, double, string>{0, 0, "0"}));
         R_TEST((tuple<int, double, string>{}), "", json::read_error::unexpected, 0);
         R_TEST((tuple<int, double, string>{}), "]", json::read_error::unexpected, 0);
         R_TEST((tuple<int, double, string>{}), "[", json::read_error::integral_invalid, 1);
         R_TEST((tuple<int, double, string>{}), "[0, 0]", json::read_error::unexpected, 5);
-        R_TEST((tuple<int, double, string>{}), "[0, 0, \"\", 0]", json::read_error::unexpected, 9);
+        R_TEST((tuple<int, double, string>{}), R"([0, 0, "", 0])", json::read_error::unexpected, 9);
     // std::tuple<int, double>
-        R_TEST((tuple<int, double>{}), "[0, 0, \"0\"]", json::read_error::unexpected, 5);
+        R_TEST((tuple<int, double>{}), R"([0, 0, "0"])", json::read_error::unexpected, 5);
         W_TEST("[0,0]", (tuple<int, double>{0, 0}));
+TEST_END()
+
+
+TEST_BEG(pair, cxon::JSON<>, "/std")
+    using namespace std;
     // std::pair<int, std::string>
         R_TEST((pair<int, string>{0, "0"}), "[0, \"0\"]");
         W_TEST("[0,\"0\"]", (pair<int, string>{0, "0"}));
@@ -111,6 +116,11 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((pair<int, string>{}), "[x]", json::read_error::integral_invalid, 1);
         R_TEST((pair<int, string>{}), "[0]", json::read_error::unexpected, 2);
         R_TEST((pair<int, string>{}), "[0, \"\", 0]", json::read_error::unexpected, 6);
+TEST_END()
+
+
+TEST_BEG(valarray, cxon::JSON<>, "/std")
+    using namespace std;
     // std::valarray<int>
         R_TEST((valarray<int>{}), "[]");
         W_TEST("[]", (valarray<int>{}));
@@ -124,6 +134,11 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((valarray<int>()), "]", json::read_error::unexpected, 0);
         R_TEST((valarray<int>()), "[", json::read_error::integral_invalid, 1);
         R_TEST((valarray<int>()), "[x", json::read_error::integral_invalid, 1);
+TEST_END()
+
+
+TEST_BEG(array, cxon::JSON<>, "/std")
+    using namespace std;
     // std::array<int, 0>
         R_TEST((array<int, 0>{}), "[]");
         W_TEST("[]", (array<int, 0>{}));
@@ -137,6 +152,11 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[1,2,3,4]", (array<int, 4>{{1, 2, 3, 4}}));
         R_TEST((array<int, 2>{}), "[1, 2, 3]", json::read_error::overflow, 0);
         W_TEST("[1,2]", (array<int, 2>{{1, 2}}));
+TEST_END()
+
+
+TEST_BEG(queue, cxon::JSON<>, "/std")
+    using namespace std;
     // std::queue<int>
         R_TEST((queue<int>{}), "[]");
         W_TEST("[]", (queue<int>{}));
@@ -147,16 +167,31 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[]", (priority_queue<int>{}));
         R_TEST(priority_queue<int>(less<int>(), {1, 2, 3}), "[1, 2, 3]");
         W_TEST("[3,2,1]", priority_queue<int>(less<int>(), {1, 2, 3}));
+TEST_END()
+
+
+TEST_BEG(stack, cxon::JSON<>, "/std")
+    using namespace std;
     // std::stack<int>
         R_TEST((stack<int>{}), "[]");
         W_TEST("[]", (stack<int>{}));
         R_TEST((stack<int>({1, 2, 3})), "[1, 2, 3]");
         W_TEST("[3,2,1]", (stack<int>({1, 2, 3})));
+TEST_END()
+
+
+TEST_BEG(deque, cxon::JSON<>, "/std")
+    using namespace std;
     // std::deque<int>
         R_TEST((deque<int>{}), "[]");
         W_TEST("[]", (deque<int>{}));
         R_TEST((deque<int>({1, 2, 3})), "[1, 2, 3]");
         W_TEST("[1,2,3]", (deque<int>({1, 2, 3})));
+TEST_END()
+
+
+TEST_BEG(list, cxon::JSON<>, "/std")
+    using namespace std;
     // std::list<int>
         R_TEST((list<int>{}), "[]");
         W_TEST("[]", (list<int>{}));
@@ -168,7 +203,12 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((list<int>{}), "[", json::read_error::integral_invalid, 1);
         W_TEST("[1,2,3]", (list<float>({1, 2, 3})));
         R_TEST((list<float>{}), "[", json::read_error::floating_point_invalid, 1);
-    // std::list<int>
+TEST_END()
+
+
+TEST_BEG(forward_list, cxon::JSON<>, "/std")
+    using namespace std;
+    // std::forward_list<int>
         R_TEST((forward_list<int>{}), "[]");
         W_TEST("[]", (forward_list<int>{}));
         R_TEST((forward_list<int>({1, 2, 3})), "[1, 2, 3]");
@@ -179,11 +219,21 @@ TEST_BEG(cxon::JSON<>)
         R_TEST((forward_list<int>{}), "[", json::read_error::integral_invalid, 1);
         W_TEST("[1,2,3]", (forward_list<float>({1, 2, 3})));
         R_TEST((forward_list<float>{}), "[", json::read_error::floating_point_invalid, 1);
+TEST_END()
+
+
+TEST_BEG(vector, cxon::JSON<>, "/std")
+    using namespace std;
     // std::vector<int>
         R_TEST((vector<int>{}), "[]");
         W_TEST("[]", (vector<int>{}));
         R_TEST((vector<int>({1, 2, 3})), "[1, 2, 3]");
         W_TEST("[1,2,3]", (vector<int>({1, 2, 3})));
+TEST_END()
+
+
+TEST_BEG(set, cxon::JSON<>, "/std")
+    using namespace std;
     // std::set<int>
         R_TEST((set<int>{}), "[]");
         W_TEST("[]", (set<int>{}));
@@ -194,6 +244,35 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[]", (multiset<int>{}));
         R_TEST((multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
         W_TEST("[1,1,2,3]", (multiset<int>({1, 1, 2, 3})));
+TEST_END()
+
+
+TEST_BEG(map, cxon::JSON<>, "/std")
+    using namespace std;
+    // std::map
+        R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
+        W_TEST(R"({"1":2,"3":4})", map<int, int>{{1, 2}, {3, 4}});
+        R_TEST(map<string, int>{{R"({"1":2})", 3}, {R"({"4":5})", 6}}, R"({"{\"1\":2}": 3, "{\"4\":5}": 6})");
+        W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", map<map<string, int>, int>{{map<string, int>{{"1", 2}}, 3}, {map<string, int>{{"4", 5}}, 6}});
+    // std::multimap
+        R_TEST(multimap<string, int>{{"1", 2}, {"1", 3}}, R"({"1": 2, "1": 3})");
+        W_TEST(R"({"1":2,"1":3})", multimap<int, int>{{1, 2}, {1, 3}});
+TEST_END()
+
+
+TEST_BEG(unordered_map, cxon::JSON<>, "/std")
+    using namespace std;
+    // std::unordered_map
+        R_TEST(unordered_map<string, int>{{"1", 2}}, R"({"1": 2})");
+        W_TEST(R"({"1":2})", unordered_map<int, int>{{1, 2}});
+    // std::unordered_multimap
+        R_TEST(unordered_multimap<string, int>{{"1", 1}, {"1", 1}}, R"({"1": 1, "1": 1})");
+        W_TEST(R"({"1":1,"1":1})", unordered_multimap<int, int>{{1, 1}, {1, 1}});
+TEST_END()
+
+
+TEST_BEG(unordered_set, cxon::JSON<>, "/std")
+    using namespace std;
     // std::unordered_set<int>
         R_TEST((unordered_set<int>{}), "[]");
         W_TEST("[]", (unordered_set<int>{}));
@@ -204,6 +283,11 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[]", (unordered_multiset<int>{}));
         R_TEST((unordered_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
         W_TEST("[1,1]", (unordered_multiset<int>({1, 1})));
+TEST_END()
+
+
+TEST_BEG(cross, cxon::JSON<>, "/std")
+    using namespace std;
     // std::vector<std::list<int>>
         R_TEST((vector<list<int>>{}), "[]");
         W_TEST("[]", (vector<list<int>>{}));
@@ -218,14 +302,6 @@ TEST_BEG(cxon::JSON<>)
         W_TEST("[[]]", (list<vector<int>>{{}}));
         R_TEST((list<vector<int>>{{1, 2, 3}, {3, 2, 1}}), "[[1, 2, 3], [3, 2, 1]]");
         W_TEST("[[1,2,3],[3,2,1]]", (list<vector<int>>{{1, 2, 3}, {3, 2, 1}}));
-    // std::map
-        R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, "{\"1\": 2, \"3\": 4}");
-        W_TEST("{\"1\":2,\"3\":4}", map<int, int>{{1, 2}, {3, 4}});
-        R_TEST(map<string, int>{{"{\"1\":2}", 3}, {"{\"4\":5}", 6}}, "{\"{\\\"1\\\":2}\": 3, \"{\\\"4\\\":5}\": 6}");
-        W_TEST("{\"{\\\"1\\\":2}\":3,\"{\\\"4\\\":5}\":6}", map<map<string, int>, int>{{map<string, int>{{"1", 2}}, 3}, {map<string, int>{{"4", 5}}, 6}});
-    // std::unordered_map
-        R_TEST(unordered_map<string, int>{{"1", 2}}, "{\"1\": 2}");
-        W_TEST("{\"1\":2}", unordered_map<int, int>{{1, 2}});
 TEST_END()
 
 
@@ -236,77 +312,83 @@ template <std::size_t N>
         }
     };
 
-TEST_BEG(cxon::JSON<>) // std::bitset
+TEST_BEG(bitset, cxon::JSON<>, "/std")
     using namespace std;
-    R_TEST(bitset<8>(85), QS("01010101"));
-    R_TEST(bitset<8>(255), QS("11111111"));
-    R_TEST(bitset<8>(255), QS("x1111111"), json::read_error::unexpected, 1);
-    W_TEST(QS("01010101"), bitset<8>(85));
-    W_TEST(QS("11111111"), bitset<8>(255));
-    R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, "{\"01010101\":1}");
-    W_TEST("{\"01010101\":1}", map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}});
+    // std::bitset
+        R_TEST(bitset<8>(85), QS("01010101"));
+        R_TEST(bitset<8>(255), QS("11111111"));
+        R_TEST(bitset<8>(255), QS("x1111111"), json::read_error::unexpected, 1);
+        W_TEST(QS("01010101"), bitset<8>(85));
+        W_TEST(QS("11111111"), bitset<8>(255));
+        R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, R"({"01010101":1})");
+        W_TEST(R"({"01010101":1})", map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}});
 TEST_END()
 
 
-TEST_BEG(cxon::JSON<>) // std::complex
+TEST_BEG(complex, cxon::JSON<>, "/std")
     using namespace std;
-    R_TEST(complex<float>(), "[0, 0]");
-    R_TEST(complex<float>(), "[]", json::read_error::floating_point_invalid, 1);
-    R_TEST(complex<float>(), "[0]", json::read_error::unexpected, 2);
-    W_TEST("[0,0]", complex<float>());
-    R_TEST(complex<double>(), "[0, 0]");
-    R_TEST(complex<double>(), "[]", json::read_error::floating_point_invalid, 1);
-    R_TEST(complex<double>(), "[0]", json::read_error::unexpected, 2);
-    W_TEST("[0,0]", complex<double>());
-    R_TEST(complex<long double>(), "[0, 0]");
-    R_TEST(complex<long double>(), "[]", json::read_error::floating_point_invalid, 1);
-    R_TEST(complex<long double>(), "[0]", json::read_error::unexpected, 2);
-    W_TEST("[0,0]", complex<long double>());
+    // std::complex
+        R_TEST(complex<float>(), "[0, 0]");
+        R_TEST(complex<float>(), "[]", json::read_error::floating_point_invalid, 1);
+        R_TEST(complex<float>(), "[0]", json::read_error::unexpected, 2);
+        W_TEST("[0,0]", complex<float>());
+        R_TEST(complex<double>(), "[0, 0]");
+        R_TEST(complex<double>(), "[]", json::read_error::floating_point_invalid, 1);
+        R_TEST(complex<double>(), "[0]", json::read_error::unexpected, 2);
+        W_TEST("[0,0]", complex<double>());
+        R_TEST(complex<long double>(), "[0, 0]");
+        R_TEST(complex<long double>(), "[]", json::read_error::floating_point_invalid, 1);
+        R_TEST(complex<long double>(), "[0]", json::read_error::unexpected, 2);
+        W_TEST("[0,0]", complex<long double>());
 TEST_END()
 
 
-TEST_BEG(cxon::JSON<>) // std::chrono
+TEST_BEG(chrono, cxon::JSON<>, "/std")
     using namespace std::chrono;
-    R_TEST(duration<unsigned>(42), "42");
-    R_TEST(duration<unsigned>(42), "x", json::read_error::integral_invalid, 0);
-    W_TEST("42", duration<unsigned>(42));
-    R_TEST(time_point<system_clock>(system_clock::duration(42)), "42");
-    R_TEST(time_point<system_clock>(system_clock::duration(42)), "x", json::read_error::integral_invalid, 0);
-    W_TEST("42", time_point<system_clock>(system_clock::duration(42)));
+    // std::chrono
+        R_TEST(duration<unsigned>(42), "42");
+        R_TEST(duration<unsigned>(42), "x", json::read_error::integral_invalid, 0);
+        W_TEST("42", duration<unsigned>(42));
+        R_TEST(time_point<system_clock>(system_clock::duration(42)), "42");
+        R_TEST(time_point<system_clock>(system_clock::duration(42)), "x", json::read_error::integral_invalid, 0);
+        W_TEST("42", time_point<system_clock>(system_clock::duration(42)));
 TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_STRING_VIEW
-    TEST_BEG(cxon::JSON<>) // std::string_view
+    TEST_BEG(basic_string_view, cxon::JSON<>, "/std")
         using namespace std;
-        char const s[] = "1";
-        W_TEST(QS("1"), string_view(s));
-        W_TEST("{\"1\":1}", map<string_view, int>{{string_view(s), 1}});
+        // std::string_view
+            char const s[] = "1";
+            W_TEST(QS("1"), string_view(s));
+            W_TEST(R"({"1":1})", map<string_view, int>{{string_view(s), 1}});
     TEST_END()
 #endif
 
 
 #ifdef CXON_HAS_LIB_STD_OPTIONAL
-    TEST_BEG(cxon::JSON<>) // std::optional
+    TEST_BEG(optional, cxon::JSON<>, "/std")
         using namespace std;
-        R_TEST(optional<int>(42), "42");
-        W_TEST("42", optional<int>(42));
-        R_TEST(optional<int>(), "null");
-        W_TEST("null", optional<int>());
+        // std::optional
+            R_TEST(optional<int>(42), "42");
+            W_TEST("42", optional<int>(42));
+            R_TEST(optional<int>(), "null");
+            W_TEST("null", optional<int>());
     TEST_END()
 #endif
 
 
 #ifdef CXON_HAS_LIB_STD_VARIANT
-    TEST_BEG(cxon::JSON<>) // std::variant
+    TEST_BEG(variant, cxon::JSON<>, "/std")
         using namespace std;
-        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), "{\"0\":1}");
-        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), "{\"1\":0}");
-        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), "{\"2\":0}", json::read_error::unexpected, 1);
-        W_TEST("{\"0\":1}", variant<int, double>(1));
-        W_TEST("{\"1\":0}", variant<int, double>(in_place_index_t<1>(), 0));
-        R_TEST(variant<monostate, int>(), "{\"0\":null}");
-        R_TEST(variant<monostate, int>(), "{\"0\":1}", json::read_error::unexpected, 5);
-        W_TEST("{\"0\":null}", variant<monostate, int>());
+        // std::variant
+            R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({"0":1})");
+            R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"1":0})");
+            R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"2":0})", json::read_error::unexpected, 1);
+            W_TEST(R"({"0":1})", variant<int, double>(1));
+            W_TEST(R"({"1":0})", variant<int, double>(in_place_index_t<1>(), 0));
+            R_TEST(variant<monostate, int>(), R"({"0":null})");
+            R_TEST(variant<monostate, int>(), R"({"0":1})", json::read_error::unexpected, 5);
+            W_TEST(R"({"0":null})", variant<monostate, int>());
     TEST_END()
 #endif

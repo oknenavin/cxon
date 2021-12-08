@@ -65,6 +65,11 @@ cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/variant.hxx \
     $(srcdir)/lang/json/lib/std/vector.hxx
 
+cxon-lang-json-lib-boost-container = \
+    $(srcdir)/lang/json/lib/boost/container/stable_vector.hxx \
+    $(srcdir)/lang/json/lib/boost/container/small_vector.hxx \
+    $(srcdir)/lang/json/lib/boost/container/static_vector.hxx
+
 cxon-lang-json-node = \
     $(srcdir)/lang/json/node/node.hxx
 
@@ -109,6 +114,11 @@ cxon-lang-cbor-lib-std = \
     $(srcdir)/lang/cbor/lib/std/variant.hxx \
     $(srcdir)/lang/cbor/lib/std/vector.hxx
 
+cxon-lang-cbor-lib-boost-container = \
+    $(srcdir)/lang/cbor/lib/boost/container/stable_vector.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/small_vector.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/static_vector.hxx
+
 cxon-lang-cbor-node = \
     $(srcdir)/lang/cbor/node/node.hxx
 
@@ -138,6 +148,11 @@ cxon-lib-std = \
     $(srcdir)/lib/std/valarray.hxx \
     $(srcdir)/lib/std/variant.hxx \
     $(srcdir)/lib/std/vector.hxx
+
+cxon-lib-boost-container = \
+    $(srcdir)/lib/boost/container/stable_vector.hxx \
+    $(srcdir)/lib/boost/container/small_vector.hxx \
+    $(srcdir)/lib/boost/container/static_vector.hxx
 
 cxon-lib = \
     $(srcdir)/lib/node.hxx \
@@ -188,34 +203,40 @@ build-cbor-node:
 install: install-lang
 
 install-cxon:
-	@install -d                                         $(insdir)/cxon/lib/std
-	@install -p -m 0644 $(cxon)                         $(insdir)/cxon
-	@install -p -m 0644 $(cxon-lib)                     $(insdir)/cxon/lib
-	@install -p -m 0644 $(cxon-lib-std)                 $(insdir)/cxon/lib/std
+	@install -d                                                 $(insdir)/cxon/lib/std
+	@install -p -m 0644 $(cxon)                                 $(insdir)/cxon
+	@install -p -m 0644 $(cxon-lib)                             $(insdir)/cxon/lib
+	@install -p -m 0644 $(cxon-lib-std)                         $(insdir)/cxon/lib/std
+	@install -d                                                 $(insdir)/cxon/lib/boost/container
+	@install -p -m 0644 $(cxon-lib-boost-container)             $(insdir)/cxon/lib/boost/container
 
 install-common: install-cxon
-	@install -d                                         $(insdir)/cxon/lang/common/cio
-	@install -p -m 0644 $(cxon-lang-common-cio)         $(insdir)/cxon/lang/common/cio
-	@install -d                                         $(insdir)/cxon/lang/common/bio
-	@install -p -m 0644 $(cxon-lang-common)             $(insdir)/cxon/lang/common
-	@install -p -m 0644 $(cxon-lang-common-bio)         $(insdir)/cxon/lang/common/bio
+	@install -d                                                 $(insdir)/cxon/lang/common/cio
+	@install -p -m 0644 $(cxon-lang-common-cio)                 $(insdir)/cxon/lang/common/cio
+	@install -d                                                 $(insdir)/cxon/lang/common/bio
+	@install -p -m 0644 $(cxon-lang-common)                     $(insdir)/cxon/lang/common
+	@install -p -m 0644 $(cxon-lang-common-bio)                 $(insdir)/cxon/lang/common/bio
 
 install-lang: install-cxon install-common
-	@install -p -m 0644 $(cxon-lang)                    $(insdir)/cxon
-	@install -d                                         $(insdir)/cxon/lang/json/node
-	@install -p -m 0644 $(cxon-lang-json)               $(insdir)/cxon/lang/json
-	@install -p -m 0644 $(cxon-lang-json-node)          $(insdir)/cxon/lang/json/node
-	@install -d                                         $(insdir)/cxon/lang/json/lib/std/imp
-	@install -p -m 0644 $(cxon-lang-json-lib-std)       $(insdir)/cxon/lang/json/lib/std
-	@install -p -m 0644 $(cxon-lang-json-lib-std-imp)   $(insdir)/cxon/lang/json/lib/std/imp
-	@install -d                                         $(insdir)/cxon/lang/cbor/common
-	@install -p -m 0644 $(cxon-lang-cbor-common)        $(insdir)/cxon/lang/cbor/common
-	@install -d                                         $(insdir)/cxon/lang/cbor/node
-	@install -p -m 0644 $(cxon-lang-cbor)               $(insdir)/cxon/lang/cbor
-	@install -p -m 0644 $(cxon-lang-cbor-node)          $(insdir)/cxon/lang/cbor/node
-	@install -d                                         $(insdir)/cxon/lang/cbor/lib/std/imp
-	@install -p -m 0644 $(cxon-lang-cbor-lib-std)       $(insdir)/cxon/lang/cbor/lib/std
-	@install -p -m 0644 $(cxon-lang-cbor-lib-std-imp)   $(insdir)/cxon/lang/cbor/lib/std/imp
+	@install -p -m 0644 $(cxon-lang)                            $(insdir)/cxon
+	@install -d                                                 $(insdir)/cxon/lang/json/node
+	@install -p -m 0644 $(cxon-lang-json)                       $(insdir)/cxon/lang/json
+	@install -p -m 0644 $(cxon-lang-json-node)                  $(insdir)/cxon/lang/json/node
+	@install -d                                                 $(insdir)/cxon/lang/json/lib/std/imp
+	@install -p -m 0644 $(cxon-lang-json-lib-std)               $(insdir)/cxon/lang/json/lib/std
+	@install -p -m 0644 $(cxon-lang-json-lib-std-imp)           $(insdir)/cxon/lang/json/lib/std/imp
+	@install -d                                                 $(insdir)/cxon/lang/json/lib/boost/container
+	@install -p -m 0644 $(cxon-lang-json-lib-boost-container)   $(insdir)/cxon/lang/json/lib/boost/container
+	@install -d                                                 $(insdir)/cxon/lang/cbor/common
+	@install -p -m 0644 $(cxon-lang-cbor-common)                $(insdir)/cxon/lang/cbor/common
+	@install -d                                                 $(insdir)/cxon/lang/cbor/node
+	@install -p -m 0644 $(cxon-lang-cbor)                       $(insdir)/cxon/lang/cbor
+	@install -p -m 0644 $(cxon-lang-cbor-node)                  $(insdir)/cxon/lang/cbor/node
+	@install -d                                                 $(insdir)/cxon/lang/cbor/lib/std/imp
+	@install -p -m 0644 $(cxon-lang-cbor-lib-std)               $(insdir)/cxon/lang/cbor/lib/std
+	@install -p -m 0644 $(cxon-lang-cbor-lib-std-imp)           $(insdir)/cxon/lang/cbor/lib/std/imp
+	@install -d                                                 $(insdir)/cxon/lang/cbor/lib/boost/container
+	@install -p -m 0644 $(cxon-lang-cbor-lib-boost-container)   $(insdir)/cxon/lang/cbor/lib/boost/container
 
 uninstall:
 	@rm -fr $(insdir)/cxon

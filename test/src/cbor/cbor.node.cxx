@@ -31,14 +31,14 @@ int main(int argc, char *argv[]) {
         std::ifstream is(argv[i]);
             if (!is) {
                 CXON_ASSERT(0, "unexpected");
-                ++res.err, fprintf(stderr, "cannot be opened: '%s'\n", argv[i]);
+                ++res.err, std::fprintf(stderr, "cannot be opened: '%s'\n", argv[i]);
                 continue;
             }
         test::fixture fixture;
             auto const r = cxon::from_bytes<cxon::JSON<>>(fixture, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
             if (!r) {
                 CXON_ASSERT(0, "unexpected");
-                ++res.err, fprintf(stderr, "error: fixture invalid: '%s': %s\n", argv[i], r.ec.message().c_str());
+                ++res.err, std::fprintf(stderr, "error: fixture invalid: '%s': %s\n", argv[i], r.ec.message().c_str());
                 continue;
             }
 
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
         }
         else {
             CXON_ASSERT(0, "unexpected");
-            ++res.err, fprintf(stderr, "error: fixture type invalid: '%s'\n", argv[i]);
+            ++res.err, std::fprintf(stderr, "error: fixture type invalid: '%s'\n", argv[i]);
             continue;
         }
     }
@@ -135,14 +135,14 @@ namespace test { namespace kind { // test-vector
             std::ifstream is(file);
                 if (!is) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
+                    ++res.err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
             test::vector vector;
                 auto const r = cxon::from_bytes<cxon::JSON<>>(vector, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
                 if (!r) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, fprintf(stderr, "error: test-vector invalid: '%s': %s\n", file.c_str(), r.ec.message().c_str());
+                    ++res.err, std::fprintf(stderr, "error: test-vector invalid: '%s': %s\n", file.c_str(), r.ec.message().c_str());
                     continue;
                 }
 
@@ -171,7 +171,7 @@ namespace test { namespace kind { // test-vector
                             CXON_ASSERT(r, "invalid fixture");
                         }
                         else if (fix->second.act == "skip") {
-                            ++skip/*, fprintf(stdout, "skip: '%s' (%s)\n", test.hex.c_str(), fix->second.data.c_str()), fflush(stdout)*/;
+                            ++skip/*, std::fprintf(stdout, "skip: '%s' (%s)\n", test.hex.c_str(), fix->second.data.c_str()), std::fflush(stdout)*/;
                             continue;
                         }
                         fail = fix->second.fail;
@@ -184,24 +184,24 @@ namespace test { namespace kind { // test-vector
                         auto const r = cxon::from_bytes(json, test.bin());
                     if (!r) {
                         fail.empty() ?
-                            (++res.err, fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
-                            (/*fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
+                            (++res.err, std::fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
+                            (/*std::fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
                         ;
                     }
                     else if (json != decoded) {
                         fail.empty() ?
-                            (++res.err, fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
-                            (/*fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
+                            (++res.err, std::fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
+                            (/*std::fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
                         ;
                     }
                     else if (!fail.empty()) {
-                        ++res.err, fprintf(stderr, "must fail but passed: '%s' (%s)\n", test.hex.c_str(), fail.c_str());
+                        ++res.err, std::fprintf(stderr, "must fail but passed: '%s' (%s)\n", test.hex.c_str(), fail.c_str());
                     }
                 }
             }
         }
 
-        fprintf(stdout, "cxon/cbor/node/suite: %d of %3d failed (%d skipped)\n", res.err, res.all, skip); fflush(stdout);
+        std::fprintf(stdout, "%-21s: %d of %4d failed (%d skipped)\n", "cxon/cbor/node/suite", res.err, res.all, skip); std::fflush(stdout);
 
         return res;
     }
@@ -229,7 +229,7 @@ namespace test { namespace kind { // round-trip
             std::ifstream is(file);
                 if (!is) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
+                    ++res.err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
             std::string const f0 = name(file) + ".ct(0).json";
@@ -237,7 +237,7 @@ namespace test { namespace kind { // round-trip
             {   // 0
                 std::ofstream os(f0, std::ofstream::binary);
                     if (!os) {
-                        ++res.err, fprintf(stderr, "error: cannot be opened: %s\n", f0.c_str());
+                        ++res.err, std::fprintf(stderr, "error: cannot be opened: %s\n", f0.c_str());
                         continue;
                     }
                 cxon::json::tidy<JSON>(
@@ -250,33 +250,33 @@ namespace test { namespace kind { // round-trip
                 cxon::cbor::ordered_node n0;
                     {   auto const r = cxon::from_bytes<JSON>(n0, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
                         if (!r) {
-                            ++res.err, fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                            ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                             continue;
                         }
                     }
                 std::string cbor;
                     {   auto const r = cxon::to_bytes<CBOR>(cbor, n0);
                         if (!r) {
-                            ++res.err, fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                            ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                             continue;
                         }
                     }
                 cxon::json::ordered_node n1;
                     {   auto const r = cxon::from_bytes<CBOR>(n1, cbor);
                         if (!r) {
-                            ++res.err, fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                            ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                             continue;
                         }
                     }
                 {   // 1
                     std::ofstream os(f1, std::ofstream::binary);
                     if (!os) {
-                        ++res.err, fprintf(stderr, "error: cannot be opened: %s\n", f1.c_str());
+                        ++res.err, std::fprintf(stderr, "error: cannot be opened: %s\n", f1.c_str());
                         continue;
                     }
                     auto const r = cxon::to_bytes<JSON>(cxon::json::make_indenter<JSON>(std::ostreambuf_iterator<char>(os)), n1);
                     if (!r) {
-                        ++res.err, fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                        ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                         continue;
                     }
                 }

@@ -53,7 +53,7 @@ namespace cxon { namespace cnt { // container element read/write
     template <typename X, typename C>
         struct element_reader {
             template <typename II, typename Cx>
-                static inline bool read(C& c, II& i, II e, Cx& cx);
+                static bool read(C& c, II& i, II e, Cx& cx);
         };
     template <typename X, typename C, typename II, typename Cx>
         inline bool element_read(C& c, II& i, II e, Cx& cx);
@@ -321,15 +321,15 @@ namespace cxon { namespace cnt {
             FI end() noexcept                       { return e_; }
 
             reference emplace_back() noexcept {
-                CXON_ASSERT(e_ != l_, "overflow");
+                CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
                 return *e_++;
             }
             void push_back(const value_type& t) noexcept {
-                CXON_ASSERT(e_ != l_, "overflow");
+                CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
                 *e_ = t, ++e_;
             }
             void push_back(value_type&& t) noexcept {
-                CXON_ASSERT(e_ != l_, "overflow");
+                CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
                 *e_ = std::move(t), ++e_;
             }
 

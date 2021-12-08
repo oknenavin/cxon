@@ -124,7 +124,7 @@ namespace test {
                         ++fc, std::fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
                     }
                 }
-            std::fprintf(stdout, "cxon/json/node/pass:  %zu of %3zu failed\n", fc, cases.size()); std::fflush(stdout);
+            std::fprintf(stdout, "%-21s: %zu of %4zu failed\n", "cxon/json/node/pass", fc, cases.size()); std::fflush(stdout);
 
             return err;
         }
@@ -154,7 +154,7 @@ namespace test {
                         ++fc, std::fprintf(stderr, "%s: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
                     }
                 }
-            std::fprintf(stdout, "cxon/json/node/fail:  %zu of %3zu failed\n", fc, cases.size()); std::fflush(stdout);
+            std::fprintf(stdout, "%-21s: %zu of %4zu failed\n", "cxon/json/node/fail", fc, cases.size()); std::fflush(stdout);
 
             return err;
         }
@@ -219,7 +219,7 @@ namespace test {
                 std::fputc('\n', stdout);
             }
             else {
-                std::fprintf(stdout, "cxon/json/node/diff:  %zu of %3zu failed\n", fc, cases.size()), std::fflush(stdout);
+                std::fprintf(stdout, "%-21s: %zu of %4zu failed\n", "cxon/json/node/diff", fc, cases.size()), std::fflush(stdout);
             }
 
             return err;

@@ -10,7 +10,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(fundamental, cxon::CBOR<>, "/core")
     using namespace test;
     // bool
         R_TEST(true, BS("\xF5"));
@@ -318,7 +318,7 @@ TEST_BEG(cxon::CBOR<>)
         R_TEST((double)0, BS("\x80"), cbor::read_error::floating_point_invalid, 0);
 TEST_END()
 
-TEST_BEG(cxon::CBOR<>) // tags
+TEST_BEG(tags, cxon::CBOR<>, "/core") // tags
     using namespace test;
     R_TEST((long long)0x0101010101010101, BS("\xC1\x1B\x01\x01\x01\x01\x01\x01\x01\x01"));
     R_TEST((long long)0x0101010101010101, BS("\xD8\x18\x1B\x01\x01\x01\x01\x01\x01\x01\x01"));
