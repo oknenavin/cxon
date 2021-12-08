@@ -17,10 +17,10 @@
 
 namespace cxon { namespace cnt {
 
-    template <typename T, std::size_t N, typename ...R>
-        struct traits<boost::container::static_vector<T, N, R...>> {
+    template <typename T, std::size_t N>
+        struct traits<boost::container::static_vector<T, N>> {
             template <typename II>
-                static bool append(boost::container::static_vector<T, N, R...>& c, II f, II l) {
+                static bool append(boost::container::static_vector<T, N>& c, II f, II l) {
                     return c.size() < c.capacity() && (c.insert(c.end(), f, l), true);
                 }
         };
