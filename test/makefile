@@ -9,7 +9,8 @@ check-json-src = \
     $(srcdir)/json/json.json.cxx \
     $(srcdir)/json/json.fundamental.cxx \
     $(srcdir)/json/json.compound.cxx \
-    $(srcdir)/json/json.std.cxx
+    $(srcdir)/json/json.std.cxx \
+    $(srcdir)/json/json.boost.container.cxx
 
 check-json-node-src = \
     $(srcdir)/json/json.node.cxx \
@@ -24,7 +25,8 @@ check-cbor-src = \
     $(srcdir)/cbor/cbor.cbor.cxx \
     $(srcdir)/cbor/cbor.fundamental.cxx \
     $(srcdir)/cbor/cbor.compound.cxx \
-    $(srcdir)/cbor/cbor.std.cxx
+    $(srcdir)/cbor/cbor.std.cxx \
+    $(srcdir)/cbor/cbor.boost.container.cxx
 
 check-cbor-node-src = \
     $(srcdir)/cbor/cbor.node.cxx \

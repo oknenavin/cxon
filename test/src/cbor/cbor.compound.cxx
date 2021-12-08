@@ -8,7 +8,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(arrays, cxon::CBOR<>, "/core")
     // T[]
         {   // signed char
             {   signed char a[] = "";
@@ -253,6 +253,10 @@ TEST_BEG(cxon::CBOR<>)
                     U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A");
         R_TEST(   U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A", // indefinite
                 BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
+TEST_END()
+
+
+TEST_BEG(pointers, cxon::CBOR<>, "/core")
     // T*
         R_TEST((int*)nullptr, BS("\xF6"));
         W_TEST(BS("\xF6"), (int*)nullptr);
@@ -400,7 +404,7 @@ CXON_CBOR_ENM(Enum1,
     CXON_CBOR_ENM_VALUE_ASIS(three)
 )
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(enum, cxon::CBOR<>, "/core")
     R_TEST(Enum1::one, BS("\x01"));
     W_TEST(BS("\x01"), Enum1::one);
     R_TEST(Enum1::two, BS("\x18\x2A"));
@@ -431,7 +435,7 @@ CXON_CBOR_CLS_WRITE(Struct1,
     CXON_CBOR_CLS_FIELD_ASIS(y)
 )
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_1, cxon::CBOR<>, "/core")
     R_TEST(Struct1(0, Enum1::one), BS("\xA2\x62X\0\x00\x62y\0\x01")); // {X: 0, y: 'one'}
     R_TEST(Struct1(0, Enum1::two), BS("\xA2\x62X\0\x00\x62y\0\x18\x2A")); // {y: 'Two (2)', X: 0}
     R_TEST(Struct1(0, Enum1::three), BS("\xA1\x62y\0\x03")); // {y: 'three'}
@@ -457,7 +461,7 @@ CXON_CBOR_CLS(Struct2,
     CXON_CBOR_CLS_FIELD_NAME("Y", y)
 )
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_2, cxon::CBOR<>, "/core")
     R_TEST(Struct2{1, 2}, BS("\xA2\x62x\0\x01\x62Y\0\x02")); // {x: 1, Y: 2}
     W_TEST(BS("\xA2\x62x\0\x01\x62Y\0\x02"), Struct2{1, 2}); // {x: 1, Y: 2}
 TEST_END()
@@ -479,7 +483,7 @@ CXON_CBOR_CLS(Struct3,
     CXON_CBOR_CLS_FIELD_ASIS(y)
 )
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_3, cxon::CBOR<>, "/core")
     R_TEST(Struct3(1, new Struct3(2, nullptr)), BS("\xA2\x62x\0\x01\x62y\0\xA1\x62x\0\x02")); // {x: 1, y: {x: 2}}
     W_TEST(BS("\xA2\x62x\0\x01\x62y\0\xA2\x62x\0\x02\x62y\0\xF6"), Struct3(1, new Struct3(2, nullptr))); // {x: 1, y: {x: 2, y: nil}}
     R_TEST(Struct3(1, nullptr), BS("\xA2\x62x\0\x01\x62y\0\xF6")); // {x: 1, y: nil}
@@ -508,7 +512,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_4, cxon::CBOR<>, "/core")
     R_TEST(Struct4(1), BS("\x01"));
     W_TEST(BS("\x03"), Struct4(3));
 TEST_END()
@@ -535,7 +539,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_5, cxon::CBOR<>, "/core")
     R_TEST(Struct5(1), BS("\x01"));
     W_TEST(BS("\x03"), Struct5(3));
 TEST_END()
@@ -562,7 +566,7 @@ namespace cxon {
         }
 }
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_6, cxon::CBOR<>, "/core")
     R_TEST(Struct6(1), BS("\x1"));
     W_TEST(BS("\x03"), Struct6(3));
 TEST_END()
@@ -586,7 +590,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_7, cxon::CBOR<>, "/core")
     R_TEST(Struct7(1, 2), BS("\xA2\x62x\0\x01\x62y\0\x02")); // {x: 1, y: 2}
     R_TEST(Struct7(3, 0), BS("\xA1\x62x\0\x03")); // {x: 3}
     R_TEST(Struct7(0, 6), BS("\xA1\x62y\0\x06")); // {y: 6}
@@ -626,7 +630,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_8, cxon::CBOR<>, "/core")
     R_TEST(Struct8(1, 2), BS("\xA2\x62x\0\x01\x62y\0\x02")); // {x: 1, y: 2}
     W_TEST(BS("\xA2\x62x\0\x03\x62y\0\x04"), Struct8(3, 4)); // {x: 3, y: 4}
 TEST_END()
@@ -653,7 +657,7 @@ namespace {
 
 }
 
-TEST_BEG(cxon::CBOR<>) // static field
+TEST_BEG(struct_9, cxon::CBOR<>, "/core") // static field
     R_TEST(Struct9(), BS("\xA1\x62x\0\x00")); // {x: 0}
     W_TEST(BS("\xA2\x62x\0\x00\x62y\0\x03"), Struct9()); // {x: 0, y: 3}
     R_TEST(Struct9(), BS("\xA1\x62x\0\x01")); // {x: 1}
@@ -686,7 +690,7 @@ CXON_CBOR_CLS_WRITE(Struct10,
     CXON_CBOR_CLS_FIELD_NAME("z", y)
 )
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_10, cxon::CBOR<>, "/core")
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x17\x62x\0\x01")); // {y: '1, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x18\x18\x62x\0\x01")); // {y: '2, x: 1}
     R_TEST(Struct10(1), BS("\xA2\x62y\0\x19\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
@@ -744,7 +748,7 @@ CXON_CBOR_CLS_WRITE(Struct11,
     CXON_CBOR_CLS_FIELD_ASIS(y)
 )
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_11, cxon::CBOR<>, "/core")
     R_TEST(Struct11(1, {BS("\x17")}), BS("\xA2\x62y\0\x17\x62x\0\x01")); // {y: '1, x: 1}
     R_TEST(Struct11(1, {BS("\x18\x18")}), BS("\xA2\x62y\0\x18\x18\x62x\0\x01")); // {y: '2, x: 1}
     R_TEST(Struct11(1, {BS("\x19\x01\x01")}), BS("\xA2\x62y\0\x19\x01\x01\x62x\0\x01")); // {y: '3, x: 1}
@@ -806,7 +810,7 @@ TEST_BEG(cxon::CBOR<>)
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // sink
+TEST_BEG(sink, cxon::CBOR<>, "/core") // sink
     {   bio::byte o[2];
         auto const r = to_bytes(std::begin(o), std::end(o), cbor::sink<test::bytes>{BS("\01\02\03")});
         TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
@@ -814,7 +818,7 @@ TEST_BEG(cxon::CBOR<>) // sink
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // tags
+TEST_BEG(tags, cxon::CBOR<>, "/core") // tags
     using namespace test;
     // T[]
     {   unsigned a[] = { 0 };
@@ -959,7 +963,7 @@ CXON_CBOR_CLS(Struct12,
     CXON_CBOR_CLS_FIELD_ASIS_DFLT(z, self.z == 0)
 )
 
-TEST_BEG(cxon::CBOR<>)
+TEST_BEG(struct_12, cxon::CBOR<>, "/core")
     W_TEST(BS("\xA3\x62x\0\x01\x62y\0\x01\x62z\0\x01"), Struct12 {1, 1, 1});
     W_TEST(BS("\xA2\x62y\0\x01\x62z\0\x01"), Struct12 {0, 1, 1});
     W_TEST(BS("\xA2\x62x\0\x01\x62z\0\x01"), Struct12 {1, 0, 1});

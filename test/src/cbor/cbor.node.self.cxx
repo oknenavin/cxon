@@ -40,7 +40,7 @@ namespace test { namespace kind {
 #       define CHECK(...)\
             ++a_;\
             if (!(__VA_ARGS__))\
-                fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_, CXON_ASSERT(false, "check failed")
+                std::fprintf(stderr, "must pass, but failed: at %s:%li\n", __FILE__, (long)__LINE__), ++f_, CXON_ASSERT(false, "check failed")
 
         using node = cxon::cbor::node;
 
@@ -810,7 +810,7 @@ namespace test { namespace kind {
 #       endif
 #       undef CHECK
     
-        fprintf(stdout, "cxon/cbor/node/self:  %u of %3u failed\n", f_, a_); fflush(stdout);
+        std::fprintf(stdout, "%-21s: %u of %4u failed\n", "cxon/cbor/node/self", f_, a_); std::fflush(stdout);
 
         return f_;
     }

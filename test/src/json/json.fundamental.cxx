@@ -45,7 +45,7 @@ namespace cxon { namespace test {
 
 }}
 
-TEST_BEG(cxon::JSON<>)
+TEST_BEG(fundamental, cxon::JSON<>, "/core")
     using namespace test;
     // bool
         R_TEST(true, "true");
@@ -256,7 +256,7 @@ namespace cxon { namespace test {
 
 }}
 
-TEST_BEG(cxon::JSON<>) // special numbers
+TEST_BEG(special_numbers, cxon::JSON<>, "/core") // special numbers
     using namespace test;
     // float
         R_TEST( -inf<float>(), omin<float>(), json::read_error::floating_point_invalid, 0);
@@ -320,7 +320,7 @@ TEST_BEG(cxon::JSON<>) // special numbers
         W_TEST(QS("nan"), inf<long double>() + -inf<long double>());
 TEST_END()
 
-TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>) // special numbers
+TEST_BEG(special_numbers_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core") // special numbers
     using namespace test;
     R_TEST(0.0, "0");
     R_TEST(0.0, "0.0");
@@ -340,7 +340,7 @@ TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>) // special numbers
 TEST_END()
 
 
-TEST_BEG(cxon::JSON<cxon::test::input_iterator_traits>) // json number validation
+TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits>, "/core") // json number validation
     // floating point
         R_TEST((double)0, "0");
         R_TEST((double)0, "-0");
@@ -388,7 +388,7 @@ namespace cxon { namespace test {
     };
 }}
 
-TEST_BEG(cxon::JSON<cxon::test::strict_number_traits>) // json number validation
+TEST_BEG(json_number_validation_2, cxon::JSON<cxon::test::strict_number_traits>, "/core") // json number validation
     // floating point
         W_TEST("0", (double)0);
         R_TEST((double)0, "0");
@@ -437,7 +437,7 @@ TEST_BEG(cxon::JSON<cxon::test::strict_number_traits>) // json number validation
 TEST_END()
 
 
-TEST_BEG(cxon::JSON<>) // json
+TEST_BEG(json_escapes, cxon::JSON<>, "/core") // json
     // char
         R_TEST('\0', QS("\\u0000"));
         W_TEST(QS("\\u0000"), '\0');
@@ -508,7 +508,7 @@ namespace cxon { namespace test {
     };
 }}
 
-TEST_BEG(cxon::JSON<cxon::test::write_strict_js_traits>)
+TEST_BEG(write_strict_js_traits, cxon::JSON<cxon::test::write_strict_js_traits>, "/core")
     W_TEST(QS("x"), "x");
     W_TEST(QS("\\u2028"), "\xE2\x80\xA8");
     W_TEST(QS("\\u2029"), "\xE2\x80\xA9");

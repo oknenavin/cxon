@@ -32,7 +32,7 @@
 
 using namespace std;
 
-TEST_BEG(cxon::CBOR<>) // std::array
+TEST_BEG(array, cxon::CBOR<>, "/std")
     // std::array<T, 0>
         R_TEST((array<int, 0>{}), BS("\x80"));
         R_TEST((array<int, 0>{}), BS("\x9F\xFF"));
@@ -82,7 +82,7 @@ TEST_BEG(cxon::CBOR<>) // std::array
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::basic_string
+TEST_BEG(basic_string, cxon::CBOR<>, "/std") // std::basic_string
     // char
         R_TEST(string(""), BS("\x40"));     // definite
         R_TEST(string(""), BS("\x60"));     // definite
@@ -138,7 +138,7 @@ TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_STRING_VIEW
-    TEST_BEG(cxon::CBOR<>) // std::basic_string_view
+    TEST_BEG(basic_string_view, cxon::CBOR<>, "/std")
         // char
             W_TEST(BS("\x60"), string_view(""));
             W_TEST(BS("\x6A\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80"), string_view("\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80"));
@@ -160,7 +160,7 @@ TEST_END()
 #endif
 
 
-TEST_BEG(cxon::CBOR<>) // std::bitset
+TEST_BEG(bitset, cxon::CBOR<>, "/std")
     R_TEST(bitset<32>{0x000000FF}, BS("\x44\x00\x00\x00\xFF")); //                         11111111
     R_TEST(bitset<32>{0x0000FFFF}, BS("\x44\x00\x00\xFF\xFF")); //                 1111111111111111
     R_TEST(bitset<32>{0xFFFFFFFF}, BS("\x44\xFF\xFF\xFF\xFF")); // 11111111111111111111111111111111
@@ -221,7 +221,7 @@ TEST_BEG(cxon::CBOR<>) // std::bitset
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::chrono
+TEST_BEG(chrono, cxon::CBOR<>, "/std")
     using namespace std::chrono;
     R_TEST(duration<unsigned>(42), BS("\x18\x2A"));
     R_TEST(duration<unsigned>(42), BS("\x1C"), cbor::read_error::integer_invalid, 0);
@@ -232,7 +232,7 @@ TEST_BEG(cxon::CBOR<>) // std::chrono
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::complex
+TEST_BEG(complex, cxon::CBOR<>, "/std")
     R_TEST(complex<float>(), BS("\x82\x00\x00"));
     R_TEST(complex<float>(), BS("\x82\xFA\x00\x00\x00\x00\xFA\x00\x00\x00\x00"));
     R_TEST(complex<float>(1, 2), BS("\x82\xFA\x3F\x80\x00\x00\xFA\x40\x00\x00\x00"));
@@ -251,7 +251,7 @@ TEST_BEG(cxon::CBOR<>) // std::complex
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::deque
+TEST_BEG(deque, cxon::CBOR<>, "/std")
     R_TEST(deque<int>{}, BS("\x80"));
     R_TEST(deque<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), deque<int>{});
@@ -269,7 +269,7 @@ TEST_BEG(cxon::CBOR<>) // std::deque
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::forward_list
+TEST_BEG(forward_list, cxon::CBOR<>, "/std")
     R_TEST(forward_list<int>{}, BS("\x80"));
     R_TEST(forward_list<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), forward_list<int>{});
@@ -287,7 +287,7 @@ TEST_BEG(cxon::CBOR<>) // std::forward_list
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::list
+TEST_BEG(list, cxon::CBOR<>, "/std")
     R_TEST(list<int>{}, BS("\x80"));
     R_TEST(list<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), list<int>{});
@@ -305,7 +305,7 @@ TEST_BEG(cxon::CBOR<>) // std::list
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::map
+TEST_BEG(map, cxon::CBOR<>, "/std")
     R_TEST(map<int, int>{}, BS("\xA0"));
     R_TEST(map<int, int>{}, BS("\xBF\xFF"));
     W_TEST(BS("\xA0"), map<int, int>{});
@@ -319,7 +319,7 @@ TEST_BEG(cxon::CBOR<>) // std::map
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::multimap
+TEST_BEG(multimap, cxon::CBOR<>, "/std")
     R_TEST(multimap<int, int>{}, BS("\xA0"));
     R_TEST(multimap<int, int>{}, BS("\xBF\xFF"));
     W_TEST(BS("\xA0"), multimap<int, int>{});
@@ -330,7 +330,7 @@ TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_OPTIONAL
-    TEST_BEG(cxon::CBOR<>) // std::optional
+    TEST_BEG(optional, cxon::CBOR<>, "/std")
         R_TEST(optional<int>(42), BS("\x18\x2A"));
         W_TEST(BS("\x18\x2A"), optional<int>(42));
         R_TEST(optional<int>(), BS("\xF7"));
@@ -339,7 +339,7 @@ TEST_END()
 #endif
 
 
-TEST_BEG(cxon::CBOR<>) // std::queue
+TEST_BEG(queue, cxon::CBOR<>, "/std")
     R_TEST(queue<int>{}, BS("\x80"));
     R_TEST(queue<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), queue<int>{});
@@ -348,7 +348,7 @@ TEST_BEG(cxon::CBOR<>) // std::queue
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::priority_queue
+TEST_BEG(priority_queue, cxon::CBOR<>, "/std")
     R_TEST(priority_queue<int>{}, BS("\x80"));
     R_TEST(priority_queue<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), priority_queue<int>{});
@@ -357,7 +357,7 @@ TEST_BEG(cxon::CBOR<>) // std::priority_queue
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::set
+TEST_BEG(set, cxon::CBOR<>, "/std")
     R_TEST(set<int>{}, BS("\x80"));
     R_TEST(set<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), set<int>{});
@@ -367,7 +367,7 @@ TEST_BEG(cxon::CBOR<>) // std::set
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::multiset
+TEST_BEG(multiset, cxon::CBOR<>, "/std")
     R_TEST(multiset<int>{}, BS("\x80"));
     R_TEST(multiset<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), multiset<int>{});
@@ -377,7 +377,7 @@ TEST_BEG(cxon::CBOR<>) // std::multiset
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::pair
+TEST_BEG(pair, cxon::CBOR<>, "/std")
     R_TEST(pair<int, float>(1, 2.f), BS("\x82\x01\x02"));
     R_TEST(pair<int, float>(1, 2.f), BS("\x82\x01\xFA\x40\x00\x00\x00"));
     W_TEST(BS("\x82\x01\xFA\x40\x00\x00\x00"), pair<int, float>(1, 2.f));
@@ -389,7 +389,7 @@ TEST_BEG(cxon::CBOR<>) // std::pair
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::stack
+TEST_BEG(stack, cxon::CBOR<>, "/std")
     R_TEST(stack<int>{}, BS("\x80"));
     R_TEST(stack<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), stack<int>{});
@@ -398,7 +398,7 @@ TEST_BEG(cxon::CBOR<>) // std::stack
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::tuple
+TEST_BEG(tuple, cxon::CBOR<>, "/std")
     R_TEST(tuple<>{}, BS("\x80"));
     W_TEST(BS("\x80"), tuple<>{});
     R_TEST(tuple<int, float>(1, 2.f), BS("\x82\x01\x02"));
@@ -412,7 +412,7 @@ TEST_BEG(cxon::CBOR<>) // std::tuple
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::unordered_map
+TEST_BEG(unordered_map, cxon::CBOR<>, "/std")
     R_TEST(unordered_map<int, int>{}, BS("\xA0"));
     R_TEST(unordered_map<int, int>{}, BS("\xBF\xFF"));
     W_TEST(BS("\xA0"), unordered_map<int, int>{});
@@ -421,7 +421,7 @@ TEST_BEG(cxon::CBOR<>) // std::unordered_map
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::unordered_multimap
+TEST_BEG(unordered_multimap, cxon::CBOR<>, "/std")
     R_TEST(unordered_multimap<int, int>{}, BS("\xA0"));
     R_TEST(unordered_multimap<int, int>{}, BS("\xBF\xFF"));
     W_TEST(BS("\xA0"), unordered_multimap<int, int>{});
@@ -430,7 +430,7 @@ TEST_BEG(cxon::CBOR<>) // std::unordered_multimap
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::unordered_set
+TEST_BEG(unordered_set, cxon::CBOR<>, "/std")
     R_TEST(unordered_set<int>{}, BS("\x80"));
     R_TEST(unordered_set<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), unordered_set<int>{});
@@ -440,7 +440,7 @@ TEST_BEG(cxon::CBOR<>) // std::unordered_set
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::unordered_multiset
+TEST_BEG(unordered_multiset, cxon::CBOR<>, "/std")
     R_TEST(unordered_multiset<int>{}, BS("\x80"));
     R_TEST(unordered_multiset<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), unordered_multiset<int>{});
@@ -450,7 +450,7 @@ TEST_BEG(cxon::CBOR<>) // std::unordered_multiset
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // std::valarray;
+TEST_BEG(valarray,cxon::CBOR<>, "/std")
     R_TEST(valarray<unsigned char>{}, BS("\x40"));
     R_TEST(valarray<unsigned char>{}, BS("\x5F\xFF"));
     R_TEST(valarray<unsigned char>{}, BS("\x7F\xFF"));
@@ -466,7 +466,7 @@ TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_VARIANT
-    TEST_BEG(cxon::CBOR<>) // std::variant
+    TEST_BEG(variant, cxon::CBOR<>, "/std")
         R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\x82\x00\x01"));
         R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x01\x00"));
         R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x02\x00"), cbor::read_error::unexpected, 1);
@@ -479,7 +479,7 @@ TEST_END()
 #endif
 
 
-TEST_BEG(cxon::CBOR<>) // std::vector
+TEST_BEG(vector, cxon::CBOR<>, "/std")
     R_TEST(vector<int>{}, BS("\x80"));
     R_TEST(vector<int>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), vector<int>{});
@@ -497,7 +497,7 @@ TEST_BEG(cxon::CBOR<>) // std::vector
 TEST_END()
 
 
-TEST_BEG(cxon::CBOR<>) // tags
+TEST_BEG(tags, cxon::CBOR<>, "/std")
     using namespace std::chrono;
     R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xC1\x44\xAA\xAA\xAA\xAA"));
     R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xD8\x18\x44\xAA\xAA\xAA\xAA"));

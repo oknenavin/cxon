@@ -941,7 +941,7 @@ namespace test { namespace kind {
         }
 #       undef CHECK
 
-        std::fprintf(stdout, "cxon/json/node/self:  %i of %3i failed\n", f_, a_); std::fflush(stdout);
+        std::fprintf(stdout, "%-21s: %i of %4i failed\n", "cxon/json/node/self", f_, a_); std::fflush(stdout);
 
         return f_;
     }

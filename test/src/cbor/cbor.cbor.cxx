@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST_BEG(cxon::CBOR<>) // interface/read
+TEST_BEG(interface_read, cxon::CBOR<>, "/core") // interface/read
     // iterator
     {   int r; bio::byte const i[] = { 0x01 };
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
@@ -45,7 +45,7 @@ TEST_BEG(cxon::CBOR<>) // interface/read
     }
 TEST_END()
 
-TEST_BEG(cxon::CBOR<>) // interface/write
+TEST_BEG(interface_write, cxon::CBOR<>, "/core") // interface/write
     // output iterator
     {   test::bytes r; test::bytes const e = BS("\x62\x01\x00");
         TEST_CHECK(to_bytes(std::back_inserter(r), "\x01") && r == e);
@@ -89,10 +89,10 @@ TEST_BEG(cxon::CBOR<>) // interface/write
     }
 TEST_END()
 
-TEST_BEG(cxon::CBOR<>) // interface/parameters
+TEST_BEG(interface_parameters, cxon::CBOR<>, "/core") // interface/parameters
 TEST_END()
 
-TEST_BEG(cxon::CBOR<>) // errors
+TEST_BEG(interface_errors, cxon::CBOR<>, "/core") // errors
     using namespace cxon;
     {   std::error_condition ec;
             ec = cbor::read_error::ok;
@@ -137,8 +137,10 @@ TEST_END()
 
 int main() {
     using cxon::test::suite;
-    for (auto t : suite::get())
-        t->test();
-    fprintf(stdout, "cxon/cbor: %u of %4u failed\n", suite::err(), suite::all()); fflush(stdout);
+    for (auto& c : suite::get()) {
+        for (auto s : c.second)
+            s->test();
+        std::fprintf(stdout, "cxon/cbor%-12s: %u of %4u failed\n", c.first.c_str(), suite::err(c.first.c_str()), suite::all(c.first.c_str())); std::fflush(stdout);
+    }
     return suite::err();
 }

@@ -7,7 +7,7 @@
 #define CXON_TEST_HXX_
 
 #include <string>
-#include <vector>
+#include <map>
 #include <queue>
 #include <valarray>
 
@@ -25,46 +25,51 @@ namespace cxon { namespace test {
 namespace cxon { namespace test {
 
     struct suite {
-        static std::vector<suite*>& get() {
-            static std::vector<suite*> tests;
+        static std::map<std::string, std::vector<suite*>>& get() {
+            static std::map<std::string, std::vector<suite*>> tests = {};
             return tests;
         }
-        static unsigned& all() {
-            static unsigned a = 0;
-            return a;
+        static std::vector<suite*>& get(const char *category) {
+            return get()[category];
         }
-        static unsigned& err() {
-            static unsigned e = 0;
-            return e;
+        static unsigned& all(const char *category = "") {
+            static std::map<std::string, unsigned> a = {};
+            return a[category];
+        }
+        static unsigned& err(const char *category = "") {
+            static std::map<std::string, unsigned> e = {};
+            return e[category];
         }
 
-        suite() { get().push_back(this); }
+        char const*const category;
+        suite(const char *category = "") : category(category) { get(category).push_back(this); }
 
         virtual void test() const = 0;
     };
 
 }}
 
-#define TEST_CAT_(x, y) x##y
-#define TEST_CAT(x, y)  TEST_CAT_(x, y)
+#define TEST_BEG_(Id, Tr, Ct) \
+    namespace { \
+        static struct test_##Id##_ : cxon::test::suite { \
+            using XXON = Tr; \
+            test_##Id##_() : suite(Ct) {} \
+            void test() const override; \
+        }   test_##Id##__; \
+        void test_##Id##_::test() const { \
+            using namespace cxon;
+#define TEST_END_() \
+        } \
+    }
 
-#define TEST_BEG_(...)\
-    static struct : cxon::test::suite {\
-        using XXON = __VA_ARGS__;\
-        void test() const override {\
-        using namespace cxon;
-#define TEST_END_()\
-        }\
-    }   TEST_CAT(TEST_, __COUNTER__);
-
-#define TEST_BEG(...) TEST_BEG_(__VA_ARGS__)
+#define TEST_BEG(Id, Tr, Ct) TEST_BEG_(Id, Tr, Ct)
 #define TEST_END() TEST_END_()
 
 #define TEST_CHECK(conditon)\
-    do if (++suite::all(), !(conditon)) {\
-        ++suite::err(), fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__);\
+    do if (++suite::all(category), !(conditon)) {\
+        ++suite::err(category), std::fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__);\
         CXON_ASSERT(false, "check failed");\
-    } while (0)
+    }   while (0)
 
 #define R_TEST(ref, ...) TEST_CHECK(cxon::test::verify_read<XXON>(ref, __VA_ARGS__))
 #define W_TEST(ref, ...) TEST_CHECK(cxon::test::verify_write<XXON>(ref, __VA_ARGS__))
