@@ -24,7 +24,7 @@ jobs:
     - name: Check
       env:
         CXX: g++-8
-        CXXFLAGS: --coverage -O0 -std=c++17 -I ../.dep/boost/include
+        CXXFLAGS: --coverage -O0 -std=c++17 -I ../.dep/boost
       run: |
         make -j check
         make -j time
