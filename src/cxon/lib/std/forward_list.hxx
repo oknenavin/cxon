@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_LIB_STD_FORWARD_LIST_
-#   define CXON_LIB_STD_FORWARD_LIST_
+#ifndef CXON_LIB_STD_FORWARD_LIST_HXX_
+#   define CXON_LIB_STD_FORWARD_LIST_HXX_
 
 #   include <forward_list>
 
@@ -31,4 +31,4 @@ namespace cxon { namespace cnt {
 
 }}
 
-#endif // CXON_LIB_STD_FORWARD_LIST_
+#endif // CXON_LIB_STD_FORWARD_LIST_HXX_
