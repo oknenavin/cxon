@@ -9,6 +9,10 @@
 #include "cxon/lib/boost/container/stable_vector.hxx"
 #include "cxon/lib/boost/container/small_vector.hxx"
 #include "cxon/lib/boost/container/static_vector.hxx"
+#include "cxon/lib/boost/container/deque.hxx"
+#include "cxon/lib/boost/container/list.hxx"
+#include "cxon/lib/boost/container/slist.hxx"
+#include "cxon/lib/boost/container/string.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,9 +97,133 @@ TEST_BEG(static_vector, cxon::CBOR<>, "/boost")
         R_TEST((static_vector<int, 3>{2, 1, 0}), BS("\x5F\x42\x02\x01\x41\x00\xFF"));
         R_TEST((static_vector<int, 3>{2, 1, 0}), BS("\x5F\x43\x02\x01\x00\xFF"));
         R_TEST((static_vector<int, 3>{2, 1, 0}), BS("\x43\x02\x01\x00"));
+            // more
+            R_TEST((static_vector<int, 1>{}), BS("\x83\x02\x01\x00"), cbor::read_error::size_invalid, 0);
+            R_TEST((static_vector<int, 2>{}), BS("\x9F\x02\x01\x00\xFF"), cbor::read_error::size_invalid, 0);
+            R_TEST((static_vector<int, 2>{}), BS("\x63\x02\x01\x00"), cbor::read_error::size_invalid, 0);
+            R_TEST((static_vector<int, 1>{}), BS("\x7F\x63\x02\x01\x00\xFF"), cbor::read_error::size_invalid, 1);
+            R_TEST((static_vector<int, 1>{}), BS("\x7F\x62\x02\x01\x61\x00\xFF"), cbor::read_error::size_invalid, 1);
+            R_TEST((static_vector<int, 2>{}), BS("\x5F\x42\x02\x01\x41\x00\xFF"), cbor::read_error::size_invalid, 4);
+            R_TEST((static_vector<int, 2>{}), BS("\x5F\x43\x02\x01\x00\xFF"), cbor::read_error::size_invalid, 1);
+            R_TEST((static_vector<int, 1>{}), BS("\x43\x02\x01\x00"), cbor::read_error::size_invalid, 0);
         W_TEST(BS("\x83\x02\x01\x00"), (static_vector<int, 3>{2, 1, 0}));
         R_TEST((static_vector<int, 3>{2, 1}), BS("\x82\x02\x01")); // less
         R_TEST((static_vector<int, 3>{2, 1}), BS("\x9F\x02\x01\xFF")); // less
         W_TEST(BS("\x63\x02\x01\x00"), (static_vector<char, 3>{2, 1, 0}));
         W_TEST(BS("\x43\x02\x01\x00"), (static_vector<unsigned char, 3>{2, 1, 0}));
+TEST_END()
+
+
+TEST_BEG(deque, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    R_TEST(deque<int>{}, BS("\x80"));
+    R_TEST(deque<int>{}, BS("\x9F\xFF"));
+    W_TEST(BS("\x80"), deque<int>{});
+    R_TEST(deque<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
+    R_TEST(deque<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    R_TEST(deque<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(deque<int>{2, 1, 0}, BS("\x5F\x43\x02\x01\x00\xFF"));
+    R_TEST(deque<int>{2, 1, 0}, BS("\x5F\x42\x02\x01\x41\x00\xFF"));
+    R_TEST(deque<int>{2, 1, 0}, BS("\x7F\x61\x02\x62\x01\x00\xFF"));
+    R_TEST(deque<int>{2, 1, 0}, BS("\x7F\x63\x02\x01\x00\xFF"));
+    R_TEST(deque<int>{2, 1, 0}, BS("\x63\x02\x01\x00"));
+    W_TEST(BS("\x83\x02\x01\x00"), deque<int>{2, 1, 0});
+    W_TEST(BS("\x43\x02\x01\x00"), deque<unsigned char>{2, 1, 0});
+    W_TEST(BS("\x63\x02\x01\x00"), deque<char>{2, 1, 0});
+TEST_END()
+
+
+TEST_BEG(list, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    R_TEST(list<int>{}, BS("\x80"));
+    R_TEST(list<int>{}, BS("\x9F\xFF"));
+    W_TEST(BS("\x80"), list<int>{});
+    R_TEST(list<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x5F\x43\x02\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x5F\x42\x02\x01\x41\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x7F\x61\x02\x62\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x7F\x63\x02\x01\x00\xFF"));
+    R_TEST(list<int>{2, 1, 0}, BS("\x63\x02\x01\x00"));
+    W_TEST(BS("\x83\x02\x01\x00"), list<int>{2, 1, 0});
+    W_TEST(BS("\x43\x02\x01\x00"), list<unsigned char>{2, 1, 0});
+    W_TEST(BS("\x63\x02\x01\x00"), list<char>{2, 1, 0});
+TEST_END()
+
+
+TEST_BEG(slist, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    R_TEST(slist<int>{}, BS("\x80"));
+    R_TEST(slist<int>{}, BS("\x9F\xFF"));
+    W_TEST(BS("\x80"), slist<int>{});
+    R_TEST(slist<int>{2, 1, 0}, BS("\x83\x02\x01\x00"));
+    R_TEST(slist<int>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
+    R_TEST(slist<int>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(slist<int>{2, 1, 0}, BS("\x5F\x43\x02\x01\x00\xFF"));
+    R_TEST(slist<int>{2, 1, 0}, BS("\x5F\x42\x02\x01\x41\x00\xFF"));
+    R_TEST(slist<int>{2, 1, 0}, BS("\x7F\x61\x02\x62\x01\x00\xFF"));
+    R_TEST(slist<int>{2, 1, 0}, BS("\x7F\x63\x02\x01\x00\xFF"));
+    R_TEST(slist<int>{2, 1, 0}, BS("\x63\x02\x01\x00"));
+    W_TEST(BS("\x83\x02\x01\x00"), slist<int>{2, 1, 0});
+    W_TEST(BS("\x43\x02\x01\x00"), slist<unsigned char>{2, 1, 0});
+    W_TEST(BS("\x63\x02\x01\x00"), slist<char>{2, 1, 0});
+TEST_END()
+
+
+TEST_BEG(basic_string, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    // char
+        R_TEST(string(""), BS("\x40"));     // definite
+        R_TEST(string(""), BS("\x60"));     // definite
+        R_TEST(string(""), BS("\x80"));     // definite
+        R_TEST(string(""), BS("\x9F\xFF")); // indefinite
+        W_TEST(BS("\x60"), string(""));
+        R_TEST(string("\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80"), BS("\x6A\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80")); // definite
+        R_TEST(string("\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80"), BS("\x9F\x18\x20\x18\xC2\x18\xAE\x18\xE2\x18\x9C\x18\x88\x18\xF0\x18\x9F\x18\x9A\x18\x80\xFF")); // indefinite
+        W_TEST(BS("\x6A\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80"), string("\x20\xC2\xAE\xE2\x9C\x88\xF0\x9F\x9A\x80"));
+        R_TEST(string("xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA"), // definite
+                   BS("\x58\x1C\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\xF0\x9F\x8D\xBA"));
+        R_TEST(string("xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA"), // definite
+                   BS("\x78\x1C\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\xF0\x9F\x8D\xBA"));
+        R_TEST(string("xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA"), // definite
+                   BS("\x98\x1C\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\xF0\x18\x9F\x18\x8D\x18\xBA"));
+        R_TEST(string("xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA"), // indefinite
+                   BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\xF0\x18\x9F\x18\x8D\x18\xBA\xFF"));
+        W_TEST(    BS("\x78\x1C\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\xF0\x9F\x8D\xBA"),
+               string("xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA"));
+    // wchar_t
+        R_TEST(wstring(L""), BS("\x80"));       // definite
+        R_TEST(wstring(L""), BS("\x9F\xFF"));   // indefinite
+        W_TEST(BS("\x80"), wstring(L""));
+    // char16_t
+        using u16string = basic_string<char16_t, std::char_traits<char16_t>, new_allocator<char16_t>>;
+        R_TEST(u16string(u""), BS("\x80"));     // definite
+        R_TEST(u16string(u""), BS("\x9F\xFF")); // indefinite
+        W_TEST(BS("\x80"), u16string(u""));
+        R_TEST(u16string(u"\x00AE\x2708\xD83D\xDE80"), BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));     // definite
+        R_TEST(u16string(u"\x00AE\x2708\xD83D\xDE80"), BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF")); // indefinite
+        W_TEST(BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"), u16string(u"\x00AE\x2708\xD83D\xDE80"));
+        R_TEST(u16string(u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A"), // definite
+                       BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"));
+        R_TEST(u16string(u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A"), // indefinite
+                       BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\xFF"));
+        W_TEST(        BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"),
+               u16string(u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A"));
+    // char32_t
+        using u32string = basic_string<char32_t, std::char_traits<char32_t>, new_allocator<char32_t>>;
+        R_TEST(u32string(U""), BS("\x80"));     // definite
+        R_TEST(u32string(U""), BS("\x9F\xFF")); // indefinite
+        W_TEST(BS("\x80"), u32string(U""));
+        R_TEST(u32string(U"\x000000AE\x00002708\x0001F680"), BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"));       // definite
+        R_TEST(u32string(U"\x000000AE\x00002708\x0001F680"), BS("\x9F\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80\xFF"));   // indefinite
+        W_TEST(BS("\x83\x18\xAE\x19\x27\x08\x1A\x00\x01\xF6\x80"), u32string(U"\x000000AE\x00002708\x0001F680"));
+        R_TEST(u32string(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"), // definite
+                       BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"));
+        W_TEST(        BS("\x98\x19\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A"),
+               u32string(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"));
+        R_TEST(u32string(U"xXxXxXxXxXxXxXxXxXxXxXxX\x1F37A"), // indefinite
+                       BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
+        // errors
+        R_TEST((string*)nullptr, BS("\xF7"), cbor::read_error::array_invalid, 0);
 TEST_END()

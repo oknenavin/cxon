@@ -68,7 +68,11 @@ cxon-lang-json-lib-std = \
 cxon-lang-json-lib-boost-container = \
     $(srcdir)/lang/json/lib/boost/container/stable_vector.hxx \
     $(srcdir)/lang/json/lib/boost/container/small_vector.hxx \
-    $(srcdir)/lang/json/lib/boost/container/static_vector.hxx
+    $(srcdir)/lang/json/lib/boost/container/static_vector.hxx \
+    $(srcdir)/lang/json/lib/boost/container/deque.hxx \
+    $(srcdir)/lang/json/lib/boost/container/list.hxx \
+    $(srcdir)/lang/json/lib/boost/container/slist.hxx \
+    $(srcdir)/lang/json/lib/boost/container/string.hxx
 
 cxon-lang-json-node = \
     $(srcdir)/lang/json/node/node.hxx
@@ -117,7 +121,11 @@ cxon-lang-cbor-lib-std = \
 cxon-lang-cbor-lib-boost-container = \
     $(srcdir)/lang/cbor/lib/boost/container/stable_vector.hxx \
     $(srcdir)/lang/cbor/lib/boost/container/small_vector.hxx \
-    $(srcdir)/lang/cbor/lib/boost/container/static_vector.hxx
+    $(srcdir)/lang/cbor/lib/boost/container/static_vector.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/deque.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/list.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/slist.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/string.hxx
 
 cxon-lang-cbor-node = \
     $(srcdir)/lang/cbor/node/node.hxx
@@ -152,7 +160,11 @@ cxon-lib-std = \
 cxon-lib-boost-container = \
     $(srcdir)/lib/boost/container/stable_vector.hxx \
     $(srcdir)/lib/boost/container/small_vector.hxx \
-    $(srcdir)/lib/boost/container/static_vector.hxx
+    $(srcdir)/lib/boost/container/static_vector.hxx \
+    $(srcdir)/lib/boost/container/deque.hxx \
+    $(srcdir)/lib/boost/container/list.hxx \
+    $(srcdir)/lib/boost/container/slist.hxx \
+    $(srcdir)/lib/boost/container/string.hxx
 
 cxon-lib = \
     $(srcdir)/lib/node.hxx \

@@ -239,10 +239,10 @@ namespace cxon { namespace cbor { namespace cnt {
             return read_array<X>(f, l, tag, i, e, cx);
         }
     template <typename X, typename FI, typename II, typename Cx>
-        inline bool read_array(FI f, FI l, std::size_t/* tag*/, II& i, II e, Cx& cx) {
+        inline bool read_array(FI f, FI l, std::size_t tag, II& i, II e, Cx& cx) {
             // TODO: tags - e.g. typed-arrays (RFC8746)
             auto c = cxon::cnt::make_range_container(f, l);
-            return read_array<X>(c, i, e, cx);
+            return read_array<X>(c, tag, i, e, cx);
         }
 
 }}}

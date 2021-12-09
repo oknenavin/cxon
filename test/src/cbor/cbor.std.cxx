@@ -59,6 +59,7 @@ TEST_BEG(array, cxon::CBOR<>, "/std")
         R_TEST((array<unsigned char, 0>{}), BS("\x7F\xFF"));
         R_TEST((array<unsigned char, 0>{}), BS("\x60"));
         W_TEST("\x40", (array<unsigned char, 0>{}));
+            // more
             R_TEST((array<int, 0>{}), BS("\x81\x00"), cbor::read_error::size_invalid, 0);
             R_TEST((array<int, 0>{}), BS("\x9F\x00\xFF"), cbor::read_error::size_invalid, 0);
             R_TEST((array<char, 0>{}), BS("\x41\x00"), cbor::read_error::size_invalid, 0);
@@ -82,7 +83,7 @@ TEST_BEG(array, cxon::CBOR<>, "/std")
 TEST_END()
 
 
-TEST_BEG(basic_string, cxon::CBOR<>, "/std") // std::basic_string
+TEST_BEG(basic_string, cxon::CBOR<>, "/std")
     // char
         R_TEST(string(""), BS("\x40"));     // definite
         R_TEST(string(""), BS("\x60"));     // definite
@@ -106,7 +107,7 @@ TEST_BEG(basic_string, cxon::CBOR<>, "/std") // std::basic_string
         R_TEST(wstring(L""), BS("\x80"));       // definite
         R_TEST(wstring(L""), BS("\x9F\xFF"));   // indefinite
         W_TEST(BS("\x80"), wstring(L""));
-    // char16_t[]
+    // char16_t
         R_TEST(u16string(u""), BS("\x80"));     // definite
         R_TEST(u16string(u""), BS("\x9F\xFF")); // indefinite
         W_TEST(BS("\x80"), u16string(u""));
@@ -119,7 +120,7 @@ TEST_BEG(basic_string, cxon::CBOR<>, "/std") // std::basic_string
                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A\xFF"));
         W_TEST(        BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"),
                u16string(u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A"));
-    // char32_t[]
+    // char32_t
         R_TEST(u32string(U""), BS("\x80"));     // definite
         R_TEST(u32string(U""), BS("\x9F\xFF")); // indefinite
         W_TEST(BS("\x80"), u32string(U""));
