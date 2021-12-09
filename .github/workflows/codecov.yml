@@ -7,14 +7,20 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
-    - name: Checkout boost/container
-      uses: actions/checkout@v2
-      with:
-        repository: boostorg/container
-        ref: master
-        path: .dep/boost
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-8 g++-8
+    - name: Checkout Boost
+      uses: actions/checkout@v2
+      with:
+        repository: boostorg/boost
+        ref: master
+        path: .dep/boost
+        submodules: recursive
+    - name: Setup Boost
+      run: |
+        cd .dep/boost
+        ./bootstrap.sh
+        ./b2 headers
     - name: Check
       env:
         CXX: g++-8
