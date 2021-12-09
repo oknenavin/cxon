@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef CXON_LIB_STD_MAP_
-#   define CXON_LIB_STD_MAP_
+#ifndef CXON_LIB_STD_MAP_HXX_
+#   define CXON_LIB_STD_MAP_HXX_
 
 #   include <map>
 
@@ -15,4 +15,4 @@
 #       include "cxon/lang/cbor/lib/std/map.hxx"
 #   endif
 
-#endif // CXON_LIB_STD_MAP_
+#endif // CXON_LIB_STD_MAP_HXX_
