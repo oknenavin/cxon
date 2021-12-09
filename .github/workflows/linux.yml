@@ -9,7 +9,7 @@ jobs:
   gcc-5:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-5 g++-5
     - name: Boost setup
@@ -23,7 +23,7 @@ jobs:
   gcc-6:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-6 g++-6
     - name: Boost setup
@@ -37,35 +37,43 @@ jobs:
   gcc-7:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Checkout boost/container
+      uses: actions/checkout@v2
+      with:
+        repository: boostorg/container
+        ref: master
+        path: .dep/boost
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-7 g++-7
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-7
-        CXXFLAGS: -std=c++17
+        CXXFLAGS: -std=c++17 -I ../.dep/boost/include
       run: make -j check
 
   gcc-8:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Checkout boost/container
+      uses: actions/checkout@v2
+      with:
+        repository: boostorg/container
+        ref: master
+        path: .dep/boost
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-8 g++-8
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-8
-        CXXFLAGS: -std=c++17
+        CXXFLAGS: -std=c++17 -I ../.dep/boost/include
       run: make -j check
 
   gcc-9:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-9 g++-9
     - name: Boost setup
@@ -77,9 +85,9 @@ jobs:
       run: make -j check
 
   gcc-10:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-10 g++-10
     - name: Boost setup
@@ -93,7 +101,7 @@ jobs:
   gcc-11:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-11 g++-11
     - name: Boost setup
@@ -109,7 +117,7 @@ jobs:
   #clang-3-5:
   #  runs-on: ubuntu-16.04
   #  steps:
-  #  - uses: actions/checkout@v1
+  #  - uses: actions/checkout@v2
   #  - name: Compiler setup
   #    run: sudo apt update; sudo apt install clang-3.5
   #  - name: Boost setup
@@ -123,7 +131,7 @@ jobs:
   clang-4:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-4.0
     - name: Boost setup
@@ -137,7 +145,7 @@ jobs:
   clang-5:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-5.0
     - name: Boost setup
@@ -151,7 +159,7 @@ jobs:
   clang-6:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-6.0
     - name: Boost setup
@@ -165,7 +173,7 @@ jobs:
   clang-7:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-7
     - name: Boost setup
@@ -179,7 +187,7 @@ jobs:
   clang-8:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-8
     - name: Boost setup
@@ -193,7 +201,7 @@ jobs:
   clang-9:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-9
     - name: Boost setup
@@ -207,7 +215,7 @@ jobs:
   clang-10:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-10
     - name: Boost setup
@@ -221,7 +229,7 @@ jobs:
   clang-11:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-11
     - name: Boost setup
@@ -235,7 +243,7 @@ jobs:
   clang-12:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Compiler setup
       run: sudo apt update; sudo apt install clang-12
     - name: Boost setup
