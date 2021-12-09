@@ -12,6 +12,8 @@
 #include "cxon/lib/boost/container/list.hxx"
 #include "cxon/lib/boost/container/slist.hxx"
 #include "cxon/lib/boost/container/string.hxx"
+#include "cxon/lib/boost/container/map.hxx"
+#include "cxon/lib/boost/container/set.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -147,4 +149,32 @@ TEST_BEG(basic_string, cxon::JSON<>, "/boost")
         R_TEST(u32string(), "a", json::read_error::unexpected, 0);
         R_TEST(u32string(), "\"", json::read_error::unexpected, 1);
         R_TEST(u32string(), QS("\\u001"), json::read_error::escape_invalid, 1);
+TEST_END()
+
+
+TEST_BEG(map, cxon::JSON<>, "/boost")
+    using namespace boost::container;
+    // std::map
+        R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
+        W_TEST(R"({"1":2,"3":4})", map<int, int>{{1, 2}, {3, 4}});
+        R_TEST(map<string, int>{{R"({"1":2})", 3}, {R"({"4":5})", 6}}, R"({"{\"1\":2}": 3, "{\"4\":5}": 6})");
+        W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", map<map<string, int>, int>{{map<string, int>{{"1", 2}}, 3}, {map<string, int>{{"4", 5}}, 6}});
+    // std::multimap
+        R_TEST(multimap<string, int>{{"1", 2}, {"1", 3}}, R"({"1": 2, "1": 3})");
+        W_TEST(R"({"1":2,"1":3})", multimap<int, int>{{1, 2}, {1, 3}});
+TEST_END()
+
+
+TEST_BEG(set, cxon::JSON<>, "/boost")
+    using namespace boost::container;
+    // std::set<int>
+        R_TEST((set<int>{}), "[]");
+        W_TEST("[]", (set<int>{}));
+        R_TEST((set<int>({1, 2, 3})), "[1, 1, 2, 3]");
+        W_TEST("[1,2,3]", (set<int>({1, 2, 3})));
+    // std::multiset<int>;
+        R_TEST((multiset<int>{}), "[]");
+        W_TEST("[]", (multiset<int>{}));
+        R_TEST((multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
+        W_TEST("[1,1,2,3]", (multiset<int>({1, 1, 2, 3})));
 TEST_END()

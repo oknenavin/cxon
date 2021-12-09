@@ -13,6 +13,8 @@
 #include "cxon/lib/boost/container/list.hxx"
 #include "cxon/lib/boost/container/slist.hxx"
 #include "cxon/lib/boost/container/string.hxx"
+#include "cxon/lib/boost/container/map.hxx"
+#include "cxon/lib/boost/container/set.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -226,4 +228,52 @@ TEST_BEG(basic_string, cxon::CBOR<>, "/boost")
                        BS("\x9F\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x1A\x00\x01\xF3\x7A\xFF"));
         // errors
         R_TEST((string*)nullptr, BS("\xF7"), cbor::read_error::array_invalid, 0);
+TEST_END()
+
+
+TEST_BEG(map, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    R_TEST(map<int, int>{}, BS("\xA0"));
+    R_TEST(map<int, int>{}, BS("\xBF\xFF"));
+    W_TEST(BS("\xA0"), map<int, int>{});
+    R_TEST(map<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+    R_TEST(map<int, int>{{1, 2}}, BS("\xA2\x01\x02\x01\x02"));
+    W_TEST(BS("\xA1\x01\x02"), map<int, int>{{1, 2}});
+    R_TEST(map<int, string>{{1, "2"}}, BS("\xA1\x01\x61\x32"));
+    W_TEST(BS("\xA1\x01\x61\x32"), map<int, string>{{1, "2"}});
+    R_TEST(map<string, int>{{"1", 2}}, BS("\xA1\x61\x31\x02"));
+    W_TEST(BS("\xA1\x61\x31\x02"), map<string, int>{{"1", 2}});
+TEST_END()
+
+
+TEST_BEG(multimap, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    R_TEST(multimap<int, int>{}, BS("\xA0"));
+    R_TEST(multimap<int, int>{}, BS("\xBF\xFF"));
+    W_TEST(BS("\xA0"), multimap<int, int>{});
+    R_TEST(multimap<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+    R_TEST(multimap<int, int>{{1, 2}, {1, 3}}, BS("\xA2\x01\x02\x01\x03"));
+    W_TEST(BS("\xA1\x01\x02"), multimap<int, int>{{1, 2}});
+TEST_END()
+
+
+TEST_BEG(set, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    R_TEST(set<int>{}, BS("\x80"));
+    R_TEST(set<int>{}, BS("\x9F\xFF"));
+    W_TEST(BS("\x80"), set<int>{});
+    R_TEST(set<int>{1, 2}, BS("\x82\x01\x02"));
+    R_TEST(set<int>{1, 2}, BS("\x83\x01\x02\x01"));
+    W_TEST(BS("\x82\x01\x02"), set<int>{1, 2});
+TEST_END()
+
+
+TEST_BEG(multiset, cxon::CBOR<>, "/boost")
+    using namespace boost::container;
+    R_TEST(multiset<int>{}, BS("\x80"));
+    R_TEST(multiset<int>{}, BS("\x9F\xFF"));
+    W_TEST(BS("\x80"), multiset<int>{});
+    R_TEST(multiset<int>{1, 2}, BS("\x82\x01\x02"));
+    R_TEST(multiset<int>{1, 1, 2}, BS("\x83\x01\x02\x01"));
+    W_TEST(BS("\x82\x01\x02"), multiset<int>{1, 2});
 TEST_END()
