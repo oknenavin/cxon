@@ -6,15 +6,19 @@ jobs:
   codecov:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Checkout boost/container
+      uses: actions/checkout@v2
+      with:
+        repository: boostorg/container
+        ref: master
+        path: .dep/boost
     - name: Compiler setup
       run: sudo apt update; sudo apt install gcc-8 g++-8
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
     - name: Check
       env:
         CXX: g++-8
-        CXXFLAGS: --coverage -O0 -std=c++17
+        CXXFLAGS: --coverage -O0 -std=c++17 -I ../.dep/boost/include
       run: |
         make -j check
         make -j time
