@@ -74,7 +74,9 @@ cxon-lang-json-lib-boost-container = \
     $(srcdir)/lang/json/lib/boost/container/slist.hxx \
     $(srcdir)/lang/json/lib/boost/container/string.hxx \
     $(srcdir)/lang/json/lib/boost/container/map.hxx \
-    $(srcdir)/lang/json/lib/boost/container/set.hxx
+    $(srcdir)/lang/json/lib/boost/container/set.hxx \
+    $(srcdir)/lang/json/lib/boost/container/flat_map.hxx \
+    $(srcdir)/lang/json/lib/boost/container/flat_set.hxx
 
 cxon-lang-json-node = \
     $(srcdir)/lang/json/node/node.hxx
@@ -129,7 +131,9 @@ cxon-lang-cbor-lib-boost-container = \
     $(srcdir)/lang/cbor/lib/boost/container/slist.hxx \
     $(srcdir)/lang/cbor/lib/boost/container/string.hxx \
     $(srcdir)/lang/cbor/lib/boost/container/map.hxx \
-    $(srcdir)/lang/cbor/lib/boost/container/set.hxx
+    $(srcdir)/lang/cbor/lib/boost/container/set.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/flat_map.hxx \
+    $(srcdir)/lang/cbor/lib/boost/container/flat_set.hxx
 
 cxon-lang-cbor-node = \
     $(srcdir)/lang/cbor/node/node.hxx
@@ -170,7 +174,9 @@ cxon-lib-boost-container = \
     $(srcdir)/lib/boost/container/slist.hxx \
     $(srcdir)/lib/boost/container/string.hxx \
     $(srcdir)/lib/boost/container/map.hxx \
-    $(srcdir)/lib/boost/container/set.hxx
+    $(srcdir)/lib/boost/container/set.hxx \
+    $(srcdir)/lib/boost/container/flat_map.hxx \
+    $(srcdir)/lib/boost/container/flat_set.hxx
 
 cxon-lib = \
     $(srcdir)/lib/node.hxx \
