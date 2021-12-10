@@ -13,7 +13,7 @@ if (MSVC)
     if (MSVC_VERSION GREATER 1910)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -permissive-")
     endif ()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Za -Zc:rvalueCast -Zc:__cplusplus")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Za -Zc:rvalueCast -Zc:__cplusplus -EHsc")
 endif ()
 
 
