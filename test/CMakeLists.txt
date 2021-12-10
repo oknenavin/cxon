@@ -20,7 +20,7 @@ endif ()
 include_directories (../src)
 
 add_executable (
-    cxon.json src/json/json.json.cxx src/json/json.fundamental.cxx src/json/json.compound.cxx src/json/json.std.cxx
+    cxon.json src/json/json.json.cxx src/json/json.fundamental.cxx src/json/json.compound.cxx src/json/json.std.cxx src/json/json.boost.container.cxx
 )
 set_target_properties (
     cxon.json PROPERTIES
@@ -40,7 +40,7 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.cbor src/cbor/cbor.cbor.cxx src/cbor/cbor.fundamental.cxx src/cbor/cbor.compound.cxx src/cbor/cbor.std.cxx
+    cxon.cbor src/cbor/cbor.cbor.cxx src/cbor/cbor.fundamental.cxx src/cbor/cbor.compound.cxx src/cbor/cbor.std.cxx src/cbor/cbor.boost.container.cxx
 )
 set_target_properties (
     cxon.cbor PROPERTIES

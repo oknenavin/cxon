@@ -6,10 +6,29 @@ jobs:
   msvc:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Checkout Boost
+      uses: actions/checkout@v2
+      with:
+        repository: boostorg/boost
+        ref: master
+        path: .dep/boost
+        submodules: recursive
+    - name: Setup Boost
+      shell: bash
+      run: |
+        cd .dep/boost
+        ./bootstrap.sh
+        ./b2 headers
     - name: Configure
-      run: cd test ; cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
+      run: |
+        cd test
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=17 -D CMAKE_CXX_FLAGS="/I ../../.dep/boost"
     - name: Build
-      run: cd test ; cmake --build build --parallel
+      run: |
+        cd test
+        cmake --build .bld --config Release --parallel
     - name: Check
-      run: cd test/build ; ctest -j -V -C Release
+      run: |
+      cd test/.bld
+      ctest -j -V -C Release
