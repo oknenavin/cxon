@@ -1,8 +1,11 @@
 name: "CodeQL"
 
-on: [ push, pull_request, workflow_dispatch ]
-#  schedule:
-#    - cron: '58 23 * * 5'
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 3 * * 6'
 
 jobs:
   CodeQL:
