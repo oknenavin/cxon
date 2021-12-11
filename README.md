@@ -147,6 +147,33 @@ Named parameters can be compile time or runtime giving flexibility for the imple
       - [`std::chrono::duration`][std-duration]
       - [`std::chrono::time_point`][std-time-pt]
 
+`CXON` implementation of [`Boost/Containers`](https://www.boost.org/doc/libs/1_78_0/?view=category_containers) is
+under development:
+  - [ ] `Array` `(*)`
+  - [ ] `Bimap`
+  - [ ] `Circular Buffer`
+  - [x] `Container`
+  - [ ] `Dynamic Bitset`
+  - [ ] `GIL` `(*)`
+  - [ ] `Graph` / `GraphParallel` `(*)`
+  - [ ] `ICL`
+  - [ ] `Intrusive`
+  - [ ] `JSON`
+  - [ ] `Multi-Array`
+  - [ ] `Multi-Index`
+  - [ ] `Pointer Container` `(*)`
+  - [ ] `PolyCollection` `(*)`
+  - [ ] `Property Map` `(*)`
+  - [ ] `Property Map` / `Property Map (Parallel)` `(*)`
+  - [ ] `Property Tree`
+  - [ ] `String_ref` `(*)`
+  - [ ] `String_ref` `(*)`
+  - [ ] `Unordered`
+  - [ ] `Variant` `(*)`
+  - [ ] `Variant2`
+
+_`(*)` Not decided._
+
 `CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
 
