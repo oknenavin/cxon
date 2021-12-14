@@ -11,7 +11,7 @@ jobs:
   coverity:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Boost setup
       run: sudo apt update; sudo apt install libboost-container-dev
     - name: Coverity setup
@@ -19,15 +19,17 @@ jobs:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
       run: |
         wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=oknenavin%2Fcxon" -O coverity-tool.tgz
+        ls
         mkdir coverity-tool
+        ls coverity-tool
         tar xzf coverity-tool.tgz --strip 1 -C coverity-tool
+        ls coverity-tool
     - name: Build
       env:
         CXXFLAGS: -std=c++17
       run: |
         export PATH=`pwd`/coverity-tool/bin:$PATH
         cov-build --dir cov-int make -j
-        cat cov-int/build-log.txt
     - name: Submit
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
