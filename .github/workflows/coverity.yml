@@ -27,6 +27,7 @@ jobs:
       run: |
         export PATH=`pwd`/coverity-tool/bin:$PATH
         cov-build --dir cov-int make -j
+        cat cov-int/build-log.txt
     - name: Submit
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
