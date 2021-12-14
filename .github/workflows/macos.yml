@@ -26,6 +26,8 @@ jobs:
         git submodule update --init libs/config
         git submodule update --init libs/container
         python tools/boostdep/depinst/depinst.py container
+        git submodule update --init libs/dynamic_bitset
+        python tools/boostdep/depinst/depinst.py dynamic_bitset
         ./bootstrap.sh
         ./b2 headers
     - name: Configure

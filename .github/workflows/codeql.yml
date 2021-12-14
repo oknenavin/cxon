@@ -17,7 +17,7 @@ jobs:
         with:
           languages: cpp
       - name: Boost setup
-        run: sudo apt update; sudo apt install libboost-container-dev
+        run: sudo apt update; sudo apt install libboost-dev
       - name: Check
         uses: github/codeql-action/autobuild@v1
       #- run: |
