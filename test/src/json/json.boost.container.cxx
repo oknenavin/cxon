@@ -16,6 +16,9 @@
 #include "cxon/lib/boost/container/set.hxx"
 #include "cxon/lib/boost/container/flat_map.hxx"
 #include "cxon/lib/boost/container/flat_set.hxx"
+#include "cxon/lib/boost/dynamic_bitset.hxx"
+
+#include "cxon/lib/std/map.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -207,4 +210,47 @@ TEST_BEG(flat_set, cxon::JSON<>, "/boost")
         W_TEST("[]", (flat_multiset<int>{}));
         R_TEST((flat_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
         W_TEST("[1,1,2,3]", (flat_multiset<int>({1, 1, 2, 3})));
+TEST_END()
+
+
+TEST_BEG(dynamic_bitset, cxon::JSON<>, "/boost")
+    using namespace boost;
+    using bitset = dynamic_bitset<unsigned char>;
+    // boost::dynamic_bitset
+        R_TEST(bitset(1, 0x1), QS("1"));
+        W_TEST(QS("1"), bitset(1, 0x1));
+        R_TEST(bitset(2, 0x1), QS("01"));
+        W_TEST(QS("01"), bitset(2, 0x1));
+        R_TEST(bitset(3, 0x5), QS("101"));
+        W_TEST(QS("101"), bitset(3, 0x5));
+        R_TEST(bitset(4, 0x5), QS("0101"));
+        W_TEST(QS("0101"), bitset(4, 0x5));
+        R_TEST(bitset(5, 0x15), QS("10101"));
+        W_TEST(QS("10101"), bitset(5, 0x15));
+        R_TEST(bitset(6, 0x15), QS("010101"));
+        W_TEST(QS("010101"), bitset(6, 0x15));
+        R_TEST(bitset(7, 0x55), QS("1010101"));
+        W_TEST(QS("1010101"), bitset(7, 0x55));
+        R_TEST(bitset(8, 0x55), QS("01010101"));
+        W_TEST(QS("01010101"), bitset(8, 0x55));
+        R_TEST(bitset(9, 0x155), QS("101010101"));
+        W_TEST(QS("101010101"), bitset(9, 0x155));
+        R_TEST(bitset(10, 0x155), QS("0101010101"));
+        W_TEST(QS("0101010101"), bitset(10, 0x155));
+        R_TEST(bitset(11, 0x555), QS("10101010101"));
+        W_TEST(QS("10101010101"), bitset(11, 0x555));
+        R_TEST(bitset(12, 0x555), QS("010101010101"));
+        W_TEST(QS("010101010101"), bitset(12, 0x555));
+        R_TEST(bitset(13, 0x1555), QS("1010101010101"));
+        W_TEST(QS("1010101010101"), bitset(13, 0x1555));
+        R_TEST(bitset(14, 0x1555), QS("01010101010101"));
+        W_TEST(QS("01010101010101"), bitset(14, 0x1555));
+        R_TEST(bitset(15, 0x5555), QS("101010101010101"));
+        W_TEST(QS("101010101010101"), bitset(15, 0x5555));
+        R_TEST(bitset(16, 0x5555), QS("0101010101010101"));
+        W_TEST(QS("0101010101010101"), bitset(16, 0x5555));
+        // keys
+        R_TEST(std::map<bitset, int>{{bitset(8, 0x55), 1}}, R"({"01010101":1})");
+        W_TEST(R"({"01010101":1})", std::map<bitset, int>{{bitset(8, 0x55), 1}});
+        // errors
 TEST_END()

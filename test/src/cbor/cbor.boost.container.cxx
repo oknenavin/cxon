@@ -17,6 +17,7 @@
 #include "cxon/lib/boost/container/set.hxx"
 #include "cxon/lib/boost/container/flat_map.hxx"
 #include "cxon/lib/boost/container/flat_set.hxx"
+#include "cxon/lib/boost/dynamic_bitset.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -327,4 +328,71 @@ TEST_BEG(flat_multiset, cxon::CBOR<>, "/boost")
     R_TEST(flat_multiset<int>{1, 2}, BS("\x82\x01\x02"));
     R_TEST(flat_multiset<int>{1, 1, 2}, BS("\x83\x01\x02\x01"));
     W_TEST(BS("\x82\x01\x02"), flat_multiset<int>{1, 2});
+TEST_END()
+
+
+TEST_BEG(dynamic_bitset, cxon::CBOR<>, "/boost")
+    using namespace boost;
+    using bitset = dynamic_bitset<unsigned char>;
+    R_TEST(bitset {32, 0x000000FF}, BS("\x45\x00\x00\x00\x00\xFF")); //                         11111111
+    R_TEST(bitset {32, 0x0000FFFF}, BS("\x45\x00\x00\x00\xFF\xFF")); //                 1111111111111111
+    R_TEST(bitset {32, 0xFFFFFFFF}, BS("\x45\x00\xFF\xFF\xFF\xFF")); // 11111111111111111111111111111111
+    R_TEST(bitset {32, 0xFFFF0000}, BS("\x45\x00\xFF\xFF\x00\x00")); // 11111111111111110000000000000000
+    R_TEST(bitset {32, 0xFF000000}, BS("\x45\x00\xFF\x00\x00\x00")); // 11111111000000000000000000000000
+    W_TEST(BS("\x45\x00\xFF\x00\x00\x00"), bitset {32, 0xFF000000}); // 11111111000000000000000000000000
+    W_TEST(BS("\x45\x00\xFF\xFF\x00\x00"), bitset {32, 0xFFFF0000}); // 11111111111111110000000000000000
+    W_TEST(BS("\x45\x00\xFF\xFF\xFF\xFF"), bitset {32, 0xFFFFFFFF}); // 11111111111111111111111111111111
+    W_TEST(BS("\x45\x00\x00\x00\xFF\xFF"), bitset {32, 0x0000FFFF}); //                 1111111111111111
+    W_TEST(BS("\x45\x00\x00\x00\x00\xFF"), bitset {32, 0x000000FF}); //                         11111111
+    R_TEST(bitset { 1, 0x00000001}, BS("\x42\x07\x01"));             //                               01
+    R_TEST(bitset { 3, 0x00000005}, BS("\x42\x05\x05"));             //                             0101
+    R_TEST(bitset { 5, 0x00000015}, BS("\x42\x03\x15"));             //                           010101
+    R_TEST(bitset { 7, 0x00000055}, BS("\x42\x01\x55"));             //                         01010101
+    R_TEST(bitset { 9, 0x00000155}, BS("\x43\x07\x01\x55"));         //                       0101010101
+    R_TEST(bitset {11, 0x00000555}, BS("\x43\x05\x05\x55"));         //                     010101010101
+    R_TEST(bitset {13, 0x00001555}, BS("\x43\x03\x15\x55"));         //                   01010101010101
+    R_TEST(bitset {15, 0x00005555}, BS("\x43\x01\x55\x55"));         //                 0101010101010101
+    R_TEST(bitset {18, 0x0002AAAA}, BS("\x44\x06\x02\xAA\xAA"));     //               101010101010101010
+    R_TEST(bitset {20, 0x000AAAAA}, BS("\x44\x04\x0A\xAA\xAA"));     //             10101010101010101010
+    R_TEST(bitset {22, 0x002AAAAA}, BS("\x44\x02\x2A\xAA\xAA"));     //           1010101010101010101010
+    R_TEST(bitset {24, 0x00AAAAAA}, BS("\x44\x00\xAA\xAA\xAA"));     //         101010101010101010101010
+    R_TEST(bitset {26, 0x02AAAAAA}, BS("\x45\x06\x02\xAA\xAA\xAA")); //       10101010101010101010101010
+    R_TEST(bitset {28, 0x0AAAAAAA}, BS("\x45\x04\x0A\xAA\xAA\xAA")); //     1010101010101010101010101010
+    R_TEST(bitset {30, 0x2AAAAAAA}, BS("\x45\x02\x2A\xAA\xAA\xAA")); //   101010101010101010101010101010
+    R_TEST(bitset {32, 0xAAAAAAAA}, BS("\x45\x00\xAA\xAA\xAA\xAA")); // 10101010101010101010101010101010
+    W_TEST(BS("\x45\x00\xAA\xAA\xAA\xAA"), bitset {32, 0xAAAAAAAA}); // 10101010101010101010101010101010
+    W_TEST(BS("\x45\x02\x2A\xAA\xAA\xAA"), bitset {30, 0x2AAAAAAA}); //   101010101010101010101010101010
+    W_TEST(BS("\x45\x04\x0A\xAA\xAA\xAA"), bitset {28, 0x0AAAAAAA}); //     1010101010101010101010101010
+    W_TEST(BS("\x45\x06\x02\xAA\xAA\xAA"), bitset {26, 0x02AAAAAA}); //       10101010101010101010101010
+    W_TEST(BS("\x44\x00\xAA\xAA\xAA"), bitset {24, 0x00AAAAAA});     //         101010101010101010101010
+    W_TEST(BS("\x44\x02\x2A\xAA\xAA"), bitset {22, 0x002AAAAA});     //           1010101010101010101010
+    W_TEST(BS("\x44\x04\x0A\xAA\xAA"), bitset {20, 0x000AAAAA});     //             10101010101010101010
+    W_TEST(BS("\x44\x06\x02\xAA\xAA"), bitset {18, 0x0002AAAA});     //               101010101010101010
+    W_TEST(BS("\x43\x01\x55\x55"), bitset {15, 0x00005555});         //                 0101010101010101
+    W_TEST(BS("\x43\x03\x15\x55"), bitset {13, 0x00001555});         //                   01010101010101
+    W_TEST(BS("\x43\x05\x05\x55"), bitset {11, 0x00000555});         //                     010101010101
+    W_TEST(BS("\x43\x07\x01\x55"), bitset { 9, 0x00000155});         //                       0101010101
+    W_TEST(BS("\x42\x01\x55"), bitset { 7, 0x00000055});             //                         01010101
+    W_TEST(BS("\x42\x03\x15"), bitset { 5, 0x00000015});             //                           010101
+    W_TEST(BS("\x42\x05\x05"), bitset { 3, 0x00000005});             //                             0101
+    W_TEST(BS("\x42\x07\x01"), bitset { 1, 0x00000001});             //                               01
+    // errors
+    R_TEST(bitset {}, BS("\x5C"), cbor::read_error::size_invalid, 0);
+    R_TEST(bitset {}, BS("\x44"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset {}, BS("\x64"), cbor::read_error::unexpected, 0);
+    R_TEST(bitset {}, BS("\x5C"), cbor::read_error::size_invalid, 0);
+    R_TEST(bitset {}, BS("\x41"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset {}, BS("\x64"), cbor::read_error::unexpected, 0);
+    {   bio::byte o[1];
+        auto const r = to_bytes(std::begin(o), std::end(o), bitset(8 * 32));
+        TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
+    }
+    {   bio::byte o[1];
+        auto const r = to_bytes(std::begin(o), std::end(o), bitset(9));
+        TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
+    }
+    {   bio::byte o[2];
+        auto const r = to_bytes(std::begin(o), std::end(o), bitset(9));
+        TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
+    }
 TEST_END()
