@@ -153,7 +153,7 @@ under development:
   - [ ] `Bimap`
   - [ ] `Circular Buffer`
   - [x] `Container`
-  - [ ] `Dynamic Bitset`
+  - [x] `Dynamic Bitset`
   - [ ] `GIL` `(*)`
   - [ ] `Graph` / `GraphParallel` `(*)`
   - [ ] `ICL`
