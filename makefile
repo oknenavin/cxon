@@ -65,6 +65,9 @@ cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/variant.hxx \
     $(srcdir)/lang/json/lib/std/vector.hxx
 
+cxon-lang-json-lib-boost = \
+    $(srcdir)/lang/json/lib/boost/dynamic_bitset.hxx
+
 cxon-lang-json-lib-boost-container = \
     $(srcdir)/lang/json/lib/boost/container/stable_vector.hxx \
     $(srcdir)/lang/json/lib/boost/container/small_vector.hxx \
@@ -122,6 +125,9 @@ cxon-lang-cbor-lib-std = \
     $(srcdir)/lang/cbor/lib/std/variant.hxx \
     $(srcdir)/lang/cbor/lib/std/vector.hxx
 
+cxon-lang-cbor-lib-boost = \
+    $(srcdir)/lang/cbor/lib/boost/dynamic_bitset.hxx
+
 cxon-lang-cbor-lib-boost-container = \
     $(srcdir)/lang/cbor/lib/boost/container/stable_vector.hxx \
     $(srcdir)/lang/cbor/lib/boost/container/small_vector.hxx \
@@ -164,6 +170,9 @@ cxon-lib-std = \
     $(srcdir)/lib/std/valarray.hxx \
     $(srcdir)/lib/std/variant.hxx \
     $(srcdir)/lib/std/vector.hxx
+
+cxon-lib-boost = \
+    $(srcdir)/lib/boost/dynamic_bitset.hxx
 
 cxon-lib-boost-container = \
     $(srcdir)/lib/boost/container/stable_vector.hxx \
@@ -232,6 +241,7 @@ install-cxon:
 	@install -p -m 0644 $(cxon-lib)                             $(insdir)/cxon/lib
 	@install -p -m 0644 $(cxon-lib-std)                         $(insdir)/cxon/lib/std
 	@install -d                                                 $(insdir)/cxon/lib/boost/container
+	@install -p -m 0644 $(cxon-lib-boost)                       $(insdir)/cxon/lib/boost
 	@install -p -m 0644 $(cxon-lib-boost-container)             $(insdir)/cxon/lib/boost/container
 
 install-common: install-cxon
@@ -250,6 +260,7 @@ install-lang: install-cxon install-common
 	@install -p -m 0644 $(cxon-lang-json-lib-std)               $(insdir)/cxon/lang/json/lib/std
 	@install -p -m 0644 $(cxon-lang-json-lib-std-imp)           $(insdir)/cxon/lang/json/lib/std/imp
 	@install -d                                                 $(insdir)/cxon/lang/json/lib/boost/container
+	@install -p -m 0644 $(cxon-lang-json-lib-boost)             $(insdir)/cxon/lang/json/lib/boost
 	@install -p -m 0644 $(cxon-lang-json-lib-boost-container)   $(insdir)/cxon/lang/json/lib/boost/container
 	@install -d                                                 $(insdir)/cxon/lang/cbor/common
 	@install -p -m 0644 $(cxon-lang-cbor-common)                $(insdir)/cxon/lang/cbor/common
@@ -260,6 +271,7 @@ install-lang: install-cxon install-common
 	@install -p -m 0644 $(cxon-lang-cbor-lib-std)               $(insdir)/cxon/lang/cbor/lib/std
 	@install -p -m 0644 $(cxon-lang-cbor-lib-std-imp)           $(insdir)/cxon/lang/cbor/lib/std/imp
 	@install -d                                                 $(insdir)/cxon/lang/cbor/lib/boost/container
+	@install -p -m 0644 $(cxon-lang-cbor-lib-boost)             $(insdir)/cxon/lang/cbor/lib/boost
 	@install -p -m 0644 $(cxon-lang-cbor-lib-boost-container)   $(insdir)/cxon/lang/cbor/lib/boost/container
 
 uninstall:

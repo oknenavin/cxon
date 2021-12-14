@@ -16,9 +16,14 @@ namespace cxon {
             inline auto read_bitset_(std::bitset<N>& t, II& i, II e, Cx& cx) -> enable_if_t<N >= 8, bool> {
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::bstr: {
-                        if (!cbor::cnt::read_size_eq<X>(N / 8 + std::size_t(!!(N % 8)), i, e, cx))
+                        auto const M = N / 8 + std::size_t(!!(N % 8));
+                        if (!cbor::cnt::read_size_eq<X>(M + 1, i, e, cx))
                             return false;
                         if (i == e)
+                            return cx/cbor::read_error::unexpected;
+                        if (M * 8 - bio::byte(*i) != N)
+                            return cx/cbor::read_error::size_invalid;
+                        if (++i == e)
                             return cx/cbor::read_error::unexpected;
                         if (N % 8)
                             t |= std::bitset<N> {*i++};
@@ -38,15 +43,39 @@ namespace cxon {
             inline auto read_bitset_(std::bitset<N>& t, II& i, II e, Cx& cx) -> enable_if_t<N  < 8, bool> {
                 switch (bio::peek(i, e) & X::mjr) {
                     case X::bstr: {
-                        if (!cbor::cnt::read_size_eq<X>(N / 8 + std::size_t(!!(N % 8)), i, e, cx))
+                        auto const M = N / 8 + std::size_t(!!(N % 8));
+                        if (!cbor::cnt::read_size_eq<X>(M + 1, i, e, cx))
                             return false;
                         if (i == e)
                             return cx/cbor::read_error::unexpected;
-                        return t |= std::bitset<N> {*i++}, true;
+                        if (M * 8 - bio::byte(*i) != N)
+                            return cx/cbor::read_error::size_invalid;
+                        if (++i == e)
+                            return cx/cbor::read_error::unexpected;
+                        return t |= std::bitset<N> {*i}, ++i, true;
                     }
                     default:
                         return cx/cbor::read_error::unexpected;
                 }
+            }
+
+        template <typename X, typename O, std::size_t N, typename Cx>
+            inline bool write_bitset_(O& o, const std::bitset<N>& t, Cx& cx) {
+                auto const M = N / 8 + (N % 8 ? 1 : 0);
+                if (!cbor::cnt::write_size<X>(o, X::bstr, M + 1, cx))
+                    return false;
+                if (!bio::poke<X>(o, bio::byte(M * 8 - N), cx))
+                    return false;
+                bio::byte b = 0;
+                for (std::size_t i = N; i != 0; --i) {
+                    b |= t[i - 1] << ((i - 1) % 8);
+                    if ((i - 1) % 8 == 0) {
+                        if (!bio::poke<X>(o, b, cx))
+                            return false;
+                        b = 0;
+                    }
+                }
+                return true;
             }
 
     }}
@@ -65,19 +94,7 @@ namespace cxon {
         struct write<CBOR<X>, std::bitset<N>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::bitset<N>& t, Cx& cx) {
-                    if (!cbor::cnt::write_size<Y>(o, Y::bstr, N / 8 + std::size_t(!!(N % 8)), cx))
-                        return false;
-
-                    bio::byte b = 0;
-                    for (std::size_t i = t.size(); i != 0; --i) {
-                        b |= t[i - 1] << ((i - 1) % 8);
-                        if ((i - 1) % 8 == 0) {
-                            if (!bio::poke<Y>(o, b, cx))
-                                return false;
-                            b = 0;
-                        }
-                    }
-                    return true;
+                    return cbor::imp::write_bitset_<Y>(o, t, cx);
                 }
         };
 
