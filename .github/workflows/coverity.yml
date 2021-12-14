@@ -19,11 +19,8 @@ jobs:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
       run: |
         wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=oknenavin%2Fcxon" -O coverity-tool.tgz
-        ls
         mkdir coverity-tool
-        ls coverity-tool
         tar xzf coverity-tool.tgz --strip 1 -C coverity-tool
-        ls coverity-tool
     - name: Build
       env:
         CXXFLAGS: -std=c++17
