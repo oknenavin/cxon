@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
+      run: sudo apt update; sudo apt install libboost-dev
     - name: Coverity setup
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
