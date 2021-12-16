@@ -70,8 +70,14 @@ namespace cxon {
 
     template <typename T, T ...> // C++14
         struct integer_sequence;
-    template <typename T, std::size_t N, T ...>
-        struct make_integer_sequence;
+    namespace imp {
+        template <typename T, std::size_t H, T ...Ts>
+            struct make_integer_sequence_ : make_integer_sequence_<T, H - 1, H - 1, Ts...>  {};
+        template <typename T, T ...Ts>
+            struct make_integer_sequence_<T, 0, Ts...> : integer_sequence<T, Ts...>         { using type = integer_sequence<T, Ts...>; };
+    }
+    template <typename T, std::size_t N>
+        using make_integer_sequence = typename imp::make_integer_sequence_<T, N>::type;
 
     template <std::size_t ...N> // C++14
         using index_sequence = integer_sequence<std::size_t, N...>;
@@ -161,10 +167,6 @@ namespace cxon {
             static constexpr std::size_t size() noexcept { return sizeof...(Ts); }
         };
 
-    template <typename T, std::size_t H, T ...Ts>
-        struct make_integer_sequence : make_integer_sequence<T, H - 1, H - 1, Ts...> {};
-    template <typename T, T ...Ts>
-        struct make_integer_sequence<T, 0, Ts...> : integer_sequence<T, Ts...> {};
 
     namespace imp {
 
