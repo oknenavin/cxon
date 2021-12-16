@@ -167,7 +167,7 @@ under development:
   - [ ] `Property Tree`
   - [ ] `String_ref` `(*)`
   - [ ] `Unordered`
-  - [ ] `Variant` `(*)`
+  - [x] `Variant`
   - [x] `Variant2`
 
 _`(*)` Not decided._

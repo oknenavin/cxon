@@ -19,6 +19,7 @@
 #include "cxon/lib/boost/container/flat_set.hxx"
 #include "cxon/lib/boost/dynamic_bitset.hxx"
 #include "cxon/lib/boost/variant2.hxx"
+#include "cxon/lib/boost/variant.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -412,3 +413,23 @@ TEST_END()
         W_TEST(BS("\x82\x00\xF7"), variant<monostate, int>());
     TEST_END()
 #endif
+
+
+namespace cxon { namespace test {
+    template <typename T>
+        struct match<boost::recursive_wrapper<T>> {
+            static bool values(const boost::recursive_wrapper<T>& t0, const boost::recursive_wrapper<T>& t1) {
+                return t0.get() == t1.get();
+            }
+        };
+}}
+TEST_BEG(variant, cxon::CBOR<>, "/boost")
+    using namespace boost;
+    R_TEST(variant<int, double>(  1), BS("\x82\x00\x01"));
+    R_TEST(variant<int, double>(0.0), BS("\x82\x01\x00"));
+    R_TEST(variant<int, double>(  0), BS("\x82\x02\x00"), cbor::read_error::unexpected, 1);
+    W_TEST(BS("\x82\x00\x01"), variant<int, double>(1));
+    W_TEST(BS("\x82\x01\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), variant<int, double>(0.0));
+    R_TEST(recursive_wrapper<int>(3), BS("\x03"));
+    W_TEST(BS("\x03"), recursive_wrapper<int>(3));
+TEST_END()

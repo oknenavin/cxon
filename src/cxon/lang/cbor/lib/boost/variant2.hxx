@@ -10,9 +10,9 @@
 
 namespace cxon {
 
-    namespace cbor { namespace imp {
+    namespace cbor { namespace imp { namespace boost { namespace variant2 {
 
-        template <typename X, typename V, typename II, typename Cx, typename N = make_index_sequence<boost::variant2::variant_size<V>::value>>
+        template <typename X, typename V, typename II, typename Cx, typename N = make_index_sequence<::boost::variant2::variant_size<V>::value>>
             struct read_;
         template <typename X, typename V, typename II, typename Cx, std::size_t ...N>
             struct read_<X, V, II, Cx, index_sequence<N...>> {
@@ -20,8 +20,8 @@ namespace cxon {
 
                 template <std::size_t M>
                     static bool variant_read_(V& t, II& i, II e, Cx& cx) {
-                        auto u = V {boost::variant2::in_place_index_t<M>()};
-                        return read_value<X>(boost::variant2::get<M>(u), i, e, cx) && (t = std::move(u), true);
+                        auto u = V {::boost::variant2::in_place_index_t<M>()};
+                        return read_value<X>(::boost::variant2::get<M>(u), i, e, cx) && (t = std::move(u), true);
                     }
                 static bool variant_read_(V& t, std::size_t n, II& i, II e, Cx& cx) {
                     using rvp_ = bool (*)(V&, II&, II, Cx&);
@@ -46,33 +46,33 @@ namespace cxon {
                 return read_<X, V, II, Cx>::variant(t, i, e, cx);
             }
 
-        template <typename X, typename O, typename V, typename Cx, typename N = make_index_sequence<boost::variant2::variant_size<V>::value>>
+        template <typename X, typename O, typename V, typename Cx, typename N = make_index_sequence<::boost::variant2::variant_size<V>::value>>
             struct write_;
         template <typename X, typename O, typename V, typename Cx, std::size_t ...N>
             struct write_<X, O, V, Cx, index_sequence<N...>> {
                 static constexpr std::size_t S_ = index_sequence<N...>::size();
 
                 template <std::size_t M>
-                    static bool variant_write_(O& o, V& t, Cx& cx) {
-                        return write_value<X>(o, boost::variant2::get<M>(t), cx);
+                    static bool variant_write_(O& o, const V& t, Cx& cx) {
+                        return write_value<X>(o, ::boost::variant2::get<M>(t), cx);
                     }
-                static bool variant_write_(O& o, V& t, std::size_t n, Cx& cx) {
-                    using wvp_ = bool (*)(O&, V&, Cx&);
+                static bool variant_write_(O& o, const V& t, std::size_t n, Cx& cx) {
+                    using wvp_ = bool (*)(O&, const V&, Cx&);
                     static constexpr wvp_ wv_[S_] = { &variant_write_<N>... };
                     return wv_[n](o, t, cx);
                 }
 
-                static bool variant(O& o, V& t, Cx& cx) {
+                static bool variant(O& o, const V& t, Cx& cx) {
                     return write_value<X>(o, t.index(), cx) && variant_write_(o, t, t.index(), cx);
                 }
             };
 
         template <typename X, typename O, typename V, typename Cx>
-            inline bool variant_write_(O& o, V& t, Cx& cx) {
+            inline bool variant_write_(O& o, const V& t, Cx& cx) {
                 return write_<X, O, V, Cx>::variant(o, t, cx);
             }
 
-    }}
+    }}}}
 
     template <typename X>
         struct read<CBOR<X>, boost::variant2::monostate> {
@@ -99,7 +99,7 @@ namespace cxon {
                 static bool value(boost::variant2::variant<T...>& t, II& i, II e, Cx& cx) {
                     return  cbor::tag::read<Y>(i, e, cx) &&
                             cbor::cnt::read_size_eq<Y>(2, i, e, cx) &&
-                            cbor::imp::variant_read_<Y>(t, i, e, cx)
+                            cbor::imp::boost::variant2::variant_read_<Y>(t, i, e, cx)
                     ;
                 }
         };
@@ -109,7 +109,7 @@ namespace cxon {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const boost::variant2::variant<T...>& t, Cx& cx) {
                     return  cbor::cnt::write_size<Y>(o, Y::arr, 2, cx) &&
-                            cbor::imp::variant_write_<Y>(o, t, cx)
+                            cbor::imp::boost::variant2::variant_write_<Y>(o, t, cx)
                     ;
                 }
         };
