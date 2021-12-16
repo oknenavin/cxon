@@ -66,7 +66,8 @@ cxon-lang-json-lib-std = \
     $(srcdir)/lang/json/lib/std/vector.hxx
 
 cxon-lang-json-lib-boost = \
-    $(srcdir)/lang/json/lib/boost/dynamic_bitset.hxx
+    $(srcdir)/lang/json/lib/boost/dynamic_bitset.hxx \
+    $(srcdir)/lang/json/lib/boost/variant2.hxx
 
 cxon-lang-json-lib-boost-container = \
     $(srcdir)/lang/json/lib/boost/container/stable_vector.hxx \
@@ -126,7 +127,8 @@ cxon-lang-cbor-lib-std = \
     $(srcdir)/lang/cbor/lib/std/vector.hxx
 
 cxon-lang-cbor-lib-boost = \
-    $(srcdir)/lang/cbor/lib/boost/dynamic_bitset.hxx
+    $(srcdir)/lang/cbor/lib/boost/dynamic_bitset.hxx \
+    $(srcdir)/lang/cbor/lib/boost/variant2.hxx
 
 cxon-lang-cbor-lib-boost-container = \
     $(srcdir)/lang/cbor/lib/boost/container/stable_vector.hxx \
@@ -172,7 +174,8 @@ cxon-lib-std = \
     $(srcdir)/lib/std/vector.hxx
 
 cxon-lib-boost = \
-    $(srcdir)/lib/boost/dynamic_bitset.hxx
+    $(srcdir)/lib/boost/dynamic_bitset.hxx \
+    $(srcdir)/lib/boost/variant2.hxx
 
 cxon-lib-boost-container = \
     $(srcdir)/lib/boost/container/stable_vector.hxx \

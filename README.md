@@ -168,7 +168,7 @@ under development:
   - [ ] `String_ref` `(*)`
   - [ ] `Unordered`
   - [ ] `Variant` `(*)`
-  - [ ] `Variant2`
+  - [x] `Variant2`
 
 _`(*)` Not decided._
 

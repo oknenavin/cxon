@@ -18,6 +18,7 @@
 #include "cxon/lib/boost/container/flat_map.hxx"
 #include "cxon/lib/boost/container/flat_set.hxx"
 #include "cxon/lib/boost/dynamic_bitset.hxx"
+#include "cxon/lib/boost/variant2.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -396,3 +397,18 @@ TEST_BEG(dynamic_bitset, cxon::CBOR<>, "/boost")
         TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
     }
 TEST_END()
+
+
+#ifdef CXON_HAS_BOOST_VARIANT2
+    TEST_BEG(variant2, cxon::CBOR<>, "/boost")
+        using namespace boost::variant2;
+        R_TEST(variant<int, double>(in_place_index_t<0>(), 1), BS("\x82\x00\x01"));
+        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x01\x00"));
+        R_TEST(variant<int, double>(in_place_index_t<1>(), 0), BS("\x82\x02\x00"), cbor::read_error::unexpected, 1);
+        W_TEST(BS("\x82\x00\x01"), variant<int, double>(1));
+        W_TEST(BS("\x82\x01\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), variant<int, double>(in_place_index_t<1>(), 0));
+        R_TEST(variant<monostate, int>(), BS("\x82\x00\xF7"));
+        R_TEST(variant<monostate, int>(), BS("\x82\x00\x00"), cbor::read_error::unexpected, 2);
+        W_TEST(BS("\x82\x00\xF7"), variant<monostate, int>());
+    TEST_END()
+#endif

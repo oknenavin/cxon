@@ -17,6 +17,7 @@
 #include "cxon/lib/boost/container/flat_map.hxx"
 #include "cxon/lib/boost/container/flat_set.hxx"
 #include "cxon/lib/boost/dynamic_bitset.hxx"
+#include "cxon/lib/boost/variant2.hxx"
 
 #include "cxon/lib/std/map.hxx"
 
@@ -254,3 +255,19 @@ TEST_BEG(dynamic_bitset, cxon::JSON<>, "/boost")
         W_TEST(R"({"01010101":1})", std::map<bitset, int>{{bitset(8, 0x55), 1}});
         // errors
 TEST_END()
+
+
+#ifdef CXON_HAS_BOOST_VARIANT2
+    TEST_BEG(variant2, cxon::JSON<>, "/boost")
+        using namespace boost::variant2;
+        // boost::variant2::variant
+            R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({"0":1})");
+            R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"1":0})");
+            R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"2":0})", json::read_error::unexpected, 1);
+            W_TEST(R"({"0":1})", variant<int, double>(1));
+            W_TEST(R"({"1":0})", variant<int, double>(in_place_index_t<1>(), 0));
+            R_TEST(variant<monostate, int>(), R"({"0":null})");
+            R_TEST(variant<monostate, int>(), R"({"0":1})", json::read_error::unexpected, 5);
+            W_TEST(R"({"0":null})", variant<monostate, int>());
+    TEST_END()
+#endif

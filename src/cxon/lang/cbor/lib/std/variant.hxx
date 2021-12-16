@@ -12,28 +12,36 @@ namespace cxon {
 
     namespace cbor { namespace imp {
 
-        template <typename X, typename V, std::size_t Ndx, typename II, typename Cx>
-            static bool variant_read_(V& t, II& i, II e, Cx& cx) {
-                V v{std::in_place_index_t<Ndx>()};
-                return read_value<X>(std::get<Ndx>(v), i, e, cx) && (t = std::move(v), true);
-            }
-
-        template <typename X, typename V, typename II, typename Cx, typename Ndx = std::make_index_sequence<std::variant_size<V>::value>>
+        template <typename X, typename V, typename II, typename Cx, typename N = std::make_index_sequence<std::variant_size<V>::value>>
             struct variant_;
-        template <typename X, typename V, typename II, typename Cx, std::size_t ...Ndx>
-            struct variant_<X, V, II, Cx, std::index_sequence<Ndx...>> {
-                using reader_t = bool(*)(V&, II&, II, Cx&);
-                static constexpr std::size_t cnt_ = std::index_sequence<Ndx...>::size();
-                static constexpr reader_t rdr_[cnt_] = { &variant_read_<X, V, Ndx, II, Cx>... };
-                static bool index(std::size_t& n, II& i, II e, Cx& cx) {
+        template <typename X, typename V, typename II, typename Cx, std::size_t ...N>
+            struct variant_<X, V, II, Cx, std::index_sequence<N...>> {
+                using rp_ = bool (*)(V&, II&, II, Cx&);
+                static constexpr std::size_t S_ = std::index_sequence<N...>::size();
+
+                template <std::size_t M>
+                    static bool variant_read_(V& t, II& i, II e, Cx& cx) {
+                        auto u = V {std::in_place_index_t<M>()};
+                        return read_value<X>(std::get<M>(u), i, e, cx) && (t = std::move(u), true);
+                    }
+                static constexpr rp_ read_[S_] = { &variant_read_<N>... };
+
+                static bool index_(std::size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return read_value<X>(n, i, e, cx) && (n < cnt_ || (bio::rewind(i, o), cx/cbor::read_error::unexpected));
+                    return  (read_value<X>(n, i, e, cx) && n < S_) ||
+                            (bio::rewind(i, o), cx/cbor::read_error::unexpected)
+                    ;
                 }
                 static bool read(V& t, II& i, II e, Cx& cx) {
                     std::size_t n;
-                    return index(n, i, e, cx) && rdr_[n](t, i, e, cx);
+                        return index_(n, i, e, cx) && read_[n](t, i, e, cx);
                 }
             };
+
+        template <typename X, typename V, typename II, typename Cx>
+            inline bool variant_read_(V& t, II& i, II e, Cx& cx) {
+                return variant_<X, V, II, Cx>::read(t, i, e, cx);
+            }
 
     }}
 
@@ -62,7 +70,7 @@ namespace cxon {
                 static bool value(std::variant<T...>& t, II& i, II e, Cx& cx) {
                     return  cbor::tag::read<Y>(i, e, cx) &&
                             cbor::cnt::read_size_eq<Y>(2, i, e, cx) &&
-                            cbor::imp::variant_<Y, std::variant<T...>, II, Cx>::read(t, i, e, cx)
+                            cbor::imp::variant_read_<Y>(t, i, e, cx)
                     ;
                 }
         };
@@ -72,8 +80,8 @@ namespace cxon {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
                     return  cbor::cnt::write_size<Y>(o, Y::arr, 2, cx) &&
-                                write_value<Y>(o, t.index(), cx) &&
-                                std::visit([&](auto&& v) { return write_value<Y>(o, v, cx); }, t)
+                            write_value<Y>(o, t.index(), cx) &&
+                            std::visit([&](auto&& v) { return write_value<Y>(o, v, cx); }, t)
                     ;
                 }
         };
