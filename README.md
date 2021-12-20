@@ -120,8 +120,7 @@ Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the
 The traits can be stateful or stateless allowing arbitrary complex formats.  
 Named parameters can be compile time or runtime giving flexibility for the implementations.
 
-`CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box, including:
-
+- `CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box, including:
   - [fundamental types][cpp-fund-types]
       - `nullptr_t`
       - `bool`
@@ -140,37 +139,17 @@ Named parameters can be compile time or runtime giving flexibility for the imple
       - [`std::optional`][std-opt]
       - [`std::variant`][std-var]
       - [`std::basic_string`][std-bstr]
-      - [`std::basic_string_view`][std-strv]
+      - [`std::basic_string_view`][std-strv] - _write only_
       - [`std::bitset`][std-bitset]
       - [`std::complex`][std-complex]
       - [`std::valarray`][std-valarr]
       - [`std::chrono::duration`][std-duration]
       - [`std::chrono::time_point`][std-time-pt]
-
-`CXON` implementation of [`Boost/Containers`](https://www.boost.org/doc/libs/1_78_0/?view=category_containers) is
-under development:
-  - [ ] `Array` `(*)`
-  - [ ] `Bimap`
-  - [ ] `Circular Buffer`
-  - [x] `Container`
-  - [x] `Dynamic Bitset`
-  - [ ] `GIL` `(*)`
-  - [ ] `Graph` / `GraphParallel` `(*)`
-  - [ ] `ICL`
-  - [ ] `Intrusive`
-  - [ ] `JSON`
-  - [ ] `Multi-Array`
-  - [ ] `Multi-Index`
-  - [ ] `Pointer Container` `(*)`
-  - [ ] `PolyCollection` `(*)`
-  - [ ] `Property Map` / `Property Map (Parallel)` `(*)`
-  - [ ] `Property Tree`
-  - [ ] `String_ref` `(*)`
-  - [ ] `Unordered`
-  - [x] `Variant`
-  - [x] `Variant2`
-
-_`(*)` Not decided._
+- `CXON` support of [`Boost/Containers`](https://www.boost.org/doc/libs/1_78_0/?view=category_containers) include:
+  - [`Container`](https://www.boost.org/doc/libs/1_78_0/doc/html/container.html)
+  - [`Dynamic Bitset`](https://www.boost.org/doc/libs/1_78_0/libs/dynamic_bitset/dynamic_bitset.html)
+  - [`Variant`](https://www.boost.org/doc/libs/1_78_0/doc/html/variant.html)
+  - [`Variant2`](https://www.boost.org/doc/libs/1_78_0/libs/variant2/doc/html/variant2.html)
 
 `CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
 (see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
