@@ -119,18 +119,28 @@ namespace cxon { namespace cbor { // node
                         typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
-                    using dt_ = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+                    using dt_       = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+                using map_          = dt_<map>;
+                using array_        = dt_<array>;
+                using tag_          = dt_<tag>;
+                using bytes_        = dt_<bytes>;
+                using text_         = dt_<text>;
+                using real_         = dt_<real>;
+                using sint_         = dt_<sint>;
+                using uint_         = dt_<uint>;
+                using simple_       = dt_<simple>;
+                using boolean_      = dt_<boolean>;
+                using null_         = dt_<null>;
+                using undefined_    = dt_<undefined>;
 
-#               define CXON_TYPES_DEF dt_<map>, dt_<array>, dt_<tag>, dt_<bytes>, dt_<text>, dt_<real>, dt_<sint>, dt_<uint>, dt_<simple>, dt_<boolean>, dt_<null>, dt_<undefined>
-                    using dynamic_types_ = type_sequence<CXON_TYPES_DEF>;
-                    using value_type_ = typename std::aligned_union<0, CXON_TYPES_DEF>::type;
-#               undef CXON_TYPES_DEF
+                using value_type_ = typename std::aligned_union<0, map_, array_, tag_, bytes_, text_, real_, sint_, uint_, simple_, boolean_, null_, undefined_>::type;
 
                 value_type_     value_;
                 node_kind       kind_;
                 allocator_type  alloc_;
 
                 // value access
+                    using dynamic_types_ = type_sequence<map_, array_, tag_, bytes_, text_, real_, sint_, uint_, simple_, boolean_, null_, undefined_>;
                     static constexpr node_kind kind_default_ = node_kind::undefined;
                     template <typename N> friend struct value::controller;
             public:

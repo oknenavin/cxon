@@ -97,18 +97,24 @@ namespace cxon { namespace json { // node
                         typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
-                    using dt_ = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+                    using dt_   = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+                using object_   = dt_<object>;
+                using array_    = dt_<array>;
+                using string_   = dt_<string>;
+                using real_     = dt_<real>;
+                using sint_     = dt_<sint>;
+                using uint_     = dt_<uint>;
+                using boolean_  = dt_<boolean>;
+                using null_     = dt_<null>;
 
-#               define CXON_TYPES_DEF dt_<object>, dt_<array>, dt_<string>, dt_<real>, dt_<sint>, dt_<uint>, dt_<boolean>, dt_<null>
-                    using dynamic_types_ = type_sequence<CXON_TYPES_DEF>;
-                    using value_type_ = typename std::aligned_union<0, CXON_TYPES_DEF>::type;
-#               undef CXON_TYPES_DEF
+                using value_type_ = typename std::aligned_union<0, object_, array_, string_, real_, sint_, uint_, boolean_, null_>::type;
 
                 value_type_     value_;
                 node_kind       kind_;
                 allocator_type  alloc_;
 
                 // value access
+                    using dynamic_types_ = type_sequence<object_, array_, string_, real_, sint_, uint_, boolean_, null_>;
                     static constexpr node_kind kind_default_ = node_kind::null;
                     template <typename N> friend struct value::controller;
             public:
