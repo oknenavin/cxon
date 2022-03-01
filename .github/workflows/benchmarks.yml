@@ -238,8 +238,8 @@ jobs:
         git submodule update --init libs/json
         python tools/boostdep/depinst/depinst.py json
         .\bootstrap.bat
-        .\b2 headers
         dir
+        .\b2 headers
     - name: Time setup
       shell: bash
       run: mkdir test/.time
