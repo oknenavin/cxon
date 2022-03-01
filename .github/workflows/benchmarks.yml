@@ -16,10 +16,10 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout Boost/JSON
+    - name: Checkout Boost
       uses: actions/checkout@v2
       with:
-        repository: boostorg/json
+        repository: boostorg/boost
         ref: master
         path: .dep/boost
     - name: Checkout RapidJSON
@@ -44,12 +44,22 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-11 g++-11
+    - name: Boost setup
+      run: |
+        cd .dep/boost
+        git submodule update --init tools/build
+        git submodule update --init tools/boostdep
+        git submodule update --init libs/config
+        git submodule update --init libs/json
+        python tools/boostdep/depinst/depinst.py json
+        ./bootstrap.sh
+        ./b2 headers
     - name: Time setup
       run: mkdir test/.time
     - name: Time (default)
       env:
         CXX: g++-11
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
         make clean && make -j build-json-node
