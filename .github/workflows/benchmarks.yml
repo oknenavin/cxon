@@ -204,10 +204,10 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout Boost/JSON
+    - name: Checkout Boost
       uses: actions/checkout@v2
       with:
-        repository: boostorg/json
+        repository: boostorg/boost
         ref: master
         path: .dep/boost
     - name: Checkout RapidJSON
@@ -228,13 +228,24 @@ jobs:
         repository: fastfloat/fast_float
         ref: main
         path: .dep/fast_float
+    - name: Boost setup
+      run: |
+        cd .dep/boost
+        git submodule update --init tools/build
+        git submodule update --init tools/boostdep
+        git submodule update --init libs/config
+        git submodule update --init libs/json
+        python tools/boostdep/depinst/depinst.py json
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        bootstrap.bat
+        b2 headers
     - name: Time setup
       shell: bash
       run: mkdir test/.time
     - name: Time (default)
       shell: bash
       env:
-        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost/include -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
+        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
       run: |
         cd test
         #cmake --build .bld --target clean
@@ -249,7 +260,7 @@ jobs:
     - name: Time (fast_float)
       shell: bash
       env:
-        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/fast_float/include -D CXON_USE_FAST_FLOAT -I ../../.dep/boost/include -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
+        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/fast_float/include -D CXON_USE_FAST_FLOAT -I ../../.dep/boost -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
       run: |
         cd test
         cmake --build .bld --target clean
@@ -274,10 +285,10 @@ jobs:
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
-    - name: Checkout Boost/JSON
+    - name: Checkout Boost
       uses: actions/checkout@v2
       with:
-        repository: boostorg/json
+        repository: boostorg/boost
         ref: master
         path: .dep/boost
     - name: Checkout RapidJSON
@@ -298,13 +309,23 @@ jobs:
         repository: fastfloat/fast_float
         ref: main
         path: .dep/fast_float
+    - name: Boost setup
+      run: |
+        cd .dep/boost
+        git submodule update --init tools/build
+        git submodule update --init tools/boostdep
+        git submodule update --init libs/config
+        git submodule update --init libs/json
+        python tools/boostdep/depinst/depinst.py json
+        ./bootstrap.sh
+        ./b2 headers
     - name: Time setup
       run: mkdir test/.time
     - name: Time (default)
       run: |
         cd test
         #cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
         cmake --build .bld --target cxon.json.node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
@@ -316,7 +337,7 @@ jobs:
       run: |
         cd test
         cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../../.dep/boost/include -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
         cmake --build .bld --target cxon.json.node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
