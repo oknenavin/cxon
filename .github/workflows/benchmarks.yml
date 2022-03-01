@@ -229,6 +229,7 @@ jobs:
         ref: main
         path: .dep/fast_float
     - name: Boost setup
+      shell: cmd
       run: |
         cd .dep/boost
         git submodule update --init tools/build
@@ -237,8 +238,8 @@ jobs:
         git submodule update --init libs/json
         python tools/boostdep/depinst/depinst.py json
         "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        bootstrap.bat
-        b2 headers
+        .\bootstrap.bat
+        .\b2 headers
     - name: Time setup
       shell: bash
       run: mkdir test/.time
