@@ -263,6 +263,7 @@ jobs:
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../.time/msvc++.head.default.json.node.data
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION / native (default)" > ../.time/msvc++.head.default.json.native.data
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../.time/msvc++.head.default.json.native.data
+        ls -la .. ; ls -la ../.time
     - name: Time (fast_float)
       shell: bash
       env:
@@ -279,11 +280,14 @@ jobs:
         ./cxon.json.node time-node '@../data/json/time.in' | tee -a ../.time/msvc++.head.fast_float.json.node.data
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION / native (fast_float)" > ../.time/msvc++.head.fast_float.json.native.data
         ./cxon.json.node time-native '@../data/json/time.in' | tee -a ../.time/msvc++.head.fast_float.json.native.data
+        ls -la .. ; ls -la ../.time
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: benchmark-data
         path: test/.time/*.data
+      run: |
+        ls -la test ; ls -la test/.time
 
   # xcode ######################################################################
 
