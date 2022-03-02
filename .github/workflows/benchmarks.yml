@@ -251,10 +251,11 @@ jobs:
       shell: bash
       env:
         CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
+        LDFLAGS: -LTCG /LIBPATH:../../.dep/boost/stage/lib
       run: |
         cd test
         #cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_EXE_LINKER_FLAGS="-LTCG"
+        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
         cmake --build .bld --config Release --target cxon.json.node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
