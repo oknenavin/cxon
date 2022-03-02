@@ -15,7 +15,7 @@ namespace cxon { namespace cbor { namespace tag {
     template <typename X, typename II, typename Cx>
         inline bool read(II& i, II e, Cx& cx);
     template <typename X, typename T, typename II, typename Cx>
-        inline bool read(T& t, II& i, II e, Cx& cx);
+        inline auto read(T& t, II& i, II e, Cx& cx) -> enable_if_t<std::is_unsigned<T>::value, bool>;
 
 }}}
 
@@ -50,7 +50,7 @@ namespace cxon { namespace cbor { namespace tag {
         }
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool read(T& t, II& i, II e, Cx& cx) {
+        inline auto read(T& t, II& i, II e, Cx& cx) -> enable_if_t<std::is_unsigned<T>::value, bool> {
                 auto b = bio::peek(i, e);
                 switch (b & X::mjr) {
                     case X::tag: {
@@ -71,7 +71,7 @@ namespace cxon { namespace cbor { namespace tag {
                         }
                     }
                     default:
-                                return  (t = 0xFFFFFFFFFFFFFFFF, true);
+                                return  (t = T(-1), true);
                 }
         }
 

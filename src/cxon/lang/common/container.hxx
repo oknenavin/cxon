@@ -315,7 +315,7 @@ namespace cxon { namespace cnt {
                 return e_ != l_ && (push_back(t), true);
             }
             bool append(unsigned n, const value_type& t) noexcept {
-                return n > std::distance(e_, l_) ?
+                return n > static_cast<std::size_t>(std::distance(e_, l_)) ?
                     (std::fill_n(e_, std::distance(e_, l_), t), e_ = l_, false) :
                     (std::fill_n(e_, n, t), std::advance(e_, n), true)
                 ;
