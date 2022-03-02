@@ -238,7 +238,11 @@ jobs:
         git submodule update --init libs/json
         python tools/boostdep/depinst/depinst.py json
         .\bootstrap.bat
-        dir
+        #.\b2 headers # nothing runs after bootstrap.bat by some reason
+    - name: Boost finalization
+      shell: cmd
+      run: |
+        cd .dep/boost
         .\b2 headers
     - name: Time setup
       shell: bash
