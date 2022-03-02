@@ -7,7 +7,6 @@
 
 #ifdef CXON_TIME_BOOST_JSON
 
-#define BOOST_JSON_STANDALONE /* TODO: deprecated */
 #include "boost/json/src.hpp"
 
 #include <fstream>
