@@ -7,7 +7,7 @@
 
 #ifdef CXON_TIME_BOOST_JSON
 
-#include "boost/json.hpp"
+#include "boost/json/src.hpp"
 
 #include <fstream>
 
