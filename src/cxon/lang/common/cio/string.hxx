@@ -117,8 +117,12 @@ namespace cxon { namespace cio { namespace str {
                                     return rewind(i, o), cx/X::read_error::character_invalid;
                                 i += bs;
                             }
+                            else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                                if (chr::is<X>::ctrl(*i))
+                                    return rewind(i, o), cx/X::read_error::unexpected;
+                            }
                         }
-                        CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                        else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
                             if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
                                 return rewind(i, o), cx/X::read_error::unexpected;
                         }
