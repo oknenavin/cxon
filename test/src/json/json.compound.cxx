@@ -26,6 +26,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
         }
     // char[]
         R_TEST("", QS(""));
+        W_TEST(QS(""), "");
         R_TEST("123", QS("123"));
         {   char a[] = {'1', '2', '3', '\0'};
             R_TEST(a, QS("123"));
@@ -54,6 +55,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
+        W_TEST(QS(""), L"");
         {   wchar_t a[] = {L'1', L'2', L'3', L'\0', L'4', L'\0'};
             R_TEST(a, QS("123\\u00004"));
             W_TEST(QS("123\\u00004"), a);
@@ -75,6 +77,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
     // char8_t[]
 #       if __cplusplus > 201703L /* C++20 */
             R_TEST(u8"", QS(""));
+            W_TEST(QS(""), u8"");
             R_TEST(u8"123", QS("123"));
             {   char8_t a[] = {'1', '2', '3', '\0'};
                 R_TEST(a, QS("123"));
@@ -103,6 +106,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
 #       endif
     // char16_t[]
         R_TEST(u"", QS(""));
+        W_TEST(QS(""), u"");
         R_TEST(u"\xdbff\xdfff", QS("\\udbff\\udfff")); // surrogate
         W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
         R_TEST(u"\xD83C\xDF7A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
@@ -141,6 +145,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
         }
     // char32_t[]
         R_TEST(U"", QS(""));
+        W_TEST(QS(""), U"");
         R_TEST(U"\x01F37A\x2764x", QS("\xF0\x9F\x8D\xBA\xE2\x9D\xA4x")); // \u0001F37A, beer; \u00002764, heart
         R_TEST(U"\x2764\x01F37Ax", QS("\xE2\x9D\xA4\xF0\x9F\x8D\xBAx"));
         R_TEST(U"\x2764x\x01F37A", QS("\xE2\x9D\xA4x\xF0\x9F\x8D\xBA"));
