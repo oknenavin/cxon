@@ -83,9 +83,9 @@ namespace cxon { namespace cio { namespace str {
                 return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
             }
 
-        template <typename X, typename C, typename II, typename Cx>
+        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto chars_read_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t<!chr::is_char_8<typename C::value_type>::value || !is_forward_iterator<II>::value, bool>
+                -> enable_if_t<!chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
             {
                 while (i != e && *i != X::string::end) {
                     if ( chr::is<X>::ctrl(*i))          return cx/X::read_error::unexpected;
@@ -97,17 +97,17 @@ namespace cxon { namespace cio { namespace str {
             inline auto chars_read_(C& c, II& i, II e, Cx& cx)
                 -> enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
             {
-                II const o = i; II a = i;
+                II const o = i; II l = i;
                 for ( ; i != e && *i != X::string::end; ++i) {
                     if (*i == '\\') {
-                        if (a != i) if (!cnt::append(c, a, i))
+                        if (l != i) if (!cnt::append(c, l, i))
                             return rewind(i, o), cx/X::read_error::overflow;
                         char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
                             if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
                         T bf[4]; auto const n = chr::utf32_to_utf8(bf, c32);
                         if (!cnt::append(c, &bf[0], &bf[0] + n))
                             return rewind(i, o), cx/X::read_error::overflow;
-                        a = i, --i;
+                        l = i, --i;
                     }
                     else {
                         CXON_IF_CONSTEXPR (X::read_validate_string_utf8) {
@@ -128,7 +128,7 @@ namespace cxon { namespace cio { namespace str {
                         }
                     }
                 }
-                return a == i || cnt::append(c ,a, i) || (rewind(i, o), cx/X::read_error::overflow);
+                return l == i || cnt::append(c ,l , i) || (rewind(i, o), cx/X::read_error::overflow);
             }
 
     }
@@ -162,13 +162,6 @@ namespace cxon { namespace cio { namespace str {
 
 namespace cxon { namespace cio { namespace str {
 
-    template <typename T>
-        inline std::size_t ptrlen(const T* t) noexcept {
-            const T* e = t;
-                while (*e) ++e;
-            return e - t;
-        }
-
     template <typename X, typename O, typename T, typename Cx>
         inline bool array_write(O& o, const T* f, const T* l, Cx& cx) {
             if (!poke<X>(o, X::string::beg, cx)) return false;
@@ -186,7 +179,7 @@ namespace cxon { namespace cio { namespace str {
     template <typename X, typename O, typename T, typename Cx>
         inline bool pointer_write(O& o, const T* t, Cx& cx) {
             return t ?
-                pointer_write<X>(o, t, ptrlen(t), cx) :
+                pointer_write<X>(o, t, std::char_traits<T>::length(t), cx) :
                 poke<X>(o, X::id::nil, cx)
             ;
         }
