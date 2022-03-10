@@ -9,7 +9,7 @@
 #include "cxon/utility.hxx"
 #include "chcls.hxx"
 
-#include <cstring>
+#include <cstring> // std::strlen
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -38,11 +38,6 @@ namespace cxon { namespace cio {
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e);
 
-    template <typename X, typename II>
-        constexpr bool consume(std::nullptr_t, II&, II);
-    template <typename X, typename II, typename Cx>
-        constexpr bool consume(std::nullptr_t, II&, II, Cx&);
-
     // output
 
     template <typename O>
@@ -55,8 +50,6 @@ namespace cxon { namespace cio {
         inline bool poke(O& o, const char* s);
     template <typename O>
         inline bool poke(O& o, unsigned n, char c);
-    template <typename O>
-        inline bool poke(O&, std::nullptr_t) noexcept;
 
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx);
@@ -68,8 +61,6 @@ namespace cxon { namespace cio {
         inline bool poke(O& o, const char* s, Cx& cx);
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, unsigned n, char c, Cx& cx);
-    template <typename X, typename O, typename Cx>
-        constexpr bool poke(O&, std::nullptr_t, Cx&);
 
 }}
 
@@ -114,11 +105,6 @@ namespace cxon { namespace cio {
             return *s == '\0';
         }
 
-    template <typename X, typename II>
-        constexpr bool consume(std::nullptr_t, II&, II)         { return true; }
-    template <typename X, typename II, typename Cx>
-        constexpr bool consume(std::nullptr_t, II&, II, Cx&)    { return true; }
-
     // output
 
     namespace imp {
@@ -138,7 +124,7 @@ namespace cxon { namespace cio {
             }
         template <typename O>
             inline void push_(option<0>, O& o, const char* s, std::size_t n) {
-                for (auto const e = s + n ; s != e; ++s) push_(o, *s);
+                for (auto const e = s + n; s != e; ++s) push_(o, *s);
             }
         template <typename O>
             inline void push_(O& o, const char* s, std::size_t n) {
@@ -187,8 +173,6 @@ namespace cxon { namespace cio {
         inline bool poke(O& o, const char* s)                   { return imp::poke_(o, s, std::strlen(s)); }
     template <typename O>
         inline bool poke(O& o, unsigned n, char c)              { return imp::poke_(o, n, c); }
-    template <typename O>
-        inline bool poke(O&, std::nullptr_t) noexcept           { return true; }
 
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx)                          { return poke(o, c)     || cx/X::write_error::output_failure; }
@@ -200,8 +184,6 @@ namespace cxon { namespace cio {
         inline bool poke(O& o, const char* s, Cx& cx)                   { return poke(o, s)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, unsigned n, char c, Cx& cx)              { return poke(o, n, c)  || cx/X::write_error::output_failure; }
-    template <typename X, typename O, typename Cx>
-        constexpr bool poke(O&, std::nullptr_t, Cx&)                    { return true; }
 
 }}
 
