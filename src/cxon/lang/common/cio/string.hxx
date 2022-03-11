@@ -52,7 +52,7 @@ namespace cxon { namespace cio { namespace str {
             {
                 II const o = i;
                     char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
+                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
                     T b[4]; int const n = chr::utf32_to_utf8(b, c32);
                         if (n == 0) return cx/X::read_error::character_invalid;
                 return cnt::append(c, &b[0], &b[0] + n) || cx/X::read_error::overflow;
@@ -63,7 +63,7 @@ namespace cxon { namespace cio { namespace str {
             {
                 II const o = i;
                     char32_t c32 = chr::utf8_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
+                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
                     if (c32 > 0xFFFF) {
                         c32 -= 0x10000;
                         return (cnt::append(c, T(0xD800 | (c32 >> 10))) && 
@@ -79,7 +79,7 @@ namespace cxon { namespace cio { namespace str {
             {
                 II const o = i;
                     char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
-                        if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
+                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
                 return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
             }
 
@@ -103,7 +103,7 @@ namespace cxon { namespace cio { namespace str {
                         if (l != i) if (!cnt::append(c, l, i))
                             return rewind(i, o), cx/X::read_error::overflow;
                         char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
-                            if (c32 == 0xFFFFFFFF) return rewind(i, o), false;
+                            if (c32 == chr::bad_utf32) return rewind(i, o), false;
                         T bf[4]; auto const n = chr::utf32_to_utf8(bf, c32);
                         if (!cnt::append(c, &bf[0], &bf[0] + n))
                             return rewind(i, o), cx/X::read_error::overflow;
