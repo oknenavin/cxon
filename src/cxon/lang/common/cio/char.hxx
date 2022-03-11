@@ -7,6 +7,7 @@
 #define CXON_CIO_CHAR_HXX_
 
 #include "cio.hxx"
+#include <limits>
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -25,6 +26,8 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
             bool, std::is_same<T, char32_t>::value || (std::is_same<T, wchar_t>::value && sizeof(wchar_t) == sizeof(char32_t))
         >;
 
+
+    static constexpr char32_t bad_utf32 = std::numeric_limits<char32_t>::max();
 
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx);
@@ -76,44 +79,42 @@ namespace cxon { namespace cio { namespace chr {
             return c;
         }
 
-#       define CXON_ASS_U(t) if (!is<X>::digit16(next(i, e))) return 0xFFFFFFFF; t = peek(i, e)
-            template <typename X, typename II>
-                inline char32_t esc_to_utf32_(II& i, II e) {
-                    switch (peek(i, e)) {
-                        case '\"': return ++i, U'\"';
-                        case '\\': return ++i, U'\\';
-                        case '/' : return ++i, U'/';
-                        case 'b' : return ++i, U'\b';
-                        case 'f' : return ++i, U'\f';
-                        case 'n' : return ++i, U'\n';
-                        case 'r' : return ++i, U'\r';
-                        case 't' : return ++i, U'\t';
-                        case 'u' : {
-                            char h[4];
-                                CXON_ASS_U(h[0]); CXON_ASS_U(h[1]); CXON_ASS_U(h[2]); CXON_ASS_U(h[3]);
-                            return ++i, hex_to_utf32_(h, h + sizeof(h));
-                        }
-                        default: return 0xFFFFFFFF;
+        template <typename X, typename II>
+            inline char32_t esc_to_utf32_(II& i, II e) {
+                switch (peek(i, e)) {
+                    case '\"': return ++i, U'\"';
+                    case '\\': return ++i, U'\\';
+                    case '/' : return ++i, U'/';
+                    case 'b' : return ++i, U'\b';
+                    case 'f' : return ++i, U'\f';
+                    case 'n' : return ++i, U'\n';
+                    case 'r' : return ++i, U'\r';
+                    case 't' : return ++i, U'\t';
+                    case 'u' : {
+                        char const h[4] = { next(i, e), next(i, e), next(i, e), next(i, e) };
+                            if (!std::all_of(h, h + sizeof(h), is<X>::digit16)) return bad_utf32;
+                        return ++i, hex_to_utf32_(h, h + sizeof(h));
                     }
+                    default: return bad_utf32;
                 }
-#       undef CXON_ASS_U
+            }
 
     }
 
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx) {
             char32_t const c32 = imp::esc_to_utf32_<X>(i, e);
-                if (c32 == 0xFFFFFFFF) return cx/X::read_error::escape_invalid, 0xFFFFFFFF;
+                if (c32 == bad_utf32) return cx/X::read_error::escape_invalid, bad_utf32;
             if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
             // surrogate
-                if (peek(i, e) != '\\') return cx/X::read_error::surrogate_invalid, 0xFFFFFFFF;
+                if (peek(i, e) != '\\') return cx/X::read_error::surrogate_invalid, bad_utf32;
             char32_t const s32 = (++i, imp::esc_to_utf32_<X>(i, e));
                 if (s32 < 0xDC00 || s32 > 0xDFFF)
-                    return (s32 == 0xFFFFFFFF ? cx/X::read_error::escape_invalid : cx/X::read_error::surrogate_invalid), 0xFFFFFFFF;
+                    return (s32 == bad_utf32 ? cx/X::read_error::escape_invalid : cx/X::read_error::surrogate_invalid), bad_utf32;
             return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
         }
 
-#   define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, 0xFFFFFFFF
+#   define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, bad_utf32
         template <typename X, typename II, typename Cx>
             inline auto utf8_to_utf32(II& i, II e, Cx& cx)
                 -> enable_if_t<is_char<typename std::iterator_traits<II>::value_type>::value, char32_t>
