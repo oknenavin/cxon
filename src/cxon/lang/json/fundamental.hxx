@@ -16,8 +16,8 @@ namespace cxon { // nullptr_t
             template <typename II, typename Cx>
                 static bool value(std::nullptr_t& t, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return (cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected)) &&
-                            (t = nullptr, true)
+                    return  (cio::consume<X>(X::id::nil, i, e) && (t = nullptr, true)) ||
+                            (cio::rewind(i, o), cx/json::read_error::unexpected)
                     ;
                 }
         };
@@ -67,7 +67,7 @@ namespace cxon { // character
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
                                 if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
-                                if (c32 >  0XFF)                return cio::rewind(i, o), cx/json::read_error::character_invalid;
+                                if (c32 >  0xFF)                return cio::rewind(i, o), cx/json::read_error::character_invalid;
                     return cio::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
                 }
             };
@@ -79,7 +79,7 @@ namespace cxon { // character
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
                                 if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
-                                if (c32 >  0XFFFF)              return cio::rewind(i, o), cx/json::read_error::character_invalid;
+                                if (c32 >  0xFFFF)              return cio::rewind(i, o), cx/json::read_error::character_invalid;
                     return cio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
                 }
         };
