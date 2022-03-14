@@ -149,10 +149,37 @@ namespace cxon { namespace cnt {
                 return *c.emplace(std::forward<A>(as)...);
             }
 
+        template <typename T>
+            struct using_allocator_of_ {
+                template <typename C, typename ...A>
+                    static auto emplace_(option<2>, C& c, A&&... as) -> decltype(T {std::forward<A>(as)..., c.get_allocator()})& {
+                        return imp::emplace_(option<5>(), c, std::forward<A>(as)..., c.get_allocator());
+                    }
+                template <typename C, typename ...A>
+                    static auto emplace_(option<1>, C& c, A&&... as) -> decltype(T {std::allocator_arg, c.get_allocator(), std::forward<A>(as)...})& {
+                        return imp::emplace_(option<5>(), std::allocator_arg, c.get_allocator(), std::forward<A>(as)...);
+                    }
+                template <typename C, typename ...A>
+                    static auto emplace_(option<0>, C& c, A&&... as) -> decltype(T {std::forward<A>(as)...})& {
+                        return imp::emplace_(option<5>(), c, std::forward<A>(as)...);
+                    }
+                template <typename C, typename ...A>
+                    static auto emplace(C& c, A&&... as) -> T& {
+                        return emplace_(option<2>(), c, std::forward<A>(as)...);
+                    }
+            };
+        template <typename F, typename S>
+            struct using_allocator_of_<std::pair<F, S>> {
+                template <typename C, typename ...A>
+                    static auto emplace(C& c, A&&... as) -> std::pair<F, S>& {
+                        return emplace_(option<5>(), c, alc::create_using_allocator_of<std::pair<F, S>>(c, std::forward<A>(as)...));
+                    }
+            };
+
     }
     template <typename C, typename ...A>
         inline auto emplace(C& c, A&&... as) -> typename C::reference {
-            return imp::emplace_(option<5>(), c, std::forward<A>(as)...);
+            return imp::using_allocator_of_<typename C::value_type>::emplace(c, std::forward<A>(as)...);
         }
 
     namespace imp {
