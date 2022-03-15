@@ -418,21 +418,21 @@ which can represent arbitrary `CBOR` data.
 
 - `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   The difference is noticeable with number-heavy data (like `canada.json` or `numbers.json`).
-  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
+  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
 
 - `CXON` deserialization using [`fast_float`][ff] for floating-point conversion.  
   With the bottleneck removed, `CXON` is close *(see \<average\>)*.
-  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
+  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
 
 - `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
   `CXON` is somewhat slower, but not by much.
-  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
+  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
 
 - `CXON` binary size and compilation times.  
-  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json-space.svg)  
-  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json-space.svg)
+  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg)  
+  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json-space.svg)
 
-Information about the benchmarks and additional benchmark results can be found [here](https://github.com/oknenavin/workflows-data/tree/master/cxon).
+Information about the benchmarks and additional benchmark results can be found [here](https://github.com/oknenavin/workflows-data/tree/develop/cxon).
 
 *Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
 it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.  
@@ -501,7 +501,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg
 [img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg
 [img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg
-[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/develop/graph/badge.svg
 [img-cod]: https://app.codacy.com/project/badge/Grade/a4b8981f7ce34dd5963f10723f8188bf
 [img-cql]: https://github.com/oknenavin/cxon/workflows/CodeQL/badge.svg
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
