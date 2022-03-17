@@ -153,13 +153,13 @@ namespace test { namespace kind { // test-vector
                 {   auto const fix = fixture.fix.find(test.hex);
                     if (fix != fixture.fix.end()) {
                         if (fix->second.act == "json") {
-#                               if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
+#                           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
                                 auto const r = cxon::from_bytes<cxon::JSON<>>(
                                     decoded, fix->second.data,
                                     cxon::node::json::arbitrary_keys::set<true>(),
                                     cxon::node::json::extract_nans::set<true>()
                                 );
-#                               else
+#                           else
                                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                                 // seems to be fixed around 10
                                 auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(
@@ -167,7 +167,7 @@ namespace test { namespace kind { // test-vector
                                     cxon::node::json::arbitrary_keys::set<true>(),
                                     cxon::node::json::extract_nans::set<true>()
                                 );
-#                               endif
+#                           endif
                             CXON_ASSERT(r, "invalid fixture");
                         }
                         else if (fix->second.act == "skip") {
