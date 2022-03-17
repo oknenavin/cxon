@@ -24,6 +24,8 @@ namespace cxon { namespace json { // format traits
         static constexpr bool read_validate_string_ctrl = true; // validate input strings (unescaped control characters)
 
         static constexpr bool write_strict_js = false;          // escape, U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
+
+        static constexpr bool unquoted_keys = false;            // allow unquoted object keys for types serialized without quotes (e.g. strings will still be quoted, but numbers will not)
     };
 
 }}
