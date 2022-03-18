@@ -91,7 +91,8 @@ namespace cxon { namespace cio { namespace chr {
                     case 'r' : return ++i, U'\r';
                     case 't' : return ++i, U'\t';
                     case 'u' : {
-                        char const h[4] = { next(i, e), next(i, e), next(i, e), next(i, e) };
+                        static auto const hex = [](II& i, II e) { return i != e ? next(i, e) : '\xFF'; };
+                        char const h[4] = { hex(i, e), hex(i, e), hex(i, e), hex(i, e) };
                             if (!std::all_of(h, h + sizeof(h), is<X>::digit16)) return bad_utf32;
                         return ++i, hex_to_utf32_(h, h + sizeof(h));
                     }
