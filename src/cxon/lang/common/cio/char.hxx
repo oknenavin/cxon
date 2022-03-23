@@ -63,42 +63,39 @@ namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
 
-        inline char32_t hex_to_utf32_(const char* b, const char* e) noexcept {
-            static constexpr char32_t hex_to_utf32_[] = { 
-                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                00, 1, 2, 3, 4, 5, 6, 7, 8, 9,00,00,00,00,00,00,
-                00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00,
-                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00
-            };
-            CXON_ASSERT(b && b < e, "unexpected");
-            char32_t c = 0;
-                for ( ; b != e; ++b) c = (c << 4) | hex_to_utf32_[(unsigned char)*b];
-            return c;
-        }
-
-        template <typename X, typename II>
-            inline char32_t esc_to_utf32_(II& i, II e) {
-                switch (peek(i, e)) {
-                    case '\"': return ++i, U'\"';
-                    case '\\': return ++i, U'\\';
-                    case '/' : return ++i, U'/';
-                    case 'b' : return ++i, U'\b';
-                    case 'f' : return ++i, U'\f';
-                    case 'n' : return ++i, U'\n';
-                    case 'r' : return ++i, U'\r';
-                    case 't' : return ++i, U'\t';
-                    case 'u' : {
-                        static auto const hex = [](II& i, II e) { return i != e ? next(i, e) : '\xFF'; };
-                        char const h[4] = { hex(i, e), hex(i, e), hex(i, e), hex(i, e) };
-                            if (!std::all_of(h, h + sizeof(h), is<X>::digit16)) return bad_utf32;
-                        return ++i, hex_to_utf32_(h, h + sizeof(h));
+#       define CXON_NEXT_HEX() if (!is<X>::digit16(next(i, e))) return bad_utf32
+            template <typename X, typename II>
+                inline char32_t esc_to_utf32_(II& i, II e) {
+                    switch (peek(i, e)) {
+                        case '\"': return ++i, U'\"';
+                        case '\\': return ++i, U'\\';
+                        case '/' : return ++i, U'/';
+                        case 'b' : return ++i, U'\b';
+                        case 'f' : return ++i, U'\f';
+                        case 'n' : return ++i, U'\n';
+                        case 'r' : return ++i, U'\r';
+                        case 't' : return ++i, U'\t';
+                        case 'u' : {
+                            static constexpr char32_t hex_to_dec_[] = { 
+                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+                                00, 1, 2, 3, 4, 5, 6, 7, 8, 9,00,00,00,00,00,00,
+                                00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00,
+                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+                                00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00
+                            };
+                            char32_t c;
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                            return ++i, c;
+                        }
+                        default: return bad_utf32;
                     }
-                    default: return bad_utf32;
                 }
-            }
+#       undef CXON_ASS_U
 
     }
 
