@@ -63,39 +63,56 @@ namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
 
-#       define CXON_NEXT_HEX() if (!is<X>::digit16(next(i, e))) return bad_utf32
-            template <typename X, typename II>
-                inline char32_t esc_to_utf32_(II& i, II e) {
-                    switch (peek(i, e)) {
-                        case '\"': return ++i, U'\"';
-                        case '\\': return ++i, U'\\';
-                        case '/' : return ++i, U'/';
-                        case 'b' : return ++i, U'\b';
-                        case 'f' : return ++i, U'\f';
-                        case 'n' : return ++i, U'\n';
-                        case 'r' : return ++i, U'\r';
-                        case 't' : return ++i, U'\t';
-                        case 'u' : {
-                            static constexpr char32_t hex_to_dec_[] = { 
-                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                                00, 1, 2, 3, 4, 5, 6, 7, 8, 9,00,00,00,00,00,00,
-                                00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00,
-                                00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-                                00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00
-                            };
+        static constexpr char32_t hex_to_dec_[] = { 
+            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            00, 1, 2, 3, 4, 5, 6, 7, 8, 9,00,00,00,00,00,00,
+            00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00,
+            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
+            00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00
+        };
+        template <typename X>
+            struct u_to_ {
+                template <typename II>
+                    static auto dec(II& i, II e) noexcept -> enable_if_t<!is_random_access_iterator<II>::value, char32_t> {
+#                       define CXON_NEXT_HEX(c) if (!(c) || !is<X>::digit16(*++i)) return bad_utf32
                             char32_t c;
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX( true ); c = hex_to_dec_[(unsigned char)*i];
+                                CXON_NEXT_HEX(i != e); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX(i != e); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX(i != e); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
                             return ++i, c;
-                        }
-                        default: return bad_utf32;
+#                       undef CXON_NEXT_HEX
                     }
+                template <typename II>
+                    static auto dec(II& i, II e) noexcept -> enable_if_t< is_random_access_iterator<II>::value, char32_t> {
+                        if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
+                            return bad_utf32;
+                        char32_t const c =  (hex_to_dec_[(unsigned char)i[1]] << 12) |
+                                            (hex_to_dec_[(unsigned char)i[2]] <<  8) |
+                                            (hex_to_dec_[(unsigned char)i[3]] <<  4) |
+                                            (hex_to_dec_[(unsigned char)i[4]] <<  0)
+                        ;
+                        return i += 5, c;
+                    }
+            };
+
+        template <typename X, typename II>
+            inline char32_t esc_to_utf32_(II& i, II e) {
+                switch (peek(i, e)) {
+                    case '\"': return ++i, U'\"';
+                    case '\\': return ++i, U'\\';
+                    case '/' : return ++i, U'/';
+                    case 'b' : return ++i, U'\b';
+                    case 'f' : return ++i, U'\f';
+                    case 'n' : return ++i, U'\n';
+                    case 'r' : return ++i, U'\r';
+                    case 't' : return ++i, U'\t';
+                    case 'u' : return u_to_<X>::dec(i, e);
+                    default  : return bad_utf32;
                 }
-#       undef CXON_ASS_U
+            }
 
     }
 
