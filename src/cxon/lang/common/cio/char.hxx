@@ -63,7 +63,7 @@ namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
 
-        static constexpr char32_t hex_to_dec_[] = { 
+        static constexpr char32_t hex_to_dec_[] = { // outside u_to_ for C++11
             00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
             00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
             00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
@@ -76,12 +76,12 @@ namespace cxon { namespace cio { namespace chr {
             struct u_to_ {
                 template <typename II>
                     static auto dec(II& i, II e) noexcept -> enable_if_t<!is_random_access_iterator<II>::value, char32_t> {
-#                       define CXON_NEXT_HEX(c) if (!(c) || !is<X>::digit16(*++i)) return bad_utf32
+#                       define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
                             char32_t c;
-                                CXON_NEXT_HEX( true ); c = hex_to_dec_[(unsigned char)*i];
-                                CXON_NEXT_HEX(i != e); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                                CXON_NEXT_HEX(i != e); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                                CXON_NEXT_HEX(i != e); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
                             return ++i, c;
 #                       undef CXON_NEXT_HEX
                     }
