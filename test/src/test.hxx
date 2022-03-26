@@ -187,6 +187,7 @@ namespace cxon { namespace test {
             bool operator ==(const force_input_iterator& i) const { return i_ == i.i_; }
             bool operator !=(const force_input_iterator& i) const { return i_ != i.i_; }
             force_input_iterator& operator ++() { return ++i_, *this; }
+            force_input_iterator  operator ++(int) { auto i = *this; return ++i_, i; }
             reference operator *() { return *i_; }
             const reference operator *() const { return *i_; }
         };
