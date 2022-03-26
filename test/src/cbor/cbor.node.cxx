@@ -15,6 +15,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct unquoted_keys_traits : cxon::json::format_traits {
+    static constexpr bool unquoted_keys = true;
+};
+using UQK_JSON = cxon::JSON<unquoted_keys_traits>;
+
 int main(int argc, char *argv[]) {
     if (argc == 1) {
 #       ifndef CXON_TIME_ONLY
@@ -154,17 +159,15 @@ namespace test { namespace kind { // test-vector
                     if (fix != fixture.fix.end()) {
                         if (fix->second.act == "json") {
 #                           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
-                                auto const r = cxon::from_bytes<cxon::JSON<>>(
+                                auto const r = cxon::from_bytes<UQK_JSON>(
                                     decoded, fix->second.data,
-                                    cxon::node::json::arbitrary_keys::set<true>(),
                                     cxon::node::json::extract_nans::set<true>()
                                 );
 #                           else
                                 // g++ (4.8.1->9.1) bug: overload resolution fail => workaround, add type parameters
                                 // seems to be fixed around 10
-                                auto const r = cxon::from_bytes<cxon::JSON<>, cxon::json::node_traits<>>(
+                                auto const r = cxon::from_bytes<UQK_JSON, cxon::json::node_traits<>>(
                                     decoded, fix->second.data,
-                                    cxon::node::json::arbitrary_keys::set<true>(),
                                     cxon::node::json::extract_nans::set<true>()
                                 );
 #                           endif

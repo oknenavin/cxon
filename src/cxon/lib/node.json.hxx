@@ -16,8 +16,7 @@
 
 namespace cxon { namespace node { namespace json { // context parameters
 
-    CXON_PARAMETER(arbitrary_keys, bool);   // read/write: constexpr
-    CXON_PARAMETER(extract_nans, bool);      // read/write: constexpr
+    CXON_PARAMETER(extract_nans, bool); // read/write: constexpr
 
 }}}
 
@@ -288,7 +287,7 @@ namespace cxon {
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
-                        -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                        -> enable_if_t< Y::unquoted_keys, bool>
                     {
                         cio::consume<Y>(i, e);
                         switch (cio::peek(i, e)) {
@@ -306,7 +305,7 @@ namespace cxon {
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                        -> enable_if_t<!Y::unquoted_keys, bool>
                     {
                         return cio::key::read_key<Y>(t.template imbue<typename json::basic_node<Tr>::string>(), i, e, cx);
                     }
@@ -316,19 +315,19 @@ namespace cxon {
             struct write<JSON<X>, json::basic_node<Tr>> {
                 template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                     static auto write_key_(O& o, const T& t, Cx& cx)
-                        -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                        -> enable_if_t< Y::unquoted_keys, bool>
                     {
                         return write_value<Y>(o, t, cx);
                     }
                 template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                     static auto write_key_(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value && !std::is_floating_point<T>::value, bool>
+                        -> enable_if_t<!Y::unquoted_keys && !std::is_floating_point<T>::value, bool>
                     {
                         return cio::key::write_key<Y>(o, t, cx);
                     }
                 template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                     static auto write_key_(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value &&  std::is_floating_point<T>::value, bool>
+                        -> enable_if_t<!Y::unquoted_keys &&  std::is_floating_point<T>::value, bool>
                     {
                         return cxon::imp::write_number_key_<Y>(o, t, cx);
                     }
@@ -422,19 +421,19 @@ namespace cxon {
                 struct write<JSON<X>, cbor::basic_node<Tr>> {
                     template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                         static auto write_key_(O& o, const T& t, Cx& cx)
-                            -> enable_if_t< node::json::arbitrary_keys::in<napa_type<Cx>>::value, bool>
+                            -> enable_if_t< Y::unquoted_keys, bool>
                         {
                             return write_value<Y>(o, t, cx);
                         }
                     template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                         static auto write_key_(O& o, const T& t, Cx& cx)
-                            -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value && !std::is_floating_point<T>::value, bool>
+                            -> enable_if_t<!Y::unquoted_keys && !std::is_floating_point<T>::value, bool>
                         {
                             return cio::key::write_key<Y>(o, t, cx);
                         }
                     template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                         static auto write_key_(O& o, const T& t, Cx& cx)
-                            -> enable_if_t<!node::json::arbitrary_keys::in<napa_type<Cx>>::value &&  std::is_floating_point<T>::value, bool>
+                            -> enable_if_t<!Y::unquoted_keys &&  std::is_floating_point<T>::value, bool>
                         {
                             return cxon::imp::write_number_key_<Y>(o, t, cx);
                         }
