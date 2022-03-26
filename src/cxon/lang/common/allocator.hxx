@@ -76,11 +76,11 @@ namespace cxon { namespace alc {
                 struct uninitialized_<std::nullptr_t> {
                     template <typename Al>
                         static constexpr std::nullptr_t* construct_using_allocator(std::nullptr_t* t, const Al&) {
-                            return *t = nullptr;
+                            return *t = nullptr, t;
                         }
                     template <typename Al>
                         static constexpr std::nullptr_t* construct_using_allocator(std::nullptr_t* t, const Al&, std::nullptr_t a) {
-                            return *t = a;
+                            return *t = a, t;
                         }
                 };
 #       endif
