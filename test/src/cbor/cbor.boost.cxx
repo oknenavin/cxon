@@ -45,9 +45,12 @@ TEST_END()
 TEST_BEG(small_vector, cxon::CBOR<>, "/boost")
     using namespace boost::container;
     R_TEST(small_vector<int, 0>{}, BS("\x80"));
+    R_TEST(small_vector<int, 0>{}, BS("\x40"));
     R_TEST(small_vector<int, 4>{}, BS("\x9F\xFF"));
     W_TEST(BS("\x80"), small_vector<int, 0>{});
     R_TEST(small_vector<int, 1>{2, 1, 0}, BS("\x83\x02\x01\x00"));
+    R_TEST(small_vector<int, 1>{2, 1, 0}, BS("\x43\x02\x01\x00"));
+    R_TEST(small_vector<int, 2>{2, 1, 0}, BS("\x43\x02\x01\x00"));
     R_TEST(small_vector<int, 2>{2, 1, 0}, BS("\x9F\x02\x01\x00\xFF"));
     R_TEST(small_vector<int, 3>{2, 1, 0}, BS("\x43\x02\x01\x00"));
     R_TEST(small_vector<int, 4>{2, 1, 0}, BS("\x5F\x43\x02\x01\x00\xFF"));
@@ -96,6 +99,7 @@ TEST_BEG(static_vector, cxon::CBOR<>, "/boost")
             R_TEST((static_vector<char, 0>{}), BS("\x7F\x61\x02\x62\x01\x00\xFF"), cbor::read_error::size_invalid, 1);
             R_TEST((static_vector<char, 0>{}), BS("\x61\x00"), cbor::read_error::size_invalid, 0);
     // std::static_vector<T, n>
+        R_TEST((static_vector<int, 1>{1}), BS("\x41\x01"));
         R_TEST((static_vector<int, 3>{2, 1, 0}), BS("\x83\x02\x01\x00"));
         R_TEST((static_vector<int, 3>{2, 1, 0}), BS("\x9F\x02\x01\x00\xFF"));
         R_TEST((static_vector<int, 3>{2, 1, 0}), BS("\x63\x02\x01\x00"));
@@ -200,11 +204,19 @@ TEST_BEG(basic_string, cxon::CBOR<>, "/boost")
         W_TEST(    BS("\x78\x1C\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\xF0\x9F\x8D\xBA"),
                string("xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA"));
     // wchar_t
+        R_TEST(wstring(L""), BS("\x40"));       // definite
+        R_TEST(wstring(L""), BS("\x60"));       // definite
+        R_TEST(wstring(L""), BS("\x80"));       // definite
+        R_TEST(wstring(L""), BS("\x9F\xFF"));   // indefinite
         R_TEST(wstring(L""), BS("\x80"));       // definite
         R_TEST(wstring(L""), BS("\x9F\xFF"));   // indefinite
         W_TEST(BS("\x80"), wstring(L""));
     // char16_t
         using u16string = basic_string<char16_t, std::char_traits<char16_t>, new_allocator<char16_t>>;
+        R_TEST(u16string(u""), BS("\x40"));     // definite
+        R_TEST(u16string(u""), BS("\x60"));     // definite
+        R_TEST(u16string(u""), BS("\x80"));     // definite
+        R_TEST(u16string(u""), BS("\x9F\xFF")); // indefinite
         R_TEST(u16string(u""), BS("\x80"));     // definite
         R_TEST(u16string(u""), BS("\x9F\xFF")); // indefinite
         W_TEST(BS("\x80"), u16string(u""));
@@ -219,6 +231,10 @@ TEST_BEG(basic_string, cxon::CBOR<>, "/boost")
                u16string(u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A"));
     // char32_t
         using u32string = basic_string<char32_t, std::char_traits<char32_t>, new_allocator<char32_t>>;
+        R_TEST(u32string(U""), BS("\x40"));     // definite
+        R_TEST(u32string(U""), BS("\x60"));     // definite
+        R_TEST(u32string(U""), BS("\x80"));     // definite
+        R_TEST(u32string(U""), BS("\x9F\xFF")); // indefinite
         R_TEST(u32string(U""), BS("\x80"));     // definite
         R_TEST(u32string(U""), BS("\x9F\xFF")); // indefinite
         W_TEST(BS("\x80"), u32string(U""));

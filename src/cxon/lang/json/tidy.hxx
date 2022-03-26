@@ -171,7 +171,7 @@ namespace cxon { namespace json {
                 for ( ; b != e && cio::poke(i, *b); ++b)
                     ;
             return r;
-        }
+        }   // LCOV_EXCL_LINE: not covered with g++ > 8 and lcov 1.15
     template <typename Tr, typename R, typename I>
         inline auto tidy(const I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
             return tidy<Tr, R>(std::begin(i), std::end(i), tab, pad);

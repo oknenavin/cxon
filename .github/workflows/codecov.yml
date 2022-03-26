@@ -9,11 +9,11 @@ on:
 
 jobs:
   codecov:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-8 g++-8
+      run: sudo apt update; sudo apt install gcc-11 g++-11
     - name: Checkout Boost
       uses: actions/checkout@v2
       with:
@@ -34,23 +34,23 @@ jobs:
         ./b2 headers
     - name: Check
       env:
-        CXX: g++-8
-        CXXFLAGS: --coverage -O0 -std=c++17 -I ../.dep/boost
+        CXX: g++-11
+        CXXFLAGS: --coverage -O0 -std=c++20 -I ../.dep/boost
       run: |
         make -j check
         make -j time
     - name: LCOV setup
       run: |
-        wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
-        tar xvfz lcov-1.14.tar.gz
-        make -C lcov-1.14
+        wget http://downloads.sourceforge.net/ltp/lcov-1.15.tar.gz
+        tar xvfz lcov-1.15.tar.gz
+        make -C lcov-1.15
     - name: Codecov setup
       run: |
         curl -Os https://uploader.codecov.io/latest/linux/codecov
         chmod +x codecov
     - name: Coverage
       run: |
-        lcov-1.14/bin/lcov --gcov-tool gcov-8 -c -d . -o cov.info
-        lcov-1.14/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info
-        lcov-1.14/bin/lcov -l cxon.info
+        lcov-1.15/bin/lcov --gcov-tool gcov-11 -c -d . -o cov.info
+        lcov-1.15/bin/lcov -e cov.info '*/cxon/*.hxx' -o cxon.info
+        lcov-1.15/bin/lcov -l cxon.info
         ./codecov -t ${CODECOV_TOKEN} -f cxon.info
