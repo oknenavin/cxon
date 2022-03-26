@@ -104,10 +104,14 @@ TEST_BEG(basic_string, cxon::CBOR<>, "/std")
         W_TEST(    BS("\x78\x1C\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\x78\x58\xF0\x9F\x8D\xBA"),
                string("xXxXxXxXxXxXxXxXxXxXxXxX\xF0\x9F\x8D\xBA"));
     // wchar_t
+        R_TEST(wstring(L""), BS("\x40"));       // definite
+        R_TEST(wstring(L""), BS("\x60"));       // definite
         R_TEST(wstring(L""), BS("\x80"));       // definite
         R_TEST(wstring(L""), BS("\x9F\xFF"));   // indefinite
         W_TEST(BS("\x80"), wstring(L""));
     // char16_t
+        R_TEST(u16string(u""), BS("\x40"));     // definite
+        R_TEST(u16string(u""), BS("\x60"));     // definite
         R_TEST(u16string(u""), BS("\x80"));     // definite
         R_TEST(u16string(u""), BS("\x9F\xFF")); // indefinite
         W_TEST(BS("\x80"), u16string(u""));
@@ -121,6 +125,8 @@ TEST_BEG(basic_string, cxon::CBOR<>, "/std")
         W_TEST(        BS("\x98\x1A\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x18\x78\x18\x58\x19\xD8\x3C\x19\xDF\x7A"),
                u16string(u"xXxXxXxXxXxXxXxXxXxXxXxX\xD83C\xDF7A"));
     // char32_t
+        R_TEST(u32string(U""), BS("\x40"));     // definite
+        R_TEST(u32string(U""), BS("\x60"));     // definite
         R_TEST(u32string(U""), BS("\x80"));     // definite
         R_TEST(u32string(U""), BS("\x9F\xFF")); // indefinite
         W_TEST(BS("\x80"), u32string(U""));

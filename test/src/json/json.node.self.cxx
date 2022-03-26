@@ -898,6 +898,41 @@ namespace test { namespace kind {
                     auto const r = cxon::from_bytes(n, "{\"1\": {\"2\": 3.0}}");
                 CHECK(r && n == node::object {{"1", {{"2", 3.0}}}});
             }
+            // move assign
+            //  same type
+            {   node n0("42", al), n1("24", al);
+                    n1 = std::move(n0);
+                CHECK(n1 == "42");
+            }
+            {   node n0("42", al), n1("24");
+                    n1 = std::move(n0);
+                CHECK(n1 == "42");
+            }
+            {   node n0({1, 2, 3}, al), n1({3, 2, 1}, al);
+                    n1 = std::move(n0);
+                CHECK(n1 == node::array { 1, 2, 3});
+            }
+            {   node n0({1, 2, 3}, al), n1({3, 2, 1});
+                    n1 = std::move(n0);
+                CHECK(n1 == node::array { 1, 2, 3});
+            }
+            //  different type
+            {   node n0("42", al), n1(24, al);
+                    n1 = std::move(n0);
+                CHECK(n1 == "42");
+            }
+            {   node n0("42", al), n1(24);
+                    n1 = std::move(n0);
+                CHECK(n1 == "42");
+            }
+            {   node n0({1, 2, 3}, al), n1(321, al);
+                    n1 = std::move(n0);
+                CHECK(n1 == node::array { 1, 2, 3});
+            }
+            {   node n0({1, 2, 3}, al), n1(321);
+                    n1 = std::move(n0);
+                CHECK(n1 == node::array { 1, 2, 3});
+            }
         }
 #       endif
         {   // alc::create_using_allocator_of

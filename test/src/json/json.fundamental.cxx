@@ -502,6 +502,71 @@ TEST_BEG(json_escapes, cxon::JSON<>, "/core") // json
         W_TEST(QS("\\\\"), "\134");
 TEST_END()
 
+TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core") // json
+    // char
+        R_TEST('\0', QS("\\u0000"));
+        W_TEST(QS("\\u0000"), '\0');
+        R_TEST('\x37', QS("\\u0037"));
+        W_TEST(QS("7"), '\x37');
+        R_TEST('"', QS("\\\""));
+        W_TEST(QS("\\\""), '"');
+        R_TEST('\'', QS("'"));
+        W_TEST(QS("'"), '\'');
+        R_TEST('\x7f', QS("\\u007f"));
+        W_TEST(QS("\x7f"), '\x7f');
+        R_TEST('\x8f', QS("\\u008f"));
+        W_TEST(QS("\x8f"), '\x8f');
+        R_TEST('\xff', QS("\\u00ff")); // invalid utf-8
+        W_TEST(QS("\xff"), '\xff'); // invalid utf-8
+        R_TEST('\0', QS("\\u1111"), json::read_error::character_invalid, 7);
+    // escapes
+        R_TEST("\"", QS("\\\""));
+        R_TEST("\\", QS("\\\\"));
+        R_TEST("/", QS("\\/"));
+        R_TEST("\b", QS("\\b"));
+        R_TEST("\f", QS("\\f"));
+        R_TEST("\n", QS("\\n"));
+        R_TEST("\r", QS("\\r"));
+        R_TEST("\t", QS("\\t"));
+        R_TEST("\u0008", QS("\\u0008"));
+        R_TEST("\0008", QS("\\u00008")); // one more
+        R_TEST("", QS("\\u008"), json::read_error::escape_invalid, 6); // one less
+        R_TEST("", QS("\\u"), json::read_error::escape_invalid, 3); // none
+        W_TEST(QS("\\u0001"), "\1");
+        W_TEST(QS("\\u0002"), "\2");
+        W_TEST(QS("\\u0003"), "\3");
+        W_TEST(QS("\\u0004"), "\4");
+        W_TEST(QS("\\u0005"), "\5");
+        W_TEST(QS("\\u0006"), "\6");
+        W_TEST(QS("\\u0007"), "\7");
+        W_TEST(QS("\\b"), "\10");
+        W_TEST(QS("\\t"), "\11");
+        W_TEST(QS("\\n"), "\12");
+        W_TEST(QS("\\u000b"), "\13");
+        W_TEST(QS("\\f"), "\14");
+        W_TEST(QS("\\r"), "\15");
+        W_TEST(QS("\\u000e"), "\16");
+        W_TEST(QS("\\u000f"), "\17");
+        W_TEST(QS("\\u0010"), "\20");
+        W_TEST(QS("\\u0011"), "\21");
+        W_TEST(QS("\\u0012"), "\22");
+        W_TEST(QS("\\u0013"), "\23");
+        W_TEST(QS("\\u0014"), "\24");
+        W_TEST(QS("\\u0015"), "\25");
+        W_TEST(QS("\\u0016"), "\26");
+        W_TEST(QS("\\u0017"), "\27");
+        W_TEST(QS("\\u0018"), "\30");
+        W_TEST(QS("\\u0019"), "\31");
+        W_TEST(QS("\\u001a"), "\32");
+        W_TEST(QS("\\u001b"), "\33");
+        W_TEST(QS("\\u001c"), "\34");
+        W_TEST(QS("\\u001d"), "\35");
+        W_TEST(QS("\\u001e"), "\36");
+        W_TEST(QS("\\u001f"), "\37");
+        W_TEST(QS("\\\""), "\42");
+        W_TEST(QS("\\\\"), "\134");
+TEST_END()
+
 namespace cxon { namespace test {
     struct write_strict_js_traits : cxon::json::format_traits {
         static constexpr bool write_strict_js = true;
