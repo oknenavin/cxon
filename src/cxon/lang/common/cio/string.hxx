@@ -46,100 +46,125 @@ namespace cxon { namespace cio { namespace str {
 
     namespace imp {
 
-        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
-            inline auto char_read_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t<chr::is_char_8<T>::value, bool>
-            {
-                II const o = i;
-                    char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
-                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                    T b[4]; int const n = chr::utf32_to_utf8(b, c32);
-                        if (n == 0) return cx/X::read_error::character_invalid;
+        template <typename X, typename C, typename Cx, typename T = typename C::value_type>
+            inline auto char_append_(C& c, char32_t c32, Cx& cx) -> enable_if_t<chr::is_char_8<T>::value, bool> {
+                T b[4]; int const n = chr::utf32_to_utf8(b, c32);
+                    if (n == 0) return cx/X::read_error::character_invalid;
                 return cnt::append(c, &b[0], &b[0] + n) || cx/X::read_error::overflow;
             }
-        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
-            inline auto char_read_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t<chr::is_char_16<T>::value, bool>
-            {
-                II const o = i;
-                    char32_t c32 = chr::utf8_to_utf32<X>(i, e, cx);
-                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                    if (c32 > 0xFFFF) {
-                        c32 -= 0x10000;
-                        return (cnt::append(c, T(0xD800 | (c32 >> 10))) && 
-                                cnt::append(c, T(0xDC00 | (c32 & 0x3FF)))) ||
-                                cx/X::read_error::overflow
-                        ;
-                    }
+        template <typename X, typename C, typename Cx, typename T = typename C::value_type>
+            inline auto char_append_(C& c, char32_t c32, Cx& cx) -> enable_if_t<chr::is_char_16<T>::value, bool> {
+                if (c32 > 0xFFFF) {
+                    c32 -= 0x10000;
+                    return (cnt::append(c, T(0xD800 | (c32 >> 10))) && cnt::append(c, T(0xDC00 | (c32 & 0x3FF)))) ||
+                            cx/X::read_error::overflow
+                    ;
+                }
                 return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
             }
-        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
-            inline auto char_read_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t<chr::is_char_32<T>::value, bool>
-            {
-                II const o = i;
-                    char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
-                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
+        template <typename X, typename C, typename Cx, typename T = typename C::value_type>
+            inline auto char_append_(C& c, char32_t c32, Cx& cx) -> enable_if_t<chr::is_char_32<T>::value, bool> {
                 return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
             }
 
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
-            inline auto chars_read_(C& c, II& i, II e, Cx& cx)
+            inline bool char_read_(C& c, II& i, II e, Cx& cx) {
+                II const o = i;
+                    char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
+                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                return char_append_<X>(c, c32, cx);
+            }
+
+        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
+            inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
                 -> enable_if_t<!chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
             {
-                while (i != e && *i != X::string::end) {
-                    if ( chr::is<X>::ctrl(*i))          return cx/X::read_error::unexpected;
-                    if (!char_read_<X>(c, i, e, cx))    return false;
-                }
-                return true;
-            }
-        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
-            inline auto chars_read_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
-            {
-                II const o = i; II l = i;
-                for ( ; i != e && *i != X::string::end; ++i) {
+                while (i != e) {
                     if (*i == '\\') {
-                        if (l != i) if (!cnt::append(c, l, i))
-                            return rewind(i, o), cx/X::read_error::overflow;
-                        char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
-                            if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                        T bf[4]; auto const n = chr::utf32_to_utf8(bf, c32);
-                        if (!cnt::append(c, &bf[0], &bf[0] + n))
-                            return rewind(i, o), cx/X::read_error::overflow;
-                        l = i, --i;
+                        CXON_IF_CONSTEXPR (is_key<X>::value) {
+                            II const f = i;
+                                if (++i != e && *i == X::string::del)
+                                    return ++i, true;
+                            i = f;
+                        }
+                        II const o = i;
+                            char32_t c32 = chr::esc_to_utf32<X>(++i, e, cx);
+                                if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                            if (!char_append_<X>(c, c32, cx))
+                                return rewind(i, o), false;
                     }
                     else {
-                        CXON_IF_CONSTEXPR (X::read_validate_string_utf8) {
-                            if ((unsigned char)*i > 0x7F) {
-                                auto const bs = chr::utf8_check(i, e);
-                                if (bs > 3)
-                                    return rewind(i, o), cx/X::read_error::character_invalid;
-                                i += bs;
-                            }
-                            else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
-                                if (chr::is<X>::ctrl(*i))
-                                    return rewind(i, o), cx/X::read_error::unexpected;
-                            }
+                        CXON_IF_CONSTEXPR (!is_key<X>::value) {
+                            if (*i == X::string::del)       return ++i, true;
                         }
-                        else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
-                            if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
-                                return rewind(i, o), cx/X::read_error::unexpected;
+                        CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                            if (chr::is<X>::ctrl(*i))       return cx/X::read_error::unexpected;
                         }
+                        if (!char_read_<X>(c, i, e, cx))    return false;
                     }
                 }
-                return l == i || cnt::append(c ,l , i) || (rewind(i, o), cx/X::read_error::overflow);
+                return cx/X::read_error::unexpected;
+            }
+        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
+            inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
+                -> enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
+            {
+                II l = i;
+                    for ( ; i != e; ++i) {
+                        if (*i == '\\') {
+                            if (l != i && !cnt::append(c, l, i))
+                                return rewind(i, l), cx/X::read_error::overflow;
+                            CXON_IF_CONSTEXPR (is_key<X>::value) {
+                                II const f = i;
+                                    if (++i != e && *i == X::string::del)
+                                        return ++i, true;
+                                i = f;
+                            }
+                            II const o = i;
+                                char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
+                                    if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                                if (!char_append_<X>(c, c32, cx))
+                                    return rewind(i, o), false;
+                            l = i, --i;
+                        }
+                        else {
+                            CXON_IF_CONSTEXPR (!is_key<X>::value) {
+                                if (*i == X::string::del)
+                                    return ((l == i || cnt::append(c, l, i)) && (++i, true)) || (rewind(i, l), cx/X::read_error::overflow);
+                            }
+                            CXON_IF_CONSTEXPR (X::read_validate_string_utf8) {
+                                if ((unsigned char)*i > 0x7F) {
+                                    auto const bs = chr::utf8_check(i, e);
+                                    if (bs > 3)
+                                        return cx/X::read_error::character_invalid;
+                                    i += bs;
+                                }
+                                else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                                    if (chr::is<X>::ctrl(*i))
+                                        return cx/X::read_error::unexpected;
+                                }
+                            }
+                            else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                                if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
+                                    return cx/X::read_error::unexpected;
+                            }
+                        }
+                    }
+                return cx/X::read_error::unexpected;
+            }
+
+        template <typename X, typename C, typename II, typename Cx>
+            inline bool string_read_head_(C&, II& i, II e, Cx& cx) {
+                return consume<X>(X::string::template del_read<II>, i, e, cx);
             }
 
     }
 
     template <typename X, typename C, typename II, typename Cx>
         inline bool string_read(C& c, II& i, II e, Cx& cx) {
-            II const o = i;
-            if (!consume<X>(X::string::beg, i, e, cx)) return false;
-                if (!imp::chars_read_<X>(c, i, e, cx))
-                    return cx.ec == X::read_error::overflow && (rewind(i, o), false);
-            return consume<X>(X::string::end, i, e, cx);
+            return  imp::string_read_head_<X>(c, i, e, cx) &&
+                    imp::string_read_tail_<X>(c, i, e, cx)
+            ;
         }
 
     template <typename X, typename T, typename II, typename Cx>
@@ -164,16 +189,16 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename O, typename T, typename Cx>
         inline bool array_write(O& o, const T* f, const T* l, Cx& cx) {
-            if (!poke<X>(o, X::string::beg, cx)) return false;
+            if (!poke<X>(o, X::string::template del_write<O>, cx)) return false;
                 if (*(l - 1) == T(0)) --l;
-            return chr::encode_range<X>(o, f, l, cx) && poke<X>(o, X::string::end, cx);
+            return chr::encode_range<X>(o, f, l, cx) && poke<X>(o, X::string::template del_write<O>, cx);
         }
 
     template <typename X, typename O, typename T, typename Cx>
         inline bool pointer_write(O& o, const T* t, std::size_t s, Cx& cx) {
-            return  poke<X>(o, X::string::beg, cx) &&
+            return  poke<X>(o, X::string::template del_write<O>, cx) &&
                         chr::encode_range<X>(o, t, t + s, cx) &&
-                    poke<X>(o, X::string::end, cx)
+                    poke<X>(o, X::string::template del_write<O>, cx)
             ;
         }
     template <typename X, typename O, typename T, typename Cx>

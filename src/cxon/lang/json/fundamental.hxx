@@ -63,35 +63,35 @@ namespace cxon { // character
         struct read<JSON<X>, T, enable_if_t<cio::chr::is_char_8<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
-                    if (!cio::consume<X>(X::string::beg, i, e, cx)) return false;
+                    if (!cio::consume<X>(X::string::template del_read<II>, i, e, cx)) return false;
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
                                 if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
                                 if (c32 >  0xFF)                return cio::rewind(i, o), cx/json::read_error::character_invalid;
-                    return cio::consume<X>(X::string::end, i, e, cx) && (t = char(c32), true);
+                    return cio::consume<X>(X::string::template del_read<II>, i, e, cx) && (t = char(c32), true);
                 }
             };
     template <typename X, typename T>
         struct read<JSON<X>, T, enable_if_t<cio::chr::is_char_16<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
-                    if (!cio::consume<X>(X::string::beg, i, e, cx)) return false;
+                    if (!cio::consume<X>(X::string::template del_read<II>, i, e, cx)) return false;
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
                                 if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
                                 if (c32 >  0xFFFF)              return cio::rewind(i, o), cx/json::read_error::character_invalid;
-                    return cio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
+                    return cio::consume<X>(X::string::template del_read<II>, i, e, cx) && (t = T(c32), true);
                 }
         };
     template <typename X, typename T>
         struct read<JSON<X>, T, enable_if_t<cio::chr::is_char_32<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
-                    if (!cio::consume<X>(X::string::beg, i, e, cx)) return false;
+                    if (!cio::consume<X>(X::string::template del_read<II>, i, e, cx)) return false;
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
                                 if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
-                    return cio::consume<X>(X::string::end, i, e, cx) && (t = T(c32), true);
+                    return cio::consume<X>(X::string::template del_read<II>, i, e, cx) && (t = T(c32), true);
                 }
         };
 

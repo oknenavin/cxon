@@ -6,6 +6,7 @@
 #ifndef CXON_TIME_ONLY
 
 #include "json.node.hxx"
+#include "test.hxx"
 
 #include "cxon/json.hxx"
 #include "cxon/cbor.hxx"
@@ -26,9 +27,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using node = cxon::json::ordered_node;
-
 namespace test { namespace kind {
+
+    using node = cxon::json::ordered_node;
 
     struct my_traits : cxon::json::node_traits<> {
         using                               string_type = std::u16string;
@@ -62,10 +63,7 @@ namespace test { namespace kind {
             int id;
         };
 
-    struct unquoted_keys_traits : cxon::json::format_traits {
-        static constexpr bool unquoted_keys = true;
-    };
-    using UQK_JSON = cxon::JSON<unquoted_keys_traits>;
+    using cxon::test::UQK_JSON;
 
     int self() {
         int a_ = 0;
@@ -724,6 +722,9 @@ namespace test { namespace kind {
                     node n;
                         cxon::from_bytes<UQK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
                     CHECK(n == out);
+                    std::string s;
+                        cxon::to_bytes<UQK_JSON>(s, n);
+                    CHECK(s == R"({{1:2}:3,[4]:5,"6":7,"-inf":17,12:13,"inf":16,-8:9,10:11,true:14,null:15})");
                 }
                 // probably not a good idea to use NaNs as keys
                 {   char const in[] = "{\"nan\": 18}";

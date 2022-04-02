@@ -10,6 +10,7 @@
 #include "json.node.hxx"
 
 struct time_traits : cxon::json::format_traits {};
-using TIME = cxon::JSON<time_traits>;
+//using TIME = cxon::JSON<time_traits>;
+using TIME = cxon::JSON<>;
 
 #endif // CXON_TEST_JSON_NODE_TIME_HXX_

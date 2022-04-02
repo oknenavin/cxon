@@ -55,6 +55,24 @@ namespace cxon {
 
     template <std::size_t N> struct option;
 
+    // format traits
+
+    template <typename T, template <typename> class U>
+        struct rebind_traits;
+    template <template <typename> class T, typename V, template <typename> class U>
+        struct rebind_traits<T<V>, U> {
+            using type = T<U<V>>;
+        };
+    template <typename T, template <typename> class U>
+        using rebind_traits_t = typename rebind_traits<T, U>::type;
+
+    template <typename T, typename X>
+        struct has_traits : std::integral_constant<bool, std::is_same<T, X>::value> {};
+    template <typename T, template <typename> class X, typename V>
+        struct has_traits<T, X<V>> : std::integral_constant<bool, std::is_same<T, V>::value || std::is_base_of<T, V>::value> {};
+    template <template <typename> class T, typename U, template <typename> class X, typename V>
+        struct has_traits<T<U>, X<V>> : std::integral_constant<bool, std::is_same<T<V>, X<V>>::value || has_traits<T<V>, V>::value> {};
+
     // type sequence
 
     template <typename ...>

@@ -58,7 +58,7 @@ namespace cxon { namespace cio { namespace enm {
             for ( ; f != l && t != f->value; ++f)
                 ;
             return f != l ?
-                poke<X>(o, X::string::beg, cx) && poke<X>(o, f->name, cx) && poke<X>(o, X::string::end, cx) :
+                poke<X>(o, X::string::template del_write<O>, cx) && poke<X>(o, f->name, cx) && poke<X>(o, X::string::template del_write<O>, cx) :
                 cx/X::write_error::argument_invalid
             ;
         }

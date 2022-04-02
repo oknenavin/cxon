@@ -37,7 +37,7 @@ namespace cxon { namespace cio { namespace val {
                             char const c = *i;
                                  if (c == X::map::beg)      { if (!skip_<X::map::beg, X::map::end>(o, i, e))    return false; }
                             else if (c == X::list::beg)     { if (!skip_<X::list::beg, X::list::end>(o, i, e))  return false; }
-                            else if (c == X::string::beg)   { if (!skip_(o, i, e))                              return false; }
+                            else if (c == X::string::del)   { if (!skip_(o, i, e))                              return false; }
                             else if (c == X::map::sep)                                                          break;
                             else if (c == X::map::end)                                                          break;
                             else if (c == X::list::end)                                                         break;
@@ -54,7 +54,7 @@ namespace cxon { namespace cio { namespace val {
                                 case '\\':              if (!poke(o, *i))   return false;
                                                         if (++i == e)       return false;
                                                         break;
-                                case X::string::end:    return poke(o, *i);
+                                case X::string::del:    return poke(o, *i);
                                 default:                if (!poke(o, *i))   return false;
                             }
                         }
@@ -71,7 +71,7 @@ namespace cxon { namespace cio { namespace val {
                                 case CE:                if (!poke(o, *i))       return false;
                                                         if (r == 0)             return true;
                                                         --r; break;
-                                case X::string::beg:    if (!skip_(o, i, e))    return false;
+                                case X::string::del:    if (!skip_(o, i, e))    return false;
                                                         break;
                                 default:                if (!poke(o, *i))       return false;
                             }

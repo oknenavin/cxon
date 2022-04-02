@@ -23,10 +23,10 @@ namespace cxon { // interface
     // format selectors
 
     template <typename T>
-        struct format_selector : T { using traits = T; };
+        struct format_selector : T {};
 
     template <typename X, template <typename> class S>
-        using is_same_format = std::is_same<X, S<typename X::traits>>;
+        using is_same_format = has_traits<S<X>, X>;
 
     template <typename X, template <typename> class S, typename R = bool>
         using enable_for_t = enable_if_t<is_same_format<X, S>::value, R>;

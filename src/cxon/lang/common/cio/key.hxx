@@ -59,6 +59,7 @@ namespace cxon { namespace cio { namespace key {
 
     template <typename T> struct is_quoted : std::false_type {};
 #   define CXON_QUOTED(T)\
+        template <>                 struct is_quoted<T>             : std::true_type  {};\
         template <std::size_t N>    struct is_quoted<T[N]>          : std::true_type  {};\
         template <std::size_t N>    struct is_quoted<const T[N]>    : std::true_type  {};\
         template <>                 struct is_quoted<T*>            : std::true_type  {};\
@@ -76,13 +77,33 @@ namespace cxon { namespace cio { namespace key {
 
 namespace cxon { namespace cio { namespace key {
 
+    template <typename T>
+        struct traits : T {
+            struct string : T::string {
+                template <typename II>
+                    static bool del_read(II& i, II e) {
+                        return i != e && *i == '\\' && (++i, true) && i != e && *i == string::del && (++i, true);
+                    }
+                template <typename O>
+                    static bool del_write(O& o) {
+                        return poke(o, '\\') && poke(o, string::del);
+                    }
+            };
+        };
+    template <typename X>
+        using key_traits = typename std::conditional<is_key<X>::value, X, rebind_traits_t<X, traits>>::type;
+
+}}}
+
+namespace cxon { namespace cio { namespace key {
+
     namespace imp {
 
         template <typename X, typename T, typename II, typename Cx>
             inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!is_quoted<T>::value && !X::unquoted_keys, bool> {
-                return  consume<X>(X::string::beg, i, e, cx) &&
-                            read_value<X>(t, i, e, cx) &&
-                        consume<X>(X::string::end, i, e, cx)
+                return  consume<X>(X::string::template del_read<II>, i, e, cx) &&
+                            read_value<key_traits<X>>(t, i, e, cx) &&
+                        consume<X>(X::string::template del_read<II>, i, e, cx)
                 ;
             }
         template <typename X, typename T, typename II, typename Cx>
@@ -106,59 +127,11 @@ namespace cxon { namespace cio { namespace key {
 
     namespace imp {
 
-        template <typename X, typename O>
-            struct escape_iterator {
-                using iterator_category = std::output_iterator_tag;
-                using value_type        = char;
-                using difference_type   = void;
-                using pointer           = void;
-                using reference         = void;
-
-                constexpr explicit escape_iterator(O& o) : o_(o) {}
-
-                escape_iterator& operator ++() noexcept { return *this; }
-                escape_iterator& operator  *() noexcept { return *this; }
-
-                escape_iterator& operator =(value_type c) {
-                    return (p_ != '\\' && c == '\"' && (poke(o_, "\\\"", 2), true)) || poke(o_, c), p_ = c, *this;
-                }
-
-                constexpr bool good() const noexcept {
-                    return good_(option<1>());
-                }
-
-                private:
-                    template <typename U = O> auto good_(option<1>) const noexcept
-                        -> enable_if_t<std::is_same<decltype(std::declval<U>().good()), bool>::value, bool>
-                        { return o_.good(); }
-                    constexpr bool good_(option<0>) const noexcept
-                        { return true; }
-
-                private:
-                    O& o_;
-                    value_type p_ = '\xFF';
-            };
-
-        template <typename X, typename O>
-            struct is_escape_iterator                           : std::false_type {};
-        template <typename X, typename O>
-            struct is_escape_iterator<X, escape_iterator<X, O>> : std::true_type {};
-
-        template <typename X, typename O>
-            constexpr auto make_escaper(O& o) -> enable_if_t<!is_escape_iterator<X, O>::value, escape_iterator<X, O>> {
-                return escape_iterator<X, O>{o};
-            }
-        template <typename X, typename O>
-            constexpr auto make_escaper(O& o) -> enable_if_t< is_escape_iterator<X, O>::value, O&> {
-                return o;
-            }
-
         template <typename X, typename T, typename O, typename Cx>
             inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!is_quoted<T>::value && !X::unquoted_keys, bool> {
-                auto e = make_escaper<X>(o);
-                return  poke<X>(o, X::string::beg, cx) &&
-                            write_value<X>(e, t, cx) &&
-                        poke<X>(o, X::string::end, cx)
+                return  poke<X>(o, X::string::template del_write<O>, cx) &&
+                            write_value<key_traits<X>>(o, t, cx) &&
+                        poke<X>(o, X::string::template del_write<O>, cx)
                 ;
             }
         template <typename X, typename T, typename O, typename Cx>
