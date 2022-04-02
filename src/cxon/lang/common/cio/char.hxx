@@ -75,7 +75,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X>
             struct u_to_ {
                 template <typename II>
-                    static auto dec(II& i, II e) noexcept -> enable_if_t<!is_random_access_iterator<II>::value, char32_t> {
+                    static auto dec(II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, char32_t> {
 #                       define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
                             char32_t c;
                                 CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
@@ -86,7 +86,7 @@ namespace cxon { namespace cio { namespace chr {
 #                       undef CXON_NEXT_HEX
                     }
                 template <typename II>
-                    static auto dec(II& i, II e) noexcept -> enable_if_t< is_random_access_iterator<II>::value, char32_t> {
+                    static auto dec(II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, char32_t> {
                         if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
                             return bad_utf32;
                         char32_t const c =  (hex_to_dec_[(unsigned char)i[1]] << 12) |
@@ -278,7 +278,11 @@ namespace cxon { namespace cio { namespace chr {
                             case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
                             case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
                                         return poke<X>(o, esc_[(unsigned char)c], len_[(unsigned char)c], cx);
-                            case '"':   return poke<X>(o, "\\\"", 2, cx);
+                            case '"':
+                                CXON_IF_CONSTEXPR (is_key<X>::value)
+                                        return poke<X>(o, "\\u0022", 6, cx);
+                                else
+                                        return poke<X>(o, "\\\"", 2, cx);
                             case '\\':  return poke<X>(o, "\\\\", 2, cx);
                             default:    return poke<X>(o, c, cx);
                         }
@@ -420,9 +424,9 @@ namespace cxon { namespace cio { namespace chr {
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto write(O& o, T t, Cx& cx) -> enable_if_t<is_char<T>::value, bool> {
-            return  poke<X>(o, X::string::beg, cx) &&
+            return  poke<X>(o, X::string::template del_write<O>, cx) &&
                         imp::encode_<X, T>::value(o, t, cx) &&
-                    poke<X>(o, X::string::end, cx)
+                    poke<X>(o, X::string::template del_write<O>, cx)
             ;
         }
 

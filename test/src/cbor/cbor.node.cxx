@@ -15,11 +15,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct unquoted_keys_traits : cxon::json::format_traits {
-    static constexpr bool unquoted_keys = true;
-};
-using UQK_JSON = cxon::JSON<unquoted_keys_traits>;
-
 int main(int argc, char *argv[]) {
     if (argc == 1) {
 #       ifndef CXON_TIME_ONLY
@@ -87,6 +82,11 @@ CXON_JSON_CLS_READ(test::fixture,
 )
 
 namespace test { namespace kind { // test-vector
+
+    struct unquoted_keys_traits : cxon::json::format_traits {
+        static constexpr bool unquoted_keys = true;
+    };
+    using UQK_JSON = cxon::JSON<unquoted_keys_traits>;
 
     struct test {
         std::string hex;

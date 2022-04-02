@@ -30,6 +30,11 @@ namespace cxon { namespace cio {
     template <typename X, typename II>
         inline void consume(II& i, II e);
 
+    template <typename X, typename II, typename C>
+        inline bool consume(C c, II& i, II e);
+    template <typename X, typename II, typename C, typename Cx>
+        inline bool consume(C c, II& i, II e, Cx& cx);
+
     template <typename X, typename II>
         inline bool consume(char c, II& i, II e);
     template <typename X, typename II, typename Cx>
@@ -40,6 +45,8 @@ namespace cxon { namespace cio {
 
     // output
 
+    template <typename O, typename C>
+        inline bool poke(O& o, C c);
     template <typename O>
         inline bool poke(O& o, char c);
     template <typename O>
@@ -51,6 +58,8 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, unsigned n, char c);
 
+    template <typename X, typename O, typename C, typename Cx>
+        inline bool poke(O& o, C c, Cx& cx);
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx);
     template <typename X, typename O, typename Cx>
@@ -87,6 +96,16 @@ namespace cxon { namespace cio {
     template <typename X, typename II>
         inline void consume(II& i, II e) {
             for ( ; i != e && chr::is<X>::space(*i); ++i) ;
+        }
+
+    template <typename X, typename II, typename C>
+        inline bool consume(C c, II& i, II e) {
+            consume<X>(i, e);
+            return c(i, e);
+        }
+    template <typename X, typename II, typename C, typename Cx>
+        inline bool consume(C c, II& i, II e, Cx& cx) {
+            return consume<X>(c, i, e) || cx/X::read_error::unexpected;
         }
 
     template <typename X, typename II>
@@ -163,6 +182,8 @@ namespace cxon { namespace cio {
 
     }
 
+    template <typename O, typename C>
+        inline bool poke(O& o, C c)                             { return c(o); }
     template <typename O>
         inline bool poke(O& o, char c)                          { return imp::poke_(o, c); }
     template <typename O>
@@ -174,6 +195,8 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, unsigned n, char c)              { return imp::poke_(o, n, c); }
 
+    template <typename X, typename O, typename C, typename Cx>
+        inline bool poke(O& o, C c, Cx& cx)                             { return c(o)           || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx)                          { return poke(o, c)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>

@@ -171,6 +171,16 @@ TEST_BEG(map, cxon::JSON<>, "/boost")
         W_TEST(R"({"1":2,"1":3})", multimap<int, int>{{1, 2}, {1, 3}});
 TEST_END()
 
+TEST_BEG(map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+    using namespace boost::container;
+    // std::map
+        R_TEST(map<int, string>{{1, "2"}, {3, "4"}}, R"({1: "2", 3: "4"})");
+        W_TEST(R"({1:2,3:4})", map<int, int>{{1, 2}, {3, 4}});
+    // std::multimap
+        R_TEST(multimap<int, string>{{1, "2"}, {1, "3"}}, R"({1: "2", 1: "3"})");
+        W_TEST(R"({1:2,1:3})", multimap<int, int>{{1, 2}, {1, 3}});
+TEST_END()
+
 
 TEST_BEG(set, cxon::JSON<>, "/boost")
     using namespace boost::container;
@@ -197,6 +207,16 @@ TEST_BEG(flat_map, cxon::JSON<>, "/boost")
     // boost::container::flat_multimap
         R_TEST(flat_multimap<string, int>{{"1", 2}, {"1", 3}}, R"({"1": 2, "1": 3})");
         W_TEST(R"({"1":2,"1":3})", flat_multimap<int, int>{{1, 2}, {1, 3}});
+TEST_END()
+
+TEST_BEG(flat_map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+    using namespace boost::container;
+    // std::map
+        R_TEST(flat_map<int, string>{{1, "2"}, {3, "4"}}, R"({1: "2", 3: "4"})");
+        W_TEST(R"({1:2,3:4})", flat_map<int, int>{{1, 2}, {3, 4}});
+    // std::multimap
+        R_TEST(flat_multimap<int, string>{{1, "2"}, {1, "3"}}, R"({1: "2", 1: "3"})");
+        W_TEST(R"({1:2,1:3})", flat_multimap<int, int>{{1, 2}, {1, 3}});
 TEST_END()
 
 
@@ -271,6 +291,19 @@ TEST_END()
             R_TEST(variant<monostate, int>(), R"({"0":1})", json::read_error::unexpected, 5);
             W_TEST(R"({"0":null})", variant<monostate, int>());
     TEST_END()
+
+    TEST_BEG(variant2_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+        using namespace boost::variant2;
+        // boost::variant2::variant
+            R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({0:1})");
+            R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({1:0})");
+            R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({2:0})", json::read_error::unexpected, 1);
+            W_TEST(R"({0:1})", variant<int, double>(1));
+            W_TEST(R"({1:0})", variant<int, double>(in_place_index_t<1>(), 0));
+            R_TEST(variant<monostate, int>(), R"({0:null})");
+            R_TEST(variant<monostate, int>(), R"({0:1})", json::read_error::unexpected, 3);
+            W_TEST(R"({0:null})", variant<monostate, int>());
+    TEST_END()
 #endif
 
 
@@ -293,6 +326,21 @@ TEST_BEG(variant, cxon::JSON<>, "/boost")
         W_TEST(R"({"1":0})", variant<int, double>(0.0));
         R_TEST(variant<int, double>(), R"({"0":0})");
         W_TEST(R"({"0":0})", variant<int, double>());
+        R_TEST(recursive_wrapper<int>(42), R"(42)");
+        W_TEST(R"(42)", recursive_wrapper<int>(42));
+TEST_END()
+
+TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+    using namespace boost;
+    boost::variant<int, boost::variant<int, double>> x;
+    // boost::variant
+        R_TEST(variant<int, double>(  1), R"({0:1})");
+        R_TEST(variant<int, double>(0.0), R"({1:0})");
+        R_TEST(variant<int, double>(  0), R"({2:0})", json::read_error::unexpected, 1);
+        W_TEST(R"({0:1})", variant<int, double>(  1));
+        W_TEST(R"({1:0})", variant<int, double>(0.0));
+        R_TEST(variant<int, double>(), R"({0:0})");
+        W_TEST(R"({0:0})", variant<int, double>());
         R_TEST(recursive_wrapper<int>(42), R"(42)");
         W_TEST(R"(42)", recursive_wrapper<int>(42));
 TEST_END()

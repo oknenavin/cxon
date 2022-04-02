@@ -319,12 +319,12 @@ namespace cxon { namespace cio { namespace num { // write
                 }
                 else {
                     if (std::isinf(t)) {
-                        if (!poke<X>(o, X::string::beg, cx))            return false;
+                        if (!poke<X>(o, X::string::del, cx))            return false;
                         if (std::signbit(t) && !poke<X>(o, '-', cx))    return false;
-                        return poke<X>(o, "inf", cx) && poke<X>(o, X::string::end, cx);
+                        return poke<X>(o, "inf", cx) && poke<X>(o, X::string::del, cx);
                     }
                     CXON_ASSERT(std::isnan(t), "unexpected");
-                    return poke<X>(o, X::string::beg, cx) && poke<X>(o, "nan", cx) && poke<X>(o, X::string::end, cx);
+                    return poke<X>(o, X::string::del, cx) && poke<X>(o, "nan", cx) && poke<X>(o, X::string::del, cx);
                 }
             }
 

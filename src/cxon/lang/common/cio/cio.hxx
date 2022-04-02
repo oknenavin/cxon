@@ -31,8 +31,15 @@ namespace cxon { namespace cio { // format traits
             static constexpr char               sep     = ',';
         };
         struct string {
-            static constexpr char               beg     = '"';
-            static constexpr char               end     = '"';
+            static constexpr char               del     = '"';
+            template <typename II>
+                static bool del_read(II& i, II e) {
+                    return i != e && *i == del && (++i, true);
+                }
+            template <typename O>
+                static bool del_write(O& o) {
+                    return poke(o, del);
+                }
         };
         struct number {
             static constexpr bool               strict  = false;
@@ -49,6 +56,12 @@ namespace cxon { namespace cio { // format traits
 #           endif
         };
     };
+
+    namespace key {
+        template <typename T> struct traits;
+    }
+    template <typename X>
+        using is_key = has_traits<key::traits<X>, X>;
 
 }}
 

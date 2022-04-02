@@ -15,6 +15,11 @@ namespace cxon { namespace test {
         static constexpr bool force_input_iterator = true;
     };
 
+    struct unquoted_keys_traits : json::format_traits {
+        static constexpr bool unquoted_keys = true;
+    };
+    using UQK_JSON = JSON<unquoted_keys_traits>;
+
 }}
 
 #endif // CXON_JSON_TEST_HXX_
