@@ -81,7 +81,7 @@ namespace cxon { namespace cio { namespace str {
             {
                 while (i != e) {
                     if (*i == '\\') {
-                        CXON_IF_CONSTEXPR (is_key<X>::value) {
+                        CXON_IF_CONSTEXPR (is_key_context<X>::value) {
                             II const f = i;
                                 if (++i != e && *i == X::string::del)
                                     return ++i, true;
@@ -94,7 +94,7 @@ namespace cxon { namespace cio { namespace str {
                                 return rewind(i, o), false;
                     }
                     else {
-                        CXON_IF_CONSTEXPR (!is_key<X>::value) {
+                        CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
                             if (*i == X::string::del)       return ++i, true;
                         }
                         CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
@@ -114,7 +114,7 @@ namespace cxon { namespace cio { namespace str {
                         if (*i == '\\') {
                             if (l != i && !cnt::append(c, l, i))
                                 return rewind(i, l), cx/X::read_error::overflow;
-                            CXON_IF_CONSTEXPR (is_key<X>::value) {
+                            CXON_IF_CONSTEXPR (is_key_context<X>::value) {
                                 II const f = i;
                                     if (++i != e && *i == X::string::del)
                                         return ++i, true;
@@ -128,7 +128,7 @@ namespace cxon { namespace cio { namespace str {
                             l = i, --i;
                         }
                         else {
-                            CXON_IF_CONSTEXPR (!is_key<X>::value) {
+                            CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
                                 if (*i == X::string::del)
                                     return ((l == i || cnt::append(c, l, i)) && (++i, true)) || (rewind(i, l), cx/X::read_error::overflow);
                             }
