@@ -251,144 +251,12 @@ TEST_BEG(map, cxon::JSON<>, "/std")
     using namespace std;
     // std::map
         R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<string, int>{{"1", 2}, {"3", 4}});
-        R_TEST(map<wstring, int>{{L"1", 2}, {L"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<wstring, int>{{L"1", 2}, {L"3", 4}});
-        R_TEST(map<u16string, int>{{u"1", 2}, {u"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<u16string, int>{{u"1", 2}, {u"3", 4}});
-        R_TEST(map<u32string, int>{{U"1", 2}, {U"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<u32string, int>{{U"1", 2}, {U"3", 4}});
-        W_TEST(R"({"1":2,"3":4})", map<char, int>{{'1', 2}, {'3', 4}});
-        W_TEST(R"({"1":2,"3":4})", map<wchar_t, int>{{L'1', 2}, {L'3', 4}});
-        W_TEST(R"({"1":2,"3":4})", map<char16_t, int>{{u'1', 2}, {u'3', 4}});
-        W_TEST(R"({"1":2,"3":4})", map<char32_t, int>{{U'1', 2}, {U'3', 4}});
-        W_TEST(R"({"1":2,"3":4})", map<signed char, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<unsigned char, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<short, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<unsigned short, int>{{1, 2}, {3, 4}});
         W_TEST(R"({"1":2,"3":4})", map<int, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<unsigned, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<unsigned long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<long long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<unsigned long long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<float, int>{{1.f, 2}, {3.f, 4}});
-        W_TEST(R"({"1":2,"3":4})", map<double, int>{{1., 2}, {3., 4}});
-        W_TEST(R"({"1":2,"3":4})", map<long double, int>{{1., 2}, {3., 4}});
-        {
-            struct less {
-                constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; }
-            };
-            W_TEST(R"({"null":0})", map<nullptr_t, int, less>{{nullptr, 0}});
-        }
-        // escape quotes
-        {   using mmap = map<map<char, int>, int>;
-            R_TEST(mmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
-            W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", mmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<wchar_t, int>, int>;
-            R_TEST(mmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
-            W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", mmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<char16_t, int>, int>;
-            R_TEST(mmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
-            W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", mmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<char32_t, int>, int>;
-            R_TEST(mmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
-            W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", mmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<string, int>, int>;
-            R_TEST(mmap{{{{"\tone", 2}}, 3}, {{{"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-            W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", mmap{{{{"\"one\"", 2}}, 3}, {{{"four", 5}}, 6}});
-        }
-        {   using mmap = map<map<wstring, int>, int>;
-            R_TEST(mmap{{{{L"\tone", 2}}, 3}, {{{L"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-            W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", mmap{{{{L"\"one\"", 2}}, 3}, {{{L"four", 5}}, 6}});
-        }
-        {   using mmap = map<map<u16string, int>, int>;
-            R_TEST(mmap{{{{u"\tone", 2}}, 3}, {{{u"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-            W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", mmap{{{{u"\"one\"", 2}}, 3}, {{{u"four", 5}}, 6}});
-        }
-        {   using mmap = map<map<u32string, int>, int>;
-            R_TEST(mmap{{{{U"\tone", 2}}, 3}, {{{U"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-            W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", mmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
-        }
+        R_TEST(map<string, int>{{R"({"1":2})", 3}, {R"({"4":5})", 6}}, R"({"{\"1\":2}": 3, "{\"4\":5}": 6})");
+        W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", map<map<string, int>, int>{{map<string, int>{{"1", 2}}, 3}, {map<string, int>{{"4", 5}}, 6}});
     // std::multimap
         R_TEST(multimap<string, int>{{"1", 2}, {"1", 3}}, R"({"1": 2, "1": 3})");
         W_TEST(R"({"1":2,"1":3})", multimap<int, int>{{1, 2}, {1, 3}});
-TEST_END()
-
-TEST_BEG(map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
-    using namespace std;
-    // std::map
-        R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<string, int>{{"1", 2}, {"3", 4}});
-        R_TEST(map<wstring, int>{{L"1", 2}, {L"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<wstring, int>{{L"1", 2}, {L"3", 4}});
-        R_TEST(map<u16string, int>{{u"1", 2}, {u"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<u16string, int>{{u"1", 2}, {u"3", 4}});
-        R_TEST(map<u32string, int>{{U"1", 2}, {U"3", 4}}, R"({"1": 2, "3": 4})");
-        W_TEST(R"({"1":2,"3":4})", map<u32string, int>{{U"1", 2}, {U"3", 4}});
-        W_TEST(R"({"1":2,"3":4})", map<char, int>{{'1', 2}, {'3', 4}});
-        W_TEST(R"({"1":2,"3":4})", map<wchar_t, int>{{L'1', 2}, {L'3', 4}});
-        W_TEST(R"({"1":2,"3":4})", map<char16_t, int>{{u'1', 2}, {u'3', 4}});
-        W_TEST(R"({"1":2,"3":4})", map<char32_t, int>{{U'1', 2}, {U'3', 4}});
-        W_TEST(R"({1:2,3:4})", map<signed char, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<unsigned char, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<short, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<unsigned short, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<int, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<unsigned, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<unsigned long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<long long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<unsigned long long, int>{{1, 2}, {3, 4}});
-        W_TEST(R"({1:2,3:4})", map<float, int>{{1.f, 2}, {3.f, 4}});
-        W_TEST(R"({1:2,3:4})", map<double, int>{{1., 2}, {3., 4}});
-        W_TEST(R"({1:2,3:4})", map<long double, int>{{1., 2}, {3., 4}});
-        {
-            struct less {
-                constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; }
-            };
-            W_TEST(R"({null:0})", map<nullptr_t, int, less>{{nullptr, 0}});
-        }
-        // escape quotes
-        {   using mmap = map<map<char, int>, int>;
-            R_TEST(mmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
-            W_TEST(R"({{"1":2}:3,{"4":5}:6})", mmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<wchar_t, int>, int>;
-            R_TEST(mmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
-            W_TEST(R"({{"1":2}:3,{"4":5}:6})", mmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<char16_t, int>, int>;
-            R_TEST(mmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
-            W_TEST(R"({{"1":2}:3,{"4":5}:6})", mmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<char32_t, int>, int>;
-            R_TEST(mmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
-            W_TEST(R"({{"1":2}:3,{"4":5}:6})", mmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}});
-        }
-        {   using mmap = map<map<string, int>, int>;
-            R_TEST(mmap{{{{"\tone", 2}}, 3}, {{{"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-            W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", mmap{{{{"\"one\"", 2}}, 3}, {{{"four", 5}}, 6}});
-        }
-        {   using mmap = map<map<wstring, int>, int>;
-            R_TEST(mmap{{{{L"\tone", 2}}, 3}, {{{L"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-            W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", mmap{{{{L"\"one\"", 2}}, 3}, {{{L"four", 5}}, 6}});
-        }
-        {   using mmap = map<map<u16string, int>, int>;
-            R_TEST(mmap{{{{u"\tone", 2}}, 3}, {{{u"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-            W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", mmap{{{{u"\"one\"", 2}}, 3}, {{{u"four", 5}}, 6}});
-        }
-        {   using mmap = map<map<u32string, int>, int>;
-            R_TEST(mmap{{{{U"\tone", 2}}, 3}, {{{U"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-            W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", mmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
-        }
-    // std::multimap
-        R_TEST(multimap<int, string>{{1, "2"}, {1, "3"}}, R"({1: "2", 1: "3"})");
-        W_TEST(R"({1:2,1:3})", multimap<int, int>{{1, 2}, {1, 3}});
 TEST_END()
 
 
@@ -547,3 +415,168 @@ TEST_END()
             W_TEST(R"({0:null})", variant<monostate, int>());
     TEST_END()
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
+    using namespace std;
+
+    R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<string, int>{{"1", 2}, {"3", 4}});
+    R_TEST(map<wstring, int>{{L"1", 2}, {L"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<wstring, int>{{L"1", 2}, {L"3", 4}});
+    R_TEST(map<u16string, int>{{u"1", 2}, {u"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<u16string, int>{{u"1", 2}, {u"3", 4}});
+    R_TEST(map<u32string, int>{{U"1", 2}, {U"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<u32string, int>{{U"1", 2}, {U"3", 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char, int>{{'1', 2}, {'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<wchar_t, int>{{L'1', 2}, {L'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char16_t, int>{{u'1', 2}, {u'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char32_t, int>{{U'1', 2}, {U'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<signed char, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<unsigned char, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<short, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<unsigned short, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<int, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<unsigned, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<unsigned long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<long long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<unsigned long long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<float, int>{{1.f, 2}, {3.f, 4}});
+    W_TEST(R"({"1":2,"3":4})", map<double, int>{{1., 2}, {3., 4}});
+    W_TEST(R"({"1":2,"3":4})", map<long double, int>{{1., 2}, {3., 4}});
+    {
+        struct less {
+            constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; }
+        };
+        W_TEST(R"({"null":0})", map<nullptr_t, int, less>{{nullptr, 0}});
+    }
+    // escape quotes
+    {   using xmap = map<map<char, int>, int>;
+        R_TEST(xmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
+        W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", xmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<wchar_t, int>, int>;
+        R_TEST(xmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
+        W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", xmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<char16_t, int>, int>;
+        R_TEST(xmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
+        W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", xmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<char32_t, int>, int>;
+        R_TEST(xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}}, R"({"{\"1\":2}":3,"{\"4\":5}":6})");
+        W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<string, int>, int>;
+        R_TEST(xmap{{{{"\tone", 2}}, 3}, {{{"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
+        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{"\"one\"", 2}}, 3}, {{{"four", 5}}, 6}});
+    }
+    {   using xmap = map<map<wstring, int>, int>;
+        R_TEST(xmap{{{{L"\tone", 2}}, 3}, {{{L"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
+        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{L"\"one\"", 2}}, 3}, {{{L"four", 5}}, 6}});
+    }
+    {   using xmap = map<map<u16string, int>, int>;
+        R_TEST(xmap{{{{u"\tone", 2}}, 3}, {{{u"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
+        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{u"\"one\"", 2}}, 3}, {{{u"four", 5}}, 6}});
+    }
+    {   using xmap = map<map<u32string, int>, int>;
+        R_TEST(xmap{{{{U"\tone", 2}}, 3}, {{{U"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
+        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
+    }
+    // inf/nan
+    constexpr auto ninf = -std::numeric_limits<double>::infinity();
+    constexpr auto pinf =  std::numeric_limits<double>::infinity();
+    //constexpr auto qnan =  std::numeric_limits<double>::quiet_NaN();
+    {   using xmap = map<double, int>;
+        R_TEST(xmap{{ninf, 1}, {pinf, 2}}, R"({"-inf":1,"inf":2})");
+        W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
+    }
+    {   using xmap = map<map<double, int>, int>;
+        R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})");
+        W_TEST(R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+    }
+TEST_END()
+
+TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
+    using namespace std;
+
+    R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<string, int>{{"1", 2}, {"3", 4}});
+    R_TEST(map<wstring, int>{{L"1", 2}, {L"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<wstring, int>{{L"1", 2}, {L"3", 4}});
+    R_TEST(map<u16string, int>{{u"1", 2}, {u"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<u16string, int>{{u"1", 2}, {u"3", 4}});
+    R_TEST(map<u32string, int>{{U"1", 2}, {U"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<u32string, int>{{U"1", 2}, {U"3", 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char, int>{{'1', 2}, {'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<wchar_t, int>{{L'1', 2}, {L'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char16_t, int>{{u'1', 2}, {u'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char32_t, int>{{U'1', 2}, {U'3', 4}});
+    W_TEST(R"({1:2,3:4})", map<signed char, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned char, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<short, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned short, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<int, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<long long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned long long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<float, int>{{1.f, 2}, {3.f, 4}});
+    W_TEST(R"({1:2,3:4})", map<double, int>{{1., 2}, {3., 4}});
+    W_TEST(R"({1:2,3:4})", map<long double, int>{{1., 2}, {3., 4}});
+    {
+        struct less {
+            constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; }
+        };
+        W_TEST(R"({null:0})", map<nullptr_t, int, less>{{nullptr, 0}});
+    }
+    // escape quotes
+    {   using xmap = map<map<char, int>, int>;
+        R_TEST(xmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<wchar_t, int>, int>;
+        R_TEST(xmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<char16_t, int>, int>;
+        R_TEST(xmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<char32_t, int>, int>;
+        R_TEST(xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<string, int>, int>;
+        R_TEST(xmap{{{{"\tone", 2}}, 3}, {{{"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
+        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{"\"one\"", 2}}, 3}, {{{"four", 5}}, 6}});
+    }
+    {   using xmap = map<map<wstring, int>, int>;
+        R_TEST(xmap{{{{L"\tone", 2}}, 3}, {{{L"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
+        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{L"\"one\"", 2}}, 3}, {{{L"four", 5}}, 6}});
+    }
+    {   using xmap = map<map<u16string, int>, int>;
+        R_TEST(xmap{{{{u"\tone", 2}}, 3}, {{{u"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
+        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{u"\"one\"", 2}}, 3}, {{{u"four", 5}}, 6}});
+    }
+    {   using xmap = map<map<u32string, int>, int>;
+        R_TEST(xmap{{{{U"\tone", 2}}, 3}, {{{U"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
+        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
+    }
+    // inf/nan
+    constexpr auto ninf = -std::numeric_limits<double>::infinity();
+    constexpr auto pinf =  std::numeric_limits<double>::infinity();
+    //constexpr auto qnan =  std::numeric_limits<double>::quiet_NaN();
+    {   using xmap = map<double, int>;
+        R_TEST(xmap{{ninf, 1}, {pinf, 2}}, R"({"-inf":1,"inf":2})");
+        W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
+    }
+    {   using xmap = map<map<double, int>, int>;
+        R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({{"-inf":1}:2,{"inf":3}:4})");
+        W_TEST(R"({{"-inf":1}:2,{"inf":3}:4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+    }
+TEST_END()

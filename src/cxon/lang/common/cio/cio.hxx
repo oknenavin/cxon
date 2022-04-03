@@ -61,7 +61,7 @@ namespace cxon { namespace cio { // format traits
         template <typename T> struct traits;
     }
     template <typename X>
-        using is_key = has_traits<key::traits<X>, X>;
+        using is_key_context = has_traits<key::traits<X>, X>;
 
 }}
 

@@ -279,7 +279,7 @@ namespace cxon { namespace cio { namespace chr {
                             case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
                                         return poke<X>(o, esc_[(unsigned char)c], len_[(unsigned char)c], cx);
                             case '"':
-                                CXON_IF_CONSTEXPR (is_key<X>::value)
+                                CXON_IF_CONSTEXPR (is_key_context<X>::value)
                                         return poke<X>(o, "\\u0022", 6, cx);
                                 else
                                         return poke<X>(o, "\\\"", 2, cx);

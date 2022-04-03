@@ -82,7 +82,7 @@ namespace cxon { namespace cio { namespace key {
             struct string : T::string {
                 template <typename II>
                     static bool del_read(II& i, II e) {
-                        return i != e && *i == '\\' && (++i, true) && i != e && *i == string::del && (++i, true);
+                        return i != e && *i == '\\' && ++i != e && *i == string::del && (++i, true);
                     }
                 template <typename O>
                     static bool del_write(O& o) {
@@ -91,7 +91,7 @@ namespace cxon { namespace cio { namespace key {
             };
         };
     template <typename X>
-        using key_traits = typename std::conditional<is_key<X>::value, X, rebind_traits_t<X, traits>>::type;
+        using key_context = typename std::conditional<is_key_context<X>::value, X, rebind_traits_t<X, traits>>::type;
 
 }}}
 
@@ -102,7 +102,7 @@ namespace cxon { namespace cio { namespace key {
         template <typename X, typename T, typename II, typename Cx>
             inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!is_quoted<T>::value && !X::unquoted_keys, bool> {
                 return  consume<X>(X::string::template del_read<II>, i, e, cx) &&
-                            read_value<key_traits<X>>(t, i, e, cx) &&
+                            read_value<key_context<X>>(t, i, e, cx) &&
                         consume<X>(X::string::template del_read<II>, i, e, cx)
                 ;
             }
@@ -130,7 +130,7 @@ namespace cxon { namespace cio { namespace key {
         template <typename X, typename T, typename O, typename Cx>
             inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!is_quoted<T>::value && !X::unquoted_keys, bool> {
                 return  poke<X>(o, X::string::template del_write<O>, cx) &&
-                            write_value<key_traits<X>>(o, t, cx) &&
+                            write_value<key_context<X>>(o, t, cx) &&
                         poke<X>(o, X::string::template del_write<O>, cx)
                 ;
             }
