@@ -22,7 +22,7 @@ namespace cxon { namespace cio { // key read/write helpers
 
 namespace cxon { namespace cio { namespace key { // key read/write extension points
 
-    template <typename T>
+    template <typename T, typename E = void>
         struct is_quoted;
 
     template <typename X, typename T>
@@ -57,7 +57,7 @@ namespace cxon { namespace cio {
 
 namespace cxon { namespace cio { namespace key {
 
-    template <typename T> struct is_quoted : std::false_type {};
+    template <typename T, typename E> struct is_quoted : std::false_type {};
 #   define CXON_QUOTED(T)\
         template <>                 struct is_quoted<T>             : std::true_type  {};\
         template <std::size_t N>    struct is_quoted<T[N]>          : std::true_type  {};\
