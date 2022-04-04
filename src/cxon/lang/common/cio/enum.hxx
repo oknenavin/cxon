@@ -26,6 +26,10 @@ namespace cxon { namespace cio { namespace enm { // enum reader/writer construct
 
 }}}
 
+namespace cxon { namespace cio { namespace key {
+    template <typename T> struct is_quoted<T, enable_if_t<std::is_enum<T>::value>> : std::true_type  {};
+}}}
+
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace enm {

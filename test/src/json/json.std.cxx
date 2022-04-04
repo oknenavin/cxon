@@ -418,6 +418,32 @@ TEST_END()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace std {
+    template <size_t N>
+        inline bool operator <(const std::bitset<N>& t1, const std::bitset<N>& t2) {
+            return t1.to_string() < t2.to_string();
+        };
+}
+
+enum class keys_enum { E1, E2 };
+CXON_JSON_ENM(keys_enum,
+    CXON_JSON_ENM_VALUE_ASIS(E1),
+    CXON_JSON_ENM_VALUE_ASIS(E2)
+)
+
+struct key_struct {
+    int x, y;
+    friend bool operator ==(const key_struct& t1, const key_struct& t2) {
+        return t1.x == t2.x && t1.y == t2.y;
+    }
+    friend bool operator <(const key_struct& t1, const key_struct& t2) {
+        return t1.x < t2.x || (t1.x == t2.x && t1.y < t2.y);
+    }
+};
+CXON_JSON_CLS(key_struct,
+    CXON_JSON_CLS_FIELD_ASIS(x),
+    CXON_JSON_CLS_FIELD_ASIS(y)
+)
 
 TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
     using namespace std;
@@ -447,10 +473,7 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
     W_TEST(R"({"1":2,"3":4})", map<float, int>{{1.f, 2}, {3.f, 4}});
     W_TEST(R"({"1":2,"3":4})", map<double, int>{{1., 2}, {3., 4}});
     W_TEST(R"({"1":2,"3":4})", map<long double, int>{{1., 2}, {3., 4}});
-    {
-        struct less {
-            constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; }
-        };
+    {   struct less { constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; } };
         W_TEST(R"({"null":0})", map<nullptr_t, int, less>{{nullptr, 0}});
     }
     // escape quotes
@@ -487,16 +510,41 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
         W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
     }
     // inf/nan
-    constexpr auto ninf = -std::numeric_limits<double>::infinity();
-    constexpr auto pinf =  std::numeric_limits<double>::infinity();
-    //constexpr auto qnan =  std::numeric_limits<double>::quiet_NaN();
-    {   using xmap = map<double, int>;
-        R_TEST(xmap{{ninf, 1}, {pinf, 2}}, R"({"-inf":1,"inf":2})");
-        W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
+    {
+        constexpr auto ninf = -std::numeric_limits<double>::infinity();
+        constexpr auto pinf =  std::numeric_limits<double>::infinity();
+        //constexpr auto qnan =  std::numeric_limits<double>::quiet_NaN();
+        {   using xmap = map<double, int>;
+            R_TEST(xmap{{ninf, 1}, {pinf, 2}}, R"({"-inf":1,"inf":2})");
+            W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
+        }
+        {   using xmap = map<map<double, int>, int>;
+            R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})");
+            W_TEST(R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+        }
     }
-    {   using xmap = map<map<double, int>, int>;
-        R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})");
-        W_TEST(R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+    // std::bitset
+    {   using xmap = map<bitset<8>, int>;
+        R_TEST(xmap{{bitset<8>(0), 1}, {bitset<8>(255), 2}}, R"({"00000000":1,"11111111":2})");
+        W_TEST(R"({"00000000":1,"11111111":2})", xmap{{bitset<8>(0), 1}, {bitset<8>(255), 2}});
+    }
+    {   using xmap = map<map<bitset<8>, int>, int>;
+        R_TEST(xmap{{{{bitset<8>(0), 1}}, 2}, {{{bitset<8>(255), 3}}, 4}}, R"({"{\"00000000\":1}":2,"{\"11111111\":3}":4})");
+        W_TEST(R"({"{\"00000000\":1}":2,"{\"11111111\":3}":4})", xmap{{{{bitset<8>(0), 1}}, 2}, {{{bitset<8>(255), 3}}, 4}});
+    }
+    // enum
+    {   using xmap = map<keys_enum, int>;
+        R_TEST(xmap{{keys_enum::E1, 1}, {keys_enum::E2, 2}}, R"({"E1":1,"E2":2})");
+        W_TEST(R"({"E1":1,"E2":2})", xmap{{keys_enum::E1, 1}, {keys_enum::E2, 2}});
+    }
+    {   using xmap = map<map<keys_enum, int>, int>;
+        R_TEST(xmap{{{{keys_enum::E1, 1}}, 2}, {{{keys_enum::E2, 3}}, 4}}, R"({"{\"E1\":1}":2,"{\"E2\":3}":4})");
+        W_TEST(R"({"{\"E1\":1}":2,"{\"E2\":3}":4})", xmap{{{{keys_enum::E1, 1}}, 2}, {{{keys_enum::E2, 3}}, 4}});
+    }
+    // struct
+    {   using xmap = map<key_struct, int>;
+        R_TEST(xmap{{{1, 2}, 3}, {{4, 5}, 6}}, R"({"{\"x\":1,\"y\":2}":3,"{\"x\":4,\"y\":5}":6})");
+        W_TEST(R"({"{\"x\":1,\"y\":2}":3,"{\"x\":4,\"y\":5}":6})", xmap{{{1, 2}, 3}, {{4, 5}, 6}});
     }
 TEST_END()
 
@@ -528,10 +576,7 @@ TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
     W_TEST(R"({1:2,3:4})", map<float, int>{{1.f, 2}, {3.f, 4}});
     W_TEST(R"({1:2,3:4})", map<double, int>{{1., 2}, {3., 4}});
     W_TEST(R"({1:2,3:4})", map<long double, int>{{1., 2}, {3., 4}});
-    {
-        struct less {
-            constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; }
-        };
+    {   struct less { constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; } };
         W_TEST(R"({null:0})", map<nullptr_t, int, less>{{nullptr, 0}});
     }
     // escape quotes
@@ -568,15 +613,40 @@ TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
         W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
     }
     // inf/nan
-    constexpr auto ninf = -std::numeric_limits<double>::infinity();
-    constexpr auto pinf =  std::numeric_limits<double>::infinity();
-    //constexpr auto qnan =  std::numeric_limits<double>::quiet_NaN();
-    {   using xmap = map<double, int>;
-        R_TEST(xmap{{ninf, 1}, {pinf, 2}}, R"({"-inf":1,"inf":2})");
-        W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
+    {
+        constexpr auto ninf = -std::numeric_limits<double>::infinity();
+        constexpr auto pinf =  std::numeric_limits<double>::infinity();
+        //constexpr auto qnan =  std::numeric_limits<double>::quiet_NaN();
+        {   using xmap = map<double, int>;
+            R_TEST(xmap{{ninf, 1}, {pinf, 2}}, R"({"-inf":1,"inf":2})");
+            W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
+        }
+        {   using xmap = map<map<double, int>, int>;
+            R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({{"-inf":1}:2,{"inf":3}:4})");
+            W_TEST(R"({{"-inf":1}:2,{"inf":3}:4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+        }
     }
-    {   using xmap = map<map<double, int>, int>;
-        R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({{"-inf":1}:2,{"inf":3}:4})");
-        W_TEST(R"({{"-inf":1}:2,{"inf":3}:4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+    // std::bitset
+    {   using xmap = map<bitset<8>, int>;
+        R_TEST(xmap{{bitset<8>(0), 1}, {bitset<8>(255), 2}}, R"({"00000000":1,"11111111":2})");
+        W_TEST(R"({"00000000":1,"11111111":2})", xmap{{bitset<8>(0), 1}, {bitset<8>(255), 2}});
+    }
+    {   using xmap = map<map<bitset<8>, int>, int>;
+        R_TEST(xmap{{{{bitset<8>(0), 1}}, 2}, {{{bitset<8>(255), 3}}, 4}}, R"({{"00000000":1}:2,{"11111111":3}:4})");
+        W_TEST(R"({{"00000000":1}:2,{"11111111":3}:4})", xmap{{{{bitset<8>(0), 1}}, 2}, {{{bitset<8>(255), 3}}, 4}});
+    }
+    // enum
+    {   using xmap = map<keys_enum, int>;
+        R_TEST(xmap{{keys_enum::E1, 1}, {keys_enum::E2, 2}}, R"({"E1":1,"E2":2})");
+        W_TEST(R"({"E1":1,"E2":2})", xmap{{keys_enum::E1, 1}, {keys_enum::E2, 2}});
+    }
+    {   using xmap = map<map<keys_enum, int>, int>;
+        R_TEST(xmap{{{{keys_enum::E1, 1}}, 2}, {{{keys_enum::E2, 3}}, 4}}, R"({{"E1":1}:2,{"E2":3}:4})");
+        W_TEST(R"({{"E1":1}:2,{"E2":3}:4})", xmap{{{{keys_enum::E1, 1}}, 2}, {{{keys_enum::E2, 3}}, 4}});
+    }
+    // struct
+    {   using xmap = map<key_struct, int>;
+        R_TEST(xmap{{{1, 2}, 3}, {{4, 5}, 6}}, R"({{"x":1,"y":2}:3,{"x":4,"y":5}:6})");
+        W_TEST(R"({{"x":1,"y":2}:3,{"x":4,"y":5}:6})", xmap{{{1, 2}, 3}, {{4, 5}, 6}});
     }
 TEST_END()
