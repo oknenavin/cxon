@@ -77,7 +77,7 @@ namespace cxon {
         template <unsigned N, typename II>
             struct buffer_<N, II, false> {
                 constexpr explicit buffer_(II) : c_(std::begin(s_)), e_(std::end(s_)) {}
-                            bool        put(char c) noexcept  { return c_ != e_ && (*c_ = c, ++c_); }
+                          bool        put(char c) noexcept  { return c_ != e_ && (*c_ = c, ++c_); }
                 constexpr const char* beg() const noexcept  { return std::begin(s_); }
                 constexpr const char* end() const noexcept  { return c_; }
                 private:

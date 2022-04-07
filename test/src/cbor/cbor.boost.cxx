@@ -179,6 +179,12 @@ TEST_BEG(slist, cxon::CBOR<>, "/boost")
     W_TEST(BS("\x83\x02\x01\x00"), slist<int>{2, 1, 0});
     W_TEST(BS("\x43\x02\x01\x00"), slist<unsigned char>{2, 1, 0});
     W_TEST(BS("\x63\x02\x01\x00"), slist<char>{2, 1, 0});
+    // errors
+    R_TEST(slist<int>{}, BS("\xFF"), cbor::read_error::array_invalid, 0);
+    R_TEST(slist<int>{}, BS("\x81\xFF"), cbor::read_error::integer_invalid, 1);
+    R_TEST(slist<int>{}, BS("\xDC"), cbor::read_error::tag_invalid, 0);
+    R_TEST(slist<int>{}, BS("\xCD\xFF"), cbor::read_error::array_invalid, 1);
+    R_TEST(slist<int>{}, BS("\xCD\x81\xFF"), cbor::read_error::integer_invalid, 2);
 TEST_END()
 
 
@@ -395,12 +401,20 @@ TEST_BEG(dynamic_bitset, cxon::CBOR<>, "/boost")
     W_TEST(BS("\x42\x05\x05"), bitset { 3, 0x00000005});             //                             0101
     W_TEST(BS("\x42\x07\x01"), bitset { 1, 0x00000001});             //                               01
     // errors
-    R_TEST(bitset {}, BS("\x5C"), cbor::read_error::size_invalid, 0);
-    R_TEST(bitset {}, BS("\x44"), cbor::read_error::unexpected, 1);
-    R_TEST(bitset {}, BS("\x64"), cbor::read_error::unexpected, 0);
-    R_TEST(bitset {}, BS("\x5C"), cbor::read_error::size_invalid, 0);
-    R_TEST(bitset {}, BS("\x41"), cbor::read_error::unexpected, 1);
-    R_TEST(bitset {}, BS("\x64"), cbor::read_error::unexpected, 0);
+    R_TEST(bitset(), BS("\x5C"), cbor::read_error::size_invalid, 0);
+    R_TEST(bitset(), BS("\x41"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset(), BS("\x42"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset(), BS("\x42\x01"), cbor::read_error::unexpected, 2);
+    R_TEST(bitset(), BS("\x44"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset(), BS("\x45"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset(), BS("\x45\x01"), cbor::read_error::unexpected, 2);
+    R_TEST(bitset(), BS("\x45\x00"), cbor::read_error::unexpected, 2);
+    R_TEST(bitset(), BS("\x64"), cbor::read_error::unexpected, 0);
+    R_TEST(bitset(), BS("\x5C"), cbor::read_error::size_invalid, 0);
+    R_TEST(bitset(), BS("\x41"), cbor::read_error::unexpected, 1);
+    R_TEST(bitset(), BS("\x64"), cbor::read_error::unexpected, 0);
+    R_TEST(bitset(), BS("\xDC"), cbor::read_error::tag_invalid, 0);
+    R_TEST(bitset(), BS("\xCD\xFF"), cbor::read_error::unexpected, 1);
     {   bio::byte o[1];
         auto const r = to_bytes(std::begin(o), std::end(o), bitset(8 * 32));
         TEST_CHECK(!r && r.ec == cbor::write_error::output_failure);
@@ -427,6 +441,31 @@ TEST_END()
         R_TEST(variant<monostate, int>(), BS("\x82\x00\xF7"));
         R_TEST(variant<monostate, int>(), BS("\x82\x00\x00"), cbor::read_error::unexpected, 2);
         W_TEST(BS("\x82\x00\xF7"), variant<monostate, int>());
+        // errors
+        R_TEST(variant<monostate, int>(), BS("\xFF"), cbor::read_error::size_invalid, 0);
+        R_TEST(variant<monostate, int>(), BS("\x82\xFF"), cbor::read_error::unexpected, 1);
+        R_TEST(variant<monostate, int>(), BS("\x82\x00\xFF"), cbor::read_error::unexpected, 2);
+        R_TEST(variant<int, double>(), BS("\xFF"), cbor::read_error::size_invalid, 0);
+        R_TEST(variant<int, double>(), BS("\x82\xFF"), cbor::read_error::unexpected, 1);
+        R_TEST(variant<int, double>(), BS("\x82\x00\xFF"), cbor::read_error::integer_invalid, 2);
+        R_TEST(variant<int, double>(), BS("\xDC"), cbor::read_error::tag_invalid, 0);
+        R_TEST(variant<int, double>(), BS("\xCD\xFF"), cbor::read_error::size_invalid, 1);
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                c.push_back('x');
+                auto r = cxon::to_bytes<cxon::CBOR<>>(c, variant<int, double>(3));
+            TEST_CHECK(r.ec == cbor::write_error::output_failure);
+        }
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<cxon::CBOR<>>(c, variant<int, double>(3));
+            TEST_CHECK(r.ec == cbor::write_error::output_failure);
+        }
+        {   char b[2];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<cxon::CBOR<>>(c, variant<int, double>(3));
+            TEST_CHECK(r.ec == cbor::write_error::output_failure);
+        }
     TEST_END()
 #endif
 
@@ -448,4 +487,26 @@ TEST_BEG(variant, cxon::CBOR<>, "/boost")
     W_TEST(BS("\x82\x01\xFB\x00\x00\x00\x00\x00\x00\x00\x00"), variant<int, double>(0.0));
     R_TEST(recursive_wrapper<int>(3), BS("\x03"));
     W_TEST(BS("\x03"), recursive_wrapper<int>(3));
+    // errors
+    R_TEST(variant<int, double>(), BS("\xFF"), cbor::read_error::size_invalid, 0);
+    R_TEST(variant<int, double>(), BS("\x82\xFF"), cbor::read_error::unexpected, 1);
+    R_TEST(variant<int, double>(), BS("\x82\x00\xFF"), cbor::read_error::integer_invalid, 2);
+    R_TEST(variant<int, double>(), BS("\xDC"), cbor::read_error::tag_invalid, 0);
+    R_TEST(variant<int, double>(), BS("\xCD\xFF"), cbor::read_error::size_invalid, 1);
+    {   char b[1];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            c.push_back('x');
+            auto r = cxon::to_bytes<cxon::CBOR<>>(c, variant<int, double>(3));
+        TEST_CHECK(r.ec == cbor::write_error::output_failure);
+    }
+    {   char b[1];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::CBOR<>>(c, variant<int, double>(3));
+        TEST_CHECK(r.ec == cbor::write_error::output_failure);
+    }
+    {   char b[2];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::CBOR<>>(c, variant<int, double>(3));
+        TEST_CHECK(r.ec == cbor::write_error::output_failure);
+    }
 TEST_END()
