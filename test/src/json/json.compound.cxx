@@ -654,3 +654,105 @@ TEST_BEG(sink, cxon::JSON<>, "/core") // sink
         TEST_CHECK(!r && r.ec == json::write_error::output_failure);
     }
 TEST_END()
+
+
+namespace {
+
+    struct Struct13 {
+        int x, y;
+        bool operator ==(const Struct13& t) const { return x == t.x && y == t.y; }
+    };
+
+}
+
+CXON_JSON_CLS(Struct13,
+    CXON_JSON_CLS_FIELD_SKIP("s1"),
+    CXON_JSON_CLS_FIELD_ASIS(x),
+    CXON_JSON_CLS_FIELD_SKIP("s2"),
+    CXON_JSON_CLS_FIELD_ASIS(y),
+    CXON_JSON_CLS_FIELD_SKIP("s3")
+)
+
+TEST_BEG(struct_13, cxon::JSON<>, "/core") // defaults
+    R_TEST(Struct13 {3, 1}, R"({"x":3,"y":1})");
+    R_TEST(Struct13 {}, R"()", json::read_error::unexpected, 0);
+    R_TEST(Struct13 {}, R"({)", json::read_error::unexpected, 1);
+    R_TEST(Struct13 {}, R"({")", json::read_error::unexpected, 2);
+    R_TEST(Struct13 {}, R"({"x)", json::read_error::unexpected, 3);
+    R_TEST(Struct13 {}, R"({"x")", json::read_error::unexpected, 4);
+    R_TEST(Struct13 {}, R"({"x":)", json::read_error::integral_invalid, 5);
+    R_TEST(Struct13 {}, R"({"x":x)", json::read_error::integral_invalid, 5);
+    R_TEST(Struct13 {}, R"({"x":3,)", json::read_error::unexpected, 7);
+    R_TEST(Struct13 {}, R"({"x":3,")", json::read_error::unexpected, 8);
+    R_TEST(Struct13 {}, R"({"x":3,"y)", json::read_error::unexpected, 9);
+    R_TEST(Struct13 {}, R"({"x":3,"y")", json::read_error::unexpected, 10);
+    R_TEST(Struct13 {}, R"({"x":3,"y":)", json::read_error::integral_invalid, 11);
+    R_TEST(Struct13 {}, R"({"x":3,"y":x)", json::read_error::integral_invalid, 11);
+    R_TEST(Struct13 {}, R"({"x":3,"y":1)", json::read_error::unexpected, 12);
+    {   char b[1];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            c.push_back('x');
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[1];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[2];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[3];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[4];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[5];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[6];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[7];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[8];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[9];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[10];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[11];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[12];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::JSON<>>(c, Struct13 {});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+TEST_END()

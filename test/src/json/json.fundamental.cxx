@@ -117,6 +117,7 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
         R_TEST(U'\0', QS("\xE3"), json::read_error::character_invalid, 1);
         W_TEST(QS("\xE3\xA2\x9A"), U'\x389A');
         R_TEST(U'\x28440', QS("\xF0\xA8\x91\x80"));
+        R_TEST(U'\0', QS("\\udbff"), json::read_error::surrogate_invalid, 1); // invalid surrogate
         R_TEST(U'\0', QS("\\udbff\\ue000"), json::read_error::surrogate_invalid, 1); // invalid surrogate
         R_TEST(U'\0', QS("\\udbff\\udbff"), json::read_error::surrogate_invalid, 1); // invalid surrogate
         R_TEST(U'\0', QS("\xF0\xA8\x91"), json::read_error::character_invalid, 1);
@@ -466,7 +467,14 @@ TEST_BEG(json_escapes, cxon::JSON<>, "/core") // json
         R_TEST("\u0008", QS("\\u0008"));
         R_TEST("\0008", QS("\\u00008")); // one more
         R_TEST("", QS("\\u008"), json::read_error::escape_invalid, 1); // one less
-        R_TEST("", QS("\\u"), json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\u", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\uX", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\u0", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\u0X", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\u00", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\u00X", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\u000", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\u000X", json::read_error::escape_invalid, 1); // none
         W_TEST(QS("\\u0001"), "\1");
         W_TEST(QS("\\u0002"), "\2");
         W_TEST(QS("\\u0003"), "\3");
@@ -531,7 +539,14 @@ TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_trai
         R_TEST("\u0008", QS("\\u0008"));
         R_TEST("\0008", QS("\\u00008")); // one more
         R_TEST("", QS("\\u008"), json::read_error::escape_invalid, 6); // one less
-        R_TEST("", QS("\\u"), json::read_error::escape_invalid, 3); // none
+        R_TEST("", "\"\\u", json::read_error::escape_invalid, 3); // none
+        R_TEST("", "\"\\uX", json::read_error::escape_invalid, 3); // none
+        R_TEST("", "\"\\u0", json::read_error::escape_invalid, 4); // none
+        R_TEST("", "\"\\u0X", json::read_error::escape_invalid, 4); // none
+        R_TEST("", "\"\\u00", json::read_error::escape_invalid, 5); // none
+        R_TEST("", "\"\\u00X", json::read_error::escape_invalid, 5); // none
+        R_TEST("", "\"\\u000", json::read_error::escape_invalid, 6); // none
+        R_TEST("", "\"\\u000X", json::read_error::escape_invalid, 6); // none
         W_TEST(QS("\\u0001"), "\1");
         W_TEST(QS("\\u0002"), "\2");
         W_TEST(QS("\\u0003"), "\3");
