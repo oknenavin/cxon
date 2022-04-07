@@ -75,10 +75,10 @@ namespace cxon {
         struct write<JSON<X>, std::variant<T...>> {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
-                    return  cio::poke(o, Y::map::beg) &&
+                    return  cio::poke<Y>(o, Y::map::beg, cx) &&
                                 cio::write_key<Y>(o, t.index(), cx) &&
                                 std::visit([&](auto&& v) { return write_value<Y>(o, v, cx); }, t) &&
-                            cio::poke(o, Y::map::end)
+                            cio::poke<Y>(o, Y::map::end, cx)
                     ;
                 }
         };
