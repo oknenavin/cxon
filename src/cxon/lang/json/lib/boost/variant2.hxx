@@ -104,9 +104,9 @@ namespace cxon {
         struct write<JSON<X>, boost::variant2::variant<T...>> {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const boost::variant2::variant<T...>& t, Cx& cx) {
-                    return  cio::poke(o, Y::map::beg) &&
+                    return  cio::poke<Y>(o, Y::map::beg, cx) &&
                                 json::imp::boost::variant2::variant_write_<Y>(o, t, cx) &&
-                            cio::poke(o, Y::map::end)
+                            cio::poke<Y>(o, Y::map::end, cx)
                     ;
                 }
         };

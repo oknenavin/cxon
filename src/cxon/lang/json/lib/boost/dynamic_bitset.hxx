@@ -18,13 +18,11 @@ namespace cxon { namespace json { namespace imp {
             constexpr st u = sizeof(typename BS::block_type) * 8;
             st p = u;
             t.resize(t.size() + u);
-            for ( ; i != e && *i != '"'; ++i) {
+            for ( ; i != e && (*i == '1' || *i == '0'); ++i) {
                 if (p == 0)
                     t.resize(t.size() * 2), t <<= u, p = u;
-                char const c = cio::peek(i, e);
                 --p;
-                if (c == '1')       t.set(p);
-                else if (c != '0')  return cx/json::read_error::unexpected;
+                if (*i == '1') t.set(p);
             }
             return t >>= p, t.resize(t.size() - p), true;
         }
