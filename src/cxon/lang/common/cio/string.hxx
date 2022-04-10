@@ -135,7 +135,7 @@ namespace cxon { namespace cio { namespace str {
                             CXON_IF_CONSTEXPR (X::read_validate_string_utf8) {
                                 if ((unsigned char)*i > 0x7F) {
                                     auto const bs = chr::utf8_check(i, e);
-                                    if (bs > 3)
+                                    if (bs == chr::bad_utf8)
                                         return cx/X::read_error::character_invalid;
                                     i += bs;
                                 }

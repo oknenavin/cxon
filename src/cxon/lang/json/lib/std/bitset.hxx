@@ -17,7 +17,7 @@ namespace cxon { namespace json { namespace imp {
             for (std::size_t p = N; p != 0; ) {
                 char const c = cio::peek(i, e);
                     if (c != '0' && c != '1') return cx/json::read_error::unexpected;
-                t.set(--p, c == '1'), cio::next(i, e);
+                t.set(--p, c == '1'), ++i;
             }
             return true;
         }

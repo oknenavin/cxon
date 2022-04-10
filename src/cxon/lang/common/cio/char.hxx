@@ -40,6 +40,9 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> enable_if_t<is_char_8<T>::value, int>;
 
+
+    static constexpr int bad_utf8 = std::numeric_limits<int>::max();
+
     template <typename II>
         inline int utf8_check(II i, II e);
 
@@ -144,13 +147,13 @@ namespace cxon { namespace cio { namespace chr {
                     }
                     if ((c0 & 0xF0) == 0xE0) {
                         char32_t const c1 = next(i, e); CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        char32_t const c2 = next(i, e); CXON_EXPECT((c2 & 0xC0) == 0x80);
+                        char32_t const c2 = next_safe(i, e); CXON_EXPECT((c2 & 0xC0) == 0x80);
                         return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
                     }
                     if ((c0 & 0xF8) == 0xF0) {
                         char32_t const c1 = next(i, e); CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        char32_t const c2 = next(i, e); CXON_EXPECT((c2 & 0xC0) == 0x80);
-                        char32_t const c3 = next(i, e); CXON_EXPECT((c3 & 0xC0) == 0x80);
+                        char32_t const c2 = next_safe(i, e); CXON_EXPECT((c2 & 0xC0) == 0x80);
+                        char32_t const c3 = next_safe(i, e); CXON_EXPECT((c3 & 0xC0) == 0x80);
                         return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
                     }
                     CXON_EXPECT(false);
@@ -198,58 +201,128 @@ namespace cxon { namespace cio { namespace chr {
             //return 0;
         }
 
+    namespace imp {
+
+        template <typename II>
+            inline auto utf8_check_(II i, II e) noexcept
+                -> enable_if_t< is_random_access_iterator<II>::value, int>
+            {
+                // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
+                // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
+                CXON_ASSERT(i != e, "unexpected");
+                unsigned char c0 = *i, c1, c2, c3;
+                auto const d = e - i;
+                if ((c0 >= 0xF0 && d < 4) || (c0 >= 0xE0 && d < 3) || (c0 >= 0xC2 && d < 2))
+                    return bad_utf8;
+                // 1
+                //if (c0 <= 0x7F)
+                //    return 0;
+                // 2
+                if (c0 >= 0xC2 && c0 <= 0xDF) {
+                    c1 = *++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF)
+                        return 1;
+                }
+                // 3
+                else if (c0 == 0xE0) {
+                    c1 = *++i, c2 = *++i;
+                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                else if (c0 >= 0xE1 && c0 <= 0xEC) {
+                    c1 = *++i, c2 = *++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                else if (c0 == 0xED) {
+                    c1 = *++i, c2 = *++i;
+                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                else if (c0 >= 0xEE && c0 <= 0xEF) {
+                    c1 = *++i, c2 = *++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                // 4
+                else if (c0 == 0xF0) {
+                    c1 = *++i, c2 = *++i, c3 = *++i;
+                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xF1 && c0 <= 0xF3) {
+                    c1 = *++i, c2 = *++i, c3 = *++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 == 0xF4) {
+                    c1 = *++i, c2 = *++i, c3 = *++i;
+                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 3;
+                }
+                return bad_utf8;
+            }
+        template <typename II>
+            inline auto utf8_check_(II i, II e)
+                -> enable_if_t<!is_random_access_iterator<II>::value, int>
+            {
+                // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
+                // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
+                CXON_ASSERT(i != e, "unexpected");
+                unsigned char c0 = *i, c1, c2, c3;
+                // 1
+                //if (c0 <= 0x7F)
+                //    return 0;
+                // 2
+                if (c0 >= 0xC2 && c0 <= 0xDF) {
+                    c1 = next(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF)
+                        return 1;
+                }
+                // 3
+                else if (c0 == 0xE0) {
+                    c1 = next(i, e), c2 = next_safe(i, e);
+                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                else if (c0 >= 0xE1 && c0 <= 0xEC) {
+                    c1 = next(i, e), c2 = next_safe(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                else if (c0 == 0xED) {
+                    c1 = next(i, e), c2 = next_safe(i, e);
+                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                else if (c0 >= 0xEE && c0 <= 0xEF) {
+                    c1 = next(i, e), c2 = next_safe(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 2;
+                }
+                // 4
+                else if (c0 == 0xF0) {
+                    c1 = next(i, e), c2 = next_safe(i, e), c3 = next_safe(i, e);
+                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xF1 && c0 <= 0xF3) {
+                    c1 = next(i, e), c2 = next_safe(i, e), c3 = next_safe(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 == 0xF4) {
+                    c1 = next(i, e), c2 = next_safe(i, e), c3 = next_safe(i, e);
+                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 3;
+                }
+                return bad_utf8;
+            }
+
+    }
     template <typename II>
         inline int utf8_check(II i, II e) {
-            // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
-            // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
-            unsigned char c0 = *i, c1, c2, c3;
-            // 1
-            //if (c0 <= 0x7F)
-            //    return 0;
-            // 2
-            if (c0 >= 0xC2 && c0 <= 0xDF) {
-                c1 = cio::next(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF)
-                    return 1;
-            }
-            // 3
-            if (c0 == 0xE0) {
-                c1 = cio::next(i, e), c2 = cio::next(i, e);
-                if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 2;
-            }
-            if (c0 >= 0xE1 && c0 <= 0xEC) {
-                c1 = cio::next(i, e), c2 = cio::next(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 2;
-            }
-            if (c0 == 0xED) {
-                c1 = cio::next(i, e), c2 = cio::next(i, e);
-                if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
-                    return 2;
-            }
-            if (c0 >= 0xEE && c0 <= 0xEF) {
-                c1 = cio::next(i, e), c2 = cio::next(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 2;
-            }
-            // 4
-            if (c0 == 0xF0) {
-                c1 = cio::next(i, e), c2 = cio::next(i, e), c3 = cio::next(i, e);
-                if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 3;
-            }
-            if (c0 >= 0xF1 && c0 <= 0xF3) {
-                c1 = cio::next(i, e), c2 = cio::next(i, e), c3 = cio::next(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 3;
-            }
-            if (c0 == 0xF4) {
-                c1 = cio::next(i, e), c2 = cio::next(i, e), c3 = cio::next(i, e);
-                if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 3;
-            }
-            return 4;
+            return imp::utf8_check_(i, e);
         }
 
 }}}
