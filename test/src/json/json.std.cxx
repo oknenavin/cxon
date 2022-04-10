@@ -39,6 +39,33 @@ TEST_BEG(basic_string, cxon::JSON<>, "/std")
         R_TEST(string(), "a", json::read_error::unexpected, 0);
         R_TEST(string(), "\"", json::read_error::unexpected, 1);
         R_TEST(string(), QS("\\u001"), json::read_error::escape_invalid, 1);
+        // errors
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    c.push_back('x');
+                    auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[2];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[3];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[4];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
     // std::basic_string<wchar_t> / std::wstring
         R_TEST(wstring({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), wstring({0x0442, 0x0435, 0x0441, 0x0442}));
@@ -47,6 +74,23 @@ TEST_BEG(basic_string, cxon::JSON<>, "/std")
         R_TEST(wstring(), "a", json::read_error::unexpected, 0);
         R_TEST(wstring(), "\"", json::read_error::unexpected, 1);
         R_TEST(wstring(), QS("\\u001"), json::read_error::escape_invalid, 1);
+        // errors
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    c.push_back('x');
+                    auto r = cxon::to_bytes<XXON>(c, wstring(L"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, wstring(L"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[2];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, wstring(L"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
     // std::basic_string<char8_t> / std::u8string
 #       if __cplusplus > 201703L /* C++20 */
             R_TEST(u8string(u8"test"), QS("test"));
@@ -56,6 +100,23 @@ TEST_BEG(basic_string, cxon::JSON<>, "/std")
             R_TEST(u8string(), "a", json::read_error::unexpected, 0);
             R_TEST(u8string(), "\"", json::read_error::unexpected, 1);
             R_TEST(u8string(), QS("\\u001"), json::read_error::escape_invalid, 1);
+            // errors
+                {   char b[1];
+                    auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                        c.push_back('x');
+                        auto r = cxon::to_bytes<XXON>(c, u8string(u8"s"));
+                    TEST_CHECK(r.ec == json::write_error::output_failure);
+                }
+                {   char b[1];
+                    auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                        auto r = cxon::to_bytes<XXON>(c, u8string(u8"s"));
+                    TEST_CHECK(r.ec == json::write_error::output_failure);
+                }
+                {   char b[2];
+                    auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                        auto r = cxon::to_bytes<XXON>(c, u8string(u8"s"));
+                    TEST_CHECK(r.ec == json::write_error::output_failure);
+                }
 #       endif
     // std::basic_string<char16_t> / std::u16string
         R_TEST(u16string({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
@@ -64,11 +125,34 @@ TEST_BEG(basic_string, cxon::JSON<>, "/std")
         W_TEST(QS("\xE6\xB5\x8B\xE8\xAF\x95"), u16string({0x6D4B, 0x8BD5}));
         R_TEST(u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}), QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"));
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}));
-        R_TEST(u16string(u"\xdbff\xdfff"), QS("\\udbff\\udfff")); // surrogate
-        W_TEST(QS("\xf4\x8f\xbf\xbf"), u16string(u"\xdbff\xdfff")); // surrogate
+        R_TEST(u16string(u"\xDBFF\xDFFF"), QS("\\uDBFF\\uDFFF")); // surrogate
+        W_TEST(QS("\xF4\x8F\xBF\xBF"), u16string(u"\xDBFF\xDFFF")); // surrogate
+        W_TEST(QS("\xED\xB0\x80"), u16string(u"\xDC00"));
         R_TEST(u16string(), "a", json::read_error::unexpected, 0);
         R_TEST(u16string(), "\"", json::read_error::unexpected, 1);
         R_TEST(u16string(), QS("\\u001"), json::read_error::escape_invalid, 1);
+        // errors
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    c.push_back('x');
+                    auto r = cxon::to_bytes<XXON>(c, u16string(u"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, u16string(u"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[2];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, u16string(u"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[3];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, u16string(u"s"));
+                TEST_CHECK(r);
+            }
     // std::basic_string<char32_t> / std::u32string
         R_TEST(u32string({0x0442, 0x0435, 0x0441, 0x0442}), QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"));
         W_TEST(QS("\xD1\x82\xD0\xB5\xD1\x81\xD1\x82"), u32string({0x0442, 0x0435, 0x0441, 0x0442}));
@@ -79,6 +163,50 @@ TEST_BEG(basic_string, cxon::JSON<>, "/std")
         R_TEST(u32string(), "a", json::read_error::unexpected, 0);
         R_TEST(u32string(), "\"", json::read_error::unexpected, 1);
         R_TEST(u32string(), QS("\\u001"), json::read_error::escape_invalid, 1);
+        // errors
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    c.push_back('x');
+                    auto r = cxon::to_bytes<XXON>(c, u32string(U"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, u32string(U"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[2];
+                auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                    auto r = cxon::to_bytes<XXON>(c, u32string(U"s"));
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+    // errors
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                c.push_back('x');
+                auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[2];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[3];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[4];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, string("s\n"));
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
 TEST_END()
 
 
@@ -106,43 +234,43 @@ TEST_BEG(tuple, cxon::JSON<>, "/std")
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                 c.push_back('x');
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<>{});
+            auto r = cxon::to_bytes<XXON>(c, tuple<>{});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<>{});
+            auto r = cxon::to_bytes<XXON>(c, tuple<>{});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                 c.push_back('x');
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<int>{0});
+            auto r = cxon::to_bytes<XXON>(c, tuple<int>{0});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<int>{0});
+            auto r = cxon::to_bytes<XXON>(c, tuple<int>{0});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[2];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<int>{0});
+            auto r = cxon::to_bytes<XXON>(c, tuple<int>{0});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<int, long>{0, 0});
+            auto r = cxon::to_bytes<XXON>(c, tuple<int, long>{0, 0});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[2];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<int, long>{0, 0});
+            auto r = cxon::to_bytes<XXON>(c, tuple<int, long>{0, 0});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[3];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, tuple<int, long>{0, 0});
+            auto r = cxon::to_bytes<XXON>(c, tuple<int, long>{0, 0});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
 TEST_END()
@@ -163,27 +291,27 @@ TEST_BEG(pair, cxon::JSON<>, "/std")
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                 c.push_back('x');
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, std::make_pair(3, 1));
+                auto r = cxon::to_bytes<XXON>(c, std::make_pair(3, 1));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, std::make_pair(3, 1));
+                auto r = cxon::to_bytes<XXON>(c, std::make_pair(3, 1));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[2];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, std::make_pair(3, 1));
+                auto r = cxon::to_bytes<XXON>(c, std::make_pair(3, 1));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[3];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, std::make_pair(3, 1));
+                auto r = cxon::to_bytes<XXON>(c, std::make_pair(3, 1));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[4];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, std::make_pair(3, 1));
+                auto r = cxon::to_bytes<XXON>(c, std::make_pair(3, 1));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
 TEST_END()
@@ -338,37 +466,37 @@ TEST_BEG(map, cxon::JSON<>, "/std")
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                 c.push_back('x');
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, map<int, int>{{3, 1}});
+                auto r = cxon::to_bytes<XXON>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, map<int, int>{{3, 1}});
+                auto r = cxon::to_bytes<XXON>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[2];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, map<int, int>{{3, 1}});
+                auto r = cxon::to_bytes<XXON>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[3];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, map<int, int>{{3, 1}});
+                auto r = cxon::to_bytes<XXON>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[4];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, map<int, int>{{3, 1}});
+                auto r = cxon::to_bytes<XXON>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[5];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, map<int, int>{{3, 1}});
+                auto r = cxon::to_bytes<XXON>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[6];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, map<int, int>{{3, 1}});
+                auto r = cxon::to_bytes<XXON>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
 TEST_END()
@@ -449,17 +577,17 @@ TEST_BEG(bitset, cxon::JSON<>, "/std")
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                 c.push_back('x');
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, bitset<8>(255));
+                auto r = cxon::to_bytes<XXON>(c, bitset<8>(255));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, bitset<8>(255));
+                auto r = cxon::to_bytes<XXON>(c, bitset<8>(255));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[9];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::JSON<>>(c, bitset<8>(255));
+                auto r = cxon::to_bytes<XXON>(c, bitset<8>(255));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         R_TEST(map<bitset<8>, int, ::less<8>>{{bitset<8>(85), 1}}, R"({"01010101":1})");
@@ -488,27 +616,27 @@ TEST_BEG(complex, cxon::JSON<>, "/std")
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                 c.push_back('x');
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, complex<float>());
+            auto r = cxon::to_bytes<XXON>(c, complex<float>());
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[1];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, complex<float>());
+            auto r = cxon::to_bytes<XXON>(c, complex<float>());
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[2];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, complex<float>());
+            auto r = cxon::to_bytes<XXON>(c, complex<float>());
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[3];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, complex<float>());
+            auto r = cxon::to_bytes<XXON>(c, complex<float>());
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
         {   char b[4];
             auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-            auto r = cxon::to_bytes<cxon::JSON<>>(c, complex<float>());
+            auto r = cxon::to_bytes<XXON>(c, complex<float>());
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
 TEST_END()
@@ -574,37 +702,37 @@ TEST_END()
             {   char b[1];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                     c.push_back('x');
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[1];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[2];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[3];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[4];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[5];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[6];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
     TEST_END()
@@ -630,27 +758,27 @@ TEST_END()
             {   char b[1];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
                     c.push_back('x');
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[1];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[2];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[3];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
             {   char b[4];
                 auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                    auto r = cxon::to_bytes<cxon::JSON<>>(c, variant<int, double>(0));
+                    auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
     TEST_END()
