@@ -13,7 +13,7 @@ namespace cxon { namespace cio { namespace key {
 namespace cxon { namespace json { namespace imp {
 
     template <typename X, typename BS, typename II, typename Cx>
-        inline bool read_bits_(BS& t, II& i, II e, Cx& cx) {
+        inline bool read_bits_(BS& t, II& i, II e, Cx&) {
             using st = typename BS::size_type;
             constexpr st u = sizeof(typename BS::block_type) * 8;
             st p = u;
