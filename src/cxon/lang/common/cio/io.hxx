@@ -26,6 +26,8 @@ namespace cxon { namespace cio {
         inline char peek(II i, II e);
     template <typename II>
         inline char next(II& i, II e);
+    template <typename II>
+        inline char next_safe(II& i, II e);
 
     template <typename X, typename II>
         inline void consume(II& i, II e);
@@ -90,7 +92,12 @@ namespace cxon { namespace cio {
         }
     template <typename II>
         inline char next(II& i, II e) {
-            return ++i, peek(i, e);
+            CXON_ASSERT(i != e, "unexpected");
+            return peek(++i, e);
+        }
+    template <typename II>
+        inline char next_safe(II& i, II e) {
+            return i != e ? cio::peek(++i, e) : '\xFF';
         }
 
     template <typename X, typename II>

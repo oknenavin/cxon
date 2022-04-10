@@ -34,7 +34,7 @@ namespace cxon { namespace cio { // format traits
             static constexpr char               del     = '"';
             template <typename II>
                 static bool del_read(II& i, II e) {
-                    return i != e && *i == del && (++i, true);
+                    return peek(i, e) == del && (++i, true);
                 }
             template <typename O>
                 static bool del_write(O& o) {

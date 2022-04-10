@@ -82,7 +82,7 @@ namespace cxon { namespace cio { namespace key {
             struct string : T::string {
                 template <typename II>
                     static bool del_read(II& i, II e) {
-                        return i != e && *i == '\\' && ++i != e && *i == string::del && (++i, true);
+                        return peek(i, e) == '\\' && next(i, e) == string::del && (++i, true);
                     }
                 template <typename O>
                     static bool del_write(O& o) {
