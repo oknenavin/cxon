@@ -34,7 +34,7 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
 
     template <typename X, typename II, typename Cx>
         inline auto utf8_to_utf32(II& i, II e, Cx& cx)
-            -> enable_if_t<is_char<typename std::iterator_traits<II>::value_type>::value, char32_t>;
+            -> enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>;
 
     template <typename T>
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
@@ -139,7 +139,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X, typename II, typename Cx>
             inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
                 -> enable_if_t< X::read_validate_string_utf8, char32_t>
-            {   static_assert(is_char<typename std::iterator_traits<II>::value_type>::value);
+            {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
                 CXON_ASSERT(i != e, "unexpected");
                 using U = unsigned char;
                 char32_t c0 = (U)*i, c1, c2, c3;
@@ -192,7 +192,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X, typename II, typename Cx>
             inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
                 -> enable_if_t<!X::read_validate_string_utf8, char32_t>
-            {   static_assert(is_char<typename std::iterator_traits<II>::value_type>::value);
+            {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
                 CXON_ASSERT(i != e, "unexpected");
                 char32_t c0 = *i, c1, c2, c3;
                 if ((c0 & 0x80) == 0)
@@ -220,7 +220,7 @@ namespace cxon { namespace cio { namespace chr {
     }
     template <typename X, typename II, typename Cx>
         inline auto utf8_to_utf32(II& i, II e, Cx& cx)
-            -> enable_if_t<is_char<typename std::iterator_traits<II>::value_type>::value, char32_t>
+            -> enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>
         {
             return peek(i, e) != '\\' ?
                 imp::utf8_to_utf32_<X>(i, e, cx) :
