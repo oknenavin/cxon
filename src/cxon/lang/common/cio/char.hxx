@@ -132,35 +132,101 @@ namespace cxon { namespace cio { namespace chr {
             return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
         }
 
-#   define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, bad_utf32
+    namespace imp {
+
+#       define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, bad_utf32
+
         template <typename X, typename II, typename Cx>
-            inline auto utf8_to_utf32(II& i, II e, Cx& cx)
-                -> enable_if_t<is_char<typename std::iterator_traits<II>::value_type>::value, char32_t>
-            {
-                char32_t const c0 = peek(i, e);
-                if (c0 != '\\') {
-                    if ((c0 & 0x80) == 0)
-                        return ++i, c0;
-                    if ((c0 & 0xE0) == 0xC0) {
-                        char32_t const c1 = next(i, e); CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
-                    }
-                    if ((c0 & 0xF0) == 0xE0) {
-                        char32_t const c1 = next(i, e); CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        char32_t const c2 = next_safe(i, e); CXON_EXPECT((c2 & 0xC0) == 0x80);
-                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                    }
-                    if ((c0 & 0xF8) == 0xF0) {
-                        char32_t const c1 = next(i, e); CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        char32_t const c2 = next_safe(i, e); CXON_EXPECT((c2 & 0xC0) == 0x80);
-                        char32_t const c3 = next_safe(i, e); CXON_EXPECT((c3 & 0xC0) == 0x80);
-                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                    }
-                    CXON_EXPECT(false);
+            inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
+                -> enable_if_t< X::read_validate_string_utf8, char32_t>
+            {   static_assert(is_char<typename std::iterator_traits<II>::value_type>::value);
+                CXON_ASSERT(i != e, "unexpected");
+                using U = unsigned char;
+                char32_t c0 = (U)*i, c1, c2, c3;
+                if (c0 <= 0x7F)
+                    return ++i, c0;
+                if (c0 >= 0xC2 && c0 <= 0xDF) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                    return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
                 }
-                return esc_to_utf32<X>(++i, e, cx);
+                if (c0 == 0xE0) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0xA0 && c1 <= 0xBF);
+                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                }
+                if (c0 >= 0xE1 && c0 <= 0xEC) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                }
+                if (c0 == 0xED) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0x9F);
+                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                }
+                if (c0 >= 0xEE && c0 <= 0xEF) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                }
+                if (c0 == 0xF0) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x90 && c1 <= 0xBF);
+                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c3 = (U)next_safe(i, e);    CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                }
+                if (c0 >= 0xF1 && c0 <= 0xF3) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c3 = (U)next_safe(i, e);    CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                }
+                if (c0 == 0xF4) {
+                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0x8F);
+                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c3 = (U)next_safe(i, e);    CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                }
+                CXON_EXPECT(false);
             }
-#   undef CXON_EXPECT
+        template <typename X, typename II, typename Cx>
+            inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
+                -> enable_if_t<!X::read_validate_string_utf8, char32_t>
+            {   static_assert(is_char<typename std::iterator_traits<II>::value_type>::value);
+                CXON_ASSERT(i != e, "unexpected");
+                char32_t c0 = *i, c1, c2, c3;
+                if ((c0 & 0x80) == 0)
+                    return ++i, c0;
+                if ((c0 & 0xE0) == 0xC0) {
+                    c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
+                    return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
+                }
+                if ((c0 & 0xF0) == 0xE0) {
+                    c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
+                    c2 = next_safe(i, e);   CXON_EXPECT((c2 & 0xC0) == 0x80);
+                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                }
+                if ((c0 & 0xF8) == 0xF0) {
+                    c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
+                    c2 = next_safe(i, e);   CXON_EXPECT((c2 & 0xC0) == 0x80);
+                    c3 = next_safe(i, e);   CXON_EXPECT((c3 & 0xC0) == 0x80);
+                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                }
+                CXON_EXPECT(false);
+            }
+
+#       undef CXON_EXPECT
+
+    }
+    template <typename X, typename II, typename Cx>
+        inline auto utf8_to_utf32(II& i, II e, Cx& cx)
+            -> enable_if_t<is_char<typename std::iterator_traits<II>::value_type>::value, char32_t>
+        {
+            return peek(i, e) != '\\' ?
+                imp::utf8_to_utf32_<X>(i, e, cx) :
+                esc_to_utf32<X>(++i, e, cx)
+            ;
+        }
 
     template <typename T>
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
