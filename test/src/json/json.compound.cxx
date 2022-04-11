@@ -267,88 +267,121 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xF5", json::read_error::character_invalid, 1);
 TEST_END()
 
-//TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core")
-//    // 1
-//        // U+0000..U+007F 00..7F
-//        R_TEST("\x7F", "\"\x7F\"");
-//        R_TEST("", "\"\x80", json::read_error::character_invalid);
-//    // 2
-//        // U+0080..U+07FF C2..DF 80..BF
-//        R_TEST("\xDF\x80", "\"\xDF\x80\"");
-//        R_TEST("", "\"\xC1\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xDF\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xDF\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xDF", json::read_error::character_invalid);
-//    // 3
-//        // U+0800..U+0FFF E0 A0..BF 80..BF
-//        R_TEST("\xE0\xBF\x80", "\"\xE0\xBF\x80\"");
-//        R_TEST("", "\"\xE0\x9F\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xE0\xC0\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xE0\xBF\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xE0\xBF\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xE0\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xE0", json::read_error::character_invalid);
-//        // U+1000..U+CFFF E1..EC 80..BF 80..BF
-//        R_TEST("\xEC\xBF\x80", "\"\xEC\xBF\x80\"");
-//        R_TEST("", "\"\xEC\x7F\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEC\xC0\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEC\xBF\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEC\xBF\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEC\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEC", json::read_error::character_invalid);
-//        // U+D000..U+D7FF ED 80..9F 80..BF
-//        R_TEST("\xED\x9F\x80", "\"\xED\x9F\x80\"");
-//        R_TEST("", "\"\xED\x7F\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xED\xA0\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xED\x9F\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xED\x9F\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xED\x9F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xED", json::read_error::character_invalid);
-//        // U+E000..U+FFFF EE..EF 80..BF 80..BF
-//        R_TEST("\xEF\xBF\x80", "\"\xEF\xBF\x80\"");
-//        R_TEST("", "\"\xEF\x7F\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEF\xC0\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEF\xBF\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEF\xBF\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEF\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xEF", json::read_error::character_invalid);
-//    // 4
-//        // U+10000..U+3FFFF F0 90..BF 80..BF 80..BF
-//        R_TEST("\xF0\xBF\xBF\x80", "\"\xF0\xBF\xBF\x80\"");
-//        R_TEST("", "\"\xF0\x8F\x80\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0\xC0\x80\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0\xBF\x7F\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0\xBF\xC0\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0\xBF\xBF\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0\xBF\xBF\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0\xBF\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF0", json::read_error::character_invalid);
-//        // U+40000..U+FFFFF F1..F3 80..BF 80..BF 80..BF
-//        R_TEST("\xF3\xBF\xBF\x80", "\"\xF3\xBF\xBF\x80\"");
-//        R_TEST("", "\"\xF3\x7F\x80\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3\xC0\x80\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3\xBF\x7F\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3\xBF\xC0\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3\xBF\xBF\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3\xBF\xBF\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3\xBF\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF3", json::read_error::character_invalid);
-//        // U+100000..U+10FFFF F4 80..8F 80..BF 80..BF
-//        R_TEST("\xF4\x8F\xBF\x80", "\"\xF4\x8F\xBF\x80\"");
-//        R_TEST("", "\"\xF4\x7F\x80\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4\x90\x80\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4\x8F\x7F\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4\x8F\xC0\x80", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4\x8F\xBF\x7F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4\x8F\xBF\xC0", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4\x8F\xBF", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4\x8F", json::read_error::character_invalid);
-//        R_TEST("", "\"\xF4", json::read_error::character_invalid);
-//        // out of range
-//        R_TEST("", "\"\xF5", json::read_error::character_invalid);
-//TEST_END()
+TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core")
+    // 1
+        // U+0000..U+007F 00..7F
+        R_TEST("\x7F", "\"\x7F\"");
+        R_TEST("", "\"\x80", json::read_error::character_invalid);
+    // 2
+        // U+0080..U+07FF C2..DF 80..BF
+        R_TEST("\xDF\x80", "\"\xDF\x80\"");
+        R_TEST("", "\"\xC1\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xDF\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xDF\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xDF", json::read_error::character_invalid);
+    // 3
+        // U+0800..U+0FFF E0 A0..BF 80..BF
+        R_TEST("\xE0\xBF\x80", "\"\xE0\xBF\x80\"");
+        R_TEST("", "\"\xE0\x9F\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0\xC0\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0\xBF\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0\xBF\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0", json::read_error::character_invalid);
+        // U+1000..U+CFFF E1..EC 80..BF 80..BF
+        R_TEST("\xEC\xBF\x80", "\"\xEC\xBF\x80\"");
+        R_TEST("", "\"\xEC\x7F\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xEC\xC0\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xEC\xBF\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xEC\xBF\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xEC\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xEC", json::read_error::character_invalid);
+        // U+D000..U+D7FF ED 80..9F 80..BF
+        R_TEST("\xED\x9F\x80", "\"\xED\x9F\x80\"");
+        R_TEST("", "\"\xED\x7F\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xED\xA0\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xED\x9F\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xED\x9F\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xED\x9F", json::read_error::character_invalid);
+        R_TEST("", "\"\xED", json::read_error::character_invalid);
+        // U+E000..U+FFFF EE..EF 80..BF 80..BF
+        R_TEST("\xEF\xBF\x80", "\"\xEF\xBF\x80\"");
+        R_TEST("", "\"\xEF\x7F\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xEF\xC0\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xEF\xBF\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xEF\xBF\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xEF\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xEF", json::read_error::character_invalid);
+    // 4
+        // U+10000..U+3FFFF F0 90..BF 80..BF 80..BF
+        R_TEST("\xF0\xBF\xBF\x80", "\"\xF0\xBF\xBF\x80\"");
+        R_TEST("", "\"\xF0\x8F\x80\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0\xC0\x80\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0\xBF\x7F\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0\xBF\xC0\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0\xBF\xBF\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0\xBF\xBF\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0\xBF\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xF0", json::read_error::character_invalid);
+        // U+40000..U+FFFFF F1..F3 80..BF 80..BF 80..BF
+        R_TEST("\xF3\xBF\xBF\x80", "\"\xF3\xBF\xBF\x80\"");
+        R_TEST("", "\"\xF3\x7F\x80\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3\xC0\x80\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3\xBF\x7F\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3\xBF\xC0\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3\xBF\xBF\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3\xBF\xBF\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3\xBF\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xF3", json::read_error::character_invalid);
+        // U+100000..U+10FFFF F4 80..8F 80..BF 80..BF
+        R_TEST("\xF4\x8F\xBF\x80", "\"\xF4\x8F\xBF\x80\"");
+        R_TEST("", "\"\xF4\x7F\x80\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x90\x80\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\x7F\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\xC0\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\xBF\x7F", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\xBF\xC0", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4", json::read_error::character_invalid);
+        // out of range
+        R_TEST("", "\"\xF5", json::read_error::character_invalid);
+TEST_END()
+
+
+struct input_iterator_no_read_validate_string_utf8_traits : cxon::test::input_iterator_traits {
+    static constexpr bool read_validate_string_utf8 = false;
+    //static constexpr bool read_validate_string_ctrl = false;
+};
+TEST_BEG(utf8_check_input_iterator_no_read_validate_string_utf8, cxon::JSON<input_iterator_no_read_validate_string_utf8_traits>, "/core")
+    // 1
+        R_TEST("\x7F", "\"\x7F\"");
+        R_TEST("", "\"\x80", json::read_error::character_invalid);
+    // 2
+        R_TEST("\xDF\x80", "\"\xDF\x80\"");
+        R_TEST("", "\"\xFF\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xDF\xFF", json::read_error::character_invalid);
+        R_TEST("", "\"\xDF\xFF", json::read_error::character_invalid);
+        R_TEST("", "\"\xDF", json::read_error::character_invalid);
+    // 3
+        R_TEST("\xE0\xBF\x80", "\"\xE0\xBF\x80\"");
+        R_TEST("", "\"\xE0\xFF\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0\xBF\xFF", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xE0", json::read_error::character_invalid);
+    // 4
+        R_TEST("\xF0\xBF\xBF\x80", "\"\xF0\xBF\xBF\x80\"");
+        R_TEST("", "\"\xF4\xFF\x80\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\xFF\x80", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\xBF\xFF", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F\xBF", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4\x8F", json::read_error::character_invalid);
+        R_TEST("", "\"\xF4", json::read_error::character_invalid);
+        // out of range
+        R_TEST("", "\"\xF5", json::read_error::character_invalid);
+TEST_END()
 
 
 TEST_BEG(pointers, cxon::JSON<>, "/core")
