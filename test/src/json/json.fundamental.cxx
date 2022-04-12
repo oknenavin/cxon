@@ -259,6 +259,33 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
         R_TEST(nullptr, "", json::read_error::unexpected, 0);
         R_TEST(nullptr, "nu", json::read_error::unexpected, 0);
         R_TEST(nullptr, "a", json::read_error::unexpected, 0);
+    // errors
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, 3.14);
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                c.push_back('x');
+                auto r = cxon::to_bytes<XXON>(c, std::numeric_limits<double>::infinity());
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, std::numeric_limits<double>::infinity());
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, std::numeric_limits<double>::quiet_NaN());
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
+        {   char b[4];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<XXON>(c, std::numeric_limits<double>::quiet_NaN());
+            TEST_CHECK(r.ec == json::write_error::output_failure);
+        }
 TEST_END()
 
 
@@ -299,6 +326,37 @@ TEST_BEG(special_numbers, cxon::JSON<>, "/core") // special numbers
         W_TEST(QS("nan"), 0.0 *  inf<float>());
         W_TEST(QS("nan"), 0.0 * -inf<float>());
         W_TEST(QS("nan"), inf<float>() + -inf<float>());
+        // errors
+        R_TEST(0.f, "\"i", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"in", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"inf", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"xxxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"ixxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"inxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"infx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-i", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-in", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-inf", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-xxxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-ixxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-inxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-infx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"n", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"na", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"nan", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"xxxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"nxxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"naxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"nanx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-n", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-na", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-nan", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-xxxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-nxxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-naxx", json::read_error::floating_point_invalid, 0);
+        R_TEST(0.f, "\"-nanx", json::read_error::floating_point_invalid, 0);
     // double
         R_TEST( -inf<double>(), omin<double>(), json::read_error::floating_point_invalid, 0);
         R_TEST( -inf<double>(), QS("-inf"));
@@ -349,6 +407,9 @@ TEST_BEG(special_numbers_input_iterator, cxon::JSON<cxon::test::input_iterator_t
     R_TEST(10.0, "10");
     R_TEST(10.0, "10.0");
     R_TEST(10.0e+10, "10.0e+10");
+    R_TEST(10.0e-10, "10.0e-10");
+    R_TEST(10.0e+10, "10.0E+10");
+    R_TEST(10.0e-10, "10.0E-10");
     R_TEST(-inf<double>(), QS("-inf"));
     W_TEST(QS("-inf"), -inf<double>());
     R_TEST(inf<double>(), QS("inf"));
@@ -364,7 +425,7 @@ TEST_END()
 TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits>, "/core") // json number validation
     // floating point
         R_TEST((double)0, "0");
-        R_TEST((double)0, "-0");
+        R_TEST((double)-0., "-0");
         R_TEST((double)0, "0.0");
         R_TEST((double)1000, "1e3");
         R_TEST((double)1000, "1000000E-3");
@@ -385,6 +446,7 @@ TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits>
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
+        R_TEST((signed)-0, "-0");
         R_TEST((signed)10, "10");
         R_TEST((signed)-10, "-10");
         R_TEST((signed)0, "", json::read_error::integral_invalid, 0);
@@ -399,6 +461,47 @@ TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits>
         R_TEST((signed)0, "0x", json::read_error::ok, 1);
         R_TEST((signed)0, "0xg", json::read_error::ok, 1);
         R_TEST((signed)0, std::string(32 + 1, '1'), json::read_error::overflow, 32); // cxon::json::num_len_max
+    // errors
+#   define CHECK_ERROR(ot, in, bf, ec) { auto r = test::from_string<XXON>(ot, in, cxon::json::num_len_max::set<bf>()); TEST_CHECK(ec); }
+    {   signed t;
+        CHECK_ERROR(t, " 0", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, " 0", 2, r)
+        CHECK_ERROR(t, "-0", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "-0", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "-0", 3, r)
+    }
+    {   double t;
+        CHECK_ERROR(t, "0", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0", 2, r)
+        CHECK_ERROR(t, "-0", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0.", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0.", 2, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "0.0", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0.x", 3, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "0.0", 3, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0.0", 4, r)
+        CHECK_ERROR(t, "0e", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0e0", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0E0", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0e+", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0E+", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "0.0x", 4, r && *r.end == 'x')
+        CHECK_ERROR(t, "\"-", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"i", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"in", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"ix", 2, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"inf", 3, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"inx", 3, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"n", 1, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"na", 2, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"nx", 2, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"nan", 3, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"nax", 3, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"nan\"", 4, r.ec == json::read_error::overflow)
+        CHECK_ERROR(t, "\"nan", 4, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"nan\"", 5, r.ec == json::read_error::overflow)
+    }
+#   undef CHECK_ERROR
 TEST_END()
 
 namespace cxon { namespace test {
@@ -419,13 +522,28 @@ TEST_BEG(json_number_validation_2, cxon::JSON<cxon::test::strict_number_traits>,
         R_TEST((double)1000, "1e3");
         R_TEST((double)0, "0e3");
         R_TEST((double)1000, "1000000E-3");
-        R_TEST((double)1000, "1e+3");
-        R_TEST((double)1000, "1e+03");
+        R_TEST((double)1e+3, "1e+3");
+        R_TEST((double)1e-3, "1e-3");
+        R_TEST((double)1e+3, "1e+03");
+        R_TEST((double)1e-3, "1e-03");
+        R_TEST((double)1e+3, "1E+3");
+        R_TEST((double)1e-3, "1E-3");
+        R_TEST((double)1e-3, "1E-03");
+        R_TEST((double)1e+3, "1.0e+3");
+        R_TEST((double)1e-3, "1.0e-3");
+        R_TEST((double)1e+3, "1.0e+03");
+        R_TEST((double)1e-3, "1.0e-03");
+        R_TEST((double)1e+3, "1.0E+3");
+        R_TEST((double)1e-3, "1.0E-3");
+        R_TEST((double)1e-3, "1.0E-03");
+        R_TEST((double)0, "1.", json::read_error::floating_point_invalid, 0);
+        R_TEST((double)1, "1.0");
         R_TEST((double)0, "", json::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "+0", json::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "01", json::read_error::ok, 1);
         R_TEST((double)0, "0.", json::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "0e", json::read_error::floating_point_invalid, 0);
+        R_TEST((double)0, "0E", json::read_error::floating_point_invalid, 0);
         R_TEST((double)0, ".0", json::read_error::floating_point_invalid, 0);
         R_TEST((double)0, ".", json::read_error::floating_point_invalid, 0);
         R_TEST((double)0, "-", json::read_error::floating_point_invalid, 0);
@@ -455,6 +573,19 @@ TEST_BEG(json_number_validation_2, cxon::JSON<cxon::test::strict_number_traits>,
         R_TEST((signed)0, "08", json::read_error::ok, 1);
         R_TEST((signed)0, "0x", json::read_error::ok, 1);
         R_TEST((signed)0, "0xg", json::read_error::ok, 1);
+    // errors
+#   define CHECK_ERROR(ot, in, bf, ec) { auto r = test::from_string<XXON>(ot, in, cxon::json::num_len_max::set<bf>()); TEST_CHECK(ec); }
+    {   double t;
+        CHECK_ERROR(t, "0.", 2, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "0.x", 3, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "0.0x", 4, r && *r.end == 'x')
+        CHECK_ERROR(t, "\"ix", 2, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"inx", 3, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"nx", 2, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"nax", 3, r.ec == json::read_error::floating_point_invalid)
+        CHECK_ERROR(t, "\"nan", 4, r.ec == json::read_error::floating_point_invalid)
+    }
+#   undef CHECK_ERROR
 TEST_END()
 
 
