@@ -201,19 +201,19 @@ namespace cxon { namespace test {
     template <typename X>
         struct is_force_input_iterator<X, enable_if_t<X::force_input_iterator>> : std::true_type {};
 
-    template <typename X, typename T, typename S>
-        inline auto from_string(T& t, const S& s)
+    template <typename X, typename T, typename S, typename ...A>
+        inline auto from_string(T& t, const S& s, A&&... as)
             -> enable_if_t< is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
         {
             auto b = make_force_input_iterator(std::begin(s)), e = make_force_input_iterator(std::end(s));
-            auto const r =  from_bytes<X>(t, b, e);
+            auto const r =  from_bytes<X>(t, b, e, std::forward<A>(as)...);
             return { r.ec, r.end.i_ };
         }
-    template <typename X, typename T, typename S>
-        inline auto from_string(T& t, const S& s)
+    template <typename X, typename T, typename S, typename ...A>
+        inline auto from_string(T& t, const S& s, A&&... as)
             -> enable_if_t<!is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
         {
-            return from_bytes<X>(t, s);
+            return from_bytes<X>(t, s, std::forward<A>(as)...);
         }
 
     template <typename T>

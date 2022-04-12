@@ -44,7 +44,8 @@ namespace cxon { namespace cio { namespace num { // read
                 return false;
             }
 
-#       define CXON_NEXT() { if (f == l) return -1; *f = c, c = next(i, e), ++f; }
+#       define CXON_READ() *f = c, c = next(i, e), ++f;
+#       define CXON_NEXT() { if (f == l) return -1; CXON_READ() }
 
         template <typename X, typename T, typename II>
             inline auto number_consume_(char* f, const char* l, II& i, II e)
@@ -52,29 +53,29 @@ namespace cxon { namespace cio { namespace num { // read
             {
                 CXON_ASSERT(f && f < l, "unexpected");
                 char c = peek(i, e);
-                    if (is_sign_<T>(c))                 CXON_NEXT()
+                    if (is_sign_<T>(c))                 CXON_READ()
                     if (c == '0') {                     CXON_NEXT()
                                                         goto trap_end; }
                        if (!chr::is<X>::digit10(c))     return 0;
                     while ( chr::is<X>::digit10(c))     CXON_NEXT()
                 trap_end:
-                    return f != l ? (*f = '\0', 1) : 0;
+                    return f != l ? (*f = '\0', 1) : -1;
             }
         template <typename X, typename T>
             inline auto number_consume_(const char*& i, const char* e)
                 -> enable_if_t<std::is_integral<T>::value, int>
             {
-                cio::consume<X>(i, e);
-                char c = peek(i, e);
-                if (is_sign_<T>(c)) goto trap_neg;
+                char c = *i;
+                    if (is_sign_<T>(c)) goto trap_neg;
                 // trap_pos
                     if (c == '0') return ++i, 1;
-                    while (chr::is<X>::digit10(c)) c = next(i, e);
+                       if (!chr::is<X>::digit10(c)) return 0;
+                    while ( chr::is<X>::digit10(c)) c = next(i, e);
                     goto trap_end;
                 trap_neg:
                     c = next(i, e);
-                       if (c == '0' || !chr::is<X>::digit10(c)) return 0;
-                    while (chr::is<X>::digit10(c)) c = next(i, e);
+                       if (!chr::is<X>::digit10(c)) return 0;
+                    while ( chr::is<X>::digit10(c)) c = next(i, e);
                 trap_end:
                     return 1;
             }
@@ -86,7 +87,7 @@ namespace cxon { namespace cio { namespace num { // read
                 CXON_ASSERT(f && f < l, "unexpected");
                 char c = peek(i, e);
                     if (c == '"')                       goto trap_spec_beg;
-                    if (is_sign_<T>(c))                 CXON_NEXT()
+                    if (is_sign_<T>(c))                 CXON_READ()
                     if (c == '0')                       goto trap_zero;
                 //trap_whole:
                        if (!chr::is<X>::digit10(c))     return 0;
@@ -112,7 +113,7 @@ namespace cxon { namespace cio { namespace num { // read
                     while ( chr::is<X>::digit10(c))     CXON_NEXT()
                     ;                                   goto trap_end;
                 trap_spec_beg:
-                    ;                                   CXON_NEXT()
+                    ;                                   CXON_READ()
                     if (is_sign_<T>(c))                 CXON_NEXT()
                     if (c == 'i')                       goto trap_inf;
                     if (c == 'n')                       goto trap_nan;
@@ -128,7 +129,7 @@ namespace cxon { namespace cio { namespace num { // read
                     CXON_NEXT() if (c != '"')           return 0;
                     CXON_NEXT()
                 trap_end:
-                    return f != l ? (*f = '\0', 1) : 0;
+                    return f != l ? (*f = '\0', 1) : -1;
             }
         template <typename X, typename T>
             inline auto number_consume_(const char*& i, const char* e)
@@ -182,6 +183,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
 
 #       undef CXON_NEXT
+#       undef CXON_READ
 
         template <typename X, typename T, typename II, typename Cx>
             inline auto number_read_(T& t, II& i, II e, Cx& cx)
@@ -189,49 +191,59 @@ namespace cxon { namespace cio { namespace num { // read
             {
                 II const o = i;
                     char s[num_len_max::constant<napa_type<Cx>>(32)];
-                    int const b = number_consume_<X, T>(std::begin(s), std::end(s), i, e);
-                    return  (b != -1                                                                || (rewind(i, o), cx/X::read_error::overflow)) &&
-                            (b !=  0                                                                || (rewind(i, o), cx/X::read_error::integral_invalid)) &&
-                            (charconv::from_chars(std::begin(s), std::end(s), t).ec == std::errc()  || (rewind(i, o), cx/X::read_error::integral_invalid))
-                    ;
+                    switch (number_consume_<X, T>(std::begin(s), std::end(s), i, e)) {
+                        case -1: return rewind(i, o), cx/X::read_error::overflow;
+                        case  0: return rewind(i, o), cx/X::read_error::integral_invalid;
+                        default: {
+                            auto const r = charconv::from_chars(std::begin(s), std::end(s), t); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                            return true;
+                        }
+                    }
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
                 -> enable_if_t<std::is_integral<T>::value && X::number::strict, bool>
             {
                 auto const b = i;
-                if (number_consume_<X, T>(i, e)) {
-                    if (*b == '0' && i - b == 1) return t = 0, true;
-                    auto const r = charconv::from_chars(b, i, t);
-                    if (r.ec == std::errc() && r.ptr == i) return true;
-                }
-                return i = b, cx/X::read_error::integral_invalid;
+                if (!number_consume_<X, T>(i, e))
+                    return i = b, cx/X::read_error::integral_invalid;
+                if (i - b == 1)
+                    return t = *b - '0', true;
+                auto const r = charconv::from_chars(b, i, t); CXON_ASSERT(r.ec == std::errc() && r.ptr == i, "unexpected");
+                return true;
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
                 -> enable_if_t<std::is_integral<T>::value && !X::number::strict, bool>
             {
                 auto const r = charconv::from_chars(i, e, t);
-                return (r.ec == std::errc() && (i = r.ptr, true)) || cx/X::read_error::integral_invalid;
+                    if (r.ec != std::errc()) return cx/X::read_error::integral_invalid;
+                return i = r.ptr, true;
             }
 
         template <typename T>
             inline charconv::imp::from_chars_result from_chars_(const char* b, const char* e, T& t) noexcept {
                 if (*b == '"') {
                     if (b[1] == '-' && e - b >= 6) { // (false-positive [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
-                        if (b[2] == 'i') return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ? t = -std::numeric_limits<T>::infinity(),
-                            charconv::imp::from_chars_result{ b + 6, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
-                        ;
-                        return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ? t =  std::numeric_limits<T>::quiet_NaN(),
-                            charconv::imp::from_chars_result{ b + 6, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
+                        if (b[2] == 'i')
+                            return b[3] == 'n' && b[4] == 'f' && b[5] == '"' ?
+                                t = -std::numeric_limits<T>::infinity(), charconv::imp::from_chars_result{ b + 6, std::errc() } :
+                                charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
+                            ;
+                        return b[2] == 'n' && b[3] == 'a' && b[4] == 'n' && b[5] == '"' ?
+                            t =  std::numeric_limits<T>::quiet_NaN(), charconv::imp::from_chars_result{ b + 6, std::errc() } :
+                            charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                     }
                     else if (e - b >= 5) { // (false-positive [&1]) warning: array subscript X is outside array bounds of 'char [4]' [-Warray-bounds]
-                        if (b[1] == 'i') return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ? t =  std::numeric_limits<T>::infinity(),
-                            charconv::imp::from_chars_result{ b + 5, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
-                        ;
-                        return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ? t =  std::numeric_limits<T>::quiet_NaN(),
-                            charconv::imp::from_chars_result{ b + 5, std::errc() } : charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
+                        if (b[1] == 'i')
+                            return b[2] == 'n' && b[3] == 'f' && b[4] == '"' ?
+                                t =  std::numeric_limits<T>::infinity(), charconv::imp::from_chars_result{ b + 5, std::errc() } :
+                                charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
+                            ;
+                        return b[1] == 'n' && b[2] == 'a' && b[3] == 'n' && b[4] == '"' ?
+                            t =  std::numeric_limits<T>::quiet_NaN(), charconv::imp::from_chars_result{ b + 5, std::errc() } :
+                            charconv::imp::from_chars_result{ b, std::errc::invalid_argument }
                         ;
                     }
                 }
@@ -255,33 +267,35 @@ namespace cxon { namespace cio { namespace num { // read
             {
                 II const o = i;
                     char s[num_len_max::constant<napa_type<Cx>>(64)];
-                    int const b = number_consume_<X, T>(std::begin(s), std::end(s), i, e);
+                    switch (number_consume_<X, T>(std::begin(s), std::end(s), i, e)) {
                         // coverity[overrun-buffer-val] - if b > 0 and the input is a string, the possible values are \"nan\", \"inf\" and \"-inf\" (see [&1])
-                        return  (b != -1                                                        || (rewind(i, o), cx/X::read_error::overflow)) &&
-                                (b !=  0                                                        || (rewind(i, o), cx/X::read_error::floating_point_invalid)) &&
-                                (from_chars_(std::begin(s), std::end(s), t).ec == std::errc()   || (rewind(i, o), cx/X::read_error::floating_point_invalid))
-                        ;
+                        case -1: return rewind(i, o), cx/X::read_error::overflow;
+                        case  0: return rewind(i, o), cx/X::read_error::floating_point_invalid;
+                        default: {
+                            auto const r = from_chars_(std::begin(s), std::end(s), t); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                            return true;
+                        }
+                    }
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
-                -> enable_if_t<std::is_floating_point<T>::value && X::number::strict, bool>
+                -> enable_if_t<std::is_floating_point<T>::value &&  X::number::strict, bool>
             {
                 auto const b = i;
-                if (number_consume_<X, T>(i, e)) {
-                    if (*b == '0' && i - b == 1) return t = 0, true;
-                    auto const r = from_chars_(b, i, t);
-                    if (r.ec == std::errc() && r.ptr == i) return true;
-                }
-                return i = b, cx/X::read_error::floating_point_invalid;
+                if (!number_consume_<X, T>(i, e))
+                    return i = b, cx/X::read_error::floating_point_invalid;
+                if (i - b == 1)
+                    return t = *b - '0', true;
+                auto const r = from_chars_(b, i, t); CXON_ASSERT(r.ec == std::errc() && r.ptr == i, "unexpected");
+                return true;
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
                 -> enable_if_t<std::is_floating_point<T>::value && !X::number::strict, bool>
             {
                 auto const r = from_chars_(i, e, t);
-                return  (r.ec == std::errc() || cx/X::read_error::floating_point_invalid) &&
-                        (i = r.ptr, true)
-                ;
+                    if (r.ec != std::errc()) return cx/X::read_error::floating_point_invalid;
+                return i = r.ptr, true;
             }
 
     }
@@ -300,22 +314,17 @@ namespace cxon { namespace cio { namespace num { // write
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
                 char s[std::numeric_limits<T>::digits10 + 3];
-                auto const r = charconv::to_chars(std::begin(s), std::end(s), t);
-                return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
-                        poke<X>(o, s, r.ptr, cx)
-                ;
+                    auto const r = charconv::to_chars(std::begin(s), std::end(s), t); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                return poke<X>(o, s, r.ptr, cx);
             }
 
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
                 if (std::isfinite(t)) {
                     char s[std::numeric_limits<T>::max_digits10 * 2];
-                    auto const r = charconv::to_chars(
-                        std::begin(s), std::end(s), t, fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10)
-                    );
-                    return (r.ec == std::errc() || cx/X::write_error::argument_invalid) &&
-                            poke<X>(o, s, r.ptr, cx)
-                    ;
+                        constexpr auto fp_precision = fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10);
+                        auto const r = charconv::to_chars(std::begin(s), std::end(s), t, fp_precision); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                    return poke<X>(o, s, r.ptr, cx);
                 }
                 else {
                     CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
