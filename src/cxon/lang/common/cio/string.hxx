@@ -46,25 +46,22 @@ namespace cxon { namespace cio { namespace str {
 
     namespace imp {
 
-        template <typename X, typename C, typename Cx, typename T = typename C::value_type>
-            inline auto char_append_(C& c, char32_t c32, Cx& cx) -> enable_if_t<chr::is_char_8<T>::value, bool> {
-                T b[4]; int const n = chr::utf32_to_utf8(b, c32);
-                    if (n == 0) return cx/X::read_error::character_invalid;
-                return cnt::append(c, &b[0], &b[0] + n) || cx/X::read_error::overflow;
+        template <typename C, typename T = typename C::value_type>
+            inline auto char_append_(C& c, char32_t c32) -> enable_if_t<chr::is_char_8<T>::value, bool> {
+                T b[4]; int const n = chr::utf32_to_utf8(b, c32); CXON_ASSERT(n > 0 && n <=4, "unexpected");
+                return cnt::append(c, &b[0], &b[0] + n);
             }
-        template <typename X, typename C, typename Cx, typename T = typename C::value_type>
-            inline auto char_append_(C& c, char32_t c32, Cx& cx) -> enable_if_t<chr::is_char_16<T>::value, bool> {
+        template <typename C, typename T = typename C::value_type>
+            inline auto char_append_(C& c, char32_t c32) -> enable_if_t<chr::is_char_16<T>::value, bool> {
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
-                    return (cnt::append(c, T(0xD800 | (c32 >> 10))) && cnt::append(c, T(0xDC00 | (c32 & 0x3FF)))) ||
-                            cx/X::read_error::overflow
-                    ;
+                    return cnt::append(c, T(0xD800 | (c32 >> 10))) && cnt::append(c, T(0xDC00 | (c32 & 0x3FF)));
                 }
-                return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
+                return cnt::append(c, T(c32));
             }
-        template <typename X, typename C, typename Cx, typename T = typename C::value_type>
-            inline auto char_append_(C& c, char32_t c32, Cx& cx) -> enable_if_t<chr::is_char_32<T>::value, bool> {
-                return cnt::append(c, T(c32)) || cx/X::read_error::overflow;
+        template <typename C, typename T = typename C::value_type>
+            inline auto char_append_(C& c, char32_t c32) -> enable_if_t<chr::is_char_32<T>::value, bool> {
+                return cnt::append(c, T(c32));
             }
 
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
@@ -72,7 +69,7 @@ namespace cxon { namespace cio { namespace str {
                 II const o = i;
                     char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
                         if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                return char_append_<X>(c, c32, cx);
+                return char_append_(c, c32) || (rewind(i, o), cx/X::read_error::overflow);
             }
 
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
@@ -90,8 +87,8 @@ namespace cxon { namespace cio { namespace str {
                         II const o = i;
                             char32_t c32 = chr::esc_to_utf32<X>(++i, e, cx);
                                 if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                            if (!char_append_<X>(c, c32, cx))
-                                return rewind(i, o), false;
+                            if (!char_append_(c, c32))
+                                return rewind(i, o), cx/X::read_error::overflow;
                     }
                     else {
                         CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
@@ -123,14 +120,17 @@ namespace cxon { namespace cio { namespace str {
                             II const o = i;
                                 char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
                                     if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                                if (!char_append_<X>(c, c32, cx))
-                                    return rewind(i, o), false;
+                                if (!char_append_(c, c32))
+                                    return rewind(i, o), cx/X::read_error::overflow;
                             l = i, --i;
                         }
                         else {
                             CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
-                                if (*i == X::string::del)
-                                    return ((l == i || cnt::append(c, l, i)) && (++i, true)) || (rewind(i, l), cx/X::read_error::overflow);
+                                if (*i == X::string::del) {
+                                    if (l == i || cnt::append(c, l, i))
+                                        return ++i, true;
+                                    return rewind(i, l), cx/X::read_error::overflow;
+                                }
                             }
                             CXON_IF_CONSTEXPR (X::read_validate_string_utf8) {
                                 if ((unsigned char)*i > 0x7F) {
@@ -180,7 +180,7 @@ namespace cxon { namespace cio { namespace str {
             if (peek(i, e) == *X::id::nil && consume<X>(X::id::nil, i, e))
                 return true;
             auto c = cnt::make_pointer_container<X, T>(cx);
-            return string_read<X>(c, i, e, cx) && (c.push_back({}), t = c.release());
+            return string_read<X>(c, i, e, cx) && (c.push_back({}), t = c.release(), true);
         }
 
 }}}
