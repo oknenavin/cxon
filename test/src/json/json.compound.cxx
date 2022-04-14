@@ -43,6 +43,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             R_TEST(a, QS("12\\u2728"), json::read_error::overflow, 3);
         }
         {   char a[] = {'1', '2', '\0'};
+            W_TEST(QS("12"), a);
             R_TEST(a, "12", json::read_error::unexpected, 0);
             R_TEST(a, "\"12", json::read_error::unexpected, 3);
             R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
@@ -52,6 +53,9 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             R_TEST(a, "}", json::read_error::unexpected, 0);
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
+        }
+        {   char a[] = {'1', '2', '3'};
+            W_TEST(QS("123"), a);
         }
     // wchar_t[]
         R_TEST(L"", QS(""));
@@ -61,9 +65,10 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             W_TEST(QS("123\\u00004"), a);
         }
         {   wchar_t a[] = {L'1', L'2', L'3'};
-            R_TEST(a, QS("1234"), json::read_error::overflow, 5);
+            R_TEST(a, QS("1234"), json::read_error::overflow, 4);
         }
         {   wchar_t a[] = {L'1', L'2', L'\0'};
+            W_TEST(QS("12"), a);
             R_TEST(a, "12", json::read_error::unexpected, 0);
             R_TEST(a, "\"12", json::read_error::unexpected, 3);
             R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
@@ -73,6 +78,9 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             R_TEST(a, "}", json::read_error::unexpected, 0);
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
+        }
+        {   wchar_t a[] = {L'1', L'2', L'3'};
+            W_TEST(QS("123"), a);
         }
     // char8_t[]
 #       if __cplusplus > 201703L /* C++20 */
@@ -93,6 +101,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
                 R_TEST(a, QS("12\\u2728"), json::read_error::overflow, 3);
             }
             {   char8_t a[] = {'1', '2', '\0'};
+                W_TEST(QS("12"), a);
                 R_TEST(a, "12", json::read_error::unexpected, 0);
                 R_TEST(a, "\"12", json::read_error::unexpected, 3);
                 R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
@@ -102,6 +111,9 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
                 R_TEST(a, "}", json::read_error::unexpected, 0);
                 R_TEST(a, "{", json::read_error::unexpected, 0);
                 R_TEST(a, "\"", json::read_error::unexpected, 1);
+            }
+            {   char8_t a[] = {'1', '2', '3'};
+                W_TEST(QS("123"), a);
             }
 #       endif
     // char16_t[]
@@ -129,11 +141,12 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             W_TEST(QS("123\\u00004"), a);
         }
         {   char16_t a[] = {u'1', u'2', u'3'};
-            R_TEST(a, QS("1234"), json::read_error::overflow, 5);
-            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), json::read_error::overflow, 7);
+            R_TEST(a, QS("1234"), json::read_error::overflow, 4);
+            R_TEST(a, QS("12\xF0\x9F\x8D\xBA"), json::read_error::overflow, 3);
             R_TEST(a, QS("12\\udbff\\udfff"), json::read_error::overflow, 3);
         }
         {   char16_t a[] = {u'1', u'2', u'\0'};
+            W_TEST(QS("12"), a);
             R_TEST(a, "12", json::read_error::unexpected, 0);
             R_TEST(a, "\"12", json::read_error::unexpected, 3);
             R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
@@ -143,6 +156,16 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             R_TEST(a, "}", json::read_error::unexpected, 0);
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
+        }
+        {   char16_t a[] = {u'1', u'2', u'3'};
+            W_TEST(QS("123"), a);
+        }
+        {   char16_t a[2] = {u'\0'};
+            R_TEST(a, QS("xxx\\uDBFF\\uDFFF"), json::read_error::overflow, 3);
+            R_TEST(a, QS("xx\\uDBFF\\uDFFF"), json::read_error::overflow, 3);
+            R_TEST(a, QS("x\\uDBFF\\uDFFF"), json::read_error::overflow, 2);
+            R_TEST(a, QS("\1x"), json::read_error::unexpected, 1);
+            R_TEST(a, QS("x\1"), json::read_error::unexpected, 2);
         }
     // char32_t[]
         R_TEST(U"", QS(""));
@@ -168,9 +191,10 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
         }
         {   char32_t a[] = {U'1', U'2', U'\x1F37A'};
             R_TEST(a, QS("12\xF0\x9F\x8D\xBA"));
-            R_TEST(a, QS("1234"), json::read_error::overflow, 5);
+            R_TEST(a, QS("1234"), json::read_error::overflow, 4);
         }
         {   char32_t a[] = {U'1', U'2', U'\0'};
+            W_TEST(QS("12"), a);
             R_TEST(a, "12", json::read_error::unexpected, 0);
             R_TEST(a, "\"12", json::read_error::unexpected, 3);
             R_TEST(a, QS("\\u001"), json::read_error::escape_invalid, 1);
@@ -180,6 +204,9 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             R_TEST(a, "}", json::read_error::unexpected, 0);
             R_TEST(a, "{", json::read_error::unexpected, 0);
             R_TEST(a, "\"", json::read_error::unexpected, 1);
+        }
+        {   char32_t a[] = {U'1', U'2', U'3'};
+            W_TEST(QS("123"), a);
         }
 TEST_END()
 

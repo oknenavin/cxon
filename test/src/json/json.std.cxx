@@ -877,6 +877,97 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
         R_TEST(xmap{{{{U"\tone", 2}}, 3}, {{{U"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
         W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
     }
+    {   using xmap = map<map<string, int>, int>;
+        R_TEST(xmap{}, R"({"{\"1\)", json::read_error::escape_invalid, 6);
+        R_TEST(xmap{}, R"({"{\"1\1)", json::read_error::escape_invalid, 6);
+    }
+    {   using xmap = map<map<wstring, int>, int>;
+        R_TEST(xmap{}, R"({"{\"1\)", json::read_error::escape_invalid, 6);
+        R_TEST(xmap{}, R"({"{\"1\1)", json::read_error::escape_invalid, 6);
+    }
+    {   using xmap = map<map<u16string, int>, int>;
+        R_TEST(xmap{}, R"({"{\"1\)", json::read_error::escape_invalid, 6);
+        R_TEST(xmap{}, R"({"{\"1\1)", json::read_error::escape_invalid, 6);
+    }
+    {   using xmap = map<map<u32string, int>, int>;
+        R_TEST(xmap{}, R"({"{\"1\)", json::read_error::escape_invalid, 6);
+        R_TEST(xmap{}, R"({"{\"1\1)", json::read_error::escape_invalid, 6);
+    }
+    {   char b[1]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[2]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[3]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[4]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[5]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[6]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[7]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[8]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[9]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[10]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[11]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[12]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[13]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[14]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[15]; using xmap = map<map<string, int>, int>;
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, xmap{{{{"1", 2}}, 3}});
+        TEST_CHECK(r);
+    }
     // inf/nan
     {
         constexpr auto ninf = -std::numeric_limits<double>::infinity();
