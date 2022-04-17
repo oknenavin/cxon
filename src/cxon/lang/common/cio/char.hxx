@@ -151,40 +151,40 @@ namespace cxon { namespace cio { namespace chr {
                 }
                 if (c0 == 0xE0) {
                     c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0xA0 && c1 <= 0xBF);
-                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
                     return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
                 }
                 if (c0 >= 0xE1 && c0 <= 0xEC) {
                     c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
                     return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
                 }
                 if (c0 == 0xED) {
                     c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0x9F);
-                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
                     return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
                 }
                 if (c0 >= 0xEE && c0 <= 0xEF) {
                     c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
                     return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
                 }
                 if (c0 == 0xF0) {
                     c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x90 && c1 <= 0xBF);
-                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    c3 = (U)next_safe(i, e);    CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c3 = (U)next(i, e);         CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
                     return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
                 }
                 if (c0 >= 0xF1 && c0 <= 0xF3) {
                     c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    c3 = (U)next_safe(i, e);    CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c3 = (U)next(i, e);         CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
                     return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
                 }
                 if (c0 == 0xF4) {
                     c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0x8F);
-                    c2 = (U)next_safe(i, e);    CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    c3 = (U)next_safe(i, e);    CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                    c3 = (U)next(i, e);         CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
                     return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
                 }
                 CXON_EXPECT(false);
@@ -203,13 +203,13 @@ namespace cxon { namespace cio { namespace chr {
                 }
                 if ((c0 & 0xF0) == 0xE0) {
                     c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
-                    c2 = next_safe(i, e);   CXON_EXPECT((c2 & 0xC0) == 0x80);
+                    c2 = next(i, e);        CXON_EXPECT((c2 & 0xC0) == 0x80);
                     return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
                 }
                 if ((c0 & 0xF8) == 0xF0) {
                     c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
-                    c2 = next_safe(i, e);   CXON_EXPECT((c2 & 0xC0) == 0x80);
-                    c3 = next_safe(i, e);   CXON_EXPECT((c3 & 0xC0) == 0x80);
+                    c2 = next(i, e);        CXON_EXPECT((c2 & 0xC0) == 0x80);
+                    c3 = next(i, e);        CXON_EXPECT((c3 & 0xC0) == 0x80);
                     return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
                 }
                 CXON_EXPECT(false);
@@ -268,6 +268,11 @@ namespace cxon { namespace cio { namespace chr {
         }
 
     namespace imp {
+
+        template <typename II>
+            inline char next_safe(II& i, II e) {
+                return i != e ? peek(++i, e) : '\xFF';
+            }
 
         template <typename II>
             inline auto utf8_check_(II i, II e) noexcept
