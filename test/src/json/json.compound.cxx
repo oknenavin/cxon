@@ -223,8 +223,9 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xDF\x7F", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xDF\xC0", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xDF", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xDF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xDF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
     // 3
         // U+0800..U+0FFF E0 A0..BF 80..BF
@@ -235,11 +236,13 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xE0\xBF\xC0", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xE0\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xE0", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xE0', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xE0', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xE0' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xE0' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+1000..U+CFFF E1..EC 80..BF 80..BF
         R_TEST("\xEC\xBF\x80", "\"\xEC\xBF\x80\"");
@@ -249,11 +252,13 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xEC\xBF\xC0", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xEC\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xEC", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xEC', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEC', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xEC' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEC' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+D000..U+D7FF ED 80..9F 80..BF
         R_TEST("\xED\x9F\x80", "\"\xED\x9F\x80\"");
@@ -263,11 +268,13 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xED\x9F\xC0", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xED\x9F", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xED", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xED', '\x9F' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xED', '\x9F' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xED' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xED' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+E000..U+FFFF EE..EF 80..BF 80..BF
         R_TEST("\xEF\xBF\x80", "\"\xEF\xBF\x80\"");
@@ -277,11 +284,13 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xEF\xBF\xC0", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xEF\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xEF", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xEF', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEF', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xEF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
     // 4
         // U+10000..U+3FFFF F0 90..BF 80..BF 80..BF
@@ -295,14 +304,17 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xF0\xBF\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xF0\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xF0", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xF0', '\xBF', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF0', '\xBF', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF0', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF0', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF0' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF0' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+40000..U+FFFFF F1..F3 80..BF 80..BF 80..BF
         R_TEST("\xF3\xBF\xBF\x80", "\"\xF3\xBF\xBF\x80\"");
@@ -315,14 +327,17 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xF3\xBF\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xF3\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xF3", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xF3', '\xBF', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF3', '\xBF', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF3', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF3', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF3' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF3' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+100000..U+10FFFF F4 80..8F 80..BF 80..BF
         R_TEST("\xF4\x8F\xBF\x80", "\"\xF4\x8F\xBF\x80\"");
@@ -335,14 +350,17 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xF4\x8F\xBF", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xF4\x8F", json::read_error::character_invalid, 1);
         R_TEST("", "\"\xF4", json::read_error::character_invalid, 1);
-        {   char a[] = { '"', '\xF4', '\x8F', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF4', '\x8F', '\xBF' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF4', '\x8F' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF4', '\x8F' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF4' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF4' }, o[1];
+                auto r = cxon::from_bytes<XXON>(o, a);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // out of range
         R_TEST("", "\"\xF5", json::read_error::character_invalid, 1);
@@ -360,8 +378,10 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xDF\x7F", json::read_error::character_invalid);
         R_TEST("", "\"\xDF\xC0", json::read_error::character_invalid);
         R_TEST("", "\"\xDF", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xDF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xDF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
     // 3
         // U+0800..U+0FFF E0 A0..BF 80..BF
@@ -372,10 +392,12 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xE0\xBF\xC0", json::read_error::character_invalid);
         R_TEST("", "\"\xE0\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xE0", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xE0', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xE0', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xE0' }, o[2];
+        {   char a[] = { '"', '\xE0' }, o[1];
                 auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
                 auto r = cxon::from_bytes<XXON>(o, b, e);
             TEST_CHECK(r.ec == json::read_error::character_invalid);
@@ -388,11 +410,15 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xEC\xBF\xC0", json::read_error::character_invalid);
         R_TEST("", "\"\xEC\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xEC", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xEC', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEC', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xEC' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEC' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+D000..U+D7FF ED 80..9F 80..BF
         R_TEST("\xED\x9F\x80", "\"\xED\x9F\x80\"");
@@ -402,11 +428,15 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xED\x9F\xC0", json::read_error::character_invalid);
         R_TEST("", "\"\xED\x9F", json::read_error::character_invalid);
         R_TEST("", "\"\xED", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xED', '\x9F' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xED', '\x9F' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xED' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xED' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+E000..U+FFFF EE..EF 80..BF 80..BF
         R_TEST("\xEF\xBF\x80", "\"\xEF\xBF\x80\"");
@@ -416,11 +446,15 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xEF\xBF\xC0", json::read_error::character_invalid);
         R_TEST("", "\"\xEF\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xEF", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xEF', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEF', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xEF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xEF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
     // 4
         // U+10000..U+3FFFF F0 90..BF 80..BF 80..BF
@@ -434,14 +468,20 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xF0\xBF\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xF0\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xF0", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xF0', '\xBF', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF0', '\xBF', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF0', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF0', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF0' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF0' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+40000..U+FFFFF F1..F3 80..BF 80..BF 80..BF
         R_TEST("\xF3\xBF\xBF\x80", "\"\xF3\xBF\xBF\x80\"");
@@ -454,14 +494,20 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xF3\xBF\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xF3\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xF3", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xF3', '\xBF', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF3', '\xBF', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF3', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF3', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF3' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF3' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // U+100000..U+10FFFF F4 80..8F 80..BF 80..BF
         R_TEST("\xF4\x8F\xBF\x80", "\"\xF4\x8F\xBF\x80\"");
@@ -474,14 +520,20 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
         R_TEST("", "\"\xF4\x8F\xBF", json::read_error::character_invalid);
         R_TEST("", "\"\xF4\x8F", json::read_error::character_invalid);
         R_TEST("", "\"\xF4", json::read_error::character_invalid);
-        {   char a[] = { '"', '\xF4', '\x8F', '\xBF' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF4', '\x8F', '\xBF' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF4', '\x8F' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF4', '\x8F' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
-        {   char a[] = { '"', '\xF4' };
-            R_TEST("", a, json::read_error::character_invalid);
+        {   char a[] = { '"', '\xF4' }, o[1];
+                auto b = test::make_force_input_iterator(std::begin(a)), e = test::make_force_input_iterator(std::end(a));
+                auto r = cxon::from_bytes<XXON>(o, b, e);
+            TEST_CHECK(r.ec == json::read_error::character_invalid);
         }
         // out of range
         R_TEST("", "\"\xF5", json::read_error::character_invalid);
