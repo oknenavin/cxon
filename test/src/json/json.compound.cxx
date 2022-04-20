@@ -996,6 +996,97 @@ TEST_BEG(struct_10, cxon::JSON<>, "/core") // skip field
     R_TEST(Struct10(), "{\"skip1\": [", json::read_error::unexpected, 11);
     R_TEST(Struct10(), "{\"skip1\": \"", json::read_error::unexpected, 11);
     W_TEST("{\"a\":1,\"* \\\"':*\":2}", Struct10(1, 2));
+    // errors
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0001z"]}})");
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0001z"]}])", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0001z"]})", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0001z"])", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0001z")", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0001z)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0001)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u000)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u00)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u0)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\u)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y\)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": ["y)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": [")", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": [)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x": )", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x":)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x")", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {"x)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {")", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": {)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3": )", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3":)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3":,)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3":})", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3":])", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3":1,)", json::read_error::unexpected);
+    R_TEST(Struct10(1), R"({"a": 1, "skip3":1})");
+    R_TEST(Struct10(1), R"({"a": 1, "skip3":1])", json::read_error::unexpected);
+    {   char b[1];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            s.value.push_back('x');
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[1];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[2];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[3];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[4];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[5];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[6];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[7];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[8];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[9];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[10];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"([ ["\nn" ]])");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
+    {   char b[1];
+        auto s = cio::val::make_sink<cnt::range_container<char*>>(std::begin(b), std::end(b));
+            auto r = cxon::from_bytes<XXON>(s, R"(11)");
+        TEST_CHECK(r.ec == json::read_error::unexpected);
+    }
 TEST_END()
 
 
@@ -1021,9 +1112,9 @@ CXON_JSON_CLS_WRITE(Struct11,
 )
 
 TEST_BEG(struct_11, cxon::JSON<>, "/core") // skip field
-    R_TEST(Struct11(1, {" [1, 2, 3]"}), "{\"a\": 1, \"b\": [1, 2, 3]}");
-    R_TEST(Struct11(1, {" \"1, 2, 3\""}), "{\"a\": 1, \"b\": \"1, 2, 3\"}");
-    R_TEST(Struct11(1, {" {\"x\": 1, \"y\": 2}"}), "{\"a\": 1, \"b\": {\"x\": 1, \"y\": 2}}");
+    R_TEST(Struct11(1, {"[1, 2, 3]"}), "{\"a\": 1, \"b\": [1, 2, 3]}");
+    R_TEST(Struct11(1, {"\"1, 2, 3\""}), "{\"a\": 1, \"b\": \"1, 2, 3\"}");
+    R_TEST(Struct11(1, {"{\"x\": 1, \"y\": 2}"}), "{\"a\": 1, \"b\": {\"x\": 1, \"y\": 2}}");
     W_TEST("{\"a\":1,\"b\":[1, 2, 3]}", Struct11(1, {"[1, 2, 3]"}));
     W_TEST("{\"b\":[1, 2, 3]}", Struct11(0, {"[1, 2, 3]"}));
 TEST_END()
