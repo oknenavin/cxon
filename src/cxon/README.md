@@ -394,6 +394,54 @@ namespace cxon {
 [`std::enable_if`][std-enab-if].*
 
 
+The implemntation defines the following paramteters, which can be used to tune
+the behaviour of the library or to change the `JSON` language:
+
+``` c++
+namespace cxon { namespace json { // format traits
+
+    struct format_traits : cio::format_traits {
+        // enables/disables UTF-8 read validation
+        static constexpr bool read_validate_string_utf8 = true;
+
+        // check for unescaped control characters while reading
+        static constexpr bool read_validate_string_ctrl = true;
+
+        // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (as they are invalid JavaScript) while writing
+        static constexpr bool write_strict_js = false;
+
+        // allow unquoted object keys for types serialized without quotes (e.g. strings will still be quoted, but numbers will be not)
+        // if set, this JSON {1: 2} is now valid
+        static constexpr bool unquoted_keys = false;
+    };
+
+}}
+```
+
+###### Example
+
+``` c++
+#include "cxon/json.hxx"
+#include "cxon/lib/std/map.hxx"
+#include <string>
+#include <cassert>
+
+struct unquoted_keys_traits : cxon::json::format_traits {
+    static constexpr bool unquoted_keys = true;
+};
+using UQK = cxon::JSON<unquoted_keys_traits>;
+
+int main() {
+    std::map<int, int> map;
+        cxon::from_bytes<UQK>(map, R"({1: 2, 3: 4})");
+    assert(map == (std::map<int, int> {{1, 2}, {3, 4}}));
+    std::string str;
+        cxon::to_bytes<UQK>(str, map);
+    assert(str == R"({1:2,3:4})");
+}
+```
+
+
 --------------------------------------------------------------------------------
 
 ##### Named parameters
