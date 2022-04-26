@@ -653,7 +653,6 @@ namespace std {
       -----------------------------|------------|------------|---------|---------------------------------------------
       `node::recursion_guard`      | read/write | `unsigned` | 0 (N/A) | recursion guard state
       `node::recursion_depth`      | read/write | `unsigned` | 64      | max recursion depth
-      `node::json::arbitrary_keys` | read/write | `bool`     | false   | allow `node` as object key
       `node::json::extract_nans`   | read       | `bool`     | false   | convert `inf`/`nan` strings to `node::real`
 
       *Note: The interface is overloaded for `cxon::json::basic_node` and the overload
@@ -679,6 +678,11 @@ namespace std {
 #include "cxon/lib/node.hxx"
 #include <cassert>
 
+struct unquoted_keys_traits : cxon::json::format_traits {
+    static constexpr bool unquoted_keys = true;
+};
+using UQK = cxon::JSON<unquoted_keys_traits>;
+
 int main() {
     using namespace cxon::json;
     {   // cxon::node::error::invalid
@@ -691,9 +695,9 @@ int main() {
             auto const r = cxon::from_bytes(n, "[[[[1]]]]", cxon::node::recursion_depth::set<4>());
         assert(!r && r.ec.category() == cxon::node::error_category::value() && r.ec == cxon::node::error::recursion_depth_exceeded);
     }
-    {   // cxon::node::arbitrary_keys
+    {   // json::format_traits::unquoted_keys
         node n;
-            cxon::from_bytes(n, "{42: \"is the answer\"}", cxon::node::json::arbitrary_keys::set<true>());
+            cxon::from_bytes<UQK>(n, "{42: \"is the answer\"}");
         assert(n == (node::object {{42U, "is the answer"}}));
     }
     {   // cxon::node::extract_nans
@@ -702,7 +706,6 @@ int main() {
         assert(n == (node::array {-std::numeric_limits<node::real>::infinity(), std::numeric_limits<node::real>::infinity()}));
     }
 }
-
 ```
 
 
