@@ -82,13 +82,28 @@ namespace test { namespace kind {
         }
         {   //using node = cxon::json::node;
 
-            char const s[] = "{\"key0\":[{\"1\":1},{\"2\":2}],\"key1\":[\"string\",3,{\"bool\":true,\"null\":null},null],\"key2\":4}";
+            char const s[] = R"({"key0":[{"1":1},{"2":2}],"key1":["string",3,{"bool":true,"null":null},null],"key2":4})";
             node jns;
             {   // from/to string
-                    cxon::from_bytes(jns, s);
-                std::string r;
-                    cxon::to_bytes(std::back_inserter(r), jns);
-                CHECK(r == s);
+                cxon::from_bytes(jns, s);
+                {   std::string r;
+                        cxon::to_bytes(r, jns);
+                    CHECK(r == s);
+                }
+                {   std::string r;
+                        cxon::to_bytes(std::back_inserter(r), jns);
+                    CHECK(r == s);
+                }
+                {   char b[2];
+                    auto o = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                        auto r = cxon::to_bytes(o, jns);
+                    CHECK(r.ec == cxon::json::write_error::output_failure);
+                }
+                {   char b[8];
+                    auto o = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                        auto r = cxon::to_bytes(o, jns);
+                    CHECK(r.ec == cxon::json::write_error::output_failure);
+                }
             }
             node jno;
             {   // from object
@@ -618,9 +633,20 @@ namespace test { namespace kind {
             node n6 = true; CHECK(n6 == true && true == n6 && n6 != 1 && 1 != n6 && n6 != false && false != n6);
             node n7 = nullptr; CHECK(n7 == nullptr && nullptr == n7 && n7 != 1 && 1 != n7);
         }
+        {   // equal
+            CHECK(node(node::object{{0, 0}}) == node(node::object{{0, 0}}));
+            CHECK(!(node(node::object{{1, 0}}) == node(node::object{{0, 0}})));
+            CHECK(!(node(node::object{{0, 0}}) == node(node::object{{0, 1}})));
+            CHECK(!(node(node::object{{0, 0}}) != node(node::object{{0, 0}})));
+            CHECK(node(node::object{{1, 0}}) != node(node::object{{0, 0}}));
+            CHECK(node(node::object{{0, 0}}) != node(node::object{{0, 1}}));
+        }
         {   // less than
             CHECK(node(node::object{}) < node(node::array{}));
-            CHECK(node(node::object{{1, 0}}) < node(node::object{{2, 0}}));
+            CHECK(node(node::object{{0, 0}}) < node(node::object{{1, 0}}));
+            CHECK(!(node(node::object{{1, 0}}) < node(node::object{{0, 0}})));
+            CHECK(node(node::object{{0, 0}}) < node(node::object{{0, 1}}));
+            CHECK(!(node(node::object{{0, 0}}) < node(node::object{{0, 0}})));
             CHECK(node(node::array{1}) < node(node::array{2}));
             CHECK(node(node::array{1}) < node(node::array{2, 3}));
             CHECK(node("A") < node("a"));
