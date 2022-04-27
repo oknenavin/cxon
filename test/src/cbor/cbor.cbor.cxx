@@ -16,31 +16,31 @@
 
 TEST_BEG(interface_read, cxon::CBOR<>, "/core") // interface/read
     // iterator
-    {   int r; bio::byte const i[] = { 0x01 };
+    {   int r = 0; bio::byte const i[] = { 0x01 };
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
-    {   int r; test::bytes const i = BS("\x01");
+    {   int r = 0; test::bytes const i = BS("\x01");
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
-    {   int r; std::vector<bio::byte> const i = { 0x01 };
+    {   int r = 0; std::vector<bio::byte> const i = { 0x01 };
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
     // container
-    {   int r; bio::byte const i[] = { 0x01 };
+    {   int r = 0; bio::byte const i[] = { 0x01 };
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
-    {   int r; test::bytes const i = BS("\x01");
+    {   int r = 0; test::bytes const i = BS("\x01");
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
 #   ifdef CXON_HAS_LIB_STD_STRING_VIEW
-    {   int r; std::basic_string_view<bio::byte> const i((bio::byte*)"\x01", 1);
+    {   int r = 0; std::basic_string_view<bio::byte> const i((bio::byte*)"\x01", 1);
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
 #   endif
-    {   int r; std::vector<bio::byte> const i = { 0x01 };
+    {   int r = 0; std::vector<bio::byte> const i = { 0x01 };
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
-    {   int r; std::array<bio::byte, 1> const i = { 0x01 };
+    {   int r = 0; std::array<bio::byte, 1> const i = { 0x01 };
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
 TEST_END()
