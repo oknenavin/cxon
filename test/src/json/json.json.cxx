@@ -21,31 +21,31 @@
 
 TEST_BEG(interface_read, cxon::JSON<>, "/core") // interface/read
     // iterator
-    {   int r; char const i[] = "1";
+    {   int r = 0; char const i[] = "1";
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
-    {   int r; std::string const i = "1";
+    {   int r = 0; std::string const i = "1";
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
-    {   int r; std::vector<char> const i = {'1', '\0'};
+    {   int r = 0; std::vector<char> const i = {'1', '\0'};
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
     // container
-    {   int r; char const i[] = "1";
+    {   int r = 0; char const i[] = "1";
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
-    {   int r; std::string const i = "1";
+    {   int r = 0; std::string const i = "1";
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
 #   ifdef CXON_HAS_LIB_STD_STRING_VIEW
-    {   int r; std::string_view const i("1", 1);
+    {   int r = 0; std::string_view const i("1", 1);
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
 #   endif
-    {   int r; std::vector<char> const i = {'1', '\0'};
+    {   int r = 0; std::vector<char> const i = {'1', '\0'};
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
-    {   int r; std::array<char, 2> const i = {'1', '\0'};
+    {   int r = 0; std::array<char, 2> const i = {'1', '\0'};
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
 TEST_END()
