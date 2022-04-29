@@ -176,8 +176,7 @@ namespace cxon { namespace json { // node
 #                   undef CXON_JSON_TYPE_DEF
                 }
             }
-            basic_node& operator =(basic_node&& o)  // lgtm [cpp/assignment-does-not-return-this]
-                                                    // false-positive: https://github.com/github/codeql/issues/7035
+            basic_node& operator =(basic_node&& o)
                 noexcept(value::is_nothrow_move_assignable<basic_node>::value)
             {
                 switch (o.kind_) {
@@ -229,8 +228,7 @@ namespace cxon { namespace json { // node
 #                   undef CXON_JSON_TYPE_DEF
                 }
             }
-            basic_node& operator =(const basic_node& o) // lgtm [cpp/assignment-does-not-return-this]
-                                                        // false-positive: https://github.com/github/codeql/issues/7035
+            basic_node& operator =(const basic_node& o)
                 noexcept(value::is_nothrow_copy_assignable<basic_node>::value)
             {
                 switch (o.kind_) {

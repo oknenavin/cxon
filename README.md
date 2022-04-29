@@ -12,10 +12,12 @@
 [![Build][img-bld-win]](https://github.com/oknenavin/cxon/actions?query=workflow%3AWindows)  
 [![Codecov][img-cov]](https://codecov.io/gh/oknenavin/cxon)
 [![Coverity][img-cvr]](https://scan.coverity.com/projects/oknenavin-cxon)
+<!--
 [![Codacy][img-cod]](https://www.codacy.com/gh/oknenavin/cxon/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oknenavin/cxon&amp;utm_campaign=Badge_Grade)
 [![CodeQL][img-cql]](https://github.com/oknenavin/cxon/actions?query=workflow%3ACodeQL)
 [![LGTM][img-lgtm-qual]](https://lgtm.com/projects/g/oknenavin/cxon/context:cpp)
 [![LGTM/Alerts][img-lgtm-alrt]](https://lgtm.com/projects/g/oknenavin/cxon/alerts/)
+-->
 
 
 --------------------------------------------------------------------------------
