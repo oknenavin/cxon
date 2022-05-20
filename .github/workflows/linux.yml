@@ -140,6 +140,20 @@ jobs:
         CXX: g++-11
         CXXFLAGS: -std=c++20
       run: make -j check
+
+  gcc-12:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compiler setup
+      run: sudo apt update; sudo apt install g++-12
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
+    - name: Check
+      env:
+        CXX: g++-12
+        CXXFLAGS: -std=c++20
+      run: make -j check
   
   # clang ######################################################################
 
@@ -280,5 +294,33 @@ jobs:
     - name: Check
       env:
         CXX: clang++-12
+        CXXFLAGS: -std=c++20
+      run: make -j check
+
+  clang-13:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compiler setup
+      run: sudo apt update; sudo apt install clang-13
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
+    - name: Check
+      env:
+        CXX: clang++-13
+        CXXFLAGS: -std=c++20
+      run: make -j check
+
+  clang-14:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compiler setup
+      run: sudo apt update; sudo apt install clang-14
+    - name: Boost setup
+      run: sudo apt update; sudo apt install libboost-container-dev
+    - name: Check
+      env:
+        CXX: clang++-14
         CXXFLAGS: -std=c++20
       run: make -j check
