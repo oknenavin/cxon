@@ -12,7 +12,7 @@ jobs:
   # gcc ########################################################################
 
   gcc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
@@ -55,7 +55,7 @@ jobs:
     - name: Time (default)
       env:
         CXX: g++
-        CXXFLAGS: -std=c++2a -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
         echo $COMPILER_VERSION
@@ -103,7 +103,7 @@ jobs:
   # clang ######################################################################
 
   clang:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v2
