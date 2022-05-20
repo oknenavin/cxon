@@ -40,10 +40,6 @@ jobs:
         repository: fastfloat/fast_float
         ref: main
         path: .dep/fast_float
-    - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-11 g++-11
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -58,7 +54,7 @@ jobs:
       run: mkdir test/.time
     - name: Time (default)
       env:
-        CXX: g++-11
+        CXX: g++
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
@@ -72,7 +68,7 @@ jobs:
         make -s time-cbor | tee -a test/.time/g++.head.cbor.data
     - name: Time (fast_float)
       env:
-        CXX: g++-11
+        CXX: g++
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
@@ -87,7 +83,7 @@ jobs:
         mkdir test/.space
     - name: Space (default)
       env:
-        CXX: g++-11
+        CXX: g++
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
       run: |
@@ -134,10 +130,6 @@ jobs:
         repository: fastfloat/fast_float
         ref: main
         path: .dep/fast_float
-    - name: Compiler setup
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang-12
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -152,7 +144,7 @@ jobs:
       run: mkdir test/.time
     - name: Time (default)
       env:
-        CXX: clang++-12
+        CXX: clang++
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
@@ -166,7 +158,7 @@ jobs:
         make -s time-cbor | tee -a test/.time/clang++.head.cbor.data
     - name: Time (fast_float)
       env:
-        CXX: clang++-12
+        CXX: clang++
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
@@ -181,7 +173,7 @@ jobs:
         mkdir test/.space
     - name: Space (default)
       env:
-        CXX: clang++-12
+        CXX: clang++
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
       run: |
