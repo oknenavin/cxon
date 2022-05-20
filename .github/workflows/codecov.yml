@@ -32,7 +32,7 @@ jobs:
         ./b2 headers
     - name: Check
       env:
-        CXX: g++-
+        CXX: g++
         CXXFLAGS: --coverage -O0 -std=c++20 -I ../.dep/boost
       run: |
         make -j check
