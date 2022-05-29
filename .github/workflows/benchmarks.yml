@@ -61,7 +61,7 @@ jobs:
         CXX: g++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
+        COMPILER_VERSION=`$CXX -dumpversion`
         echo $COMPILER_VERSION
         make clean && make -j build-json-node
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -om`) / node (default)" > test/.time/g++.head.default.json.node.data
@@ -76,7 +76,7 @@ jobs:
         CXX: g++-12
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
+        COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -om`) / node (fast_float)" > test/.time/g++.head.fast_float.json.node.data
         make -s time-json-node | tee -a test/.time/g++.head.fast_float.json.node.data
@@ -92,7 +92,7 @@ jobs:
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
       run: |
-        COMPILER_VERSION=`$CXX --version | sed -E 's/g++.* (.*)/\1/' | head -n1`
+        COMPILER_VERSION=`$CXX -dumpversion`
         cd test
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS (`uname -om`)" > .space/g++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/g++.head.default.json.data
@@ -156,7 +156,7 @@ jobs:
         CXX: clang++-14
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
+        COMPILER_VERSION=`$CXX -dumpversion`
         echo $COMPILER_VERSION
         make clean && make -j build-json-node
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -om`) / node (default)" > test/.time/clang++.head.default.json.node.data
@@ -171,7 +171,7 @@ jobs:
         CXX: clang++-14
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
-        COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
+        COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -om`) / node (fast_float)" > test/.time/clang++.head.fast_float.json.node.data
         make -s time-json-node | tee -a test/.time/clang++.head.fast_float.json.node.data
@@ -187,7 +187,7 @@ jobs:
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
       run: |
-        COMPILER_VERSION=`$CXX --version | sed -E 's/.*clang version (.*)ubuntu.*/\1/' | head -n1`
+        COMPILER_VERSION=`$CXX -dumpversion`
         cd test
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION $CXXFLAGS (`uname -om`)" > .space/clang++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/clang++.head.default.json.data
