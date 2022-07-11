@@ -16,7 +16,14 @@
 #include "cxon/lib/boost/container/set.hxx"
 #include "cxon/lib/boost/container/flat_map.hxx"
 #include "cxon/lib/boost/container/flat_set.hxx"
-#include "cxon/lib/boost/dynamic_bitset.hxx"
+#if defined(__GNUC__) && !defined(__clang__)
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#   include "cxon/lib/boost/dynamic_bitset.hxx"
+#   pragma GCC diagnostic pop
+#else
+#   include "cxon/lib/boost/dynamic_bitset.hxx"
+#endif
 #include "cxon/lib/boost/variant2.hxx"
 #include "cxon/lib/boost/variant.hxx"
 
