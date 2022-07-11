@@ -26,9 +26,16 @@ TEST_BEG(interface_read, cxon::CBOR<>, "/core") // interface/read
         TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && r == 1);
     }
     // container
+#   if defined(__GNUC__) && !defined(__clang__)
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Warray-bounds"
+#   endif
     {   int r = 0; bio::byte const i[] = { 0x01 };
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
+#   if defined(__GNUC__) && !defined(__clang__)
+#       pragma GCC diagnostic pop
+#   endif
     {   int r = 0; test::bytes const i = BS("\x01");
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
@@ -37,9 +44,16 @@ TEST_BEG(interface_read, cxon::CBOR<>, "/core") // interface/read
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
 #   endif
+#   if defined(__GNUC__) && !defined(__clang__)
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Warray-bounds"
+#   endif
     {   int r = 0; std::vector<bio::byte> const i = { 0x01 };
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
+#   if defined(__GNUC__) && !defined(__clang__)
+#       pragma GCC diagnostic pop
+#   endif
     {   int r = 0; std::array<bio::byte, 1> const i = { 0x01 };
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
