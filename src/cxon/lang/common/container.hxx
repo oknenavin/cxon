@@ -336,7 +336,7 @@ namespace cxon { namespace cnt {
                 return append(t, t + n);
             }
             bool append(value_type&& t) noexcept {
-                return e_ != l_ && (push_back(std::forward<value_type>(t)), true);
+                return e_ != l_ && (push_back(std::move(t)), true);
             }
             bool append(const value_type& t) noexcept {
                 return e_ != l_ && (push_back(t), true);

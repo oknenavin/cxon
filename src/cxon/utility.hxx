@@ -25,7 +25,7 @@
 #endif
 
 #if __cplusplus < 201703L
-#   if defined(__GNUC__)  && __GNUC__ >= 7 && !defined(__clang__)
+#   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
 #       define CXON_FALLTHROUGH [[gnu::fallthrough]]
 #   else
 #       define CXON_FALLTHROUGH
