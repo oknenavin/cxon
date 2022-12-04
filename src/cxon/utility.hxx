@@ -117,6 +117,9 @@ namespace cxon {
     template <typename ...> // C++20
         struct conjunction;
 
+    template <typename ...T>
+        struct aligned_union; // std::aligned_union deprecated in c++23
+
     // container
 
     template <typename C>
@@ -177,6 +180,39 @@ namespace cxon {
         struct type_sequence_disjunction<Trait, type_sequence<T, Ts...>> :
             bool_constant<Trait<T>::value || type_sequence_disjunction<Trait, type_sequence<Ts...>>::value> {};
 
+    namespace imp {
+
+        template <typename H, typename ...T>
+            class max_sizeof_ {
+                static constexpr auto f_ = sizeof(H);
+                static constexpr auto t_ = max_sizeof_<T...>::value;
+                public: static constexpr auto value = f_ < t_ ? t_ : f_;
+            };
+        template <typename T>
+            class max_sizeof_<T> {
+                public: static constexpr auto value = sizeof(T);
+            };
+
+        template <typename H, typename ...T>
+            class max_alignof_ {
+                static constexpr auto f_ = alignof(H);
+                static constexpr auto t_ = max_alignof_<T...>::value;
+                public: static constexpr auto value = f_ < t_ ? t_ : f_;
+            };
+        template <typename T>
+            class max_alignof_<T> {
+                public: static constexpr auto value = alignof(T);
+            };
+
+    }
+    template <typename ...T>
+        struct aligned_union {
+            static constexpr auto alignment_value = imp::max_alignof_<T...>::value;
+            class alignas(alignment_value) type {
+                unsigned char s_[imp::max_sizeof_<T...>::value];
+            };
+        };
+
     // integer sequence
 
     template <typename T, T ...Ts>
@@ -196,7 +232,6 @@ namespace cxon {
                 bool_constant<V == E || integer_sequence_contains_<T, V, integer_sequence<T, Es...>>::value> {};
 
     }
-
     template <typename S, typename S::value_type V>
         struct integer_sequence_contains :
             bool_constant<imp::integer_sequence_contains_<typename S::value_type, V, S>::value> {};

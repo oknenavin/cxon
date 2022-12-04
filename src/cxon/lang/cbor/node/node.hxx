@@ -133,7 +133,7 @@ namespace cxon { namespace cbor { // node
                 using null_         = dt_<null>;
                 using undefined_    = dt_<undefined>;
 
-                using value_type_ = typename std::aligned_union<0, map_, array_, tag_, bytes_, text_, real_, sint_, uint_, simple_, boolean_, null_, undefined_>::type;
+                using value_type_ = typename aligned_union<map_, array_, tag_, bytes_, text_, real_, sint_, uint_, simple_, boolean_, null_, undefined_>::type;
 
                 value_type_     value_;
                 node_kind       kind_;
