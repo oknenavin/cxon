@@ -11,9 +11,9 @@ jobs:
   msvc:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Checkout Boost
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: boostorg/boost
         ref: boost-1.78.0
