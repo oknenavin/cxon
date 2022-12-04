@@ -15,27 +15,27 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout Boost
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: boostorg/boost
         ref: boost-1.78.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
     - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: fastfloat/fast_float
         ref: main
@@ -110,27 +110,27 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout Boost
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: boostorg/boost
         ref: boost-1.78.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
     - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: fastfloat/fast_float
         ref: main
@@ -205,27 +205,27 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout Boost
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: boostorg/boost
         ref: boost-1.78.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
     - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: fastfloat/fast_float
         ref: main
@@ -298,27 +298,27 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout Boost
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: boostorg/boost
         ref: boost-1.78.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
     - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: fastfloat/fast_float
         ref: main
@@ -377,9 +377,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout workflows-data
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: oknenavin/workflows-data
         token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
