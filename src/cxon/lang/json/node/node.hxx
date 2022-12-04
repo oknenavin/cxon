@@ -107,7 +107,7 @@ namespace cxon { namespace json { // node
                 using boolean_  = dt_<boolean>;
                 using null_     = dt_<null>;
 
-                using value_type_ = typename std::aligned_union<0, object_, array_, string_, real_, sint_, uint_, boolean_, null_>::type;
+                using value_type_ = typename aligned_union<object_, array_, string_, real_, sint_, uint_, boolean_, null_>::type;
 
                 value_type_     value_;
                 node_kind       kind_;

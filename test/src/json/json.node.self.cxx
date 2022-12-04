@@ -982,7 +982,7 @@ namespace test { namespace kind {
         {   // alc::uninitialized_construct_using_allocator
             using string = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
             using pair = std::pair<int, string>;
-            typename std::aligned_union<0, pair>::type s;
+            typename cxon::aligned_union<pair>::type s;
             my_allocator<string> al(42);
             pair *p = cxon::alc::uninitialized_construct_using_allocator<pair>((pair*)&s, al, 42, "24");
             CHECK(al.id == p->second.get_allocator().id && p->first == 42 && p->second == "24");
@@ -990,7 +990,7 @@ namespace test { namespace kind {
         {   // alc::uninitialized_construct_using_allocator
             using string = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
             using pair = std::pair<string, string>;
-            typename std::aligned_union<0, pair>::type s;
+            typename cxon::aligned_union<pair>::type s;
             my_allocator<string> al(42);
             pair *p = cxon::alc::uninitialized_construct_using_allocator<pair>(
                 (pair*)&s, al, std::piecewise_construct, std::forward_as_tuple("42"), std::forward_as_tuple(3U, 'x')
