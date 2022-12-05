@@ -659,6 +659,7 @@ TEST_BEG(enum, cxon::JSON<>, "/core")
     W_TEST(QS("Two (2)"), Enum1::two);
     R_TEST(Enum1::one, QS("noe"), json::read_error::unexpected, 0);
     R_TEST(Enum1::one, "one", json::read_error::unexpected, 0);
+    R_TEST(Enum1::one, "onee", json::read_error::unexpected, 0);
     W_TEST("", Enum1::four, json::write_error::argument_invalid);
     {   char b[1];
         auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
@@ -689,6 +690,7 @@ TEST_BEG(enum_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/c
     R_TEST(Enum1::two, QS("Two (2)"));
     W_TEST(QS("Two (2)"), Enum1::two);
     R_TEST(Enum1::one, QS("noe"), json::read_error::unexpected, 5);
+    R_TEST(Enum1::one, QS("onee"), json::read_error::unexpected, 6);
     R_TEST(Enum1::one, "one", json::read_error::unexpected, 0);
     W_TEST("", Enum1::four, json::write_error::argument_invalid);
 TEST_END()
@@ -765,6 +767,7 @@ TEST_BEG(struct_3, cxon::JSON<>, "/core")
     R_TEST(Struct3(1, new Struct3(2, nullptr)), "{\"a\": 1, \"b\": {\"a\": 2}}");
     R_TEST(Struct3(1, nullptr), "{\"a\": 1, \"b\": null}");
     W_TEST("{\"a\":1,\"b\":{\"a\":2,\"b\":null}}", Struct3(1, new Struct3(2, nullptr)));
+    R_TEST(Struct3(), "{\"aa\": 1}", json::read_error::unexpected, 1);
     R_TEST(Struct3(), "{\"a\": 1, \"x\": nil}", json::read_error::unexpected, 9);
     R_TEST(Struct3(), "{\"a\": 1, \"b\": nil}", json::read_error::unexpected, 14);
     R_TEST(Struct3(), "{\"a\": 1, \"b\": {\"a\": x}}", json::read_error::integral_invalid, 20);

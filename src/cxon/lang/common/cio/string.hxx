@@ -7,7 +7,6 @@
 #define CXON_CIO_STRING_HXX_
 
 #include "cio.hxx"
-#include "key.hxx"
 #include "char.hxx"
 #include "cxon/lang/common/allocator.hxx"
 #include "cxon/lang/common/container.hxx"

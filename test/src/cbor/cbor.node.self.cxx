@@ -11,6 +11,7 @@
 
 #include <unordered_set>
 #include <unordered_map>
+#include <cstring>
 
 #if __cplusplus >= 201703L
 #   if defined(__has_include) && __has_include(<memory_resource>)

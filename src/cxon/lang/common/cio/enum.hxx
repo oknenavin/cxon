@@ -7,7 +7,6 @@
 #define CXON_CIO_ENUM_HXX_
 
 #include "cio.hxx"
-#include <cstring> // strcmp
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -15,8 +14,8 @@ namespace cxon { namespace cio { namespace enm { // enum reader/writer construct
 
     template <typename E>
         struct value;
-    template <typename E>
-        constexpr value<E> make_value(const char* name, E value);
+    template <typename E, std::size_t N>
+        constexpr value<E> make_value(const char (&name)[N], E value);
 
     template <typename X, typename E, typename V, typename II, typename Cx>
         inline bool read_value(E& t, V f, V l, II& i, II e, Cx& cx);
@@ -37,11 +36,12 @@ namespace cxon { namespace cio { namespace enm {
     template <typename E>
         struct value {
             char const*const name;
+            std::size_t nale;
             E const value;
         };
-    template <typename E>
-        constexpr value<E> make_value(const char* name, E value) {
-            return { name, value };
+    template <typename E, std::size_t N>
+        constexpr value<E> make_value(const char (&name)[N], E value) {
+            return { name, N - 1, value };
         }
 
     template <typename X, typename E, typename V, typename II, typename Cx>
@@ -51,7 +51,7 @@ namespace cxon { namespace cio { namespace enm {
             char id[ids_len_max::constant<napa_type<Cx>>(64)];
                 if (!cxon::read_value<X>(id, i, e, cx))
                     return false;
-            for ( ; f != l && std::strcmp(f->name, id) != 0; ++f)
+            for ( ; f != l && std::char_traits<char>::compare(f->name, id, f->nale + 1) != 0; ++f)
                 ;
             return  (f != l && (t = f->value, true)) ||
                     (rewind(i, o), cx/X::read_error::unexpected);
