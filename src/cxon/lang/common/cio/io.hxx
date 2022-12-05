@@ -9,8 +9,6 @@
 #include "cxon/utility.hxx"
 #include "chcls.hxx"
 
-#include <cstring> // std::strlen
-
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio {
@@ -192,7 +190,7 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, const char* f, const char* l)    { return imp::poke_(o, f, l - f); }
     template <typename O>
-        inline bool poke(O& o, const char* s)                   { return imp::poke_(o, s, std::strlen(s)); }
+        inline bool poke(O& o, const char* s)                   { return imp::poke_(o, s, std::char_traits<char>::length(s)); }
     template <typename O>
         inline bool poke(O& o, unsigned n, char c)              { return imp::poke_(o, n, c); }
 

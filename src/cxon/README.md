@@ -119,7 +119,7 @@ int main() {
             auto const r = from_bytes(v, "[42, true]");
         assert( !r && // fails with error r.ec and location r.end
                 r.ec == json::read_error::floating_point_invalid &&
-                strcmp(r.end, "true]") == 0
+                std::strcmp(r.end, "true]") == 0
         );
     }
 }

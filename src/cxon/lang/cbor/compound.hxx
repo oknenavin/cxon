@@ -8,7 +8,6 @@
 
 #include "cxon/lang/cbor/common/container.hxx"
 #include "cxon/lang/common/allocator.hxx"
-#include <cstring>
 
 namespace cxon { // array/read
 

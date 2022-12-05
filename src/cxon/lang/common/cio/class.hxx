@@ -7,9 +7,9 @@
 #define CXON_CIO_CLASS_HXX_
 
 #include "cio.hxx"
+#include "key.hxx"
 #include "value.hxx"
 #include <tuple>
-#include <cstring> // strncmp
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
         struct field {
             using type = F;
             char const*const name;
-            std::size_t nlen;
+            std::size_t nale;
             type const value;
             D dflt;
         };
@@ -97,8 +97,7 @@ namespace cxon { namespace cio { namespace cls {
             inline auto write_field_(O& o, const S& s, const F& f, Cx& cx)
                 -> enable_if_t<!val::is_sink<typename F::type>::value, bool>
             {
-                return  str::pointer_write<X>(o, f.name, f.nlen, cx) &&
-                            cio::poke<X>(o, X::map::div, cx) &&
+                return  write_key<X>(o, f.name, f.nale, cx) &&
                         write_value<X>(o, field_value_(s, f), cx)
                 ;
             }
@@ -134,7 +133,7 @@ namespace cxon { namespace cio { namespace cls {
             struct read_ {
                 template <typename S, typename F, typename II, typename Cx>
                     static bool field(S& t, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) {
-                        return st[N] == 0 && std::strncmp(std::get<N>(fs).name, name, std::get<N>(fs).nlen) == 0 ?
+                        return st[N] == 0 && std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
                             (st[N] = 1, read_field<X>(t, std::get<N>(fs), i, e, cx)) :
                             read_<X, N + 1, L>::field(t, name, fs, st, i, e, cx)
                         ;

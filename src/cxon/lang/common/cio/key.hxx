@@ -17,13 +17,12 @@ namespace cxon { namespace cio { // key read/write helpers
 
     template <typename X, typename T, typename O, typename Cx>
         inline bool write_key(O& o, const T& t, Cx& cx); // <key>:
+    template <typename X, typename O, typename Cx>
+        inline bool write_key(O& o, const char* t, std::size_t s, Cx& cx); // <key>:
 
 }}
 
 namespace cxon { namespace cio { namespace key { // key read/write extension points
-
-    template <typename T, typename E = void>
-        struct is_quoted;
 
     template <typename X, typename T>
         struct read;
@@ -51,6 +50,13 @@ namespace cxon { namespace cio {
     template <typename X, typename T, typename O, typename Cx>
         inline bool write_key(O& o, const T& t, Cx& cx) {
             return key::write<X, T>::key(o, t, cx) && poke<X>(o, X::map::div, cx);
+        }
+
+    template <typename X, typename O, typename Cx>
+        inline bool write_key(O& o, const char* t, std::size_t s, Cx& cx) {
+            return  str::pointer_write<X>(o, t, s, cx) &&
+                    poke<X>(o, X::map::div, cx)
+            ;
         }
 
 }}
@@ -90,8 +96,6 @@ namespace cxon { namespace cio { namespace key {
                     }
             };
         };
-    template <typename X>
-        using key_context = typename std::conditional<is_key_context<X>::value, X, rebind_traits_t<X, traits>>::type;
 
 }}}
 

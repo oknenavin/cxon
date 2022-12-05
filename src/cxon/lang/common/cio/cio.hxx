@@ -58,10 +58,13 @@ namespace cxon { namespace cio { // format traits
     };
 
     namespace key {
-        template <typename T> struct traits;
+        template <typename T, typename E = void>    struct is_quoted;
+        template <typename T>                       struct traits;
     }
     template <typename X>
         using is_key_context = has_traits<key::traits<X>, X>;
+    template <typename X>
+        using key_context = typename std::conditional<is_key_context<X>::value, X, rebind_traits_t<X, key::traits>>::type;
 
 }}
 
