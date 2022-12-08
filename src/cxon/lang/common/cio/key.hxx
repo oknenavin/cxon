@@ -10,19 +10,19 @@
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace cio { // key read/write helpers
+namespace cxon { namespace cio { // key read/write helpers: <key>:
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx); // <key>:
+        inline bool read_key(T& t, II& i, II e, Cx& cx);
 
     template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx); // <key>:
-    template <typename X, typename O, typename Cx>
-        inline bool write_key(O& o, const char* t, std::size_t s, Cx& cx); // <key>:
+        inline bool write_key(O& o, const T& t, Cx& cx);
+    template <typename X, typename T, typename O, typename Cx>
+        inline auto write_key(O& o, const T* t, std::size_t s, Cx& cx) -> enable_if_t<is_char<T>::value, bool>;
 
 }}
 
-namespace cxon { namespace cio { namespace key { // key read/write extension points
+namespace cxon { namespace cio { namespace key { // key read/write extension points: <key>
 
     template <typename X, typename T>
         struct read;
@@ -31,10 +31,10 @@ namespace cxon { namespace cio { namespace key { // key read/write extension poi
         struct write;
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx); // <key>
+        inline bool read_key(T& t, II& i, II e, Cx& cx);
 
     template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx); // <key>
+        inline bool write_key(O& o, const T& t, Cx& cx);
 
 }}}
 
@@ -52,11 +52,11 @@ namespace cxon { namespace cio {
             return key::write<X, T>::key(o, t, cx) && poke<X>(o, X::map::div, cx);
         }
 
-    template <typename X, typename O, typename Cx>
-        inline bool write_key(O& o, const char* t, std::size_t s, Cx& cx) {
-            return  str::pointer_write<X>(o, t, s, cx) &&
-                    poke<X>(o, X::map::div, cx)
-            ;
+    template <typename X, typename T, typename O, typename Cx>
+        inline auto write_key(O& o, const T* t, std::size_t s, Cx& cx)
+            -> enable_if_t<is_char<T>::value, bool>
+        {
+            return str::pointer_write<X>(o, t, s, cx) && poke<X>(o, X::map::div, cx);
         }
 
 }}
