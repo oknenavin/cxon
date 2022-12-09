@@ -568,9 +568,9 @@ namespace cxon { namespace cio { namespace chr {
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto write(O& o, T t, Cx& cx) -> enable_if_t<is_char<T>::value, bool> {
-            return  poke<X>(o, X::string::template del_write<O>, cx) &&
+            return  poke<X>(o, str::delim_be_write<X, O>, cx) &&
                         imp::encode_<X, T>::value(o, t, cx) &&
-                    poke<X>(o, X::string::template del_write<O>, cx)
+                    poke<X>(o, str::delim_en_write<X, O>, cx)
             ;
         }
 

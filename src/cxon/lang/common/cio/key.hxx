@@ -83,35 +83,22 @@ namespace cxon { namespace cio { namespace key {
 
 namespace cxon { namespace cio { namespace key {
 
-    template <typename T>
-        struct traits : T {
-            struct string : T::string {
-                template <typename II>
-                    static bool del_read(II& i, II e) {
-                        return peek(i, e) == '\\' && next(i, e) == string::del && (++i, true);
-                    }
-                template <typename O>
-                    static bool del_write(O& o) {
-                        return poke(o, '\\') && poke(o, string::del);
-                    }
-            };
-        };
-
-}}}
-
-namespace cxon { namespace cio { namespace key {
+    namespace imp {
+        template <typename X, typename T>
+            struct needs_quotes : bool_constant<!is_key_context<X>::value && !is_quoted<T>::value && !X::unquoted_keys> {};
+    }
 
     namespace imp {
 
         template <typename X, typename T, typename II, typename Cx>
-            inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!is_quoted<T>::value && !X::unquoted_keys, bool> {
-                return  consume<X>(X::string::template del_read<II>, i, e, cx) &&
+            inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t< needs_quotes<X, T>::value, bool> {
+                return  consume<X>(str::delim_be_read<X, II>, i, e, cx) &&
                             read_value<key_context<X>>(t, i, e, cx) &&
-                        consume<X>(X::string::template del_read<II>, i, e, cx)
+                        consume<X>(str::delim_en_read<X, II>, i, e, cx)
                 ;
             }
         template <typename X, typename T, typename II, typename Cx>
-            inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t< is_quoted<T>::value ||  X::unquoted_keys, bool> {
+            inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!needs_quotes<X, T>::value, bool> {
                 return  read_value<X>(t, i, e, cx);
             }
 
@@ -132,14 +119,14 @@ namespace cxon { namespace cio { namespace key {
     namespace imp {
 
         template <typename X, typename T, typename O, typename Cx>
-            inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!is_quoted<T>::value && !X::unquoted_keys, bool> {
-                return  poke<X>(o, X::string::template del_write<O>, cx) &&
+            inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t< needs_quotes<X, T>::value, bool> {
+                return  poke<X>(o, str::delim_be_write<X, O>, cx) &&
                             write_value<key_context<X>>(o, t, cx) &&
-                        poke<X>(o, X::string::template del_write<O>, cx)
+                        poke<X>(o, str::delim_en_write<X, O>, cx)
                 ;
             }
         template <typename X, typename T, typename O, typename Cx>
-            inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t< is_quoted<T>::value ||  X::unquoted_keys, bool> {
+            inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!needs_quotes<X, T>::value, bool> {
                 return  write_value<X>(o, t, cx);
             }
 

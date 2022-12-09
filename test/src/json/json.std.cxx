@@ -862,20 +862,40 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
         W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}});
     }
     {   using xmap = map<map<string, int>, int>;
-        R_TEST(xmap{{{{"\tone", 2}}, 3}, {{{"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{"\"one\"", 2}}, 3}, {{{"four", 5}}, 6}});
+        R_TEST(xmap{{{{"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\u0022z\":1}":3})");
+        W_TEST(R"({"{\"x\ty\u0022z\":1}":3})", xmap{{{{"x\ty\"z", 1}}, 3}});
+        R_TEST(xmap{{{{"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\"z\":1}":3})", json::read_error::unexpected, 11);
     }
     {   using xmap = map<map<wstring, int>, int>;
-        R_TEST(xmap{{{{L"\tone", 2}}, 3}, {{{L"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{L"\"one\"", 2}}, 3}, {{{L"four", 5}}, 6}});
+        R_TEST(xmap{{{{L"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\u0022z\":1}":3})");
+        W_TEST(R"({"{\"x\ty\u0022z\":1}":3})", xmap{{{{L"x\ty\"z", 1}}, 3}});
+        R_TEST(xmap{{{{L"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\"z\":1}":3})", json::read_error::unexpected, 11);
     }
     {   using xmap = map<map<u16string, int>, int>;
-        R_TEST(xmap{{{{u"\tone", 2}}, 3}, {{{u"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{u"\"one\"", 2}}, 3}, {{{u"four", 5}}, 6}});
+        R_TEST(xmap{{{{u"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\u0022z\":1}":3})");
+        W_TEST(R"({"{\"x\ty\u0022z\":1}":3})", xmap{{{{u"x\ty\"z", 1}}, 3}});
+        R_TEST(xmap{{{{u"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\"z\":1}":3})", json::read_error::unexpected, 11);
     }
     {   using xmap = map<map<u32string, int>, int>;
-        R_TEST(xmap{{{{U"\tone", 2}}, 3}, {{{U"\nfour", 5}}, 6}}, R"({"{\"\tone\":2}":3,"{\"\nfour\":5}":6})");
-        W_TEST(R"({"{\"\u0022one\u0022\":2}":3,"{\"four\":5}":6})", xmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
+        R_TEST(xmap{{{{U"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\u0022z\":1}":3})");
+        W_TEST(R"({"{\"x\ty\u0022z\":1}":3})", xmap{{{{U"x\ty\"z", 1}}, 3}});
+        R_TEST(xmap{{{{U"x\ty\"z", 1}}, 3}}, R"({"{\"x\ty\"z\":1}":3})", json::read_error::unexpected, 11);
+    }
+    {   using xmap = map<map<map<string, int>, int>, int>;
+        R_TEST(xmap{{{{{{"x\ty\"z", 1}}, 3}}, 5}}, R"({"{{\"x\ty\u0022z\":1}:3}":5})");
+        W_TEST(R"({"{{\"x\ty\u0022z\":1}:3}":5})", xmap{{{{{{"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<wstring, int>, int>, int>;
+        R_TEST(xmap{{{{{{L"x\ty\"z", 1}}, 3}}, 5}}, R"({"{{\"x\ty\u0022z\":1}:3}":5})");
+        W_TEST(R"({"{{\"x\ty\u0022z\":1}:3}":5})", xmap{{{{{{L"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u16string, int>, int>, int>;
+        R_TEST(xmap{{{{{{u"x\ty\"z", 1}}, 3}}, 5}}, R"({"{{\"x\ty\u0022z\":1}:3}":5})");
+        W_TEST(R"({"{{\"x\ty\u0022z\":1}:3}":5})", xmap{{{{{{u"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u32string, int>, int>, int>;
+        R_TEST(xmap{{{{{{U"x\ty\"z", 1}}, 3}}, 5}}, R"({"{{\"x\ty\u0022z\":1}:3}":5})");
+        W_TEST(R"({"{{\"x\ty\u0022z\":1}:3}":5})", xmap{{{{{{U"x\ty\"z", 1}}, 3}}, 5}});
     }
     {   using xmap = map<map<string, int>, int>;
         R_TEST(xmap{}, R"({"{\"1\)", json::read_error::escape_invalid, 6);
@@ -978,8 +998,8 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
             W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
         }
         {   using xmap = map<map<double, int>, int>;
-            R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})");
-            W_TEST(R"({"{\"-inf\":1}":2,"{\"inf\":3}":4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+            R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({"{-inf:1}":2,"{inf:3}":4})");
+            W_TEST(R"({"{-inf:1}":2,"{inf:3}":4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
         }
     }
     // std::bitset
