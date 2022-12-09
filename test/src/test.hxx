@@ -184,6 +184,9 @@ namespace cxon { namespace test {
 
             force_input_iterator(I i) : i_(i) {}
 
+            force_input_iterator(const force_input_iterator& i) : i_(i.i_) {}
+            force_input_iterator& operator =(const force_input_iterator&) = delete;
+
             bool operator ==(const force_input_iterator& i) const { return i_ == i.i_; }
             bool operator !=(const force_input_iterator& i) const { return i_ != i.i_; }
             force_input_iterator& operator ++() { return ++i_, *this; }

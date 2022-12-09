@@ -77,17 +77,15 @@ namespace cxon { namespace cio { namespace str {
             {
                 while (i != e) {
                     if (*i == '\\') {
+                        II const o = i; ++i;
                         CXON_IF_CONSTEXPR (is_key_context<X>::value) {
-                            II const f = i;
-                                if (++i != e && *i == X::string::del)
-                                    return ++i, true;
-                            i = f;
+                            if (i != e && *i == X::string::del)
+                                return ++i, true;
                         }
-                        II const o = i;
-                            char32_t c32 = chr::esc_to_utf32<X>(++i, e, cx);
-                                if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                            if (!char_append_(c, c32))
-                                return rewind(i, o), cx/X::read_error::overflow;
+                        char32_t c32 = chr::esc_to_utf32<X>(i, e, cx);
+                            if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                        if (!char_append_(c, c32))
+                            return rewind(i, o), cx/X::read_error::overflow;
                     }
                     else {
                         CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
@@ -154,7 +152,7 @@ namespace cxon { namespace cio { namespace str {
 
         template <typename X, typename C, typename II, typename Cx>
             inline bool string_read_head_(C&, II& i, II e, Cx& cx) {
-                return consume<X>(X::string::template del_read<II>, i, e, cx);
+                return consume<X>(delim_be_read<X, II>, i, e, cx);
             }
 
     }
@@ -196,18 +194,18 @@ namespace cxon { namespace cio { namespace str {
         inline auto array_write(O& o, const T* f, const T* l, Cx& cx)
              -> enable_if_t<is_char<T>::value, bool>
         {
-            if (!poke<X>(o, X::string::template del_write<O>, cx)) return false;
+            if (!poke<X>(o, delim_be_write<X, O>, cx)) return false;
                 if (*(l - 1) == T(0)) --l;
-            return chr::encode_range<X>(o, f, l, cx) && poke<X>(o, X::string::template del_write<O>, cx);
+            return chr::encode_range<X>(o, f, l, cx) && poke<X>(o, delim_en_write<X, O>, cx);
         }
 
     template <typename X, typename O, typename T, typename Cx>
         inline auto pointer_write(O& o, const T* t, std::size_t s, Cx& cx)
              -> enable_if_t<is_char<T>::value, bool>
         {
-            return  poke<X>(o, X::string::template del_write<O>, cx) &&
+            return  poke<X>(o, delim_be_write<X, O>, cx) &&
                         chr::encode_range<X>(o, t, t + s, cx) &&
-                    poke<X>(o, X::string::template del_write<O>, cx)
+                    poke<X>(o, delim_en_write<X, O>, cx)
             ;
         }
     template <typename X, typename O, typename T, typename Cx>

@@ -32,14 +32,6 @@ namespace cxon { namespace cio { // format traits
         };
         struct string {
             static constexpr char               del     = '"';
-            template <typename II>
-                static bool del_read(II& i, II e) {
-                    return peek(i, e) == del && (++i, true);
-                }
-            template <typename O>
-                static bool del_write(O& o) {
-                    return poke(o, del);
-                }
         };
         struct number {
             static constexpr bool               strict  = false;
@@ -57,14 +49,58 @@ namespace cxon { namespace cio { // format traits
         };
     };
 
+}}
+
+namespace cxon { namespace cio { // key quoting helpers
+
     namespace key {
         template <typename T, typename E = void>    struct is_quoted;
-        template <typename T>                       struct traits;
+        template <typename T>                       struct traits : T {};
     }
     template <typename X>
         using is_key_context = has_traits<key::traits<X>, X>;
     template <typename X>
         using key_context = typename std::conditional<is_key_context<X>::value, X, rebind_traits_t<X, key::traits>>::type;
+
+    namespace str {
+
+        template <typename X, typename II>
+            inline auto delim_be_read(II& i, II e) -> enable_if_t<!is_key_context<X>::value, bool> {
+                return peek(i, e) == X::string::del && (++i, true);
+            }
+        template <typename X, typename II>
+            inline auto delim_be_read(II& i, II e) -> enable_if_t< is_key_context<X>::value, bool> {
+                return peek(i, e) == '\\' && next(i, e) == X::string::del && (++i, true);
+            }
+
+        template <typename X, typename II>
+            inline auto delim_en_read(II& i, II e) -> enable_if_t<!is_key_context<X>::value, bool> {
+                return peek(i, e) == X::string::del && (++i, true);
+            }
+        template <typename X, typename II>
+            inline auto delim_en_read(II& i, II e) -> enable_if_t< is_key_context<X>::value, bool> {
+                return peek(i, e) == '\\' && next(i, e) == X::string::del && (++i, true);
+            }
+
+        template <typename X, typename O>
+            inline auto delim_be_write(O& o) -> enable_if_t<!is_key_context<X>::value, bool> {
+                return poke(o, X::string::del);
+            }
+        template <typename X, typename O>
+            inline auto delim_be_write(O& o) -> enable_if_t< is_key_context<X>::value, bool> {
+                return poke(o, '\\') && poke(o, X::string::del);
+            }
+
+        template <typename X, typename O>
+            inline auto delim_en_write(O& o) -> enable_if_t<!is_key_context<X>::value, bool> {
+                return poke(o, X::string::del);
+            }
+        template <typename X, typename O>
+            inline auto delim_en_write(O& o) -> enable_if_t< is_key_context<X>::value, bool> {
+                return poke(o, '\\') && poke(o, X::string::del);
+            }
+
+    }
 
 }}
 

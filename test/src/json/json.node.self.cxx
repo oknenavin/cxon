@@ -77,7 +77,7 @@ namespace test { namespace kind {
         {   // custom type binding + equal keys
             using node = cxon::json::basic_node<my_traits>;
             node n;
-            cxon::from_bytes(n, "{\"k\": 42, \"k\": 43}");
+            cxon::from_bytes(n, R"({"k": 42, "k": 43})");
             CHECK(n.is<node::object>() && n.get<node::object>().count(u"k") == 2);
         }
         {   //using node = cxon::json::node;
@@ -168,7 +168,7 @@ namespace test { namespace kind {
                 CHECK(s1 == s0);
             }
             {   std::vector<node> v;
-                    cxon::from_bytes(v, "[{\"even\": [2, 4, 6]}, {\"odd\": [1, 3, 5]}]");
+                    cxon::from_bytes(v, R"([{"even": [2, 4, 6]}, {"odd": [1, 3, 5]}])");
                 std::string s1;
                     cxon::to_bytes(cxon::json::make_indenter(s1, 2, ' '), v);
                 std::string const s0 =
@@ -176,7 +176,7 @@ namespace test { namespace kind {
                 CHECK(s1 == s0);
             }
             {   std::map<std::string, node> m;
-                    cxon::from_bytes(m, "{\"even\": [2, 4, 6], \"odd\": [1, 3, 5]}");
+                    cxon::from_bytes(m, R"({"even": [2, 4, 6], "odd": [1, 3, 5]})");
                 std::string s1;
                     cxon::to_bytes(cxon::json::make_indenter(s1, 2, ' '), m);
                 std::string const s0 =
@@ -263,7 +263,7 @@ namespace test { namespace kind {
         {   // ex3
             using node = cxon::json::node;
     
-            char const s0[] = "{\"even\":[2,4,6],\"odd\":[1,3,5]}";
+            char const s0[] = R"({"even":[2,4,6],"odd":[1,3,5]})";
             node const n0 = {
                 { "even", { 2U, 4U, 6U } },
                 { "odd", { 1U, 3U, 5U } }
@@ -727,12 +727,12 @@ namespace test { namespace kind {
             };
             std::string s;
                 cxon::to_bytes(s, n);
-            CHECK(s == R"({"{\"1\":2}":3,"[4]":5,"6":7,"8":9,"10":11,"12":13,"true":14,"null":15,"inf":16,"-inf":17,"nan":18})");
+            CHECK(s == R"({"{1:2}":3,"[4]":5,"6":7,"8":9,"10":11,"12":13,"true":14,"null":15,"inf":16,"-inf":17,"nan":18})");
         }
         {   // unquoted keys
             using node = cxon::json::node;
             {
-                {   char const in[] = "{{1: 2}: 3, [4]: 5, \"6\": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, \"inf\": 16, \"-inf\": 17}";
+                {   char const in[] = R"({{1: 2}: 3, [4]: 5, "6": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, "inf": 16, "-inf": 17})";
                     node const out = {
                         {{{1U, 2U}}, 3U},
                         {{4U}, 5U},
@@ -753,7 +753,7 @@ namespace test { namespace kind {
                     CHECK(s == R"({{1:2}:3,[4]:5,"6":7,"-inf":17,12:13,"inf":16,-8:9,10:11,true:14,null:15})");
                 }
                 // probably not a good idea to use NaNs as keys
-                {   char const in[] = "{\"nan\": 18}";
+                {   char const in[] = R"({"nan": 18})";
                     node const out  = { {std::numeric_limits<node::real>::quiet_NaN(), 18U} };
                     node n;
                         cxon::from_bytes<UQK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
@@ -776,12 +776,12 @@ namespace test { namespace kind {
                 node const n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
                 std::string s;
                     cxon::to_bytes<UQK_JSON>(s, n);
-                CHECK(s == "{{1:2}:3,[4]:5,\"6\":7,8:9,true:10,null:11}");
+                CHECK(s == R"({{1:2}:3,[4]:5,"6":7,8:9,true:10,null:11})");
             }
         }
         {   // cbor::node
             using node = cxon::cbor::node;
-            {   char const in[] = "{\"a\":[{\"f\":2},[3,4],\"string\",5,false,null],\"b\":\"string\",\"c\":1,\"d\":true,\"e\":null}";
+            {   char const in[] = R"({"a":[{"f":2},[3,4],"string",5,false,null],"b":"string","c":1,"d":true,"e":null})";
                 node n;
                     cxon::from_bytes(n, in);
                 std::string s;
@@ -796,7 +796,7 @@ namespace test { namespace kind {
             {   node n = { 1, 2U, node::bytes {3}, "text", {4}, {{"5", 6}}, true, nullptr, node::undefined(), 7.0, node::simple(8) };
                 std::string s;
                     cxon::to_bytes(s, n);
-                CHECK(s == "[1,2,[3],\"text\",[4],{\"5\":6},true,null,null,7,8]");
+                CHECK(s == R"([1,2,[3],"text",[4],{"5":6},true,null,null,7,8])");
             }
             {   node n = {
                     { {{1, 0}}, 0 },
@@ -814,7 +814,7 @@ namespace test { namespace kind {
                 };
                 std::string s;
                     cxon::to_bytes(s, n);
-                CHECK(s == "{\"{\\\"1\\\":0}\":0,\"[2]\":0,\"4\":0,\"[5]\":0,\"6\":0,\"7\":0,\"8\":0,\"9\":0,\"10\":0,\"true\":0,\"null\":0,\"null\":0}");
+                CHECK(s == R"({"{1:0}":0,"[2]":0,"4":0,"[5]":0,"6":0,"7":0,"8":0,"9":0,"10":0,"true":0,"null":0,"null":0})");
             }
         }
         {   // round-trip
@@ -829,8 +829,8 @@ namespace test { namespace kind {
                 CHECK(n == to);
             }
             {   // json => cbor::node => json
-                std::string const fr = "[{\"1\": 2}, [3, 4], \"5, 6\", 7, true, null]";
-                std::string const to = "[{\"1\":2},[3,4],\"5, 6\",7,true,null]";
+                std::string const fr = R"([{"1": 2}, [3, 4], "5, 6", 7, true, null])";
+                std::string const to = R"([{"1":2},[3,4],"5, 6",7,true,null])";
                 node n;
                     cxon::from_bytes(n, fr);
                 std::string s;
@@ -910,19 +910,19 @@ namespace test { namespace kind {
                 CHECK(n1 == "42");
             }
             {   node n(al);
-                    auto const r = cxon::from_bytes(n, "{\"1\": \"2\"}");
+                    auto const r = cxon::from_bytes(n, R"({"1": "2"})");
                 CHECK(r && n == node::object {{"1", "2"}});
             }
             {   node n(al);
-                    auto const r = cxon::from_bytes(n, "{\"1\": [2, 3]}");
+                    auto const r = cxon::from_bytes(n, R"({"1": [2, 3]})");
                 CHECK(r && n == node::object {{"1", {2U, 3U}}});
             }
             {   node n(al);
-                    auto const r = cxon::from_bytes(n, "{\"1\": [\"2\", \"3\"]}");
+                    auto const r = cxon::from_bytes(n, R"({"1": ["2", "3"]})");
                 CHECK(r && n == node::object {{"1", {"2", "3"}}});
             }
             {   node n(al);
-                    auto const r = cxon::from_bytes(n, "{\"1\": {\"2\": 3.0}}");
+                    auto const r = cxon::from_bytes(n, R"({"1": {"2": 3.0}})");
                 CHECK(r && n == node::object {{"1", {{"2", 3.0}}}});
             }
             // move assign
