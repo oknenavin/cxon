@@ -25,26 +25,45 @@ namespace cxon { namespace test {
 namespace cxon { namespace test {
 
     struct suite {
-        static std::map<std::string, std::vector<suite*>>& get() {
-            static std::map<std::string, std::vector<suite*>> tests = {};
-            return tests;
-        }
-        static std::vector<suite*>& get(const char *category) {
-            return get()[category];
-        }
-        static unsigned& all(const char *category = "") {
-            static std::map<std::string, unsigned> a = {};
-            return a[category];
-        }
-        static unsigned& err(const char *category = "") {
-            static std::map<std::string, unsigned> e = {};
-            return e[category];
-        }
-
         char const*const category;
-        suite(const char *category = "") : category(category) { get(category).push_back(this); }
+        suite(const char *category = "") : category(category) { info::get(category).suites.push_back(this); }
 
         virtual void test() const = 0;
+
+        struct info {
+            struct cell {
+                std::vector<suite*> suites;
+                unsigned all = 0;
+                unsigned err = 0;
+                using map = std::map<std::string, cell>;
+            };
+
+            static cell::map& get() {
+                static cell::map info_;
+                return info_;
+            }
+            static cell& get(const char *category) {
+                return get()[category];
+            }
+
+            static unsigned& count(const char *category) {
+                return get(category).all;
+            }
+            static unsigned& errors(const char *category) {
+                return get(category).err;
+            }
+
+            static unsigned count() {
+                unsigned c = 0;
+                    for (auto& s : get()) c += s.second.all;
+                return c;
+            }
+            static unsigned errors() {
+                unsigned c = 0;
+                    for (auto& s : get()) c += s.second.err;
+                return c;
+            }
+        };
     };
 
 }}
@@ -66,8 +85,8 @@ namespace cxon { namespace test {
 #define TEST_END() TEST_END_()
 
 #define TEST_CHECK(conditon)\
-    do if (++suite::all(category), !(conditon)) {\
-        ++suite::err(category), std::fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__);\
+    do if (++suite::info::count(category), !(conditon)) {\
+        ++suite::info::errors(category), std::fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__);\
         CXON_ASSERT(false, "check failed");\
     }   while (0)
 

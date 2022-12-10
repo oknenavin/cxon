@@ -151,10 +151,10 @@ TEST_END()
 
 int main() {
     using cxon::test::suite;
-    for (auto& c : suite::get()) {
-        for (auto s : c.second)
+    for (auto& c : suite::info::get()) {
+        for (auto s : c.second.suites)
             s->test();
-        std::fprintf(stdout, "cxon/cbor%-12s: %u of %4u failed\n", c.first.c_str(), suite::err(c.first.c_str()), suite::all(c.first.c_str())); std::fflush(stdout);
+        std::fprintf(stdout, "cxon/cbor%-12s: %u of %4u failed\n", c.first.c_str(), suite::info::errors(c.first.c_str()), suite::info::count(c.first.c_str())); std::fflush(stdout);
     }
-    return suite::err();
+    return suite::info::errors();
 }
