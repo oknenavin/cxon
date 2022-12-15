@@ -48,7 +48,7 @@ int main() {
 }
 ```
 
-Once the data is loaded successfully it means, that it is syntactically and semantically correct - ready for use.  
+Once the data is loaded successfully it means, that it is syntactically and semantically correct.  
 In contrast, most of the `JSON`/`CBOR`/etc. libraries represent arbitrary data
 with a polymorphic type (called `DOM`, `value`, etc.) and parsing of the input only means,
 that it is syntactically correct.
@@ -69,7 +69,7 @@ assert( // check the values
     ...
 );
 // the input is semantically correct, however
-// the values still need special care
+// the values still need a special care
 int x0 = array[0].get_integer(); // it's an int, but not quite
 ...
 ```
@@ -79,16 +79,14 @@ To help with this, some of the libraries provide utilities to convert the value 
 
 For completeness, `CXON` also provides polymorphic types (called `node`) for the supported formats,
 which match the functionality provided by these libraries.  
-The **performance** is often important and is emphasized by many libraries like `Boost.JSON` and `RapidJSON` and
-in this respect, `CXON` is [close to the best](#performance). An important note here, is that many of
+The **performance** is often important and is emphasized by many libraries such as `Boost.JSON` and `RapidJSON`
+and in this respect, `CXON` is [close to the best](#performance). An important note here, is that many of
 the libraries emphasize the floating-point serialization and deserialization performance, utilizing very fast
 (and complex) algorithms. In contrast, by default, `CXON` uses [`<charconv>`][std-charconv]
-(with a fall back for `C++11`). [`<charconv>`][std-charconv] is fast, but especially the parsing can be
-significantly slower than with these algorithms - at least with the implementations currently in the wild.
-Another important note, is that the libraries based on polymorphic types have validation and use overhead
-that should be taken into account.  
+(with a fall back for `C++11`). Another important note, is that the libraries based on polymorphic types
+have validation and use overhead that should be taken into account.  
 The **memory management** is often important, especially in the embedded space, and `CXON` is well suited - 
-`CXON` does not allocate in general; it's up to the types provided. In the example above, the memory management
+`CXON` does not allocate in general, it's up to the types provided. In the example above, the memory management
 will be handled completely by `std::vector` and its allocator (whatever it is). In the same spirit, the
 polymorphic types provided by `CXON` are [AllocatorAware][cpp-alaw] compliant.  
 Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the serializers involved do not throw.
@@ -340,23 +338,23 @@ int main() {
 
 #include "cxon/json.hxx"
 
+#include "cxon/lib/std/map.hxx"
 #include "cxon/lib/std/string.hxx"
-#include "cxon/lib/std/vector.hxx"
 
 #include <cassert>
 
 // custom traits for given format
 struct custom_traits : cxon::json::format_traits {
-    // for example, UTF-8 validation can be disabled
-    static constexpr bool read_validate_string_utf8 = false;
+    // for example, enable unquoted keys
+    static constexpr bool unquote_quoted_keys = true;
 };
-using TRJS = cxon::JSON<custom_traits>; // TRusted JSon
+using UQK_JSON = cxon::JSON<custom_traits>;
 
 int main() {
-    {   // custom traits use
-        std::vector<std::string> cxx;
-            cxon::from_bytes<TRJS>(cxx, R"(["trusted", "strings"])");
-        assert(cxx == std::vector<std::string> ({"trusted", "strings"}));
+    {   // using of custom traits
+        std::map<std::string, std::string> cxx;
+            cxon::from_bytes<UQK_JSON>(cxx, R"({ key: "value" })");
+        assert(cxx == (std::map<std::string, std::string> { {"key", "value"} }));
     }
     {   // passing of a named parameter
         using namespace cxon::json;
@@ -373,7 +371,6 @@ int main() {
 // overriding of a default parser
 
 #include "cxon/json.hxx"
-
 #include <cassert>
 
 namespace cxon {
@@ -383,7 +380,7 @@ namespace cxon {
             template <typename II, typename Cx>
                 static bool value(double& t, II& i, II e, Cx& cx) {
                     // implement fast double parsing for example
-                    return true;
+                    return t = 42., true;
                 }
         };
 }
@@ -398,26 +395,25 @@ namespace cxon {
             template <typename II, typename Cx>
                 static bool value(float& t, II& i, II e, Cx& cx) {
                     // implement custom float parsing
-                    return true;
+                    return t = 42., true;
                 }
         };
 }
 
 int main() {
     double d = 0.0;
-        cxon::from_bytes(d, "42");
-    assert(d == 0.0);   // the override is used for double
+        cxon::from_bytes(d, "0");
+    assert(d == 42.);   // the override is used for double
     int i = 0;
         cxon::from_bytes(i, "42");
     assert(i == 42);    // the other types are intact
     float f = 0.0;
-        cxon::from_bytes<CUSTOM_JSON>(f, "42");
-    assert(f == 0.0);   // the override is used for CUSTOM_JSON
+        cxon::from_bytes<CUSTOM_JSON>(f, "0");
+    assert(f == 42.);   // the override is used for CUSTOM_JSON
     unsigned u = 0;
         cxon::from_bytes<CUSTOM_JSON>(i, "42");
     assert(i == 42);    // the other types are as in JSON<>
-}
-```
+}```
 
 
 *Somewhat more meaningful example can be found here [`JSON-RPC`](src/cxon/README.md#example-json-rpc).*
@@ -445,15 +441,9 @@ which can represent arbitrary `CBOR` data.
 #### Performance
 
 - `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  The difference is noticeable with number-heavy data (like `canada.json` or `numbers.json`).
   ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
 
-- `CXON` deserialization using [`fast_float`][ff] for floating-point conversion.  
-  With the bottleneck removed, `CXON` is close *(see \<average\>)*.
-  ![read/native (fast_float)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.fast_float.json.native-read.svg)
-
 - `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  `CXON` is somewhat slower, but not by much.
   ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
 
 - `CXON` binary size and compilation times.  
@@ -464,7 +454,7 @@ Information about the benchmarks and additional benchmark results can be found [
 
 *Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
 it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.  
-It is important to note, that no specific attempts has been made to optimize `CXON` for time or space - 
+It is important to note, that no specific attempts have been made to optimize `CXON` for time or space - 
 there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 
 --------------------------------------------------------------------------------

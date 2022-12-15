@@ -231,7 +231,7 @@ namespace cxon {
 }
 ```
 
-and this is the first non-intrusive way to extend `CXON` for a type - implementing it 
+and this is the first non-intrusive way to extend `CXON` for a type - to implement it 
 in namespace `cxon`.
 
 The _implementation bridge_ however, bridges three additional methods of extension:
@@ -344,7 +344,7 @@ defined like this:
 namespace cxon {
 
     template <typename Traits>
-        struct format_selector : Traits { using traits = Traits; };
+        struct format_selector : Traits {};
 
     ...
 
@@ -410,9 +410,12 @@ namespace cxon { namespace json { // format traits
         // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (as they are invalid JavaScript) while writing
         static constexpr bool write_strict_js = false;
 
-        // allow unquoted object keys for types serialized without quotes (e.g. strings will still be quoted, but numbers will be not)
-        // if set, this JSON {1: 2} is now valid
+        // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
+        // if false, this JSON {1: 2} will now be valid
         static constexpr bool quote_unquoted_keys = true;
+        // object keys for types serialized with quotes will be unquoted (e.g. strings)
+        // if true, this JSON {key: 1} will now be valid
+        static constexpr bool unquote_quoted_keys = false;
     };
 
 }}
@@ -421,23 +424,45 @@ namespace cxon { namespace json { // format traits
 ###### Example
 
 ``` c++
+// support for unquoted keys
 #include "cxon/json.hxx"
-#include "cxon/lib/std/map.hxx"
+#include "cxon/lib/std/map.hxx" // <map>
 #include <string>
 #include <cassert>
 
 struct unquoted_keys_traits : cxon::json::format_traits {
     static constexpr bool quote_unquoted_keys = false;
 };
-using UQK = cxon::JSON<unquoted_keys_traits>;
+using UK = cxon::JSON<unquoted_keys_traits>;
 
 int main() {
     std::map<int, int> map;
-        cxon::from_bytes<UQK>(map, R"({1: 2, 3: 4})");
+        cxon::from_bytes<UK>(map, R"({1: 2, 3: 4})");
     assert(map == (std::map<int, int> {{1, 2}, {3, 4}}));
     std::string str;
-        cxon::to_bytes<UQK>(str, map);
+        cxon::to_bytes<UK>(str, map);
     assert(str == R"({1:2,3:4})");
+}
+```
+``` c++
+// support for unquoted string keys
+#include "cxon/json.hxx"
+#include "cxon/lib/std/map.hxx" // <map>
+#include "cxon/lib/std/string.hxx" // <string>
+#include <cassert>
+
+struct unquoted_string_keys_traits : cxon::json::format_traits {
+    static constexpr bool unquote_quoted_keys = true;
+};
+using UQK = cxon::JSON<unquoted_string_keys_traits>;
+
+int main() {
+    std::map<std::string, int> map;
+        cxon::from_bytes<UQK>(map, R"({one: 1, two: 2})");
+    assert(map == (std::map<std::string, int> { {"one", 1}, {"two", 2}}));
+    std::string str;
+        cxon::to_bytes<UQK>(str, map);
+    assert(str == R"({one:1,two:2})");
 }
 ```
 
@@ -616,8 +641,8 @@ namespace jsonrpc {
 
             template <typename X, typename O, typename Cx, typename Y = X>
                 auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<Y, cxon::JSON> {
-                    return  cxon::cio::write_key<Y>(o, key, cx) &&
-                            cxon::write_value<Y>(o, value, cx)
+                    return  cxon::cio::write_map_key<Y>(o, key, cx) &&
+                            cxon::cio::write_map_val<Y>(o, value, cx)
                     ;
                 }
         };
