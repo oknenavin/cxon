@@ -5,11 +5,11 @@
 
 #### `CXON`
 
-All tests are located in `cxon/test`. A group of tests for given `Traits` 
+The tests are located in `cxon/test`. A group of tests for given `Traits` 
 can be defined like this:
 
 ``` c++
-TEST_BEG(Traits)
+TEST_BEG(<name>, <traits>, <category>)
     ...
 TEST_END()
 ```
@@ -17,28 +17,26 @@ TEST_END()
 For trivial cases, `R_TEST` and `W_TEST` macros can be used:
 
 ``` c++
-TEST_BEG(cxon::JSON<>)
-    // test bool type
+TEST_BEG(a_test, cxon::JSON<>, "/core")
     R_TEST(true, "true");                               // R_TEST(expected-value, string)
     R_TEST(false, "t", read_error::boolean_invalid, 0); // ... + expected-error[, expected-error-offset]
-    W_TEST("true", true);                               // W_TEST(string, input-value)
-    W_TEST("true", false);                              // ... + expected-error
+    W_TEST("true", true);                               // W_TEST(string, input-value[, expected-error])
 TEST_END()
 ```
 
-for more complex cases, free code can be used, provided that:
-- `suite::all()` is incremented for each new test
-- `suite::err()` is incremented for each failed test
+For more complex cases, free code can be used, provided that:
+- `suite::info::count("<category>")` is incremented for each new test
+- `suite::info::errors("<category>")` is incremented for each failed test
 - in case of failure, error message + an `assert` shall be used to point out failure's location
 
 example:
 
 ``` c++
-TEST_BEG(cxon::JSON<>)
-    ++suite::all();
+TEST_BEG(a_test, cxon::JSON<>, "/a-category")
+    ++suite::info::count(category);
     int r; char const i[] = "1";
     if (!cxon::from_bytes(r, std::begin(i), std::end(i)) || r != 1) {
-        ++suite::err(), std::fflush(stderr, "\tat %s:%li\n", __FILE__, (long)__LINE__);
+        ++suite::info::errors(category);
         CXON_ASSERT(false, "check failed");
     }
 TEST_END()
