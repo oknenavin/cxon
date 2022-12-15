@@ -47,6 +47,9 @@ namespace cxon { namespace cio { // format traits
                 static constexpr char const*    neg     = "false";
 #           endif
         };
+
+        static constexpr bool quote_unquoted_keys       = false; // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
+        static constexpr bool unquote_quoted_keys       = false; // object keys for types serialized with quotes will be unquoted (e.g. strings)
     };
 
 }}
@@ -55,48 +58,77 @@ namespace cxon { namespace cio { // key quoting helpers
 
     namespace key {
         template <typename T, typename E = void>    struct is_quoted;
-        template <typename T>                       struct traits : T {};
+        template <typename T>                       struct unquoted_traits  : T {};
+        template <typename T>                       struct   quoted_traits  : T {};
     }
     template <typename X>
-        using is_key_context = has_traits<key::traits<X>, X>;
+        using is_unquoted_key_context = has_traits<key::unquoted_traits<X>, X>;
     template <typename X>
-        using key_context = typename std::conditional<is_key_context<X>::value, X, rebind_traits_t<X, key::traits>>::type;
+        using unquoted_key_context = typename std::conditional<is_unquoted_key_context<X>::value, X, bind_traits_t<X, key::unquoted_traits>>::type;
+    template <typename X>
+        using is_quoted_key_context = has_traits<key::quoted_traits<X>, X>;
+    template <typename X>
+        using quoted_key_context = typename std::conditional<is_quoted_key_context<X>::value, X, bind_traits_t<X, key::quoted_traits>>::type;
 
     namespace str {
 
+        template <typename X>
+            inline auto delim_en_check(char c) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+                CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
+                    return c == X::string::del;
+                }
+                return chr::is<X>::space(c) || c == ':';
+            }
+        template <typename X>
+            inline auto delim_en_check(char c) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
+                return c == X::string::del;
+            }
+
         template <typename X, typename II>
-            inline auto delim_be_read(II& i, II e) -> enable_if_t<!is_key_context<X>::value, bool> {
-                return peek(i, e) == X::string::del && (++i, true);
+            inline auto delim_be_read(II& i, II e) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+                CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
+                    return peek(i, e) == X::string::del && (++i, true);
+                }
+                return true;
             }
         template <typename X, typename II>
-            inline auto delim_be_read(II& i, II e) -> enable_if_t< is_key_context<X>::value, bool> {
+            inline auto delim_be_read(II& i, II e) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
                 return peek(i, e) == '\\' && next(i, e) == X::string::del && (++i, true);
             }
 
         template <typename X, typename II>
-            inline auto delim_en_read(II& i, II e) -> enable_if_t<!is_key_context<X>::value, bool> {
-                return peek(i, e) == X::string::del && (++i, true);
+            inline auto delim_en_read(II& i, II e) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+                CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
+                    return peek(i, e) == X::string::del && (++i, true);
+                }
+                return true;
             }
         template <typename X, typename II>
-            inline auto delim_en_read(II& i, II e) -> enable_if_t< is_key_context<X>::value, bool> {
+            inline auto delim_en_read(II& i, II e) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
                 return peek(i, e) == '\\' && next(i, e) == X::string::del && (++i, true);
             }
 
         template <typename X, typename O>
-            inline auto delim_be_write(O& o) -> enable_if_t<!is_key_context<X>::value, bool> {
-                return poke(o, X::string::del);
+            inline auto delim_be_write(O& o) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+                CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
+                    return poke(o, X::string::del);
+                }
+                return true;
             }
         template <typename X, typename O>
-            inline auto delim_be_write(O& o) -> enable_if_t< is_key_context<X>::value, bool> {
+            inline auto delim_be_write(O& o) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
                 return poke(o, '\\') && poke(o, X::string::del);
             }
 
         template <typename X, typename O>
-            inline auto delim_en_write(O& o) -> enable_if_t<!is_key_context<X>::value, bool> {
-                return poke(o, X::string::del);
+            inline auto delim_en_write(O& o) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+                CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
+                    return poke(o, X::string::del);
+                }
+                return true;
             }
         template <typename X, typename O>
-            inline auto delim_en_write(O& o) -> enable_if_t< is_key_context<X>::value, bool> {
+            inline auto delim_en_write(O& o) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
                 return poke(o, '\\') && poke(o, X::string::del);
             }
 

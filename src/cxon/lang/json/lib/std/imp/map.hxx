@@ -17,9 +17,9 @@ namespace cxon { namespace json { namespace imp {
                     typename M::key_type    k = alc::create_using_allocator_of<typename M::key_type>(t);
                     typename M::mapped_type v = alc::create_using_allocator_of<typename M::mapped_type>(t);
                     typename M::value_type *p;
-                    return  cio::read_key<X>(k, i, e, cx) &&
+                    return  cio::read_map_key<X>(k, i, e, cx) &&
                             (p = &cnt::emplace(t, std::move(k), std::move(v)), true) &&
-                            read_value<X>(p->second, i, e, cx)
+                            cio::read_map_val<X>(p->second, i, e, cx)
                     ;
                 }
         };
@@ -28,8 +28,8 @@ namespace cxon { namespace json { namespace imp {
         struct map_element_writer_ {
             template <typename O, typename Cx>
                 static bool write(O& o, const typename M::value_type& e, Cx& cx) {
-                    return  cio::write_key<X>(o, e.first, cx) &&
-                            write_value<X>(o, e.second, cx)
+                    return  cio::write_map_key<X>(o, e.first, cx) &&
+                            cio::write_map_val<X>(o, e.second, cx)
                     ;
                 }
         };

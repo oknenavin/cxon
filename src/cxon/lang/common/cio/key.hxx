@@ -13,12 +13,18 @@
 namespace cxon { namespace cio { // key read/write helpers: <key>:
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx);
+        inline bool read_map_key(T& t, II& i, II e, Cx& cx);
 
     template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx);
+        inline bool write_map_key(O& o, const T& t, Cx& cx);
     template <typename X, typename T, typename O, typename Cx>
-        inline auto write_key(O& o, const T* t, std::size_t s, Cx& cx) -> enable_if_t<is_char<T>::value, bool>;
+        inline auto write_map_key(O& o, const T* t, std::size_t s, Cx& cx) -> enable_if_t<is_char<T>::value, bool>;
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_map_val(T& t, II& i, II e, Cx& cx);
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool write_map_val(O& o, const T& t, Cx& cx);
 
 }}
 
@@ -43,20 +49,33 @@ namespace cxon { namespace cio { namespace key { // key read/write extension poi
 namespace cxon { namespace cio {
 
     template <typename X, typename T, typename II, typename Cx>
-        inline bool read_key(T& t, II& i, II e, Cx& cx) {
+        inline bool read_map_key(T& t, II& i, II e, Cx& cx) {
             return key::read<X, T>::key(t, i, e, cx) && consume<X>(X::map::div, i, e, cx);
         }
 
     template <typename X, typename T, typename O, typename Cx>
-        inline bool write_key(O& o, const T& t, Cx& cx) {
+        inline bool write_map_key(O& o, const T& t, Cx& cx) {
             return key::write<X, T>::key(o, t, cx) && poke<X>(o, X::map::div, cx);
         }
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto write_key(O& o, const T* t, std::size_t s, Cx& cx)
+        inline auto write_map_key(O& o, const T* t, std::size_t s, Cx& cx)
             -> enable_if_t<is_char<T>::value, bool>
         {
-            return str::pointer_write<X>(o, t, s, cx) && poke<X>(o, X::map::div, cx);
+            using Y = typename std::conditional<X::unquote_quoted_keys, quoted_key_context<X>, X>::type;
+            return str::pointer_write<Y>(o, t, s, cx) && poke<Y>(o, Y::map::div, cx);
+        }
+
+    template <typename X, typename T, typename II, typename Cx>
+        inline bool read_map_val(T& t, II& i, II e, Cx& cx) {
+            using Y = unbind_traits_t<X, key::quoted_traits>;
+            return read_value<Y>(t, i, e, cx);
+        }
+
+    template <typename X, typename T, typename O, typename Cx>
+        inline bool write_map_val(O& o, const T& t, Cx& cx) {
+            using Y = unbind_traits_t<X, key::quoted_traits>;
+            return write_value<Y>(o, t, cx);
         }
 
 }}
@@ -85,7 +104,7 @@ namespace cxon { namespace cio { namespace key {
 
     namespace imp {
         template <typename X, typename T>
-            struct needs_quotes : bool_constant<!is_key_context<X>::value && !is_quoted<T>::value && !X::unquoted_keys> {};
+            struct needs_quotes : bool_constant<!is_unquoted_key_context<X>::value && !is_quoted<T>::value && X::quote_unquoted_keys && !X::unquote_quoted_keys> {};
     }
 
     namespace imp {
@@ -93,13 +112,14 @@ namespace cxon { namespace cio { namespace key {
         template <typename X, typename T, typename II, typename Cx>
             inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t< needs_quotes<X, T>::value, bool> {
                 return  consume<X>(str::delim_be_read<X, II>, i, e, cx) &&
-                            read_value<key_context<X>>(t, i, e, cx) &&
+                            read_value<unquoted_key_context<X>>(t, i, e, cx) &&
                         consume<X>(str::delim_en_read<X, II>, i, e, cx)
                 ;
             }
         template <typename X, typename T, typename II, typename Cx>
             inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!needs_quotes<X, T>::value, bool> {
-                return  read_value<X>(t, i, e, cx);
+                using Y = typename std::conditional<X::unquote_quoted_keys, quoted_key_context<X>, X>::type;
+                return  read_value<Y>(t, i, e, cx);
             }
 
     }
@@ -121,13 +141,14 @@ namespace cxon { namespace cio { namespace key {
         template <typename X, typename T, typename O, typename Cx>
             inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t< needs_quotes<X, T>::value, bool> {
                 return  poke<X>(o, str::delim_be_write<X, O>, cx) &&
-                            write_value<key_context<X>>(o, t, cx) &&
+                            write_value<unquoted_key_context<X>>(o, t, cx) &&
                         poke<X>(o, str::delim_en_write<X, O>, cx)
                 ;
             }
         template <typename X, typename T, typename O, typename Cx>
             inline auto write_key_(O& o, const T& t, Cx& cx) -> enable_if_t<!needs_quotes<X, T>::value, bool> {
-                return  write_value<X>(o, t, cx);
+                using Y = typename std::conditional<X::unquote_quoted_keys, quoted_key_context<X>, X>::type;
+                return  write_value<Y>(o, t, cx);
             }
 
     }

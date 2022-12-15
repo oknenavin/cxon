@@ -345,20 +345,20 @@ namespace cxon { namespace value {
 
             // exception specification
                 using dynamic_types = typename N::dynamic_types_;
-                using has_dynamic_tpyes             = type_sequence_disjunction<N::template is_dynamic_type_, dynamic_types>;
+                using has_dynamic_types             = type_sequence_disjunction<N::template is_dynamic_type_, dynamic_types>;
 
                 template <typename T, typename ...A>
                     using is_nothrow_constructible  = bool_constant<!is_dynamic_type<T>::value && std::is_nothrow_constructible<T, A&&...>::value>;
 
                 using is_nothrow_move_constructible = bool_constant<type_sequence_conjunction<std::is_nothrow_move_constructible, dynamic_types>::value>;
                 using is_nothrow_move_assignable    = bool_constant<
-                    !has_dynamic_tpyes::value &&
+                    !has_dynamic_types::value &&
                     type_sequence_conjunction<std::is_nothrow_move_constructible, dynamic_types>::value &&
                     type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value
                 >;
 
-                using is_nothrow_copy_constructible = bool_constant<!has_dynamic_tpyes::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;
-                using is_nothrow_copy_assignable    = bool_constant<!has_dynamic_tpyes::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;
+                using is_nothrow_copy_constructible = bool_constant<!has_dynamic_types::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;
+                using is_nothrow_copy_assignable    = bool_constant<!has_dynamic_types::value && type_sequence_conjunction<std::is_nothrow_copy_constructible, dynamic_types>::value>;
         };
 
     // value access

@@ -84,21 +84,21 @@ namespace cxon { namespace cio { namespace cls {
             inline auto read_field_(S& s, const F& f, II& i, II e, Cx& cx)
                 -> enable_if_t<!val::is_sink<typename F::type>::value, bool>
             {
-                return read_value<X>(field_value_(s, f), i, e, cx);
+                return  read_map_val<X>(field_value_(s, f), i, e, cx);
             }
         template <typename X, typename S, typename F, typename II, typename Cx>
             inline auto read_field_(S&, const F& f, II& i, II e, Cx& cx)
                 -> enable_if_t< val::is_sink<typename F::type>::value, bool>
             {
-                return val::sink_read<X>(f.value, i, e, cx);
+                return  val::sink_read<X>(f.value, i, e, cx);
             }
 
         template <typename X, typename O, typename S, typename F, typename Cx>
             inline auto write_field_(O& o, const S& s, const F& f, Cx& cx)
                 -> enable_if_t<!val::is_sink<typename F::type>::value, bool>
             {
-                return  write_key<X>(o, f.name, f.nale, cx) &&
-                        write_value<X>(o, field_value_(s, f), cx)
+                return  write_map_key<X>(o, f.name, f.nale, cx) &&
+                        write_map_val<X>(o, field_value_(s, f), cx)
                 ;
             }
         template <typename X, typename O, typename S, typename F, typename Cx>
@@ -162,7 +162,7 @@ namespace cxon { namespace cio { namespace cls {
             for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
                 consume<X>(i, e);
                 II const o = i;
-                    if (!read_key<X>(id, i, e, cx))
+                    if (!read_map_key<X>(id, i, e, cx))
                         return false;
                     if (!imp::read_field_<X>(s, id, fs, st, i, e, cx))
                         return cx && (rewind(i, o), cx/X::read_error::unexpected);

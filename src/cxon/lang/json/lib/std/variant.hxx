@@ -20,13 +20,13 @@ namespace cxon {
                 template <std::size_t M>
                     static bool variant_read_(V& t, II& i, II e, Cx& cx) {
                         auto u = V {std::in_place_index_t<M>()};
-                        return read_value<X>(std::get<M>(u), i, e, cx) && (t = std::move(u), true);
+                        return cio::read_map_val<X>(std::get<M>(u), i, e, cx) && (t = std::move(u), true);
                     }
                 static constexpr rp_ read_[S_] = { &variant_read_<N>... };
 
                 static bool index_(std::size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return  (cio::read_key<X>(n, i, e, cx) && n < S_) ||
+                    return  (cio::read_map_key<X>(n, i, e, cx) && n < S_) ||
                             (cio::rewind(i, o), cx/json::read_error::unexpected)
                     ;
                 }
@@ -76,8 +76,8 @@ namespace cxon {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::variant<T...>& t, Cx& cx) {
                     return  cio::poke<Y>(o, Y::map::beg, cx) &&
-                                cio::write_key<Y>(o, t.index(), cx) &&
-                                std::visit([&](auto&& v) { return write_value<Y>(o, v, cx); }, t) &&
+                                cio::write_map_key<Y>(o, t.index(), cx) &&
+                                std::visit([&](auto&& v) { return cio::write_map_val<Y>(o, v, cx); }, t) &&
                             cio::poke<Y>(o, Y::map::end, cx)
                     ;
                 }

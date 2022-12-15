@@ -399,7 +399,7 @@ TEST_BEG(special_numbers, cxon::JSON<>, "/core") // special numbers
         W_TEST(QS("nan"), inf<long double>() + -inf<long double>());
 TEST_END()
 
-TEST_BEG(special_numbers_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core") // special numbers
+TEST_BEG(special_numbers_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<>>, "/core") // special numbers
     using namespace test;
     R_TEST(0.0, "0");
     R_TEST(0.0, "0.0");
@@ -422,7 +422,7 @@ TEST_BEG(special_numbers_input_iterator, cxon::JSON<cxon::test::input_iterator_t
 TEST_END()
 
 
-TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits>, "/core") // json number validation
+TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits<>>, "/core") // json number validation
     // floating point
         R_TEST((double)0, "0");
         R_TEST((double)-0., "-0");
@@ -661,7 +661,7 @@ TEST_BEG(json_escapes, cxon::JSON<>, "/core") // json
         W_TEST(QS("\\\\"), "\134");
 TEST_END()
 
-TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core") // json
+TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<>>, "/core") // json
     // char
         R_TEST('\0', QS("\\u0000"));
         W_TEST(QS("\\u0000"), '\0');

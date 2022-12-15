@@ -63,7 +63,8 @@ namespace test { namespace kind {
             int id;
         };
 
-    using cxon::test::UQK_JSON;
+    using UK_JSON = cxon::JSON<cxon::test::unquoted_keys_traits<>>;
+    using UQK_JSON = cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>;
 
     int self() {
         int a_ = 0;
@@ -746,17 +747,17 @@ namespace test { namespace kind {
                         {-std::numeric_limits<node::real>::infinity(), 17U}
                     };
                     node n;
-                        cxon::from_bytes<UQK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
+                        cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
                     CHECK(n == out);
                     std::string s;
-                        cxon::to_bytes<UQK_JSON>(s, n);
+                        cxon::to_bytes<UK_JSON>(s, n);
                     CHECK(s == R"({{1:2}:3,[4]:5,"6":7,"-inf":17,12:13,"inf":16,-8:9,10:11,true:14,null:15})");
                 }
                 // probably not a good idea to use NaNs as keys
                 {   char const in[] = R"({"nan": 18})";
                     node const out  = { {std::numeric_limits<node::real>::quiet_NaN(), 18U} };
                     node n;
-                        cxon::from_bytes<UQK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
+                        cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
                     CHECK(
                         n.is<node::object>() && n.get<node::object>().size() == 1 &&
                         (n.get<node::object>().begin()->first.is<node::real>() && std::isnan(n.get<node::object>().begin()->first.get<node::real>())) &&
@@ -765,17 +766,17 @@ namespace test { namespace kind {
                 }
             }
             {   node n;
-                    auto const r = cxon::from_bytes<UQK_JSON, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::extract_nans::set<true>());
+                    auto const r = cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::extract_nans::set<true>());
                 CHECK(!r && r.ec == cxon::json::read_error::unexpected);
             }
             {   node n;
-                    auto const r = cxon::from_bytes<UQK_JSON>(n, "{x: 0}");
+                    auto const r = cxon::from_bytes<UK_JSON>(n, "{x: 0}");
                 CHECK(!r && r.ec == cxon::node::error::invalid);
             }
             {
                 node const n = node::object {{node::object {{1, 2}}, 3}, {node::array {4}, 5}, {"6", 7}, {8, 9}, {true, 10}, {nullptr, 11}};
                 std::string s;
-                    cxon::to_bytes<UQK_JSON>(s, n);
+                    cxon::to_bytes<UK_JSON>(s, n);
                 CHECK(s == R"({{1:2}:3,[4]:5,"6":7,8:9,true:10,null:11})");
             }
         }
@@ -996,6 +997,62 @@ namespace test { namespace kind {
                 (pair*)&s, al, std::piecewise_construct, std::forward_as_tuple("42"), std::forward_as_tuple(3U, 'x')
             );
             CHECK(al.id == p->first.get_allocator().id && al.id == p->second.get_allocator().id && p->first == "42" && p->second == "xxx");
+        }
+        {   // unquote quoted keys
+            using node = cxon::json::node;
+            {   std::string const s0 = R"({a:"b",c:"d"})";
+                node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                CHECK(s1 == s0);
+            }
+            {   std::string const s0 = R"({a:{b"c:{d\ e:"f"}},g\:h:"i"})";
+                node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                CHECK(s1 == s0);
+            }
+            {   std::string const s0 = R"({{a:{b:"c"}}:"d"})";
+                node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                CHECK(s1 == s0);
+            }
+            {   std::string const s0 = R"({["a",{b:"c"}]:"d"})";
+                node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                CHECK(s1 == s0);
+            }
+            {   std::string const s0 = R"({1:2})";
+                node n;         cxon::from_bytes<UQK_JSON>(n, s0); CHECK(n.is<node::object>() && n.get<node::object>()["1"].is<node::uint>());
+                std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                CHECK(s1 == s0);
+            }
+            // cbor::node
+            {   using node = cxon::cbor::node;
+                {   std::string const s0 = R"({a:"b",c:"d"})";
+                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({a:{b"c:{d\ e:"f"}},g\:h:"i"})";
+                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({{a:{b:"c"}}:"d"})";
+                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({["a",{b:"c"}]:"d"})";
+                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({1:2})";
+                    node n;         cxon::from_bytes<UQK_JSON>(n, s0); CHECK(n.is<node::map>() && n.get<node::map>()["1"].is<node::uint>());
+                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
         }
 #       undef CHECK
 

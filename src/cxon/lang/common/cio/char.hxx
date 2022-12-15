@@ -104,16 +104,22 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X, typename II>
             inline char32_t esc_to_utf32_(II& i, II e) {
                 switch (peek(i, e)) {
-                    case '\"': return ++i, U'\"';
-                    case '\\': return ++i, U'\\';
-                    case '/' : return ++i, U'/';
-                    case 'b' : return ++i, U'\b';
-                    case 'f' : return ++i, U'\f';
-                    case 'n' : return ++i, U'\n';
-                    case 'r' : return ++i, U'\r';
-                    case 't' : return ++i, U'\t';
-                    case 'u' : return u_to_<X>::dec(i, e);
-                    default  : return bad_utf32;
+                    case '\"':  return ++i, U'\"';
+                    case '\\':  return ++i, U'\\';
+                    case '/' :  return ++i, U'/';
+                    case 'b' :  return ++i, U'\b';
+                    case 'f' :  return ++i, U'\f';
+                    case 'n' :  return ++i, U'\n';
+                    case 'r' :  return ++i, U'\r';
+                    case 't' :  return ++i, U'\t';
+                    case 'u' :  return u_to_<X>::dec(i, e);
+                    case ' ' :  CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                return ++i, U' ';
+                        CXON_FALLTHROUGH;
+                    case ':' :  CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                return ++i, U':';
+                        CXON_FALLTHROUGH;
+                    default  :  return bad_utf32;
                 }
             }
 
@@ -423,11 +429,20 @@ namespace cxon { namespace cio { namespace chr {
                             case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
                                         return poke<X>(o, esc_[(unsigned char)c], len_[(unsigned char)c], cx);
                             case '"':
-                                CXON_IF_CONSTEXPR (is_key_context<X>::value)
+                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
                                         return poke<X>(o, "\\u0022", 6, cx);
-                                else
-                                        return poke<X>(o, "\\\"", 2, cx);
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                        return poke<X>(o, '"', cx);
+                                else    return poke<X>(o, "\\\"", 2, cx);
                             case '\\':  return poke<X>(o, "\\\\", 2, cx);
+                            case ' ' :
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                        return poke<X>(o, "\\ ", 2, cx);
+                                CXON_FALLTHROUGH;
+                            case ':' :
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                        return poke<X>(o, "\\:", 2, cx);
+                                CXON_FALLTHROUGH;
                             default:    return poke<X>(o, c, cx);
                         }
                     }
@@ -457,17 +472,32 @@ namespace cxon { namespace cio { namespace chr {
                         return a == f || poke<X>(o, a, f, cx);
                     }
                 static bool should_escape_(char c) noexcept {
-                    static constexpr char se_[] = {
-                        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                        0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    };
-                    return se_[(unsigned char)c] == '\1';
+                    CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
+                        static constexpr char se_[] = {
+                            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                            0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                        };
+                        return se_[(unsigned char)c] == '\1';
+                    }
+                    else {
+                        static constexpr char se_[] = {
+                            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                            1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                        };
+                        return se_[(unsigned char)c] == '\1';
+                    }
                 }
             };
 

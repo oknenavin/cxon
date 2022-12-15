@@ -5,7 +5,7 @@
 
 #include "test.hxx"
 
-#include <string>
+#include "cxon/lib/std/string.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -366,7 +366,7 @@ TEST_BEG(utf8_check, cxon::JSON<>, "/core")
         R_TEST("", "\"\xF5", json::read_error::character_invalid, 1);
 TEST_END()
 
-TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core")
+TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<>>, "/core")
     // 1
         // U+0000..U+007F 00..7F
         R_TEST("\x7F", "\"\x7F\"");
@@ -540,7 +540,7 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
 TEST_END()
 
 
-struct input_iterator_no_read_validate_string_utf8_traits : cxon::test::input_iterator_traits {
+struct input_iterator_no_read_validate_string_utf8_traits : cxon::test::input_iterator_traits<> {
     static constexpr bool read_validate_string_utf8 = false;
     //static constexpr bool read_validate_string_ctrl = false;
 };
@@ -684,7 +684,7 @@ TEST_BEG(enum, cxon::JSON<>, "/core")
     }
 TEST_END()
 
-TEST_BEG(enum_input_iterator, cxon::JSON<cxon::test::input_iterator_traits>, "/core")
+TEST_BEG(enum_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<>>, "/core")
     R_TEST(Enum1::one, QS("one"));
     W_TEST(QS("one"), Enum1::one);
     R_TEST(Enum1::two, QS("Two (2)"));
@@ -1409,4 +1409,34 @@ TEST_BEG(struct_14, cxon::JSON<>, "/core") // errors
             auto r = cxon::to_bytes<XXON>(c, Struct14 {});
         TEST_CHECK(r);
     }
+TEST_END()
+
+
+namespace {
+    struct Struct15 {
+        std::string a, b, c, d;
+        bool operator ==(const Struct15& t) const { return a == t.a && b == t.b && c == t.c && d == t.d; }
+    };
+}
+CXON_JSON_CLS(Struct15,
+    CXON_JSON_CLS_FIELD_ASIS(a),
+    CXON_JSON_CLS_FIELD_NAME("b\"b", b),
+    CXON_JSON_CLS_FIELD_NAME("c c", c),
+    CXON_JSON_CLS_FIELD_NAME("d:d", d)
+)
+
+TEST_BEG(struct_15, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})");
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b\"b:"2",c\ c:"3",d\:d:"4"})");
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c c:"3",d\:d:"4"})", json::read_error::unexpected, 17);
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d:d:"4"})", json::read_error::unexpected, 24);
+    W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
+TEST_END()
+
+TEST_BEG(struct_15_input_iterator, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::input_iterator_traits<>>>, "/core")
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})");
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b\"b:"2",c\ c:"3",d\:d:"4"})");
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c c:"3",d\:d:"4"})", json::read_error::unexpected, 17);
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d:d:"4"})", json::read_error::unexpected, 26);
+    W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
 TEST_END()

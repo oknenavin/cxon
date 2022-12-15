@@ -319,7 +319,7 @@ int main() {
 
 struct unquoted_keys_traits : cxon::json::format_traits {
     // allow arbitrary keys without quotes
-    static constexpr bool unquoted_keys = true;
+    static constexpr bool quote_unquoted_keys = false;
 };
 using UQK = cxon::JSON<unquoted_keys_traits>;
 

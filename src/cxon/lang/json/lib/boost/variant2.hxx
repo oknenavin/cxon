@@ -19,7 +19,7 @@ namespace cxon {
                 template <std::size_t M>
                     static bool variant_read_(V& t, II& i, II e, Cx& cx) {
                         auto u = V {::boost::variant2::in_place_index_t<M>()};
-                        return read_value<X>(::boost::variant2::get<M>(u), i, e, cx) && (t = std::move(u), true);
+                        return cio::read_map_val<X>(::boost::variant2::get<M>(u), i, e, cx) && (t = std::move(u), true);
                     }
                 static bool variant_read_(V& t, std::size_t n, II& i, II e, Cx& cx) {
                     using rvp_ = bool (*)(V&, II&, II, Cx&);
@@ -29,7 +29,7 @@ namespace cxon {
 
                 static bool index_(std::size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return  (cio::read_key<X>(n, i, e, cx) && n < S_) ||
+                    return  (cio::read_map_key<X>(n, i, e, cx) && n < S_) ||
                             (cio::rewind(i, o), cx/json::read_error::unexpected)
                     ;
                 }
@@ -52,7 +52,7 @@ namespace cxon {
 
                 template <std::size_t M>
                     static bool variant_write_(O& o, const V& t, Cx& cx) {
-                        return write_value<X>(o, ::boost::variant2::get<M>(t), cx);
+                        return cio::write_map_val<X>(o, ::boost::variant2::get<M>(t), cx);
                     }
                 static bool variant_write_(O& o, const V& t, std::size_t n, Cx& cx) {
                     using wvp_ = bool (*)(O&, const V&, Cx&);
@@ -61,7 +61,7 @@ namespace cxon {
                 }
 
                 static bool variant(O& o, const V& t, Cx& cx) {
-                    return cio::write_key<X>(o, t.index(), cx) && variant_write_(o, t, t.index(), cx);
+                    return cio::write_map_key<X>(o, t.index(), cx) && variant_write_(o, t, t.index(), cx);
                 }
             };
 
