@@ -27,6 +27,7 @@
 #include "cxon/lib/boost/variant2.hxx"
 #include "cxon/lib/boost/variant.hxx"
 
+#include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/map.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,7 +184,7 @@ TEST_BEG(map, cxon::JSON<>, "/boost")
         W_TEST(R"({"1":2,"1":3})", multimap<int, int>{{1, 2}, {1, 3}});
 TEST_END()
 
-TEST_BEG(map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+TEST_BEG(map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/boost")
     using namespace boost::container;
     // std::map
         R_TEST(map<int, string>{{1, "2"}, {3, "4"}}, R"({1: "2", 3: "4"})");
@@ -221,7 +222,7 @@ TEST_BEG(flat_map, cxon::JSON<>, "/boost")
         W_TEST(R"({"1":2,"1":3})", flat_multimap<int, int>{{1, 2}, {1, 3}});
 TEST_END()
 
-TEST_BEG(flat_map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+TEST_BEG(flat_map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/boost")
     using namespace boost::container;
     // std::map
         R_TEST(flat_map<int, string>{{1, "2"}, {3, "4"}}, R"({1: "2", 3: "4"})");
@@ -368,7 +369,7 @@ TEST_END()
             }
     TEST_END()
 
-    TEST_BEG(variant2_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+    TEST_BEG(variant2_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/boost")
         using namespace boost::variant2;
         // boost::variant2::variant
             R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({0:1})");
@@ -484,7 +485,7 @@ TEST_BEG(variant, cxon::JSON<>, "/boost")
         }
 TEST_END()
 
-TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/boost")
+TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/boost")
     using namespace boost;
     boost::variant<int, boost::variant<int, double>> x;
     // boost::variant
@@ -530,4 +531,30 @@ TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/
                 auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
+TEST_END()
+
+
+TEST_BEG(unquote_quoted_keys, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/std")
+    using namespace std;
+    // boost::variant2
+#   ifdef CXON_HAS_BOOST_VARIANT2
+    {   using variant = boost::variant2::variant<string, int>;
+        using xmap = map<variant, string>;
+        R_TEST(xmap {{variant("1"), "2"}}, R"({{0:"1"}:"2"})");
+        W_TEST(R"({{0:"1"}:"2"})", xmap {{variant("1"), "2"}});
+    }
+#   endif
+    // boost::variant
+    // error: alc::create_using_allocator_of matches irrelevant constructor
+    //{   using variant = boost::variant<string, int>;
+    //    using xmap = map<variant, string>;
+    //    R_TEST(xmap {{variant("1"), "2"}}, R"({{0:"1"}:"2"})");
+    //    W_TEST(R"({{0:"1"}:"2"})", xmap {{variant("1"), "2"}});
+    //}
+    // boost::dynamic_bitset
+    {   using bitset = boost::dynamic_bitset<unsigned char>;
+        using xmap = map<bitset, bitset>;
+        R_TEST(xmap {{bitset(8, 85), bitset(8, 170)}}, R"({01010101:"10101010"})");
+        W_TEST(R"({01010101:"10101010"})", xmap {{bitset(8, 85), bitset(8, 170)}});
+    }
 TEST_END()

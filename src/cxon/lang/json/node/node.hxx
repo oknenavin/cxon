@@ -107,6 +107,17 @@ namespace cxon { namespace json { // node
                 using boolean_  = dt_<boolean>;
                 using null_     = dt_<null>;
 
+                template <typename T>
+                    using dt_dbg_   = typename std::conditional<is_dynamic_type_<T>::value, T*, char>::type;
+                using object_dbg_   = dt_dbg_<object>;
+                using array_dbg_    = dt_dbg_<array>;
+                using string_dbg_   = dt_dbg_<string>;
+                using real_dbg_     = dt_dbg_<real>;
+                using sint_dbg_     = dt_dbg_<sint>;
+                using uint_dbg_     = dt_dbg_<uint>;
+                using boolean_dbg_  = dt_dbg_<boolean>;
+                using null_dbg_     = dt_dbg_<null>;
+
                 using value_type_ = typename aligned_union<object_, array_, string_, real_, sint_, uint_, boolean_, null_>::type;
 
                 value_type_     value_;

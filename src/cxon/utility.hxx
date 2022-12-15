@@ -58,13 +58,18 @@ namespace cxon {
     // format traits
 
     template <typename T, template <typename> class U>
-        struct rebind_traits;
+        struct bind_traits;
     template <template <typename> class T, typename V, template <typename> class U>
-        struct rebind_traits<T<V>, U> {
-            using type = T<U<V>>;
-        };
+        struct bind_traits<T<V>, U>       { using type = T<U<V>>; };
     template <typename T, template <typename> class U>
-        using rebind_traits_t = typename rebind_traits<T, U>::type;
+        using bind_traits_t = typename bind_traits<T, U>::type;
+
+    template <typename T, template <typename> class U>
+        struct unbind_traits                { using type = T; };
+    template <template <typename> class T, template <typename> class U, typename V>
+        struct unbind_traits<T<U<V>>, U>    { using type = T<V>; };
+    template <typename T, template <typename> class U>
+        using unbind_traits_t = typename unbind_traits<T, U>::type;
 
     template <typename T, typename X>
         struct has_traits : std::integral_constant<bool, std::is_same<T, X>::value> {};

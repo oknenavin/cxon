@@ -213,16 +213,16 @@ namespace cxon { namespace json {
                             lvl += tab;
                                 CXON_JSON_NODE_CHECK((
                                     cio::poke(out, "{\n") && cio::poke(out, lvl, pad) &&
-                                    cio::write_key<X>(out, i->first, cx), cio::poke(out, ' ') &&
-                                        write_value<X>(o, i->second, cx)
+                                        cio::write_map_key<X>(out, i->first, cx), cio::poke(out, ' ') &&
+                                        cio::write_map_val<X>(o, i->second, cx)
                                 ));
                                 if (j.size() > 1) {
                                     auto const e = std::end(j);
                                     while (++i != e) {
                                         CXON_JSON_NODE_CHECK((
                                             cio::poke(out, ",\n") && cio::poke(out, lvl, pad) &&
-                                            cio::write_key<X>(out, i->first, cx), cio::poke(out, ' ') &&
-                                                write_value<X>(o, i->second, cx)
+                                                cio::write_map_key<X>(out, i->first, cx), cio::poke(out, ' ') &&
+                                                cio::write_map_val<X>(o, i->second, cx)
                                         ));
                                     }
                                 }

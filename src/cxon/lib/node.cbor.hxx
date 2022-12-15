@@ -70,26 +70,26 @@ namespace cxon {
                 static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
                     bio::byte const b = bio::peek(i, e);
                     switch (b & X::mjr) {
-#                       define CXON_READ(T)             read_value<Y>(t.template imbue<typename cbor::basic_node<Tr>::T>(), i, e, cx)
-                            case X::pint            :                           return CXON_READ(uint);
-                            case X::nint            :                           return CXON_READ(sint);
-                            case X::bstr            :                           return CXON_READ(bytes);
-                            case X::tstr            :                           return CXON_READ(text);
-                            case X::arr             : { CXON_NODE_RG();         return CXON_READ(array); }
-                            case X::map             : { CXON_NODE_RG();         return CXON_READ(map); }
-                            case X::tag             :                           return CXON_READ(tag);
+#                       define CXON_IMBUE(T) t.template imbue<typename cbor::basic_node<Tr>::T>()
+                            case X::pint            :                           return read_value<Y>(CXON_IMBUE(uint),      i, e, cx);
+                            case X::nint            :                           return read_value<Y>(CXON_IMBUE(sint),      i, e, cx);
+                            case X::bstr            :                           return read_value<Y>(CXON_IMBUE(bytes),     i, e, cx);
+                            case X::tstr            :                           return read_value<Y>(CXON_IMBUE(text),      i, e, cx);
+                            case X::arr             : { CXON_NODE_RG();         return read_value<Y>(CXON_IMBUE(array),     i, e, cx); }
+                            case X::map             : { CXON_NODE_RG();         return read_value<Y>(CXON_IMBUE(map),       i, e, cx); }
+                            case X::tag             : { CXON_NODE_RG();         return read_value<Y>(CXON_IMBUE(tag),       i, e, cx); }
                             case X::svn:
                                 switch (b) {
                                     case X::neg: case X::pos
-                                                    :                           return CXON_READ(boolean);
-                                    case X::nil     :                           return CXON_READ(null);
-                                    case X::und     :                           return CXON_READ(undefined);
+                                                    :                           return read_value<Y>(CXON_IMBUE(boolean),   i, e, cx);
+                                    case X::nil     :                           return read_value<Y>(CXON_IMBUE(null),      i, e, cx);
+                                    case X::und     :                           return read_value<Y>(CXON_IMBUE(undefined), i, e, cx);
                                     case X::fp16: case X::fp32: case X::fp64
-                                                    :                           return CXON_READ(real);
+                                                    :                           return read_value<Y>(CXON_IMBUE(real),      i, e, cx);
                                     case X::brk     :                           return cx/node::error::invalid;
-                                    default         :                           return CXON_READ(simple);
+                                    default         :                           return read_value<Y>(CXON_IMBUE(simple),    i, e, cx);
                                 }
-#                       undef CXON_READ
+#                       undef CXON_IMBUE
                     }
                     return false; // LCOV_EXCL_LINE
                 }
@@ -101,20 +101,20 @@ namespace cxon {
                 static bool value(O& o, const cbor::basic_node<Tr>& t, Cx& cx) {
                     using cbor::node_kind;
                     switch (t.kind()) {
-#                       define CXON_WRITE(T) write_value<Y>(o, t.template get<typename cbor::basic_node<Tr>::T>(), cx)
-                            case node_kind::map         : { CXON_NODE_RG();     return CXON_WRITE(map);   }
-                            case node_kind::array       : { CXON_NODE_RG();     return CXON_WRITE(array); }
-                            case node_kind::tag         : { CXON_NODE_RG();     return CXON_WRITE(tag);   }
-                            case node_kind::bytes       :                       return CXON_WRITE(bytes);
-                            case node_kind::text        :                       return CXON_WRITE(text);
-                            case node_kind::real        :                       return CXON_WRITE(real);
-                            case node_kind::sint        :                       return CXON_WRITE(sint);
-                            case node_kind::uint        :                       return CXON_WRITE(uint);
-                            case node_kind::simple      :                       return CXON_WRITE(simple);
-                            case node_kind::boolean     :                       return CXON_WRITE(boolean);
-                            case node_kind::null        :                       return CXON_WRITE(null);
-                            case node_kind::undefined   :                       return CXON_WRITE(undefined);
-#                       undef CXON_WRITE
+#                       define CXON_GET(T) t.template get<typename cbor::basic_node<Tr>::T>()
+                            case node_kind::map         : { CXON_NODE_RG();     return write_value<Y>(o, CXON_GET(map),         cx); }
+                            case node_kind::array       : { CXON_NODE_RG();     return write_value<Y>(o, CXON_GET(array),       cx); }
+                            case node_kind::tag         : { CXON_NODE_RG();     return write_value<Y>(o, CXON_GET(tag),         cx); }
+                            case node_kind::bytes       :                       return write_value<Y>(o, CXON_GET(bytes),       cx);
+                            case node_kind::text        :                       return write_value<Y>(o, CXON_GET(text),        cx);
+                            case node_kind::real        :                       return write_value<Y>(o, CXON_GET(real),        cx);
+                            case node_kind::sint        :                       return write_value<Y>(o, CXON_GET(sint),        cx);
+                            case node_kind::uint        :                       return write_value<Y>(o, CXON_GET(uint),        cx);
+                            case node_kind::simple      :                       return write_value<Y>(o, CXON_GET(simple),      cx);
+                            case node_kind::boolean     :                       return write_value<Y>(o, CXON_GET(boolean),     cx);
+                            case node_kind::null        :                       return write_value<Y>(o, CXON_GET(null),        cx);
+                            case node_kind::undefined   :                       return write_value<Y>(o, CXON_GET(undefined),   cx);
+#                       undef CXON_GET
                     }
                     return false; // LCOV_EXCL_LINE
                 }
@@ -210,36 +210,30 @@ namespace cxon {
                     static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
                         bio::byte const b = bio::peek(i, e);
                         switch (b & X::mjr) {
-#                           define CXON_READ(T) read_value<Y>(t.template imbue<typename json::basic_node<Tr>::T>(), i, e, cx)
-                                case X::pint            :                       return CXON_READ(uint);
-                                case X::nint            :                       return CXON_READ(sint);
-                                case X::bstr            :                       return CXON_READ(array);
-                                case X::tstr            :                       return CXON_READ(string);
-                                case X::arr             : { CXON_NODE_RG();     return CXON_READ(array); }
-                                case X::map             : { CXON_NODE_RG();     return CXON_READ(object); }
+#                           define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
+                                case X::pint            :                       return read_value<Y>(CXON_IMBUE(uint),          i, e, cx);
+                                case X::nint            :                       return read_value<Y>(CXON_IMBUE(sint),          i, e, cx);
+                                case X::bstr            :                       return read_value<Y>(CXON_IMBUE(array),         i, e, cx);
+                                case X::tstr            :                       return read_value<Y>(CXON_IMBUE(string),        i, e, cx);
+                                case X::arr             : { CXON_NODE_RG();     return read_value<Y>(CXON_IMBUE(array),         i, e, cx); }
+                                case X::map             : { CXON_NODE_RG();     return read_value<Y>(CXON_IMBUE(object),        i, e, cx); }
                                 case X::tag             :                       return cbor::tag::read<Y>(i, e, cx) && value(t, i, e, cx);
                                 case X::svn:
                                     switch (b) {
                                         case X::neg: case X::pos
-                                                        :                       return CXON_READ(boolean);
-                                        case X::nil     :                       return CXON_READ(null);
+                                                        :                       return read_value<Y>(CXON_IMBUE(boolean),       i, e, cx);
+                                        case X::nil     :                       return read_value<Y>(CXON_IMBUE(null),          i, e, cx);
                                         case X::und     : {
-                                            cbor::undefined u;
-                                                                                return  (read_value<Y>(u, i, e, cx)) &&
-                                                                                        (t.template imbue<typename json::basic_node<Tr>::null>(), true)
-                                                                                ;
+                                            cbor::undefined u;                  return read_value<Y>(u, i, e, cx) && (CXON_IMBUE(null), true);
                                         }
                                         case X::fp16: case X::fp32: case X::fp64
-                                                        :                       return CXON_READ(real);
+                                                        :                       return read_value<Y>(CXON_IMBUE(real),          i, e, cx);
                                         case X::brk     :                       return cx/node::error::invalid;
                                         default         : {
-                                            typename cbor::node::simple s;
-                                                                                return  (read_value<Y>(s, i, e, cx)) &&
-                                                                                        (t.template imbue<typename json::basic_node<Tr>::uint>() = s, true)
-                                                                                ;
+                                            typename cbor::node::simple s;      return read_value<Y>(s, i, e, cx) && (CXON_IMBUE(uint) = s, true);
                                         }
                                     }
-#                           undef CXON_READ
+#                           undef CXON_IMBUE
                         }
                         return false; // LCOV_EXCL_LINE
                     }
@@ -251,16 +245,16 @@ namespace cxon {
                     static bool value(O& o, const json::basic_node<Tr>& t, Cx& cx) {
                         using json::node_kind;
                         switch (t.kind()) {
-#                           define CXON_WRITE(T) write_value<Y>(o, t.template get<typename json::basic_node<Tr>::T>(), cx)
-                                case node_kind::object  : { CXON_NODE_RG();     return CXON_WRITE(object); }
-                                case node_kind::array   : { CXON_NODE_RG();     return CXON_WRITE(array);  }
-                                case node_kind::string  :                       return CXON_WRITE(string);
-                                case node_kind::real    :                       return CXON_WRITE(real);
-                                case node_kind::sint    :                       return CXON_WRITE(sint);
-                                case node_kind::uint    :                       return CXON_WRITE(uint);
-                                case node_kind::boolean :                       return CXON_WRITE(boolean);
-                                case node_kind::null    :                       return CXON_WRITE(null);
-#                           undef CXON_WRITE
+#                           define CXON_GET(T) t.template get<typename json::basic_node<Tr>::T>()
+                                case node_kind::object  : { CXON_NODE_RG();     return write_value<Y>(o, CXON_GET(object),  cx); }
+                                case node_kind::array   : { CXON_NODE_RG();     return write_value<Y>(o, CXON_GET(array),   cx); }
+                                case node_kind::string  :                       return write_value<Y>(o, CXON_GET(string),  cx);
+                                case node_kind::real    :                       return write_value<Y>(o, CXON_GET(real),    cx);
+                                case node_kind::sint    :                       return write_value<Y>(o, CXON_GET(sint),    cx);
+                                case node_kind::uint    :                       return write_value<Y>(o, CXON_GET(uint),    cx);
+                                case node_kind::boolean :                       return write_value<Y>(o, CXON_GET(boolean), cx);
+                                case node_kind::null    :                       return write_value<Y>(o, CXON_GET(null),    cx);
+#                           undef CXON_GET
                         }
                         return false; // LCOV_EXCL_LINE
                     }

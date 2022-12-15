@@ -84,7 +84,7 @@ CXON_JSON_CLS_READ(test::fixture,
 namespace test { namespace kind { // test-vector
 
     struct unquoted_keys_traits : cxon::json::format_traits {
-        static constexpr bool unquoted_keys = true;
+        static constexpr bool quote_unquoted_keys = false;
     };
     using UQK_JSON = cxon::JSON<unquoted_keys_traits>;
 

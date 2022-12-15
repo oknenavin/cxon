@@ -42,16 +42,10 @@ namespace cxon { namespace test {
                 static cell::map info_;
                 return info_;
             }
-            static cell& get(const char *category) {
-                return get()[category];
-            }
 
-            static unsigned& count(const char *category) {
-                return get(category).all;
-            }
-            static unsigned& errors(const char *category) {
-                return get(category).err;
-            }
+            static cell& get(const char *category)          { return get()[category]; }
+            static unsigned& count(const char *category)    { return get(category).all; }
+            static unsigned& errors(const char *category)   { return get(category).err; }
 
             static unsigned count() {
                 unsigned c = 0;

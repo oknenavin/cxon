@@ -24,6 +24,11 @@ namespace cxon { namespace json { namespace imp {
 
     template <typename X, std::size_t N, typename O, typename Cx>
         inline bool write_bits_(O& o, const std::bitset<N>& t, Cx& cx) {
+            //char bs[N];
+            //    for (std::size_t i = 0; i != N; ++i) {
+            //        bs[i] = t[N - i - 1] ? '1' : '0';
+            //    }
+            //return cio::poke<X>(o, bs, N, cx);
             for (std::size_t p = N; p != 0; ) {
                 if (!cio::poke<X>(o, t[--p] ? '1' : '0', cx)) return false;
             }

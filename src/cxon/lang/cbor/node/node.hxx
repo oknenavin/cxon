@@ -133,6 +133,21 @@ namespace cxon { namespace cbor { // node
                 using null_         = dt_<null>;
                 using undefined_    = dt_<undefined>;
 
+                template <typename T>
+                    using dt_dbg_       = typename std::conditional<is_dynamic_type_<T>::value, T*, char>::type;
+                using map_dbg_          = dt_dbg_<map>;
+                using array_dbg_        = dt_dbg_<array>;
+                using tag_dbg_          = dt_dbg_<tag>;
+                using bytes_dbg_        = dt_dbg_<bytes>;
+                using text_dbg_         = dt_dbg_<text>;
+                using real_dbg_         = dt_dbg_<real>;
+                using sint_dbg_         = dt_dbg_<sint>;
+                using uint_dbg_         = dt_dbg_<uint>;
+                using simple_dbg_       = dt_dbg_<simple>;
+                using boolean_dbg_      = dt_dbg_<boolean>;
+                using null_dbg_         = dt_dbg_<null>;
+                using undefined_dbg_    = dt_dbg_<undefined>;
+
                 using value_type_ = typename aligned_union<map_, array_, tag_, bytes_, text_, real_, sint_, uint_, simple_, boolean_, null_, undefined_>::type;
 
                 value_type_     value_;

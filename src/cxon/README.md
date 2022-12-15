@@ -412,7 +412,7 @@ namespace cxon { namespace json { // format traits
 
         // allow unquoted object keys for types serialized without quotes (e.g. strings will still be quoted, but numbers will be not)
         // if set, this JSON {1: 2} is now valid
-        static constexpr bool unquoted_keys = false;
+        static constexpr bool quote_unquoted_keys = true;
     };
 
 }}
@@ -427,7 +427,7 @@ namespace cxon { namespace json { // format traits
 #include <cassert>
 
 struct unquoted_keys_traits : cxon::json::format_traits {
-    static constexpr bool unquoted_keys = true;
+    static constexpr bool quote_unquoted_keys = false;
 };
 using UQK = cxon::JSON<unquoted_keys_traits>;
 

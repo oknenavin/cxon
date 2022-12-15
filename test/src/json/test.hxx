@@ -11,14 +11,20 @@
 
 namespace cxon { namespace test {
 
-    struct input_iterator_traits : json::format_traits {
-        static constexpr bool force_input_iterator = true;
-    };
+    template <typename T = json::format_traits>
+        struct input_iterator_traits : T {
+            static constexpr bool force_input_iterator = true;
+        };
 
-    struct unquoted_keys_traits : json::format_traits {
-        static constexpr bool unquoted_keys = true;
-    };
-    using UQK_JSON = JSON<unquoted_keys_traits>;
+    template <typename T = json::format_traits>
+        struct unquoted_keys_traits : T {
+            static constexpr bool quote_unquoted_keys = false;
+        };
+
+    template <typename T = cxon::json::format_traits>
+        struct unquoted_quoted_keys_traits : T {
+            static constexpr bool unquote_quoted_keys = true;
+        };
 
 }}
 

@@ -14,29 +14,29 @@ namespace cxon { namespace ordered {
 
     template <typename K, typename V, typename Al = std::allocator<void>>
         struct keval {
-            K key;
-            V value;
+            K first;
+            V second;
 
             keval()
-            :   key(),
-                value()
+            :   first(),
+                second()
             {}
             keval(const Al& al)
-            :   key(alc::create_using_allocator<K>(al)),
-                value(alc::create_using_allocator<V>(al))
+            :   first(alc::create_using_allocator<K>(al)),
+                second(alc::create_using_allocator<V>(al))
             {}
             keval(K&& k, V&& v)
-            :   key(std::forward<K>(k)),
-                value(std::forward<V>(v))
+            :   first(std::forward<K>(k)),
+                second(std::forward<V>(v))
             {}
             keval(const K& k, const V& v)
-            :   key(k),
-                value(v)
+            :   first(k),
+                second(v)
             {}
 
-            bool operator ==(const keval& t) const noexcept { return key == t.key && value == t.value; }
-            bool operator !=(const keval& t) const noexcept { return key != t.key || value != t.value; }
-            bool operator  <(const keval& t) const noexcept { return key  < t.key || (key == t.key && value < t.value); }
+            bool operator ==(const keval& t) const noexcept { return first == t.first && second == t.second; }
+            bool operator !=(const keval& t) const noexcept { return first != t.first || second != t.second; }
+            bool operator  <(const keval& t) const noexcept { return first  < t.first || (first == t.first && second < t.second); }
         };
 
     template <typename K, typename V, typename Al = std::allocator<void>>
@@ -79,7 +79,7 @@ namespace cxon { // hash
     template <typename K, typename V, typename Al>
         struct hash<ordered::keval<K, V, Al>> {
             std::size_t operator ()(const ordered::keval<K, V, Al>& t) const noexcept {
-                return make_hash(t.key, t.value);
+                return make_hash(t.first, t.second);
             }
         };
 
@@ -93,8 +93,8 @@ namespace cxon { // hash
             struct read<JSON<X>, ordered::keval<K, V, Al>> {
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(ordered::keval<K, V, Al>& t, II& i, II e, Cx& cx) {
-                        return  cio::read_key<Y>(t.key, i, e, cx) &&
-                                read_value<Y>(t.value, i, e, cx)
+                        return  cio::read_map_key<Y>(t.first, i, e, cx) &&
+                                cio::read_map_val<Y>(t.second, i, e, cx)
                         ;
                     }
             };
@@ -102,8 +102,8 @@ namespace cxon { // hash
             struct write<JSON<X>, ordered::keval<K, V, Al>> {
                 template <typename O, typename Cx, typename Y = JSON<X>>
                     static bool value(O& o, const ordered::keval<K, V, Al>& t, Cx& cx) {
-                        return  cio::write_key<Y>(o, t.key, cx) &&
-                                write_value<Y>(o, t.value, cx)
+                        return  cio::write_map_key<Y>(o, t.first, cx) &&
+                                cio::write_map_val<Y>(o, t.second, cx)
                         ;
                     }
             };
@@ -135,8 +135,8 @@ namespace cxon { // hash
             struct read<CBOR<X>, ordered::keval<K, V, Al>> {
                 template <typename II, typename Cx, typename Y = CBOR<X>>
                     static bool value(ordered::keval<K, V, Al>& t, II& i, II e, Cx& cx) {
-                        return  read_value<Y>(t.key, i, e, cx) &&
-                                read_value<Y>(t.value, i, e, cx)
+                        return  read_value<Y>(t.first, i, e, cx) &&
+                                read_value<Y>(t.second, i, e, cx)
                         ;
                     }
             };
@@ -144,8 +144,8 @@ namespace cxon { // hash
             struct write<CBOR<X>, ordered::keval<K, V, Al>> {
                 template <typename O, typename Cx, typename Y = CBOR<X>>
                     static bool value(O& o, const ordered::keval<K, V, Al>& t, Cx& cx) {
-                        return  write_value<Y>(o, t.key, cx) &&
-                                write_value<Y>(o, t.value, cx)
+                        return  write_value<Y>(o, t.first, cx) &&
+                                write_value<Y>(o, t.second, cx)
                         ;
                     }
             };

@@ -327,7 +327,7 @@ namespace cxon { namespace cio { namespace num { // write
                     return poke<X>(o, s, r.ptr, cx);
                 }
                 else {
-                    CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
+                    CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
                         if (!poke<X>(o, X::string::del, cx))                    return false;
                     }
                     if (std::isinf(t)) {
@@ -337,7 +337,7 @@ namespace cxon { namespace cio { namespace num { // write
                         CXON_ASSERT(std::isnan(t), "unexpected");
                         if (!poke<X>(o, "nan", cx))                             return false;
                     }
-                    CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
+                    CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
                         if (!poke<X>(o, X::string::del, cx))                    return false;
                     }
                     return true;

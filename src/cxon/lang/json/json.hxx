@@ -20,12 +20,13 @@ namespace cxon { namespace json { // format traits
         using read_error = json::read_error;
         using write_error = json::write_error;
 
-        static constexpr bool read_validate_string_utf8 = true; // validate input strings (utf-8)
-        static constexpr bool read_validate_string_ctrl = true; // validate input strings (unescaped control characters)
+        static constexpr bool read_validate_string_utf8 = true;     // validate input strings (utf-8)
+        static constexpr bool read_validate_string_ctrl = true;     // validate input strings (unescaped control characters)
 
-        static constexpr bool write_strict_js = false;          // escape, U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
+        static constexpr bool write_strict_js           = false;    // escape, U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are invalid JavaScript
 
-        static constexpr bool unquoted_keys = false;            // allow unquoted object keys for types serialized without quotes (e.g. strings will still be quoted, but numbers will not)
+        static constexpr bool quote_unquoted_keys       = true;     // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
+        static constexpr bool unquote_quoted_keys       = false;    // object keys for types serialized with quotes will be unquoted (e.g. strings)
     };
 
 }}

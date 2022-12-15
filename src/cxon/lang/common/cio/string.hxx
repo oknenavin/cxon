@@ -78,7 +78,7 @@ namespace cxon { namespace cio { namespace str {
                 while (i != e) {
                     if (*i == '\\') {
                         II const o = i; ++i;
-                        CXON_IF_CONSTEXPR (is_key_context<X>::value) {
+                        CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
                             if (i != e && *i == X::string::del)
                                 return ++i, true;
                         }
@@ -88,8 +88,8 @@ namespace cxon { namespace cio { namespace str {
                             return rewind(i, o), cx/X::read_error::overflow;
                     }
                     else {
-                        CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
-                            if (*i == X::string::del)       return ++i, true;
+                        CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
+                            if (delim_en_check<X>(*i))      return delim_en_read<X>(i, e);
                         }
                         CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
                             if (chr::is<X>::ctrl(*i))       return cx/X::read_error::unexpected;
@@ -108,7 +108,7 @@ namespace cxon { namespace cio { namespace str {
                         if (*i == '\\') {
                             if (l != i && !cnt::append(c, l, i))
                                 return rewind(i, l), cx/X::read_error::overflow;
-                            CXON_IF_CONSTEXPR (is_key_context<X>::value) {
+                            CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
                                 II const f = i;
                                     if (++i != e && *i == X::string::del)
                                         return ++i, true;
@@ -122,10 +122,10 @@ namespace cxon { namespace cio { namespace str {
                             l = i, --i;
                         }
                         else {
-                            CXON_IF_CONSTEXPR (!is_key_context<X>::value) {
-                                if (*i == X::string::del) {
+                            CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
+                                if (delim_en_check<X>(*i)) {
                                     if (l == i || cnt::append(c, l, i))
-                                        return ++i, true;
+                                        return delim_en_read<X>(i, e);
                                     return rewind(i, l), cx/X::read_error::overflow;
                                 }
                             }

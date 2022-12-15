@@ -512,7 +512,7 @@ TEST_BEG(unordered_map, cxon::JSON<>, "/std")
         W_TEST(R"({"1":1,"1":1})", unordered_multimap<int, int>{{1, 1}, {1, 1}});
 TEST_END()
 
-TEST_BEG(unordered_map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
+TEST_BEG(unordered_map_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/std")
     using namespace std;
     // std::unordered_map
         R_TEST(unordered_map<int, string>{{1, "2"}}, R"({1: "2"})");
@@ -737,7 +737,7 @@ TEST_END()
             }
     TEST_END()
 
-    TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
+    TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/std")
         using namespace std;
         // std::variant
             R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({0:1})");
@@ -1027,7 +1027,7 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
     }
 TEST_END()
 
-TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
+TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/std")
     using namespace std;
 
     R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
@@ -1076,20 +1076,36 @@ TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
         W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}});
     }
     {   using xmap = map<map<string, int>, int>;
-        R_TEST(xmap{{{{"\tone", 2}}, 3}, {{{"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{"\"one\"", 2}}, 3}, {{{"four", 5}}, 6}});
+        R_TEST(xmap{ {{{"x\ty\"z", 1}}, 3} }, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{"x\ty\"z", 1}}, 3}});
     }
     {   using xmap = map<map<wstring, int>, int>;
-        R_TEST(xmap{{{{L"\tone", 2}}, 3}, {{{L"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{L"\"one\"", 2}}, 3}, {{{L"four", 5}}, 6}});
+        R_TEST(xmap{{{{L"x\ty\"z", 1}}, 3}}, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{L"x\ty\"z", 1}}, 3}});
     }
     {   using xmap = map<map<u16string, int>, int>;
-        R_TEST(xmap{{{{u"\tone", 2}}, 3}, {{{u"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{u"\"one\"", 2}}, 3}, {{{u"four", 5}}, 6}});
+        R_TEST(xmap{{{{u"x\ty\"z", 1}}, 3}}, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{u"x\ty\"z", 1}}, 3}});
     }
     {   using xmap = map<map<u32string, int>, int>;
-        R_TEST(xmap{{{{U"\tone", 2}}, 3}, {{{U"\nfour", 5}}, 6}}, R"({{"\tone":2}:3,{"\nfour":5}:6})");
-        W_TEST(R"({{"\"one\"":2}:3,{"four":5}:6})", xmap{{{{U"\"one\"", 2}}, 3}, {{{U"four", 5}}, 6}});
+        R_TEST(xmap{{{{U"x\ty\"z", 1}}, 3}}, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{U"x\ty\"z", 1}}, 3}});
+    }
+    {   using xmap = map<map<map<string, int>, int>, int>;
+        R_TEST(xmap{{{{{{"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<wstring, int>, int>, int>;
+        R_TEST(xmap{{{{{{L"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{L"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u16string, int>, int>, int>;
+        R_TEST(xmap{{{{{{u"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{u"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u32string, int>, int>, int>;
+        R_TEST(xmap{{{{{{U"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{U"x\ty\"z", 1}}, 3}}, 5}});
     }
     // inf/nan
     {
@@ -1127,5 +1143,553 @@ TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits>, "/std")
     {   using xmap = map<key_struct, int>;
         R_TEST(xmap{{{1, 2}, 3}, {{4, 5}, 6}}, R"({{"x":1,"y":2}:3,{"x":4,"y":5}:6})");
         W_TEST(R"({{"x":1,"y":2}:3,{"x":4,"y":5}:6})", xmap{{{1, 2}, 3}, {{4, 5}, 6}});
+    }
+TEST_END()
+
+TEST_BEG(unquoted_keys_input_iterator_keys, cxon::JSON<cxon::test::unquoted_keys_traits<cxon::test::input_iterator_traits<>>>, "/std")
+    using namespace std;
+
+    R_TEST(map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<string, int>{{"1", 2}, {"3", 4}});
+    R_TEST(map<wstring, int>{{L"1", 2}, {L"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<wstring, int>{{L"1", 2}, {L"3", 4}});
+    R_TEST(map<u16string, int>{{u"1", 2}, {u"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<u16string, int>{{u"1", 2}, {u"3", 4}});
+    R_TEST(map<u32string, int>{{U"1", 2}, {U"3", 4}}, R"({"1": 2, "3": 4})");
+    W_TEST(R"({"1":2,"3":4})", map<u32string, int>{{U"1", 2}, {U"3", 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char, int>{{'1', 2}, {'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<wchar_t, int>{{L'1', 2}, {L'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char16_t, int>{{u'1', 2}, {u'3', 4}});
+    W_TEST(R"({"1":2,"3":4})", map<char32_t, int>{{U'1', 2}, {U'3', 4}});
+    W_TEST(R"({1:2,3:4})", map<signed char, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned char, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<short, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned short, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<int, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<long long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<unsigned long long, int>{{1, 2}, {3, 4}});
+    W_TEST(R"({1:2,3:4})", map<float, int>{{1.f, 2}, {3.f, 4}});
+    W_TEST(R"({1:2,3:4})", map<double, int>{{1., 2}, {3., 4}});
+    W_TEST(R"({1:2,3:4})", map<long double, int>{{1., 2}, {3., 4}});
+    {   struct less { constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; } };
+        W_TEST(R"({null:0})", map<nullptr_t, int, less>{{nullptr, 0}});
+    }
+    // escape quotes
+    {   using xmap = map<map<char, int>, int>;
+        R_TEST(xmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{'1', 2}}, 3}, {{{'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<wchar_t, int>, int>;
+        R_TEST(xmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{L'1', 2}}, 3}, {{{L'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<char16_t, int>, int>;
+        R_TEST(xmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{u'1', 2}}, 3}, {{{u'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<char32_t, int>, int>;
+        R_TEST(xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}}, R"({{"1":2}:3,{"4":5}:6})");
+        W_TEST(R"({{"1":2}:3,{"4":5}:6})", xmap{{{{U'1', 2}}, 3}, {{{U'4', 5}}, 6}});
+    }
+    {   using xmap = map<map<string, int>, int>;
+        R_TEST(xmap{ {{{"x\ty\"z", 1}}, 3} }, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{"x\ty\"z", 1}}, 3}});
+    }
+    {   using xmap = map<map<wstring, int>, int>;
+        R_TEST(xmap{{{{L"x\ty\"z", 1}}, 3}}, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{L"x\ty\"z", 1}}, 3}});
+    }
+    {   using xmap = map<map<u16string, int>, int>;
+        R_TEST(xmap{{{{u"x\ty\"z", 1}}, 3}}, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{u"x\ty\"z", 1}}, 3}});
+    }
+    {   using xmap = map<map<u32string, int>, int>;
+        R_TEST(xmap{{{{U"x\ty\"z", 1}}, 3}}, R"({{"x\ty\"z":1}:3})");
+        W_TEST(R"({{"x\ty\"z":1}:3})", xmap{{{{U"x\ty\"z", 1}}, 3}});
+    }
+    {   using xmap = map<map<map<string, int>, int>, int>;
+        R_TEST(xmap{{{{{{"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<wstring, int>, int>, int>;
+        R_TEST(xmap{{{{{{L"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{L"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u16string, int>, int>, int>;
+        R_TEST(xmap{{{{{{u"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{u"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u32string, int>, int>, int>;
+        R_TEST(xmap{{{{{{U"x\ty\"z", 1}}, 3}}, 5}}, R"({{{"x\ty\"z":1}:3}:5})");
+        W_TEST(R"({{{"x\ty\"z":1}:3}:5})", xmap{{{{{{U"x\ty\"z", 1}}, 3}}, 5}});
+    }
+    // inf/nan
+    {
+        constexpr auto ninf = -std::numeric_limits<double>::infinity();
+        constexpr auto pinf =  std::numeric_limits<double>::infinity();
+        //constexpr auto qnan =  std::numeric_limits<double>::quiet_NaN();
+        {   using xmap = map<double, int>;
+            R_TEST(xmap{{ninf, 1}, {pinf, 2}}, R"({"-inf":1,"inf":2})");
+            W_TEST(R"({"-inf":1,"inf":2})", xmap{{ninf, 1}, {pinf, 2}});
+        }
+        {   using xmap = map<map<double, int>, int>;
+            R_TEST(xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}}, R"({{"-inf":1}:2,{"inf":3}:4})");
+            W_TEST(R"({{"-inf":1}:2,{"inf":3}:4})", xmap{{{{ninf, 1}}, 2}, {{{pinf, 3}}, 4}});
+        }
+    }
+    // std::bitset
+    {   using xmap = map<bitset<8>, int>;
+        R_TEST(xmap{{bitset<8>(0), 1}, {bitset<8>(255), 2}}, R"({"00000000":1,"11111111":2})");
+        W_TEST(R"({"00000000":1,"11111111":2})", xmap{{bitset<8>(0), 1}, {bitset<8>(255), 2}});
+    }
+    {   using xmap = map<map<bitset<8>, int>, int>;
+        R_TEST(xmap{{{{bitset<8>(0), 1}}, 2}, {{{bitset<8>(255), 3}}, 4}}, R"({{"00000000":1}:2,{"11111111":3}:4})");
+        W_TEST(R"({{"00000000":1}:2,{"11111111":3}:4})", xmap{{{{bitset<8>(0), 1}}, 2}, {{{bitset<8>(255), 3}}, 4}});
+    }
+    // enum
+    {   using xmap = map<keys_enum, int>;
+        R_TEST(xmap{{keys_enum::E1, 1}, {keys_enum::E2, 2}}, R"({"E1":1,"E2":2})");
+        W_TEST(R"({"E1":1,"E2":2})", xmap{{keys_enum::E1, 1}, {keys_enum::E2, 2}});
+    }
+    {   using xmap = map<map<keys_enum, int>, int>;
+        R_TEST(xmap{{{{keys_enum::E1, 1}}, 2}, {{{keys_enum::E2, 3}}, 4}}, R"({{"E1":1}:2,{"E2":3}:4})");
+        W_TEST(R"({{"E1":1}:2,{"E2":3}:4})", xmap{{{{keys_enum::E1, 1}}, 2}, {{{keys_enum::E2, 3}}, 4}});
+    }
+    // struct
+    {   using xmap = map<key_struct, int>;
+        R_TEST(xmap{{{1, 2}, 3}, {{4, 5}, 6}}, R"({{"x":1,"y":2}:3,{"x":4,"y":5}:6})");
+        W_TEST(R"({{"x":1,"y":2}:3,{"x":4,"y":5}:6})", xmap{{{1, 2}, 3}, {{4, 5}, 6}});
+    }
+TEST_END()
+
+
+namespace {
+    struct struct_1 {
+        std::string a;
+        bool operator ==(const struct_1& t) const { return a == t.a; }
+        bool operator  <(const struct_1& t) const { return a  < t.a; }
+    };
+    enum class enum_1 { aaa, bbb, ccc, ddd };
+}
+CXON_JSON_CLS(struct_1,
+    CXON_JSON_CLS_FIELD_ASIS(a)
+)
+CXON_JSON_ENM(enum_1,
+    CXON_JSON_ENM_VALUE_ASIS(aaa),
+    CXON_JSON_ENM_VALUE_NAME("b\"b", bbb),
+    CXON_JSON_ENM_VALUE_NAME("c c", ccc),
+    CXON_JSON_ENM_VALUE_NAME("d:d", ddd)
+)
+
+TEST_BEG(unquote_quoted_keys, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/std")
+    using namespace std;
+    {   using xmap = map<string, string>;
+        R_TEST(xmap {{"x", "y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{"x", "y"}});
+        R_TEST(xmap {{"", "y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{"", "y"}});
+        R_TEST(xmap {{"x\"y", "z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{"x\"y", "z"}});
+        R_TEST(xmap {{"x:y", "z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{"x:y", "z"}});
+        R_TEST(xmap {{"x:y", "z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{"x y", "z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{"x y", "z"}});
+        R_TEST(xmap {{"x y", "z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<wstring, wstring>;
+        R_TEST(xmap {{L"x", L"y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{L"x", L"y"}});
+        R_TEST(xmap {{L"", L"y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{L"", L"y"}});
+        R_TEST(xmap {{L"x\"y", L"z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{L"x\"y", L"z"}});
+        R_TEST(xmap {{L"x:y", L"z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{L"x:y", L"z"}});
+        R_TEST(xmap {{L"x:y", L"z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{L"x y", L"z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{L"x y", L"z"}});
+        R_TEST(xmap {{L"x y", L"z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<u16string, u16string>;
+        R_TEST(xmap {{u"x", u"y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{u"x", u"y"}});
+        R_TEST(xmap {{u"", u"y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{u"", u"y"}});
+        R_TEST(xmap {{u"x\"y", u"z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{u"x\"y", u"z"}});
+        R_TEST(xmap {{u"x:y", u"z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{u"x:y", u"z"}});
+        R_TEST(xmap {{u"x:y", u"z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{u"x y", u"z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{u"x y", u"z"}});
+        R_TEST(xmap {{u"x y", u"z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<u32string, u32string>;
+        R_TEST(xmap {{U"x", U"y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{U"x", U"y"}});
+        R_TEST(xmap {{U"", U"y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{U"", U"y"}});
+        R_TEST(xmap {{U"x\"y", U"z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{U"x\"y", U"z"}});
+        R_TEST(xmap {{U"x:y", U"z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{U"x:y", U"z"}});
+        R_TEST(xmap {{U"x:y", U"z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{U"x y", U"z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{U"x y", U"z"}});
+        R_TEST(xmap {{U"x y", U"z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<map<string, string>, string>;
+        R_TEST(xmap {{{{"x", "y"}}, "z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{"x", "y"}}, "z"}});
+        R_TEST(xmap {{{{"", "y"}}, "z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{"", "y"}}, "z"}});
+        R_TEST(xmap {{{{"a\"b", "c"}}, "d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{"a\"b", "c"}}, "d"}});
+        R_TEST(xmap {{{{"a:b", "c"}}, "d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{"a:b", "c"}}, "d"}});
+        R_TEST(xmap {{{{"a:b", "c"}}, "d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{"a b", "c"}}, "d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{"a b", "c"}}, "d"}});
+        R_TEST(xmap {{{{"a b", "c"}}, "d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<map<wstring, wstring>, wstring>;
+        R_TEST(xmap {{{{L"x", L"y"}}, L"z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{L"x", L"y"}}, L"z"}});
+        R_TEST(xmap {{{{L"", L"y"}}, L"z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{L"", L"y"}}, L"z"}});
+        R_TEST(xmap {{{{L"a\"b", L"c"}}, L"d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{L"a\"b", L"c"}}, L"d"}});
+        R_TEST(xmap {{{{L"a:b", L"c"}}, L"d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{L"a:b", L"c"}}, L"d"}});
+        R_TEST(xmap {{{{L"a:b", L"c"}}, L"d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{L"a b", L"c"}}, L"d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{L"a b", L"c"}}, L"d"}});
+        R_TEST(xmap {{{{L"a b", L"c"}}, L"d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<map<u16string, u16string>, u16string>;
+        R_TEST(xmap {{{{u"x", u"y"}}, u"z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{u"x", u"y"}}, u"z"}});
+        R_TEST(xmap {{{{u"", u"y"}}, u"z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{u"", u"y"}}, u"z"}});
+        R_TEST(xmap {{{{u"a\"b", u"c"}}, u"d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{u"a\"b", u"c"}}, u"d"}});
+        R_TEST(xmap {{{{u"a:b", u"c"}}, u"d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{u"a:b", u"c"}}, u"d"}});
+        R_TEST(xmap {{{{u"a:b", u"c"}}, u"d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{u"a b", u"c"}}, u"d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{u"a b", u"c"}}, u"d"}});
+        R_TEST(xmap {{{{u"a b", u"c"}}, u"d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<map<u32string, u32string>, u32string>;
+        R_TEST(xmap {{{{U"x", U"y"}}, U"z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{U"x", U"y"}}, U"z"}});
+        R_TEST(xmap {{{{U"", U"y"}}, U"z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{U"", U"y"}}, U"z"}});
+        R_TEST(xmap {{{{U"a\"b", U"c"}}, U"d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{U"a\"b", U"c"}}, U"d"}});
+        R_TEST(xmap {{{{U"a:b", U"c"}}, U"d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{U"a:b", U"c"}}, U"d"}});
+        R_TEST(xmap {{{{U"a:b", U"c"}}, U"d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{U"a b", U"c"}}, U"d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{U"a b", U"c"}}, U"d"}});
+        R_TEST(xmap {{{{U"a b", U"c"}}, U"d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<vector<string>, string>;
+        R_TEST(xmap {{{"x", "y"}, "z"}}, R"({["x","y"]:"z"})");
+        W_TEST(R"({["x","y"]:"z"})", xmap {{{"x", "y"}, "z"}});
+    }
+    // char
+    {   using xmap = map<char, char>;
+        R_TEST(xmap {{'x', 'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{'x', 'y'}});
+        R_TEST(xmap {{'"', 'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{'"', 'x'}});
+        R_TEST(xmap {{':', 'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{':', 'x'}});
+        //R_TEST(xmap {{':', 'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{' ', 'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{' ', 'x'}});
+        R_TEST(xmap {{' ', 'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    {   using xmap = map<wchar_t, wchar_t>;
+        R_TEST(xmap {{L'x', L'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{L'x', L'y'}});
+        R_TEST(xmap {{L'"', L'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{L'"', L'x'}});
+        R_TEST(xmap {{L':', L'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{L':', L'x'}});
+        //R_TEST(xmap {{L':', L'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{L' ', L'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{L' ', L'x'}});
+        R_TEST(xmap {{L' ', L'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    {   using xmap = map<char16_t, char16_t>;
+        R_TEST(xmap {{u'x', u'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{u'x', u'y'}});
+        R_TEST(xmap {{u'"', u'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{u'"', u'x'}});
+        R_TEST(xmap {{u':', u'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{u':', u'x'}});
+        //R_TEST(xmap {{u':', u'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{u' ', u'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{u' ', u'x'}});
+        R_TEST(xmap {{u' ', u'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    {   using xmap = map<char32_t, char32_t>;
+        R_TEST(xmap {{U'x', U'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{U'x', U'y'}});
+        R_TEST(xmap {{U'"', U'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{U'"', U'x'}});
+        R_TEST(xmap {{U':', U'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{U':', U'x'}});
+        //R_TEST(xmap {{U':', U'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{U' ', U'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{U' ', U'x'}});
+        R_TEST(xmap {{U' ', U'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    // enum
+    {   using xmap = map<enum_1, int>;
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b"b:2,c\ c:3,d\:d:4})");
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b\"b:2,c\ c:3,d\:d:4})");
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b"b:2,c c:3,d\:d:4})", json::read_error::unexpected, 13);
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b"b:2,c\ c:3,d:d:4})", json::read_error::unexpected, 20);
+        W_TEST(R"({aaa:1,b"b:2,c\ c:3,d\:d:4})", xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}});
+    }
+    {   using xmap = map<map<enum_1, int>, int>;
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b"b:3}:4,{c\ c:5}:6,{d\:d:7}:8})");
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b\"b:3}:4,{c\ c:5}:6,{d\:d:7}:8})");
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b"b:3}:4,{c c:5}:6,{d\:d:7}:8})", json::read_error::unexpected, 22);
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b"b:3}:4,{c\ c:5}:6,{d:d:7}:8})", json::read_error::unexpected, 33);
+        W_TEST(R"({{aaa:1}:2,{b"b:3}:4,{c\ c:5}:6,{d\:d:7}:8})", xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}});
+    }
+    // struct
+    {   using xmap = map<struct_1, string>;
+        R_TEST(xmap {{{"b"}, "c"}}, R"({{a:"b"}:"c"})");
+        W_TEST(R"({{a:"b"}:"c"})", xmap {{{"b"}, "c"}});
+    }
+    {   using xmap = map<map<struct_1, string>, string>;
+        R_TEST(xmap {{{{{"b"}, "c"}}, "d"}}, R"({{{a:"b"}:"c"}:"d"})");
+        W_TEST(R"({{{a:"b"}:"c"}:"d"})", xmap {{{{{"b"}, "c"}}, "d"}});
+    }
+    // std::variant
+#   ifdef CXON_HAS_LIB_STD_VARIANT
+    {   using xmap = map<variant<string, int>, string>;
+        R_TEST(xmap {{{"1"}, "2"}}, R"({{0:"1"}:"2"})");
+        W_TEST(R"({{0:"1"}:"2"})", xmap {{{"1"}, "2"}});
+    }
+#   endif
+    // std::bitset
+    {   using xmap = map<bitset<8>, bitset<8>>;
+        R_TEST(xmap {{bitset<8>(85), bitset<8>(170)}}, R"({01010101:"10101010"})");
+        W_TEST(R"({01010101:"10101010"})", xmap {{bitset<8>(85), bitset<8>(170)}});
+    }
+TEST_END()
+
+TEST_BEG(unquote_quoted_keys_input_iterator, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::input_iterator_traits<>>>, "/std")
+    using namespace std;
+    {   using xmap = map<string, string>;
+        R_TEST(xmap {{"x", "y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{"x", "y"}});
+        R_TEST(xmap {{"", "y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{"", "y"}});
+        R_TEST(xmap {{"x\"y", "z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{"x\"y", "z"}});
+        R_TEST(xmap {{"x:y", "z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{"x:y", "z"}});
+        R_TEST(xmap {{"x:y", "z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{"x y", "z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{"x y", "z"}});
+        R_TEST(xmap {{"x y", "z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<wstring, wstring>;
+        R_TEST(xmap {{L"x", L"y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{L"x", L"y"}});
+        R_TEST(xmap {{L"", L"y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{L"", L"y"}});
+        R_TEST(xmap {{L"x\"y", L"z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{L"x\"y", L"z"}});
+        R_TEST(xmap {{L"x:y", L"z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{L"x:y", L"z"}});
+        R_TEST(xmap {{L"x:y", L"z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{L"x y", L"z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{L"x y", L"z"}});
+        R_TEST(xmap {{L"x y", L"z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<u16string, u16string>;
+        R_TEST(xmap {{u"x", u"y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{u"x", u"y"}});
+        R_TEST(xmap {{u"", u"y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{u"", u"y"}});
+        R_TEST(xmap {{u"x\"y", u"z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{u"x\"y", u"z"}});
+        R_TEST(xmap {{u"x:y", u"z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{u"x:y", u"z"}});
+        R_TEST(xmap {{u"x:y", u"z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{u"x y", u"z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{u"x y", u"z"}});
+        R_TEST(xmap {{u"x y", u"z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<u32string, u32string>;
+        R_TEST(xmap {{U"x", U"y"}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{U"x", U"y"}});
+        R_TEST(xmap {{U"", U"y"}}, R"({:"y"})");
+        W_TEST(R"({:"y"})", xmap {{U"", U"y"}});
+        R_TEST(xmap {{U"x\"y", U"z"}}, R"({x"y:"z"})");
+        W_TEST(R"({x"y:"z"})", xmap {{U"x\"y", U"z"}});
+        R_TEST(xmap {{U"x:y", U"z"}}, R"({x\:y:"z"})");
+        W_TEST(R"({x\:y:"z"})", xmap {{U"x:y", U"z"}});
+        R_TEST(xmap {{U"x:y", U"z"}}, R"({x:y:"z"})", json::read_error::unexpected, 3);
+        R_TEST(xmap {{U"x y", U"z"}}, R"({x\ y:"z"})");
+        W_TEST(R"({x\ y:"z"})", xmap {{U"x y", U"z"}});
+        R_TEST(xmap {{U"x y", U"z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {   using xmap = map<map<string, string>, string>;
+        R_TEST(xmap {{{{"x", "y"}}, "z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{"x", "y"}}, "z"}});
+        R_TEST(xmap {{{{"", "y"}}, "z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{"", "y"}}, "z"}});
+        R_TEST(xmap {{{{"a\"b", "c"}}, "d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{"a\"b", "c"}}, "d"}});
+        R_TEST(xmap {{{{"a:b", "c"}}, "d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{"a:b", "c"}}, "d"}});
+        R_TEST(xmap {{{{"a:b", "c"}}, "d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{"a b", "c"}}, "d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{"a b", "c"}}, "d"}});
+        R_TEST(xmap {{{{"a b", "c"}}, "d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<map<wstring, wstring>, wstring>;
+        R_TEST(xmap {{{{L"x", L"y"}}, L"z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{L"x", L"y"}}, L"z"}});
+        R_TEST(xmap {{{{L"", L"y"}}, L"z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{L"", L"y"}}, L"z"}});
+        R_TEST(xmap {{{{L"a\"b", L"c"}}, L"d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{L"a\"b", L"c"}}, L"d"}});
+        R_TEST(xmap {{{{L"a:b", L"c"}}, L"d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{L"a:b", L"c"}}, L"d"}});
+        R_TEST(xmap {{{{L"a:b", L"c"}}, L"d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{L"a b", L"c"}}, L"d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{L"a b", L"c"}}, L"d"}});
+        R_TEST(xmap {{{{L"a b", L"c"}}, L"d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<map<u16string, u16string>, u16string>;
+        R_TEST(xmap {{{{u"x", u"y"}}, u"z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{u"x", u"y"}}, u"z"}});
+        R_TEST(xmap {{{{u"", u"y"}}, u"z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{u"", u"y"}}, u"z"}});
+        R_TEST(xmap {{{{u"a\"b", u"c"}}, u"d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{u"a\"b", u"c"}}, u"d"}});
+        R_TEST(xmap {{{{u"a:b", u"c"}}, u"d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{u"a:b", u"c"}}, u"d"}});
+        R_TEST(xmap {{{{u"a:b", u"c"}}, u"d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{u"a b", u"c"}}, u"d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{u"a b", u"c"}}, u"d"}});
+        R_TEST(xmap {{{{u"a b", u"c"}}, u"d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<map<u32string, u32string>, u32string>;
+        R_TEST(xmap {{{{U"x", U"y"}}, U"z"}}, R"({{x:"y"}:"z"})");
+        W_TEST(R"({{x:"y"}:"z"})", xmap {{{{U"x", U"y"}}, U"z"}});
+        R_TEST(xmap {{{{U"", U"y"}}, U"z"}}, R"({{:"y"}:"z"})");
+        W_TEST(R"({{:"y"}:"z"})", xmap {{{{U"", U"y"}}, U"z"}});
+        R_TEST(xmap {{{{U"a\"b", U"c"}}, U"d"}}, R"({{a"b:"c"}:"d"})");
+        W_TEST(R"({{a"b:"c"}:"d"})", xmap {{{{U"a\"b", U"c"}}, U"d"}});
+        R_TEST(xmap {{{{U"a:b", U"c"}}, U"d"}}, R"({{a\:b:"c"}:"d"})");
+        W_TEST(R"({{a\:b:"c"}:"d"})", xmap {{{{U"a:b", U"c"}}, U"d"}});
+        R_TEST(xmap {{{{U"a:b", U"c"}}, U"d"}}, R"({{a:b:"c"}:"d"})", json::read_error::unexpected, 4);
+        R_TEST(xmap {{{{U"a b", U"c"}}, U"d"}}, R"({{a\ b:"c"}:"d"})");
+        W_TEST(R"({{a\ b:"c"}:"d"})", xmap {{{{U"a b", U"c"}}, U"d"}});
+        R_TEST(xmap {{{{U"a b", U"c"}}, U"d"}}, R"({{a b:"c"}:"d"})", json::read_error::unexpected, 4);
+    }
+    {   using xmap = map<vector<string>, string>;
+        R_TEST(xmap {{{"x", "y"}, "z"}}, R"({["x","y"]:"z"})");
+        W_TEST(R"({["x","y"]:"z"})", xmap {{{"x", "y"}, "z"}});
+    }
+    // char
+    {   using xmap = map<char, char>;
+        R_TEST(xmap {{'x', 'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{'x', 'y'}});
+        R_TEST(xmap {{'"', 'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{'"', 'x'}});
+        R_TEST(xmap {{':', 'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{':', 'x'}});
+        //R_TEST(xmap {{':', 'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{' ', 'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{' ', 'x'}});
+        R_TEST(xmap {{' ', 'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    {   using xmap = map<wchar_t, wchar_t>;
+        R_TEST(xmap {{L'x', L'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{L'x', L'y'}});
+        R_TEST(xmap {{L'"', L'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{L'"', L'x'}});
+        R_TEST(xmap {{L':', L'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{L':', L'x'}});
+        //R_TEST(xmap {{L':', L'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{L' ', L'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{L' ', L'x'}});
+        R_TEST(xmap {{L' ', L'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    {   using xmap = map<char16_t, char16_t>;
+        R_TEST(xmap {{u'x', u'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{u'x', u'y'}});
+        R_TEST(xmap {{u'"', u'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{u'"', u'x'}});
+        R_TEST(xmap {{u':', u'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{u':', u'x'}});
+        //R_TEST(xmap {{u':', u'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{u' ', u'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{u' ', u'x'}});
+        R_TEST(xmap {{u' ', u'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    {   using xmap = map<char32_t, char32_t>;
+        R_TEST(xmap {{U'x', U'y'}}, R"({x:"y"})");
+        W_TEST(R"({x:"y"})", xmap {{U'x', U'y'}});
+        R_TEST(xmap {{U'"', U'x'}}, R"({":"x"})");
+        W_TEST(R"({":"x"})", xmap {{U'"', U'x'}});
+        R_TEST(xmap {{U':', U'x'}}, R"({\::"x"})");
+        W_TEST(R"({\::"x"})", xmap {{U':', U'x'}});
+        //R_TEST(xmap {{U':', U'x'}}, R"({::"x"})", json::read_error::unexpected, 2); // okay for char, fixed width
+        R_TEST(xmap {{U' ', U'x'}}, R"({\ :"x"})");
+        W_TEST(R"({\ :"x"})", xmap {{U' ', U'x'}});
+        R_TEST(xmap {{U' ', U'x'}}, R"({ :"x"})", json::read_error::unexpected, 3); // ':' is the key
+    }
+    // enum
+    {   using xmap = map<enum_1, int>;
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b"b:2,c\ c:3,d\:d:4})");
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b\"b:2,c\ c:3,d\:d:4})");
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b"b:2,c c:3,d\:d:4})", json::read_error::unexpected, 14);
+        R_TEST(xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}}, R"({aaa:1,b"b:2,c\ c:3,d:d:4})", json::read_error::unexpected, 21);
+        W_TEST(R"({aaa:1,b"b:2,c\ c:3,d\:d:4})", xmap {{enum_1::aaa, 1}, {enum_1::bbb, 2}, {enum_1::ccc, 3}, {enum_1::ddd, 4}});
+    }
+    {   using xmap = map<map<enum_1, int>, int>;
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b"b:3}:4,{c\ c:5}:6,{d\:d:7}:8})");
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b\"b:3}:4,{c\ c:5}:6,{d\:d:7}:8})");
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b"b:3}:4,{c c:5}:6,{d\:d:7}:8})", json::read_error::unexpected, 23);
+        R_TEST(xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}}, R"({{aaa:1}:2,{b"b:3}:4,{c\ c:5}:6,{d:d:7}:8})", json::read_error::unexpected, 34);
+        W_TEST(R"({{aaa:1}:2,{b"b:3}:4,{c\ c:5}:6,{d\:d:7}:8})", xmap {{{{enum_1::aaa, 1}}, 2}, {{{enum_1::bbb, 3}}, 4}, {{{enum_1::ccc, 5}}, 6}, {{{enum_1::ddd, 7}}, 8}});
+    }
+    // struct
+    {   using xmap = map<struct_1, string>;
+        R_TEST(xmap {{{"b"}, "c"}}, R"({{a:"b"}:"c"})");
+        W_TEST(R"({{a:"b"}:"c"})", xmap {{{"b"}, "c"}});
+    }
+    {   using xmap = map<map<struct_1, string>, string>;
+        R_TEST(xmap {{{{{"b"}, "c"}}, "d"}}, R"({{{a:"b"}:"c"}:"d"})");
+        W_TEST(R"({{{a:"b"}:"c"}:"d"})", xmap {{{{{"b"}, "c"}}, "d"}});
+    }
+    // std::variant
+#   ifdef CXON_HAS_LIB_STD_VARIANT
+    {   using xmap = map<variant<string, int>, string>;
+        R_TEST(xmap {{{"1"}, "2"}}, R"({{0:"1"}:"2"})");
+        W_TEST(R"({{0:"1"}:"2"})", xmap {{{"1"}, "2"}});
+    }
+#   endif
+    // std::bitset
+    {   using xmap = map<bitset<8>, bitset<8>>;
+        R_TEST(xmap {{bitset<8>(85), bitset<8>(170)}}, R"({01010101:"10101010"})");
+        W_TEST(R"({01010101:"10101010"})", xmap {{bitset<8>(85), bitset<8>(170)}});
     }
 TEST_END()

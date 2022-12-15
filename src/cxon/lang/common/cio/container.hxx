@@ -85,13 +85,15 @@ namespace cxon { namespace cio { namespace cnt {
 
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_list(C& c, II& i, II e, Cx& cx) {
-            return imp::read_<X, typename X::list>(i, e, cx, [&] {
-                return cxon::cnt::element_read<X>(c, i, e, cx);
+            using Y = unbind_traits_t<X, key::quoted_traits>;
+            return imp::read_<Y, typename Y::list>(i, e, cx, [&] {
+                return cxon::cnt::element_read<Y>(c, i, e, cx);
             });
         }
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_list(II& i, II e, Cx& cx, EA element_add) {
-            return imp::read_<X, typename X::list>(i, e, cx, element_add);
+            using Y = unbind_traits_t<X, key::quoted_traits>;
+            return imp::read_<Y, typename Y::list>(i, e, cx, element_add);
         }
 
     template <typename X, typename C, typename II, typename Cx>
@@ -107,7 +109,8 @@ namespace cxon { namespace cio { namespace cnt {
 
     template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_list(O& o, II b, II e, Cx& cx, L element_write) {
-            return imp::write_<X, typename X::list>(o, b, e, cx, element_write);
+            using Y = unbind_traits_t<X, key::quoted_traits>;
+            return imp::write_<Y, typename Y::list>(o, b, e, cx, element_write);
         }
     template <typename X, typename O, typename C, typename Cx, typename L>
         inline bool write_list(O& o, const C& c, Cx& cx, L element_write) {
@@ -115,7 +118,8 @@ namespace cxon { namespace cio { namespace cnt {
         }
     template <typename X, typename C, typename O, typename II, typename Cx>
         inline bool write_list(O& o, II b, II e, Cx& cx) {
-            return imp::write_<X, C, typename X::list>(o, b, e, cx);
+            using Y = unbind_traits_t<X, key::quoted_traits>;
+            return imp::write_<Y, C, typename Y::list>(o, b, e, cx);
         }
     template <typename X, typename O, typename C, typename Cx>
         inline bool write_list(O& o, const C& c, Cx& cx) {
