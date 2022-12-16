@@ -413,7 +413,8 @@ int main() {
     unsigned u = 0;
         cxon::from_bytes<CUSTOM_JSON>(i, "42");
     assert(i == 42);    // the other types are as in JSON<>
-}```
+}
+```
 
 
 *Somewhat more meaningful example can be found here [`JSON-RPC`](src/cxon/README.md#example-json-rpc).*
