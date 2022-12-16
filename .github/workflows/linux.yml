@@ -11,316 +11,92 @@ jobs:
 
   # gcc ########################################################################
 
-  gcc-5:
-    runs-on: ubuntu-18.04
+  gcc:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: ['5', '6', '9', '10', '11', '12'] # 7, 8 - unmet dependencies
+      fail-fast: false
     steps:
     - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-5 g++-5
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: g++-5
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  gcc-6:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-6 g++-6
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: g++-6
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  gcc-7:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-7 g++-7
-    - name: Checkout Boost
-      uses: actions/checkout@v3
-      with:
-        repository: boostorg/boost
-        ref: boost-1.78.0
-        path: .dep/boost
-    - name: Setup Boost
+    - name: APT Update
       run: |
-        cd .dep/boost
-        git submodule update --init tools/build
-        git submodule update --init tools/boostdep
-        git submodule update --init libs/config
-        git submodule update --init libs/container
-        python tools/boostdep/depinst/depinst.py container
-        git submodule update --init libs/dynamic_bitset
-        python tools/boostdep/depinst/depinst.py dynamic_bitset
-        ./bootstrap.sh
-        ./b2 headers
-    - name: Check
-      env:
-        CXX: g++-7
-        CXXFLAGS: -std=c++17 -I ../.dep/boost
-      run: make -j check
-
-  gcc-8:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic universe' | sudo tee -a /etc/apt/sources.list
+        sudo apt update
     - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-8 g++-8
-    - name: Checkout Boost
-      uses: actions/checkout@v3
-      with:
-        repository: boostorg/boost
-        ref: boost-1.78.0
-        path: .dep/boost
-    - name: Setup Boost
-      run: |
-        cd .dep/boost
-        git submodule update --init tools/build
-        git submodule update --init tools/boostdep
-        git submodule update --init libs/config
-        git submodule update --init libs/container
-        python tools/boostdep/depinst/depinst.py container
-        git submodule update --init libs/dynamic_bitset
-        python tools/boostdep/depinst/depinst.py dynamic_bitset
-        ./bootstrap.sh
-        ./b2 headers
-    - name: Check
-      env:
-        CXX: g++-8
-        CXXFLAGS: -std=c++17 -I ../.dep/boost
-      run: make -j check
-
-  gcc-9:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-9 g++-9
+      run: sudo apt install gcc-${{ matrix.compiler }} g++-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
+      run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-9
-        CXXFLAGS: -std=c++17
-      run: make -j check
-
-  gcc-10:
-    runs-on: ubuntu-20.04
+        CXX: g++-${{ matrix.compiler }}
+      run: $CXX --version; make -j check
+        
+  gcc-cxx-std:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: ['12']
+        standard: [11, 14, 17, 20]
+      fail-fast: false
     steps:
     - uses: actions/checkout@v3
+    - name: APT Update
+      run: sudo apt update
     - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-10 g++-10
+      run: sudo apt install gcc-${{ matrix.compiler }} g++-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
+      run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-10
-        CXXFLAGS: -std=c++20
-      run: make -j check
-
-  gcc-11:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install gcc-11 g++-11
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: g++-11
-        CXXFLAGS: -std=c++20
-      run: make -j check
-
-  gcc-12:
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install g++-12
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: g++-12
-        CXXFLAGS: -std=c++20
-      run: make -j check
+        CXX: g++-${{ matrix.compiler }}
+        CXXFLAGS: -std=c++${{ matrix.standard }}
+      run: $CXX --version; make -j check
   
   # clang ######################################################################
 
-  #clang-3-5:
-  #  runs-on: ubuntu-16.04
-  #  steps:
-  #  - uses: actions/checkout@v3
-  #  - name: Compiler setup
-  #    run: sudo apt update; sudo apt install clang-3.5
-  #  - name: Boost setup
-  #    run: sudo apt update; sudo apt install libboost-container-dev
-  #  - name: Check
-  #    env:
-  #      CXX: clang++-3.5
-  #      CXXFLAGS: -std=c++11
-  #    run: make -j check
-
-  clang-4:
-    runs-on: ubuntu-18.04
+  clang:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: ['4.0', '6.0', '7', '8', '9', '10', '11', '12', '13', '14'] # 5.0 - unmet dependencies
+      fail-fast: false
     steps:
     - uses: actions/checkout@v3
+    - name: APT Update
+      run: |
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic universe' | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ focal main'      | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ focal universe'  | sudo tee -a /etc/apt/sources.list
+        sudo apt update
     - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-4.0
+      run: sudo apt install clang-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
+      run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: clang++-4.0
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  clang-5:
-    runs-on: ubuntu-18.04
+        CXX: clang++-${{ matrix.compiler }}
+      run: $CXX --version; make -j check
+        
+  clang-cxx-std:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: ['14']
+        standard: [11, 14, 17, 20]
+      fail-fast: false
     steps:
     - uses: actions/checkout@v3
+    - name: APT Update
+      run: sudo apt update
     - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-5.0
+      run: sudo apt install clang-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
+      run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: clang++-5.0
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  clang-6:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-6.0
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-6.0
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  clang-7:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-7
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-7
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  clang-8:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-8
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-8
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  clang-9:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-9
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-9
-        CXXFLAGS: -std=c++11
-      run: make -j check
-
-  clang-10:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-10
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-10
-        CXXFLAGS: -std=c++17
-      run: make -j check
-
-  clang-11:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-11
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-11
-        CXXFLAGS: -std=c++20
-      run: make -j check
-
-  clang-12:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-12
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-12
-        CXXFLAGS: -std=c++20
-      run: make -j check
-
-  clang-13:
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-13
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-13
-        CXXFLAGS: -std=c++20
-      run: make -j check
-
-  clang-14:
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Compiler setup
-      run: sudo apt update; sudo apt install clang-14
-    - name: Boost setup
-      run: sudo apt update; sudo apt install libboost-container-dev
-    - name: Check
-      env:
-        CXX: clang++-14
-        CXXFLAGS: -std=c++20
-      run: make -j check
+        CXX: clang++-${{ matrix.compiler }}
+        CXXFLAGS: -std=c++${{ matrix.standard }}
+      run: $CXX --version; make -j check
