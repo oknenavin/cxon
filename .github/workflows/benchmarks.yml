@@ -383,7 +383,7 @@ jobs:
       with:
         repository: oknenavin/workflows-data
         token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
-        ref: master
+        ref: develop
         path: .dep/workflows-data
     - name: Download Artifacts
       uses: actions/download-artifact@v3
