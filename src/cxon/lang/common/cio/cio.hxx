@@ -41,10 +41,20 @@ namespace cxon { namespace cio { // format traits
                 static constexpr char           nil[]   = "null";
                 static constexpr char           pos[]   = "true";
                 static constexpr char           neg[]   = "false";
+                struct len {
+                    static constexpr std::size_t nil    = sizeof(id::nil) - 1;
+                    static constexpr std::size_t pos    = sizeof(id::pos) - 1;
+                    static constexpr std::size_t neg    = sizeof(id::neg) - 1;
+                };
 #           else
                 static constexpr char const*    nil     = "null";
                 static constexpr char const*    pos     = "true";
                 static constexpr char const*    neg     = "false";
+                struct len {
+                    static constexpr std::size_t nil    = 4;
+                    static constexpr std::size_t pos    = 4;
+                    static constexpr std::size_t neg    = 5;
+                };
 #           endif
         };
 
