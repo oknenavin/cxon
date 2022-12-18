@@ -23,7 +23,7 @@ namespace cxon { // nullptr_t
             template <typename Cx>
                 static bool value(std::nullptr_t& t, const char*& i, const char* e, Cx& cx) {
                     cio::consume<X>(i, e);
-                    constexpr auto nl = std::char_traits<char>::length(X::id::nil);
+                    constexpr auto nl = X::id::len::nil;
                     return  (std::size_t(e - i) >= nl && std::char_traits<char>::compare(X::id::nil, i, nl) == 0 && (i += nl, t = nullptr, true)) ||
                             cx/json::read_error::unexpected
                     ;
@@ -34,7 +34,7 @@ namespace cxon { // nullptr_t
         struct write<JSON<X>, std::nullptr_t> {
             template <typename O, typename Cx>
                 static bool value(O& o, std::nullptr_t, Cx& cx) {
-                    return cio::poke<X>(o, X::id::nil, std::char_traits<char>::length(X::id::nil), cx);
+                    return cio::poke<X>(o, X::id::nil, X::id::len::nil, cx);
                 }
         };
 
@@ -57,9 +57,9 @@ namespace cxon { // bool
                 static bool value(bool& t, const char*& i, const char* e, Cx& cx) {
                     cio::consume<X>(i, e);
                         std::size_t const il = std::size_t(e - i);
-                        constexpr auto pl = std::char_traits<char>::length(X::id::pos);
+                        constexpr auto pl = X::id::len::pos;
                     if (il >= pl && std::char_traits<char>::compare(X::id::pos, i, pl) == 0) return i += pl, t = true,  true;
-                        constexpr auto nl = std::char_traits<char>::length(X::id::neg);
+                        constexpr auto nl = X::id::len::neg;
                     if (il >= nl && std::char_traits<char>::compare(X::id::neg, i, nl) == 0) return i += nl, t = false, true;
                     return cx/json::read_error::boolean_invalid;
                 }
@@ -70,8 +70,8 @@ namespace cxon { // bool
             template <typename O, typename Cx>
                 static bool value(O& o, bool t, Cx& cx) {
                     return t ?
-                        cio::poke<X>(o, X::id::pos, std::char_traits<char>::length(X::id::pos), cx) :
-                        cio::poke<X>(o, X::id::neg, std::char_traits<char>::length(X::id::neg), cx)
+                        cio::poke<X>(o, X::id::pos, X::id::len::pos, cx) :
+                        cio::poke<X>(o, X::id::neg, X::id::len::neg, cx)
                     ;
                 }
         };
