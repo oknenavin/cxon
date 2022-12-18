@@ -20,13 +20,21 @@ namespace cxon { // nullptr_t
                             (cio::rewind(i, o), cx/json::read_error::unexpected)
                     ;
                 }
+            template <typename Cx>
+                static bool value(std::nullptr_t& t, const char*& i, const char* e, Cx& cx) {
+                    cio::consume<X>(i, e);
+                    constexpr auto nl = std::char_traits<char>::length(X::id::nil);
+                    return  (std::size_t(e - i) >= nl && std::char_traits<char>::compare(X::id::nil, i, nl) == 0 && (i += nl, t = nullptr, true)) ||
+                            cx/json::read_error::unexpected
+                    ;
+                }
         };
 
     template <typename X>
         struct write<JSON<X>, std::nullptr_t> {
             template <typename O, typename Cx>
                 static bool value(O& o, std::nullptr_t, Cx& cx) {
-                    return cio::poke<X>(o, X::id::nil, cx);
+                    return cio::poke<X>(o, X::id::nil, std::char_traits<char>::length(X::id::nil), cx);
                 }
         };
 
@@ -41,9 +49,19 @@ namespace cxon { // bool
                     static_assert(*X::id::pos != *X::id::neg, "boolean literals ambiguous"); // for input-iterator, id must be consumed
                     II const o = i;
                         char const c = (cio::consume<X>(i, e), cio::peek(i, e));
-                             if (c == *X::id::pos && cio::consume<X>(X::id::pos, i, e))  return t = true,  true;
-                        else if (c == *X::id::neg && cio::consume<X>(X::id::neg, i, e))  return t = false, true;
+                            if (c == *X::id::pos && cio::consume<X>(X::id::pos, i, e)) return t = true,  true;
+                            if (c == *X::id::neg && cio::consume<X>(X::id::neg, i, e)) return t = false, true;
                     return cio::rewind(i, o), cx/json::read_error::boolean_invalid;
+                }
+            template <typename Cx>
+                static bool value(bool& t, const char*& i, const char* e, Cx& cx) {
+                    cio::consume<X>(i, e);
+                        std::size_t const il = std::size_t(e - i);
+                        constexpr auto pl = std::char_traits<char>::length(X::id::pos);
+                    if (il >= pl && std::char_traits<char>::compare(X::id::pos, i, pl) == 0) return i += pl, t = true,  true;
+                        constexpr auto nl = std::char_traits<char>::length(X::id::neg);
+                    if (il >= nl && std::char_traits<char>::compare(X::id::neg, i, nl) == 0) return i += nl, t = false, true;
+                    return cx/json::read_error::boolean_invalid;
                 }
         };
 
@@ -51,7 +69,10 @@ namespace cxon { // bool
         struct write<JSON<X>, bool> {
             template <typename O, typename Cx>
                 static bool value(O& o, bool t, Cx& cx) {
-                    return t ? cio::poke<X>(o, X::id::pos, cx) : cio::poke<X>(o, X::id::neg, cx);
+                    return t ?
+                        cio::poke<X>(o, X::id::pos, std::char_traits<char>::length(X::id::pos), cx) :
+                        cio::poke<X>(o, X::id::neg, std::char_traits<char>::length(X::id::neg), cx)
+                    ;
                 }
         };
 
