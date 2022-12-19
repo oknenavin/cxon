@@ -437,6 +437,16 @@ TEST_BEG(vector, cxon::JSON<>, "/std")
 TEST_END()
 
 
+TEST_BEG(vector_bool, cxon::JSON<>, "/std")
+    using namespace std;
+    // std::vector<bool>
+        R_TEST((vector<bool>{}), "[]");
+        W_TEST("[]", (vector<bool>{}));
+        R_TEST((vector<bool>({true, false})), "[true,false]");
+        W_TEST("[true,false]", (vector<bool>({true, false})));
+TEST_END()
+
+
 TEST_BEG(set, cxon::JSON<>, "/std")
     using namespace std;
     // std::set<int>

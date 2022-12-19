@@ -672,6 +672,14 @@ TEST_BEG(vector, cxon::CBOR<>, "/std")
 TEST_END()
 
 
+TEST_BEG(vector_bool, cxon::CBOR<>, "/std")
+    R_TEST(vector<bool>{}, BS("\x80"));
+    W_TEST(BS("\x80"), vector<bool>{});
+    R_TEST(vector<bool>{true, false}, BS("\x82\xF5\xF4"));
+    W_TEST(BS("\x82\xF5\xF4"), vector<bool>{true, false});
+TEST_END()
+
+
 TEST_BEG(tags, cxon::CBOR<>, "/std")
     using namespace std::chrono;
     R_TEST(bitset<32>{0xAAAAAAAA}, BS("\xC1\x45\x00\xAA\xAA\xAA\xAA"));
