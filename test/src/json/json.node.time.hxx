@@ -9,7 +9,9 @@
 #include "cxon/json.hxx"
 #include "json.node.hxx"
 
-struct time_traits : cxon::json::format_traits {};
+struct time_traits : cxon::json::format_traits {
+	static constexpr bool read_validate_string_utf8 = false;
+};
 //using TIME = cxon::JSON<time_traits>;
 using TIME = cxon::JSON<>;
 

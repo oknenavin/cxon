@@ -1,0 +1,15 @@
+../data/json/set.6/random-u8.json
+../data/json/set.6/random-s8.json
+../data/json/set.6/random-u16.json
+../data/json/set.6/random-s16.json
+../data/json/set.6/random-u32.json
+../data/json/set.6/random-s32.json
+../data/json/set.6/random-u64.json
+../data/json/set.6/random-s64.json
+../data/json/set.6/random-fp32.json
+../data/json/set.6/random-fp64.json
+../data/json/set.6/random-null.json
+../data/json/set.6/random-bool.json
+../data/json/set.6/random-string.json
+../data/json/set.6/random-array.json
+../data/json/set.6/random-object.json

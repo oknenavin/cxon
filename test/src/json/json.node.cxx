@@ -240,18 +240,18 @@ namespace test { namespace kind {
             }   cnts;
                 cnts.name.push_back(time_cxon == &time_cxon_node ? "# cxon/node" : "# cxon/native");
                 cnts.func.push_back(time_cxon);
-    #       ifdef CXON_TIME_BOOST_JSON
+#           ifdef CXON_TIME_BOOST_JSON
                 cnts.name.push_back("Boost/JSON");
                 cnts.func.push_back(&time_boostjson);
-    #       endif
-    #       ifdef CXON_TIME_RAPIDJSON
+#           endif
+#           ifdef CXON_TIME_RAPIDJSON
                 cnts.name.push_back("RapidJSON");
                 cnts.func.push_back(&time_rapidjson);
-    #       endif
-    #       ifdef CXON_TIME_NLOHMANN
+#           endif
+#           ifdef CXON_TIME_NLOHMANN
                 cnts.name.push_back("nlohmann/JSON");
                 cnts.func.push_back(&time_nlohmannjson);
-    #       endif
+#           endif
             {   // time
                 auto time_node = cases;
                 for (auto& test: time_node)
