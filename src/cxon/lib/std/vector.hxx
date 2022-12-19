@@ -25,6 +25,21 @@ namespace cxon { namespace cnt {
                 }
         };
 
+    template <typename X, typename ...A>
+        struct element_reader<X, std::vector<bool, A...>> {
+            template <typename II, typename Cx>
+                static bool read(std::vector<bool, A...>& t, II& i, II e, Cx& cx) {
+                    bool b; return read_value<X>(b, i, e, cx) && (t.push_back(b), true);
+                }
+        };
+    template <typename X, typename ...A>
+        struct element_writer<X, std::vector<bool, A...>> {
+            template <typename O, typename Cx>
+                static bool write(O& o, bool e, Cx& cx) {
+                    return write_value<X>(o, e, cx);
+                }
+        };
+
 }}
 
 #endif // CXON_LIB_STD_VECTOR_HXX_

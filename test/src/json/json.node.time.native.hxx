@@ -1262,7 +1262,7 @@ namespace test {
         using object_fp32 = std::vector<float>;
         using object_fp64 = std::vector<double>;
         using object_null = std::vector<std::nullptr_t>;
-        using object_bool = std::deque<bool>;
+        using object_bool = std::deque<bool>; // std::vector<bool> is a bit slow
         using object_string = std::vector<std::string>;
         using object_array = std::vector<std::pair<double, double>>;
         struct point_2d {

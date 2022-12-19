@@ -252,19 +252,25 @@ namespace cxon { namespace cbor { namespace cnt {
     namespace imp {
 
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
-            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 &&  is_char<T>::value, bool> {
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx)
+                -> enable_if_t<sizeof(T) == 1 && !std::is_same<T, bool>::value &&  is_char<T>::value, bool> 
+            {
                 return  write_size<X>(o, X::tstr, std::distance(f, l), cx) &&
                         bio::poke<X>(o, f, l, cx)
                 ;
             }
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
-            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) == 1 && !is_char<T>::value, bool> {
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx)
+                -> enable_if_t<sizeof(T) == 1 && !std::is_same<T, bool>::value && !is_char<T>::value, bool>
+            {
                 return  write_size<X>(o, X::bstr, std::distance(f, l), cx) &&
                         bio::poke<X>(o, f, l, cx)
                 ;
             }
         template <typename X, typename FI, typename O, typename Cx, typename T = typename std::iterator_traits<FI>::value_type>
-            inline auto write_array_(O& o, FI f, FI l, Cx& cx) -> enable_if_t<sizeof(T) != 1, bool> {
+            inline auto write_array_(O& o, FI f, FI l, Cx& cx)
+                -> enable_if_t<sizeof(T) != 1 ||  std::is_same<T, bool>::value, bool>
+            {
                 if (write_size<X>(o, X::arr, std::distance(f, l), cx))
                     for ( ; f != l && write_value<X>(o, *f, cx); ++f) ;
                 return f == l;
