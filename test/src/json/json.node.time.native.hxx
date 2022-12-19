@@ -14,6 +14,7 @@
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/utility.hxx"
 #include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/deque.hxx"
 
 namespace test {
 
@@ -1245,6 +1246,33 @@ namespace test {
     namespace numbers {
 
         using object = std::vector<double>;
+
+    }
+
+    namespace synth {
+        
+        using object_u8 = std::vector<unsigned char>;
+        using object_s8 = std::vector<signed char>;
+        using object_u16 = std::vector<std::uint16_t>;
+        using object_s16 = std::vector<std::int16_t>;
+        using object_u32 = std::vector<std::uint32_t>;
+        using object_s32 = std::vector<std::int32_t>;
+        using object_u64 = std::vector<std::uint64_t>;
+        using object_s64 = std::vector<std::int64_t>;
+        using object_fp32 = std::vector<float>;
+        using object_fp64 = std::vector<double>;
+        using object_null = std::vector<std::nullptr_t>;
+        using object_bool = std::deque<bool>;
+        using object_string = std::vector<std::string>;
+        using object_array = std::vector<std::pair<double, double>>;
+        struct point_2d {
+            double x, y;
+            CXON_JSON_CLS_MEMBER(point_2d,
+                CXON_JSON_CLS_FIELD_ASIS(x),
+                CXON_JSON_CLS_FIELD_ASIS(y)
+            )
+        };
+        using object_object = std::vector<point_2d>;
 
     }
 

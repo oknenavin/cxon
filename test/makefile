@@ -60,11 +60,17 @@ check-cbor-node: build-cbor-node
 	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/round-trip.in | xargs -n2 diff -q)
 
 
-time-json: time-json-node time-json-native
-time-json-node: build-json-node
-	@(cd $(outdir) && ./check-json-node time-node   @$(datdir)/json/time.in)
-time-json-native: build-json-node
-	@(cd $(outdir) && ./check-json-node time-native @$(datdir)/json/time.in)
+time-json: time-json-s1 time-json-s2
+time-json-s1: time-json-node-s1 time-json-native-s1
+time-json-s2: time-json-node-s2 time-json-native-s2
+time-json-node-s1: build-json-node
+	@(cd $(outdir) && ./check-json-node time-node   @$(datdir)/json/time-s1.in)
+time-json-node-s2: build-json-node
+	@(cd $(outdir) && ./check-json-node time-node   @$(datdir)/json/time-s2.in)
+time-json-native-s1: build-json-node
+	@(cd $(outdir) && ./check-json-node time-native @$(datdir)/json/time-s1.in)
+time-json-native-s2: build-json-node
+	@(cd $(outdir) && ./check-json-node time-native @$(datdir)/json/time-s2.in)
 time-cbor: build-cbor-node
 	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/time.in)
 
@@ -95,4 +101,6 @@ clean:
 	@rm -fr $(outdir)
 
 
-.PHONY: check check-json check-json-node check-cbor check-cbor-node time time-json time-json-node time-json-native time-cbor build build-json build-json-node build-cbor build-cbor-node clean
+.PHONY: check check-json check-json-node check-cbor check-cbor-node \
+        time time-json time-json-s1 time-json-s2 time-json-node-s1 time-json-native-s1 time-json-node-s2 time-json-native-s2 time-cbor \
+        build build-json build-json-node build-cbor build-cbor-node clean
