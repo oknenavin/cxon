@@ -43,6 +43,7 @@ namespace test { namespace kind {
     using executor = void (*)(test& t);
 
     static std::map<std::string, executor> executors_ = {
+        // set 1 (time-s1.in)
         { "blns.json",              &time_run<blns::object> },
         { "emoji.json",             &time_run<emoji::object> },
         { "apache_builds.json",     &time_run<apache_builds::object> },
@@ -67,6 +68,22 @@ namespace test { namespace kind {
         { "twitterescaped.json",    &time_run<twitter::object> },
 #       endif
         { "update-center.json",     &time_run<update_center::object> },
+        // set 2 (time-s2.in)
+        { "random-u8.json",         &time_run<synth::object_u8> },
+        { "random-s8.json",         &time_run<synth::object_s8> },
+        { "random-u16.json",        &time_run<synth::object_u16> },
+        { "random-s16.json",        &time_run<synth::object_s16> },
+        { "random-u32.json",        &time_run<synth::object_u32> },
+        { "random-s32.json",        &time_run<synth::object_s32> },
+        { "random-u64.json",        &time_run<synth::object_u64> },
+        { "random-s64.json",        &time_run<synth::object_s64> },
+        { "random-fp32.json",       &time_run<synth::object_fp32> },
+        { "random-fp64.json",       &time_run<synth::object_fp64> },
+        { "random-null.json",       &time_run<synth::object_null> },
+        { "random-bool.json",       &time_run<synth::object_bool> },
+        { "random-string.json",     &time_run<synth::object_string> },
+        { "random-array.json",      &time_run<synth::object_array> },
+        { "random-object.json",     &time_run<synth::object_object> }
     };
 
     void time_cxon_native(test& t) {

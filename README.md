@@ -442,10 +442,10 @@ which can represent arbitrary `CBOR` data.
 #### Performance
 
 - `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-read.svg)
+  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg)
 
 - `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-write.svg)
+  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg)
 
 - `CXON` binary size and compilation times.  
   ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg)  
