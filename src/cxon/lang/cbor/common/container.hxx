@@ -39,8 +39,8 @@ namespace cxon { namespace cbor { namespace cnt {
 
     template <typename X, typename FI, typename O, typename Cx>
         inline bool write_array(O& o, FI f, FI l, Cx& cx);
-    template <typename X, typename Iterable, typename O, typename Cx>
-        inline auto write_array(O& o, const Iterable& i, Cx& cx) -> decltype(std::begin(i), bool());
+    template <typename X, typename C, typename O, typename Cx> // container
+        inline auto write_array(O& o, const C& t, Cx& cx) -> decltype(std::begin(t), bool());
     template <typename X, typename T, typename O, typename Cx>
         inline bool write_map(O& o, const T& t, Cx& cx);
 
@@ -282,10 +282,29 @@ namespace cxon { namespace cbor { namespace cnt {
             return imp::write_array_<X>(o, f, l, cx);
         }
 
-    template <typename X, typename I, typename O, typename Cx>
-        inline auto write_array(O& o, const I& i, Cx& cx) -> decltype(std::begin(i), bool()) {
-            auto const c = cxon::cnt::continuous<I>::range(i);
-            return imp::write_array_<X>(o, c.first, c.second, cx);
+    namespace imp {
+
+        template <typename X, typename C, typename O, typename Cx, typename T = typename C::value_type>
+            inline auto write_array_(O& o, const C& t, Cx& cx)
+                -> enable_if_t<sizeof(T) != 1 ||  std::is_same<T, bool>::value, bool>
+            {
+                auto f = std::begin(t), l = std::end(t);
+                if (write_size<X>(o, X::arr, std::distance(f, l), cx))
+                    for ( ; f != l && cxon::cnt::element_write<X, C>(o, *f, cx); ++f) ;
+                return f == l;
+            }
+        template <typename X, typename C, typename O, typename Cx, typename T = typename C::value_type>
+            inline auto write_array_(O& o, const C& t, Cx& cx)
+                -> enable_if_t<sizeof(T) == 1 && !std::is_same<T, bool>::value, bool>
+            {
+                auto const r = cxon::cnt::continuous<C>::range(t);
+                return write_array<X>(o, r.first, r.second, cx);
+            }
+
+    }
+    template <typename X, typename C, typename O, typename Cx>
+        inline auto write_array(O& o, const C& t, Cx& cx) -> decltype(std::begin(t), bool()) {
+            return imp::write_array_<X>(o, t, cx);
         }
 
     template <typename X, typename T, typename O, typename Cx>
