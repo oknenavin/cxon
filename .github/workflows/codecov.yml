@@ -2,6 +2,10 @@ name: Codecov
 
 on:
   push:
+    branches:
+      - develop
+      - master
+      - release/*
   pull_request:
   workflow_dispatch:
   schedule:
@@ -9,14 +13,14 @@ on:
 
 jobs:
   codecov:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Checkout Boost
       uses: actions/checkout@v3
       with:
         repository: boostorg/boost
-        ref: boost-1.78.0
+        ref: boost-1.81.0
         path: .dep/boost
     - name: Setup Boost
       run: |
@@ -39,16 +43,14 @@ jobs:
         make -j time
     - name: LCOV setup
       run: |
-        wget http://downloads.sourceforge.net/ltp/lcov-1.15.tar.gz
-        tar xvfz lcov-1.15.tar.gz
-        make -C lcov-1.15
+        sudo apt install lcov
     - name: Codecov setup
       run: |
         curl -Os https://uploader.codecov.io/latest/linux/codecov
         chmod +x codecov
     - name: Coverage
       run: |
-        lcov-1.15/bin/lcov -c -d . -o cov.info
-        lcov-1.15/bin/lcov -e cov.info '*/cxon/src/cxon/*.hxx' -o cxon.info
-        lcov-1.15/bin/lcov -l cxon.info
+        lcov -c -d .                                --rc lcov_branch_coverage=1 --rc geninfo_no_exception_branch=1 -o cov.info
+        lcov -e cov.info '*/cxon/src/cxon/*.hxx'    --rc lcov_branch_coverage=1 --rc geninfo_no_exception_branch=1 -o cxon.info
+        lcov                                        --rc lcov_branch_coverage=1 --rc geninfo_no_exception_branch=1 -l cxon.info
         ./codecov -t ${CODECOV_TOKEN} -f cxon.info
