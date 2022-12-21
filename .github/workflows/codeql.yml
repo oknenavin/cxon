@@ -2,6 +2,10 @@ name: "CodeQL"
 
 on:
   push:
+    branches:
+      - develop
+      - master
+      - release/*
   pull_request:
   workflow_dispatch:
   schedule:

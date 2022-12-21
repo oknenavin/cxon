@@ -2,6 +2,10 @@ name: Codacy
 
 on:
   push:
+    branches:
+      - develop
+      - master
+      - release/*
   pull_request:
   workflow_dispatch:
   schedule:
@@ -18,7 +22,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: boostorg/boost
-        ref: boost-1.78.0
+        ref: boost-1.81.0
         path: .dep/boost
     - name: Setup Boost
       run: |
