@@ -32,6 +32,11 @@ namespace cxon { // cio::val::sink read
 
 }
 
+#define CXON_JSON_CLS_BARE(T)\
+    namespace cxon { namespace cio { namespace cls { \
+        template <> struct is_bare_class<T> : std::true_type {}; \
+    }}}
+
 #define CXON_JSON_CLS_FIELD(T, N, F)                cxon::json::cls::make_field<T>(N, &T::F)
 #if defined(__cpp_constexpr) && __cpp_constexpr >= 201603L
 #   define CXON_JSON_CLS_FIELD_DFLT(T, N, F, ...)      cxon::json::cls::make_field<T>(N, &T::F, [](const T& self) constexpr { return __VA_ARGS__; })
