@@ -50,6 +50,25 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
 
 }}}
 
+namespace cxon { namespace cio { namespace cls { // bare object support structured types
+
+    struct bare_class_tag {};
+
+    struct bare_class {
+        using bare_class_tag = cls::bare_class_tag;
+    };
+
+    namespace imp {
+        template <typename T, typename E = void_t<>>
+            struct is_bare_class_                                           : std::false_type {};
+        template <typename T>
+            struct is_bare_class_<T, void_t<typename T::bare_class_tag>>    : std::true_type {};
+    }
+    template <typename T>
+        struct is_bare_class : imp::is_bare_class_<T> {};
+
+}}}
+
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace cls {
@@ -152,12 +171,33 @@ namespace cxon { namespace cio { namespace cls {
                 return read_<X, 0, N>::field(s, name, fs, st, i, e, cx);
             }
 
+        template <typename X, typename S, typename II, typename Cx>
+            inline auto read_head_(II& i, II e, Cx& cx) -> enable_if_t<!is_bare_class<S>::value, bool>
+                { return consume<X>(X::map::beg, i, e, cx); }
+        template <typename X, typename S, typename II, typename Cx>
+            inline auto read_head_(II& i, II e, Cx&)    -> enable_if_t< is_bare_class<S>::value, bool>
+                { return consume<X>(i, e), true; }
+
+        template <typename X, typename S, typename II, typename Cx>
+            inline auto read_tail_(II& i, II e, Cx& cx) -> enable_if_t<!is_bare_class<S>::value, bool>
+                { return consume<X>(X::map::end, i, e, cx); }
+        template <typename X, typename S, typename II, typename Cx>
+            inline auto read_tail_(II& i, II e, Cx& cx) -> enable_if_t< is_bare_class<S>::value, bool>
+                { return (consume<X>(i, e), i == e) || cx/X::read_error::unexpected; }
+
+        template <typename X, typename S, typename II>
+            inline auto read_tail_(II& i, II e)         -> enable_if_t<!is_bare_class<S>::value, bool>
+                { return consume<X>(X::map::end, i, e); }
+        template <typename X, typename S, typename II>
+            inline auto read_tail_(II& i, II e)         -> enable_if_t< is_bare_class<S>::value, bool>
+                { return consume<X>(i, e), i == e; }
+
     }
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& fs, II& i, II e, Cx& cx) {
-            if (!consume<X>(X::map::beg, i, e, cx)) return false;
-                if ( consume<X>(X::map::end, i, e)) return true;
+            if (!imp::read_head_<X, S>(i, e, cx)) return false;
+                if (imp::read_tail_<X, S>(i, e)) return true;
             int st[std::tuple_size<fields<F...>>::value] = {0};
             for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
                 consume<X>(i, e);
@@ -168,7 +208,7 @@ namespace cxon { namespace cio { namespace cls {
                         return cx && (rewind(i, o), cx/X::read_error::unexpected);
                     if (consume<X>(X::map::sep, i, e))
                         continue;
-                return consume<X>(X::map::end, i, e, cx);
+                return imp::read_tail_<X, S>(i, e, cx);
             }
             return true;
         }
@@ -224,18 +264,27 @@ namespace cxon { namespace cio { namespace cls {
             };
 
         template <typename X, typename S, typename F, typename O, typename Cx>
-            constexpr bool write_fields_(O& o, const S& s, const F& fs, Cx& cx) {
+            constexpr bool write_fields_bare_(O& o, const S& s, const F& fs, Cx& cx) {
                 return write_<X, 0, std::tuple_size<F>::value>::field(o, s, fs, cx);
+            }
+
+        template <typename X, typename S, typename ...F, typename O, typename Cx>
+            inline auto write_fields_(O& o, const S& s, const fields<F...>& fs, Cx& cx) -> enable_if_t<!is_bare_class<S>::value, bool> {
+                return  poke<X>(o, X::map::beg, cx) &&
+                            write_fields_bare_<X>(o, s, fs, cx) &&
+                        poke<X>(o, X::map::end, cx)
+                ;
+            }
+        template <typename X, typename S, typename ...F, typename O, typename Cx>
+            inline auto write_fields_(O& o, const S& s, const fields<F...>& fs, Cx& cx) -> enable_if_t< is_bare_class<S>::value, bool> {
+                return  write_fields_bare_<X>(o, s, fs, cx);
             }
 
     }
 
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& fs, Cx& cx) {
-            return  poke<X>(o, X::map::beg, cx) &&
-                        imp::write_fields_<X>(o, s, fs, cx) &&
-                    poke<X>(o, X::map::end, cx)
-            ;
+            return imp::write_fields_<X>(o, s, fs, cx);
         }
 
 }}}
