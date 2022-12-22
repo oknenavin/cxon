@@ -273,6 +273,113 @@ TEST_BEG(interface_pretty, cxon::JSON<>, "/core") // pretty
 TEST_END()
 
 
+namespace {
+    struct struct_json {
+        std::vector<int> even, odd;
+        bool operator ==(const struct_json& t) const { return even == t.even && odd == t.odd; }
+    };
+}
+CXON_JSON_CLS(struct_json,
+    CXON_JSON_CLS_FIELD_ASIS(even),
+    CXON_JSON_CLS_FIELD_ASIS(odd)
+)
+
+TEST_BEG(struct_json, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
+    struct_json sb = {{2, 4}, {5, 7}};
+    char const s0[] =
+        "{\n"
+        "  even: [\n"
+        "    2,\n"
+        "    4\n"
+        "  ],\n"
+        "  odd: [\n"
+        "    5,\n"
+        "    7\n"
+        "  ]\n"
+        "}"
+    ;
+    std::string s1;
+        cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), sb);
+    TEST_CHECK(s1 == s0);
+TEST_END()
+
+
+namespace {
+    struct struct_bare_1 {
+        std::vector<int> even, odd;
+        bool operator ==(const struct_bare_1& t) const { return even == t.even && odd == t.odd; }
+    };
+}
+CXON_JSON_CLS(struct_bare_1,
+    CXON_JSON_CLS_FIELD_ASIS(even),
+    CXON_JSON_CLS_FIELD_ASIS(odd)
+)
+CXON_JSON_CLS_BARE(struct_bare_1);
+
+TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
+    R_TEST(struct_bare_1 {}, "");
+    W_TEST("even:[],odd:[]", struct_bare_1 {});
+    R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4],odd:[5,7]");
+    W_TEST("even:[2,4],odd:[5,7]", struct_bare_1 {{2, 4}, {5, 7}});
+    // tidy
+    {   char const s0[] =
+            "even: [\n"
+            "  2,\n"
+            "  4\n"
+            "],\n"
+            "odd: [\n"
+            "  5,\n"
+            "  7\n"
+            "]"
+        ;
+        struct_bare_1 b0;
+            cxon::from_bytes<XXON>(b0, s0);
+        std::string s1;
+            cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0);
+        TEST_CHECK(s1 == s0);
+    }
+TEST_END()
+
+namespace {
+    struct struct_bare_2 {
+        using bare_class_tag = cxon::json::cls::bare_class_tag;
+        std::vector<int> even, odd;
+        bool operator ==(const struct_bare_2& t) const { return even == t.even && odd == t.odd; }
+    };
+}
+CXON_JSON_CLS(struct_bare_2,
+    CXON_JSON_CLS_FIELD_ASIS(even),
+    CXON_JSON_CLS_FIELD_ASIS(odd)
+)
+
+TEST_BEG(struct_bare_2, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
+    R_TEST(struct_bare_2 {}, "");
+    W_TEST("even:[],odd:[]", struct_bare_2 {});
+    R_TEST(struct_bare_2 {{2, 4}, {5, 7}}, "even:[2,4],odd:[5,7]");
+    W_TEST("even:[2,4],odd:[5,7]", struct_bare_2 {{2, 4}, {5, 7}});
+TEST_END()
+
+namespace {
+    struct struct_bare_3 : cxon::cio::cls::bare_class {
+        struct_bare_3() : even(), odd() {}
+        struct_bare_3(const std::vector<int>& e, const std::vector<int>& o) : even(e), odd(o) {}
+        std::vector<int> even, odd;
+        bool operator ==(const struct_bare_3& t) const { return even == t.even && odd == t.odd; }
+    };
+}
+CXON_JSON_CLS(struct_bare_3,
+    CXON_JSON_CLS_FIELD_ASIS(even),
+    CXON_JSON_CLS_FIELD_ASIS(odd)
+)
+
+TEST_BEG(struct_bare_3, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
+    R_TEST(struct_bare_3 {}, "");
+    W_TEST("even:[],odd:[]", struct_bare_3 {});
+    R_TEST(struct_bare_3 {{2, 4}, {5, 7}}, "even:[2,4],odd:[5,7]");
+    W_TEST("even:[2,4],odd:[5,7]", struct_bare_3 {{2, 4}, {5, 7}});
+TEST_END()
+
+
 namespace jsonrpc {
 
     // request
