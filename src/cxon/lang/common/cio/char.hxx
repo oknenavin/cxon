@@ -104,7 +104,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X, typename II>
             inline char32_t esc_to_utf32_(II& i, II e) {
                 switch (peek(i, e)) {
-                    case '\"':  return ++i, U'\"';
+                    case '"' :  return ++i, U'"';
                     case '\\':  return ++i, U'\\';
                     case '/' :  return ++i, U'/';
                     case 'b' :  return ++i, U'\b';
