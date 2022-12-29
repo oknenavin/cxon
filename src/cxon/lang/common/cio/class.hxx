@@ -165,57 +165,68 @@ namespace cxon { namespace cio { namespace cls {
                         return false;
                     }
             };
-
         template <typename X, std::size_t N, typename S, typename F, typename II, typename Cx>
             constexpr bool read_field_(S& s, const char* name, const F& fs, int (&st)[N], II& i, II e, Cx& cx) {
                 return read_<X, 0, N>::field(s, name, fs, st, i, e, cx);
             }
 
-        template <typename X, typename S, typename II, typename Cx>
-            inline auto read_head_(II& i, II e, Cx& cx) -> enable_if_t<!is_bare_class<S>::value, bool>
-                { return consume<X>(X::map::beg, i, e, cx); }
-        template <typename X, typename S, typename II, typename Cx>
-            inline auto read_head_(II& i, II e, Cx&)    -> enable_if_t< is_bare_class<S>::value, bool>
-                { return consume<X>(i, e), true; }
-
-        template <typename X, typename S, typename II, typename Cx>
-            inline auto read_tail_(II& i, II e, Cx& cx) -> enable_if_t<!is_bare_class<S>::value, bool>
-                { return consume<X>(X::map::end, i, e, cx); }
-        template <typename X, typename S, typename II, typename Cx>
-            inline auto read_tail_(II& i, II e, Cx& cx) -> enable_if_t< is_bare_class<S>::value, bool>
-                { return (consume<X>(i, e), i == e) || cx/X::read_error::unexpected; }
-
-        template <typename X, typename S, typename II>
-            inline auto read_tail_(II& i, II e)         -> enable_if_t<!is_bare_class<S>::value, bool>
-                { return consume<X>(X::map::end, i, e); }
-        template <typename X, typename S, typename II>
-            inline auto read_tail_(II& i, II e)         -> enable_if_t< is_bare_class<S>::value, bool>
-                { return consume<X>(i, e), i == e; }
+        template <typename X, typename S, typename ...F, typename II, typename Cx>
+            inline auto read_fields_(S& s, const fields<F...>& fs, II& i, II e, Cx& cx)
+                -> enable_if_t<!is_bare_class<S>::value, bool>
+            {
+                if (!consume<X>(X::map::beg, i, e, cx)) return false;
+                    if (consume<X>(X::map::end, i, e))  return true;
+                int st[sizeof...(F)] = {0};
+                for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
+                    consume<X>(i, e);
+                    II const o = i;
+                        if (!read_map_key<X>(id, i, e, cx))
+                            return false;
+                        if (!read_field_<X>(s, id, fs, st, i, e, cx))
+                            return cx && (rewind(i, o), cx/X::read_error::unexpected);
+                        if (consume<X>(X::map::sep, i, e))
+                            continue;
+                    return consume<X>(X::map::end, i, e, cx);
+                }
+                return true;
+            }
+        template <typename X, typename S, typename ...F, typename II, typename Cx>
+            inline auto read_fields_(S& s, const fields<F...>& fs, II& i, II e, Cx& cx)
+                -> enable_if_t< is_bare_class<S>::value, bool>
+            {
+                consume<X>(i, e);
+                    if (i == e) return true;
+                int st[sizeof...(F)] = {0};
+                for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; i != e; ) {
+                    II const o = i;
+                        if (!read_map_key<X>(id, i, e, cx))
+                            return false;
+                        if (!read_field_<X>(s, id, fs, st, i, e, cx))
+                            return cx && (rewind(i, o), cx/X::read_error::unexpected);
+                        consume<X>(i, e);
+                }
+                return true;
+            }
 
     }
 
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& fs, II& i, II e, Cx& cx) {
-            if (!imp::read_head_<X, S>(i, e, cx)) return false;
-                if (imp::read_tail_<X, S>(i, e)) return true;
-            int st[std::tuple_size<fields<F...>>::value] = {0};
-            for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
-                consume<X>(i, e);
-                II const o = i;
-                    if (!read_map_key<X>(id, i, e, cx))
-                        return false;
-                    if (!imp::read_field_<X>(s, id, fs, st, i, e, cx))
-                        return cx && (rewind(i, o), cx/X::read_error::unexpected);
-                    if (consume<X>(X::map::sep, i, e))
-                        continue;
-                return imp::read_tail_<X, S>(i, e, cx);
-            }
-            return true;
+            return imp::read_fields_<X>(s, fs, i, e, cx);
         }
 
     // write
 
     namespace imp {
+
+        template <typename X, typename S, typename O, typename Cx>
+            inline auto write_sep_(O& o, Cx& cx) -> enable_if_t<!is_bare_class<S>::value, bool> {
+                return poke<X>(o, X::map::sep, cx);
+            }
+        template <typename X, typename S, typename O, typename Cx>
+            inline auto write_sep_(O& o, Cx& cx) -> enable_if_t< is_bare_class<S>::value, bool> {
+                return poke<X>(o, '\n', cx);
+            }
 
         template <typename X, std::size_t N, std::size_t L>
             struct write_next_ {
@@ -224,7 +235,7 @@ namespace cxon { namespace cio { namespace cls {
                         using T = typename std::tuple_element<N, F>::type;
                         CXON_IF_CONSTEXPR (!val::is_sink<typename T::type>::value) {
                             if (!std::get<N>(fs).dflt(s))
-                                return  poke<X>(o, X::map::sep, cx) && write_field<X>(o, s, std::get<N>(fs), cx) &&
+                                return  write_sep_<X, S>(o, cx) && write_field<X>(o, s, std::get<N>(fs), cx) &&
                                         write_next_<X, N + 1, L>::field(o, s, fs, cx)
                                 ;
                             return      write_next_<X, N + 1, L>::field(o, s, fs, cx);

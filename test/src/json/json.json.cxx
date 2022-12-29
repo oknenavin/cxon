@@ -318,15 +318,16 @@ CXON_JSON_CLS_BARE(struct_bare_1);
 
 TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
     R_TEST(struct_bare_1 {}, "");
-    W_TEST("even:[],odd:[]", struct_bare_1 {});
-    R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4],odd:[5,7]");
-    W_TEST("even:[2,4],odd:[5,7]", struct_bare_1 {{2, 4}, {5, 7}});
+    W_TEST("even:[]\nodd:[]", struct_bare_1 {});
+    R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4]\nodd:[5,7]");
+    W_TEST("even:[2,4]\nodd:[5,7]", struct_bare_1 {{2, 4}, {5, 7}});
+    R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4] odd:[5,7]");
     // tidy
     {   char const s0[] =
             "even: [\n"
             "  2,\n"
             "  4\n"
-            "],\n"
+            "]\n"
             "odd: [\n"
             "  5,\n"
             "  7\n"
@@ -337,6 +338,32 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
         std::string s1;
             cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0);
         TEST_CHECK(s1 == s0);
+    }
+    {   char const s0[] =
+            "[\n"
+            "  \"\",\n"
+            "  \"undefined\"\n"
+            "]"
+        ;
+        std::vector<std::string> b0;
+            cxon::from_bytes<XXON>(b0, s0);
+        std::string s1;
+            cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0);
+        TEST_CHECK(s1 == s0);
+    }
+    {
+        TEST_CHECK(
+            "\"a\": [\n\t\"b\",\n\t1,\n\t\"c\"\n],\n\"d\": \"e\",\n\"f\": {\n\t\"g\": [\n\t\t2,\n\t\t\"h\",\n\t\t3\n\t],\n\t\"j\": \"k\"\n}" ==
+            cxon::json::tidy<std::string>(R"("a": ["b", 1, "c"], "d": "e", "f": {"g": [2, "h", 3], "j": "k"})")
+        );
+        TEST_CHECK(
+            "\"a\": [\n\t\"b\"\n\t1\n\t\"c\"\n]\n\"d\": \"e\"\n\"f\": {\n\t\"g\": [\n\t\t2\n\t\t\"h\"\n\t\t3\n\t]\n\t\"j\": \"k\"\n}" ==
+            cxon::json::tidy<std::string>(R"("a": ["b"  1  "c"]  "d": "e"  "f": {"g": [2  "h"  3]  "j": "k"})")
+        );
+        TEST_CHECK(
+            "a: [\n\tb\n\t1\n\tc\n]\nd: e\nf: {\n\tg: [\n\t\t2\n\t\th\n\t\t3\n\t]\n\tj: k\n}" ==
+            cxon::json::tidy<std::string>(R"( a : [ b   1   c ]   d :  e    f : { g : [2   h   3]   j :  k })")
+        );
     }
 TEST_END()
 
@@ -354,9 +381,10 @@ CXON_JSON_CLS(struct_bare_2,
 
 TEST_BEG(struct_bare_2, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
     R_TEST(struct_bare_2 {}, "");
-    W_TEST("even:[],odd:[]", struct_bare_2 {});
-    R_TEST(struct_bare_2 {{2, 4}, {5, 7}}, "even:[2,4],odd:[5,7]");
-    W_TEST("even:[2,4],odd:[5,7]", struct_bare_2 {{2, 4}, {5, 7}});
+    W_TEST("even:[]\nodd:[]", struct_bare_2 {});
+    R_TEST(struct_bare_2 {{2, 4}, {5, 7}}, "even:[2,4]\nodd:[5,7]");
+    W_TEST("even:[2,4]\nodd:[5,7]", struct_bare_2 {{2, 4}, {5, 7}});
+    R_TEST(struct_bare_2 {{2, 4}, {5, 7}}, "even:[2,4] odd:[5,7]");
 TEST_END()
 
 namespace {
@@ -374,9 +402,10 @@ CXON_JSON_CLS(struct_bare_3,
 
 TEST_BEG(struct_bare_3, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
     R_TEST(struct_bare_3 {}, "");
-    W_TEST("even:[],odd:[]", struct_bare_3 {});
-    R_TEST(struct_bare_3 {{2, 4}, {5, 7}}, "even:[2,4],odd:[5,7]");
-    W_TEST("even:[2,4],odd:[5,7]", struct_bare_3 {{2, 4}, {5, 7}});
+    W_TEST("even:[]\nodd:[]", struct_bare_3 {});
+    R_TEST(struct_bare_3 {{2, 4}, {5, 7}}, "even:[2,4]\nodd:[5,7]");
+    W_TEST("even:[2,4]\nodd:[5,7]", struct_bare_3 {{2, 4}, {5, 7}});
+    R_TEST(struct_bare_3 {{2, 4}, {5, 7}}, "even:[2,4] odd:[5,7]");
 TEST_END()
 
 
