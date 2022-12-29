@@ -426,7 +426,7 @@ int main() {
 
 ##### [`JSON`](http://json.org)
 
-The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].  
+The implementation strictly complies with [`RFC8259`][RFC8259] / [`ECMA-404`][ECMA-404].  
 `CXON/JSON` also provides a polymorphic type [`cxon::json::node`](src/cxon/lang/json/node/README.md),
 which can represent arbitrary `JSON` data.
 
@@ -526,7 +526,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
 [img-cvr]: https://scan.coverity.com/projects/18083/badge.svg
-[RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
+[RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 [RFC7049]: https://tools.ietf.org/rfc/rfc7049.txt
 [RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt
