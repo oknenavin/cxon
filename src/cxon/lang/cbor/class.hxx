@@ -145,8 +145,8 @@ namespace cxon { namespace cbor { namespace cls {
     template <typename X, typename S, typename ...F, typename II, typename Cx>
         inline bool read_fields(S& s, const fields<F...>& fs, II& i, II e, Cx& cx) {
             std::size_t n;
-            if (cbor::cnt::read_size_le<X>(n, std::tuple_size<fields<F...>>::value, i, e, cx)) {
-                int st[std::tuple_size<fields<F...>>::value] = {0};
+            if (cbor::cnt::read_size_le<X>(n, sizeof...(F), i, e, cx)) {
+                int st[sizeof...(F)] = {0};
                 for (char id[bio::ids_len_max::constant<napa_type<Cx>>(64)]; n; --n) {
                     II const o = i;
                         if (!read_value<X>(id, i, e, cx))
@@ -205,8 +205,8 @@ namespace cxon { namespace cbor { namespace cls {
     }
     template <typename X, typename S, typename ...F, typename O, typename Cx>
         inline bool write_fields(O& o, const S& s, const fields<F...>& fs, Cx& cx) {
-            int st[std::tuple_size<fields<F...>>::value] = {0};
-                auto const ct = imp::field_state_<std::tuple_size<fields<F...>>::value>(s, fs, st);
+            int st[sizeof...(F)] = {0};
+                auto const ct = imp::field_state_<sizeof...(F)>(s, fs, st);
             return  cbor::cnt::write_size<X>(o, X::map, ct, cx) &&
                     imp::write_fields_<X>(o, s, fs, st, cx)
             ;
