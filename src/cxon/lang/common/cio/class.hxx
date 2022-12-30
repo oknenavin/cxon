@@ -170,6 +170,15 @@ namespace cxon { namespace cio { namespace cls {
                 return read_<X, 0, N>::field(s, name, fs, st, i, e, cx);
             }
 
+        template <typename X, typename II>
+            inline auto check_end_(II&, II)     -> enable_if_t<!X::allow_trailing_separator, bool> {
+                return false;
+            }
+        template <typename X, typename II>
+            inline auto check_end_(II& i, II e) -> enable_if_t< X::allow_trailing_separator, bool> {
+                return consume<X>(i, e), peek(i, e) == X::map::end;
+            }
+
         template <typename X, typename S, typename ...F, typename II, typename Cx>
             inline auto read_fields_(S& s, const fields<F...>& fs, II& i, II e, Cx& cx)
                 -> enable_if_t<!is_bare_class<S>::value, bool>
@@ -184,7 +193,7 @@ namespace cxon { namespace cio { namespace cls {
                             return false;
                         if (!read_field_<X>(s, id, fs, st, i, e, cx))
                             return cx && (rewind(i, o), cx/X::read_error::unexpected);
-                        if (consume<X>(X::map::sep, i, e))
+                        if (consume<X>(X::map::sep, i, e) && !imp::check_end_<X>(i, e))
                             continue;
                     return consume<X>(X::map::end, i, e, cx);
                 }

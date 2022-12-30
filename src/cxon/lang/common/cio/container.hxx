@@ -50,9 +50,14 @@ namespace cxon { namespace cio { namespace cnt {
     namespace imp {
 
         template <typename X, typename Cr, typename II, typename EA>
-            inline void list_read_(II& i, II e, EA element_add) {
+            inline auto list_read_(II& i, II e, EA element_add) -> enable_if_t<!X::allow_trailing_separator> {
                 // expects non-empty list
                 while (element_add() && consume<X>(Cr::sep, i, e)) ;
+            }
+        template <typename X, typename Cr, typename II, typename EA>
+            inline auto list_read_(II& i, II e, EA element_add) -> enable_if_t< X::allow_trailing_separator> {
+                // expects non-empty list
+                while (element_add() && consume<X>(Cr::sep, i, e) && (consume<X>(i, e), peek(i, e) != Cr::end)) ;
             }
 
         template <typename X, typename Cr, typename II, typename Cx, typename EA>

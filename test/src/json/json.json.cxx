@@ -322,6 +322,7 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
     R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4]\nodd:[5,7]");
     W_TEST("even:[2,4]\nodd:[5,7]", struct_bare_1 {{2, 4}, {5, 7}});
     R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4] odd:[5,7]");
+    R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:x2,4] odd:[5,7]", json::read_error::unexpected, 5);
     // tidy
     {   char const s0[] =
             "even: [\n"
@@ -364,6 +365,7 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
             "a: [\n\tb\n\t1\n\tc\n]\nd: e\nf: {\n\tg: [\n\t\t2\n\t\th\n\t\t3\n\t]\n\tj: k\n}" ==
             cxon::json::tidy<std::string>(R"( a : [ b   1   c ]   d :  e    f : { g : [2   h   3]   j :  k })")
         );
+        TEST_CHECK(R"(a\:b: c)" == cxon::json::tidy<std::string>(R"(a\:b: c)"));
     }
 TEST_END()
 
@@ -406,6 +408,41 @@ TEST_BEG(struct_bare_3, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
     R_TEST(struct_bare_3 {{2, 4}, {5, 7}}, "even:[2,4]\nodd:[5,7]");
     W_TEST("even:[2,4]\nodd:[5,7]", struct_bare_3 {{2, 4}, {5, 7}});
     R_TEST(struct_bare_3 {{2, 4}, {5, 7}}, "even:[2,4] odd:[5,7]");
+TEST_END()
+
+
+struct trailing_separator_traits : cxon::json::format_traits {
+    static constexpr bool allow_trailing_separator = true;
+};
+
+TEST_BEG(trailing_separator_1, cxon::JSON<trailing_separator_traits>, "/core")
+    R_TEST(std::vector<int> {1, 3}, "[1, 3,]");
+    R_TEST(std::vector<int> {1, 3}, "[1, 3 ]");
+    R_TEST(std::map<char, int> {{'x', 1}, {'y', 3}}, R"({"x": 1, "y": 3,})");
+    R_TEST(std::map<char, int> {{'x', 1}, {'y', 3}}, R"({"x": 1, "y": 3 })");
+TEST_END()
+
+namespace {
+    struct struct_trailing_separator_1 {
+        int x, y;
+        bool operator ==(const struct_trailing_separator_1& t) const { return x == t.x && y == t.y; }
+    };
+}
+CXON_JSON_CLS(struct_trailing_separator_1,
+    CXON_JSON_CLS_FIELD_ASIS(x),
+    CXON_JSON_CLS_FIELD_ASIS(y)
+)
+
+TEST_BEG(trailing_separator_2, cxon::JSON<trailing_separator_traits>, "/core")
+    R_TEST(struct_trailing_separator_1 {1, 3}, R"({"x": 1, "y": 3,})");
+    R_TEST(struct_trailing_separator_1 {1, 3}, R"({"x": 1, "y": 3 })");
+TEST_END()
+
+TEST_BEG(trailing_separator_3, cxon::JSON<trailing_separator_traits>, "/core")
+    TEST_CHECK("[\n\ta,\n\tb,\n]" == cxon::json::tidy<std::string>(R"([a, b,])"));
+    TEST_CHECK("[\n\ta,\n\tb\n]" == cxon::json::tidy<std::string>(R"([a, b ])"));
+    TEST_CHECK("{\n\ta: 1,\n\tb: 2,\n}" == cxon::json::tidy<std::string>(R"({a: 1, b: 2,})"));
+    TEST_CHECK("{\n\ta: 1,\n\tb: 2\n}" == cxon::json::tidy<std::string>(R"({a: 1, b: 2 })"));
 TEST_END()
 
 
