@@ -60,6 +60,7 @@ namespace cxon { namespace cio { // format traits
 
         static constexpr bool quote_unquoted_keys       = false; // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
         static constexpr bool unquote_quoted_keys       = false; // object keys for types serialized with quotes will be unquoted (e.g. strings)
+        static constexpr bool allow_trailing_separator  = false; // allow trailing separators (map & lists)
     };
 
 }}
