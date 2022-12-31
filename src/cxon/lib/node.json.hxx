@@ -289,7 +289,8 @@ namespace cxon {
                     static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
                         -> enable_if_t<!Y::quote_unquoted_keys, bool>
                     {
-                        cio::consume<Y>(i, e);
+                        if (!cio::consume<Y>(i, e, cx))
+                            return false;
                         switch (cio::peek(i, e)) {
 #                           define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
                                 case '{'                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(object),     i, e, cx); }
@@ -309,7 +310,8 @@ namespace cxon {
                     {
 #                       define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
                             CXON_IF_CONSTEXPR (Y::unquote_quoted_keys) {
-                                cio::consume<Y>(i, e);
+                                if (!cio::consume<Y>(i, e, cx))
+                                    return false;
                                 switch (cio::peek(i, e)) {
                                         case '{': { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(object), i, e, cx); }
                                         case '[': { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),  i, e, cx); }
@@ -379,7 +381,8 @@ namespace cxon {
                 }
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                    cio::consume<Y>(i, e);
+                    if (!cio::consume<Y>(i, e, cx))
+                        return false;
                     switch (cio::peek(i, e)) {
 #                       define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
                             case '{'                : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(object),   i, e, cx); }
@@ -446,7 +449,8 @@ namespace cxon {
                         static auto key(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx)
                             -> enable_if_t<!Y::quote_unquoted_keys, bool>
                         {
-                            cio::consume<Y>(i, e);
+                            if (!cio::consume<Y>(i, e, cx))
+                                return false;
                             switch (cio::peek(i, e)) {
 #                               define CXON_IMBUE(T) t.template imbue<typename cbor::basic_node<Tr>::T>()
                                     case '{'                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(map),        i, e, cx); }
@@ -466,7 +470,8 @@ namespace cxon {
                         {
 #                           define CXON_IMBUE(T) t.template imbue<typename cbor::basic_node<Tr>::T>()
                                 CXON_IF_CONSTEXPR (Y::unquote_quoted_keys) {
-                                    cio::consume<Y>(i, e);
+                                    if (!cio::consume<Y>(i, e, cx))
+                                        return false;
                                     switch (cio::peek(i, e)) {
                                         case '{': { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(map),    i, e, cx); }
                                         case '[': { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),  i, e, cx); }
@@ -540,7 +545,8 @@ namespace cxon {
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
-                        cio::consume<Y>(i, e);
+                        if (!cio::consume<Y>(i, e, cx))
+                            return false;
                         switch (cio::peek(i, e)) {
 #                           define CXON_IMBUE(T) t.template imbue<typename cbor::basic_node<Tr>::T>()
                                 case '{'                    : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(map),      i, e, cx); }
@@ -587,10 +593,7 @@ namespace cxon {
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(cbor::undefined&, II& i, II e, Cx& cx) {
                         II const o = i;
-                        cio::consume<Y>(i, e);
-                        return  (cio::consume<Y>(Y::id::nil, i, e) ||
-                                (cio::rewind(i, o), cx/json::read_error::unexpected))
-                        ;
+                        return cio::consume<Y>(i, e, cx) && (cio::consume<Y>(Y::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected));
                     }
             };
 

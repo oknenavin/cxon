@@ -256,6 +256,7 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
     // nullptr_t
         R_TEST(nullptr, "null");
         W_TEST("null", nullptr);
+        R_TEST(nullptr, " null");
         R_TEST(nullptr, "", json::read_error::unexpected, 0);
         R_TEST(nullptr, "nu", json::read_error::unexpected, 0);
         R_TEST(nullptr, "a", json::read_error::unexpected, 0);

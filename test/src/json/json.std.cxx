@@ -685,6 +685,11 @@ TEST_END()
             W_TEST("null", optional<int>());
             R_TEST(optional<int>(), "nil", json::read_error::unexpected, 0);
     TEST_END()
+
+    TEST_BEG(allow_comments_optional, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+        using namespace std;
+            R_TEST(optional<int>(42), "/42", json::read_error::unexpected, 1);
+    TEST_END()
 #endif
 
 

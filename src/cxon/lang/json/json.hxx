@@ -27,6 +27,7 @@ namespace cxon { namespace json { // format traits
 
         static constexpr bool quote_unquoted_keys       = true;     // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
         static constexpr bool unquote_quoted_keys       = false;    // object keys for types serialized with quotes will be unquoted (e.g. strings)
+        static constexpr bool allow_comments            = false;    // allow c-style comments
         static constexpr bool allow_trailing_separator  = false;    // allow trailing separators for objects and arrays
     };
 
