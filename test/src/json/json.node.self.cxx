@@ -766,7 +766,7 @@ namespace test { namespace kind {
                 }
             }
             {   node n; node const o = std::numeric_limits<node::real>::infinity();
-                    cxon::from_bytes<UK_JSON>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+                    cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
                 CHECK(n == o);
             }
             {   node n;
@@ -814,7 +814,7 @@ namespace test { namespace kind {
                 CHECK(s == R"({{1:2}:3,[4]:5,"6":7,"-inf":17,12:13,"inf":16,-8:9,10:11,true:14,null:15})");
             }
             {   node n; node const o = std::numeric_limits<node::real>::infinity();
-                    cxon::from_bytes<UK_JSON>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+                    cxon::from_bytes<UK_JSON, cxon::cbor::node_traits<>>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
                 CHECK(n == o);
             }
             {   node n;
