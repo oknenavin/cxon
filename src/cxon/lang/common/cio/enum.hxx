@@ -46,7 +46,8 @@ namespace cxon { namespace cio { namespace enm {
 
     template <typename X, typename E, typename V, typename II, typename Cx>
         inline bool read_value(E& t, V f, V l, II& i, II e, Cx& cx) {
-            consume<X>(i, e);
+            if (!consume<X>(i, e, cx))
+                return false;
             II const o = i;
             char id[ids_len_max::constant<napa_type<Cx>>(64)];
                 if (!cxon::read_value<X>(id, i, e, cx))

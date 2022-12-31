@@ -301,8 +301,7 @@ namespace cxon { namespace cio { namespace num { // read
     }
     template <typename X, typename T, typename II, typename Cx>
         inline bool number_read(T& t, II& i, II e, Cx& cx) {
-            consume<X>(i, e);
-            return imp::number_read_<X>(t, i, e, cx);
+            return consume<X>(i, e, cx) && imp::number_read_<X>(t, i, e, cx);
         }
 
 }}}

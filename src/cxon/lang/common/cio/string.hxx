@@ -170,16 +170,16 @@ namespace cxon { namespace cio { namespace str {
         inline auto array_read(T* f, T* l, II& i, II e, Cx& cx)
             -> enable_if_t<is_char<T>::value, bool>
         {
-            consume<X>(i, e);
             auto c = cnt::make_range_container(f, l);
-            return string_read<X>(c, i, e, cx) && (c.append({}), true);
+            return consume<X>(i, e, cx) && string_read<X>(c, i, e, cx) && (c.append({}), true);
         }
 
     template <typename X, typename T, typename II, typename Cx>
         inline auto pointer_read(T*& t, II& i, II e, Cx& cx)
             -> enable_if_t<is_char<T>::value, bool>
         {
-            consume<X>(i, e);
+            if (!consume<X>(i, e, cx))
+                return false;
             if (peek(i, e) == *X::id::nil && consume<X>(X::id::nil, i, e))
                 return true;
             auto c = cnt::make_pointer_container<X, T>(cx);

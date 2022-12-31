@@ -184,15 +184,19 @@ namespace cxon { namespace cio { namespace cls {
                 -> enable_if_t<!is_bare_class<S>::value, bool>
             {
                 if (!consume<X>(X::map::beg, i, e, cx)) return false;
-                    if (consume<X>(X::map::end, i, e))  return true;
+                    if (!consume<X>(i, e, cx)) return false;
+                        if (consume<X>(X::map::end, i, e)) return true;
                 int st[sizeof...(F)] = {0};
                 for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
-                    consume<X>(i, e);
+                    if (!consume<X>(i, e, cx))
+                        return false;
                     II const o = i;
                         if (!read_map_key<X>(id, i, e, cx))
                             return false;
                         if (!read_field_<X>(s, id, fs, st, i, e, cx))
                             return cx && (rewind(i, o), cx/X::read_error::unexpected);
+                        if (!consume<X>(i, e, cx))
+                            return false;
                         if (consume<X>(X::map::sep, i, e) && !imp::check_end_<X>(i, e))
                             continue;
                     return consume<X>(X::map::end, i, e, cx);
@@ -203,7 +207,7 @@ namespace cxon { namespace cio { namespace cls {
             inline auto read_fields_(S& s, const fields<F...>& fs, II& i, II e, Cx& cx)
                 -> enable_if_t< is_bare_class<S>::value, bool>
             {
-                consume<X>(i, e);
+                if (!consume<X>(i, e, cx)) return false;
                     if (i == e) return true;
                 int st[sizeof...(F)] = {0};
                 for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; i != e; ) {
@@ -212,7 +216,8 @@ namespace cxon { namespace cio { namespace cls {
                             return false;
                         if (!read_field_<X>(s, id, fs, st, i, e, cx))
                             return cx && (rewind(i, o), cx/X::read_error::unexpected);
-                        consume<X>(i, e);
+                        if (!consume<X>(i, e, cx))
+                            return false;
                 }
                 return true;
             }

@@ -26,6 +26,11 @@ namespace cxon { namespace test {
             static constexpr bool unquote_quoted_keys = true;
         };
 
+    template <typename T = cxon::json::format_traits>
+        struct allow_comments_traits : cxon::json::format_traits {
+            static constexpr bool allow_comments = true;
+        };
+
 }}
 
 #endif // CXON_JSON_TEST_HXX_

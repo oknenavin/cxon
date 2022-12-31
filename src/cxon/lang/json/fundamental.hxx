@@ -15,6 +15,8 @@ namespace cxon { // nullptr_t
         struct read<JSON<X>, std::nullptr_t> {
             template <typename II, typename Cx>
                 static bool value(std::nullptr_t& t, II& i, II e, Cx& cx) {
+                    if (!cio::consume<X>(i, e, cx))
+                        return false;
                     II const o = i;
                     return  (cio::consume<X>(X::id::nil, i, e) && (t = nullptr, true)) ||
                             (cio::rewind(i, o), cx/json::read_error::unexpected)
@@ -22,7 +24,8 @@ namespace cxon { // nullptr_t
                 }
             template <typename Cx>
                 static bool value(std::nullptr_t& t, const char*& i, const char* e, Cx& cx) {
-                    cio::consume<X>(i, e);
+                    if (!cio::consume<X>(i, e, cx))
+                        return false;
                     constexpr auto nl = X::id::len::nil;
                     return  (std::size_t(e - i) >= nl && std::char_traits<char>::compare(X::id::nil, i, nl) == 0 && (i += nl, t = nullptr, true)) ||
                             cx/json::read_error::unexpected
@@ -47,16 +50,19 @@ namespace cxon { // bool
             template <typename II, typename Cx>
                 static bool value(bool& t, II& i, II e, Cx& cx) {
                     static_assert(*X::id::pos != *X::id::neg, "boolean literals ambiguous"); // for input-iterator, id must be consumed
+                    if (!cio::consume<X>(i, e, cx))
+                        return false;
                     II const o = i;
-                        char const c = (cio::consume<X>(i, e), cio::peek(i, e));
+                        char const c = cio::peek(i, e);
                             if (c == *X::id::pos && cio::consume<X>(X::id::pos, i, e)) return t = true,  true;
                             if (c == *X::id::neg && cio::consume<X>(X::id::neg, i, e)) return t = false, true;
                     return cio::rewind(i, o), cx/json::read_error::boolean_invalid;
                 }
             template <typename Cx>
                 static bool value(bool& t, const char*& i, const char* e, Cx& cx) {
-                    cio::consume<X>(i, e);
-                        std::size_t const il = std::size_t(e - i);
+                    if (!cio::consume<X>(i, e, cx))
+                        return false;
+                    std::size_t const il = std::size_t(e - i);
                         constexpr auto pl = X::id::len::pos;
                     if (il >= pl && std::char_traits<char>::compare(X::id::pos, i, pl) == 0) return i += pl, t = true,  true;
                         constexpr auto nl = X::id::len::neg;

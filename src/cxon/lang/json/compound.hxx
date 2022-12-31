@@ -16,7 +16,8 @@ namespace cxon { // pointer
         struct read<JSON<X>, T*> {
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(T*& t, II& i, II e, Cx& cx) {
-                    cio::consume<Y>(i, e);
+                    if (!cio::consume<Y>(i, e, cx))
+                        return false;
                     if (cio::peek(i, e) == *Y::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
                         II const o = i;
                         return  (cio::consume<Y>(Y::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected)) &&

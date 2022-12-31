@@ -77,7 +77,7 @@ namespace cxon {
             template <typename II, typename Cx>
                 static bool value(boost::variant2::monostate&, II& i, II e, Cx& cx) {
                     II const o = i;
-                    return cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected);
+                    return cio::consume<X>(i, e, cx) && (cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected));
                 }
         };
 
