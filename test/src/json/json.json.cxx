@@ -303,6 +303,10 @@ TEST_BEG(struct_json, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/c
     TEST_CHECK(s1 == s0);
 TEST_END()
 
+TEST_BEG(struct_json_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/core")
+    R_TEST(struct_json {}, "{/}", json::read_error::unexpected, 2);
+TEST_END()
+
 
 namespace {
     struct struct_bare_1 {
@@ -368,6 +372,11 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
         TEST_CHECK(R"(a\:b: c)" == cxon::json::tidy<std::string>(R"(a\:b: c)"));
     }
 TEST_END()
+
+TEST_BEG(struct_bare_1_comments, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_comments_traits<>>>, "/core")
+    R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4]/ odd:[5,7]", json::read_error::unexpected, 11);
+TEST_END()
+
 
 namespace {
     struct struct_bare_2 {
@@ -443,6 +452,71 @@ TEST_BEG(trailing_separator_3, cxon::JSON<trailing_separator_traits>, "/core")
     TEST_CHECK("[\n\ta,\n\tb\n]" == cxon::json::tidy<std::string>(R"([a, b ])"));
     TEST_CHECK("{\n\ta: 1,\n\tb: 2,\n}" == cxon::json::tidy<std::string>(R"({a: 1, b: 2,})"));
     TEST_CHECK("{\n\ta: 1,\n\tb: 2\n}" == cxon::json::tidy<std::string>(R"({a: 1, b: 2 })"));
+TEST_END()
+
+
+namespace {
+    enum class enum_comments { x, y };
+    struct struct_comments {
+        int x, y;
+        bool operator ==(const struct_comments& t) const { return x == t.x && y == t.y; }
+    };
+}
+CXON_JSON_ENM(enum_comments,
+    CXON_JSON_ENM_VALUE_ASIS(x),
+    CXON_JSON_ENM_VALUE_ASIS(y)
+)
+CXON_JSON_CLS(struct_comments,
+    CXON_JSON_CLS_FIELD_ASIS(x),
+    CXON_JSON_CLS_FIELD_ASIS(y)
+)
+
+TEST_BEG(allow_comments_core, cxon::JSON<cxon::test::allow_comments_traits<>>, "/core")
+    R_TEST((unsigned)42, "// comment\n42");
+    R_TEST((unsigned)42, "//\n42");
+    R_TEST((unsigned)42, "/* comment */ 42");
+    R_TEST((unsigned)42, "/*\n comment\n*/ 42");
+    R_TEST((unsigned)42, "/***/ 42");
+    R_TEST((unsigned)42, "/*/*/ 42");
+    R_TEST((unsigned)42, "/**/ 42");
+    R_TEST((unsigned)42, "/", json::read_error::unexpected, 1);
+    R_TEST((unsigned)42, "//", json::read_error::integral_invalid, 2);
+    R_TEST((unsigned)42, "/*", json::read_error::integral_invalid, 2);
+    R_TEST((unsigned)42, "/**", json::read_error::integral_invalid, 3);
+    R_TEST((unsigned)42, "/**/", json::read_error::integral_invalid, 4);
+    R_TEST(nullptr, "/null", json::read_error::unexpected, 1);
+    R_TEST(true, "/true", json::read_error::unexpected, 1);
+    R_TEST((unsigned)42, "/42", json::read_error::unexpected, 1);
+    R_TEST((const char*)nullptr, "/ \"\"", json::read_error::unexpected, 1);
+    R_TEST(enum_comments::x, R"(/x)", json::read_error::unexpected, 1);
+    R_TEST(struct_comments {1, 2}, R"({"x":1/,"y":2})", json::read_error::unexpected, 7);
+    {   int x = 42;
+        R_TEST(&x, "/42", json::read_error::unexpected, 1);
+    }
+TEST_END()
+
+TEST_BEG(allow_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<cxon::test::allow_comments_traits<>>>, "/core")
+    R_TEST((unsigned)42, "// comment\n42");
+    R_TEST((unsigned)42, "//\n42");
+    R_TEST((unsigned)42, "/* comment */ 42");
+    R_TEST((unsigned)42, "/*\n comment\n*/ 42");
+    R_TEST((unsigned)42, "/***/ 42");
+    R_TEST((unsigned)42, "/*/*/ 42");
+    R_TEST((unsigned)42, "/**/ 42");
+    R_TEST((unsigned)42, "/", json::read_error::unexpected, 1);
+    R_TEST((unsigned)42, "//", json::read_error::integral_invalid, 2);
+    R_TEST((unsigned)42, "/*", json::read_error::integral_invalid, 2);
+    R_TEST((unsigned)42, "/**", json::read_error::integral_invalid, 3);
+    R_TEST((unsigned)42, "/**/", json::read_error::integral_invalid, 4);
+    R_TEST(nullptr, "/null", json::read_error::unexpected, 1);
+    R_TEST(true, "/true", json::read_error::unexpected, 1);
+    R_TEST((unsigned)42, "/42", json::read_error::unexpected, 1);
+    R_TEST((const char*)nullptr, "/ \"\"", json::read_error::unexpected, 1);
+    R_TEST(enum_comments::x, R"(/x)", json::read_error::unexpected, 1);
+    R_TEST(struct_comments {1, 2}, R"({"x":1/,"y":2})", json::read_error::unexpected, 7);
+    {   int x = 42;
+        R_TEST(&x, "/42", json::read_error::unexpected, 1);
+    }
 TEST_END()
 
 

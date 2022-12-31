@@ -765,6 +765,10 @@ namespace test { namespace kind {
                     );
                 }
             }
+            {   node n; node const o = std::numeric_limits<node::real>::infinity();
+                    cxon::from_bytes<UK_JSON>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+                CHECK(n == o);
+            }
             {   node n;
                     auto const r = cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::extract_nans::set<true>());
                 CHECK(!r && r.ec == cxon::json::read_error::unexpected);
@@ -788,6 +792,34 @@ namespace test { namespace kind {
                 std::string s;
                     cxon::to_bytes(s, n);
                 CHECK(s == in);
+            }
+            {   char const in[] = R"({{1: 2}: 3, [4]: 5, "6": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, "inf": 16, "-inf": 17})";
+                node const out = {
+                    {{{1U, 2U}}, 3U},
+                    {{4U}, 5U},
+                    {"6", 7U},
+                    {-8, 9U},
+                    {10U, 11U},
+                    {12.0, 13U},
+                    {true, 14U},
+                    {nullptr, 15U},
+                    {std::numeric_limits<node::real>::infinity(), 16U},
+                    {-std::numeric_limits<node::real>::infinity(), 17U}
+                };
+                node n;
+                    cxon::from_bytes<UK_JSON, cxon::cbor::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
+                CHECK(n == out);
+                std::string s;
+                    cxon::to_bytes<UK_JSON>(s, n);
+                CHECK(s == R"({{1:2}:3,[4]:5,"6":7,"-inf":17,12:13,"inf":16,-8:9,10:11,true:14,null:15})");
+            }
+            {   node n; node const o = std::numeric_limits<node::real>::infinity();
+                    cxon::from_bytes<UK_JSON>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+                CHECK(n == o);
+            }
+            {   node n;
+                    auto const r = cxon::from_bytes<UK_JSON>(n, "{x: 0}");
+                CHECK(!r && r.ec == cxon::node::error::invalid);
             }
             {   char const in[] = "#[1]";
                 node n;
@@ -837,6 +869,38 @@ namespace test { namespace kind {
                 std::string s;
                     cxon::to_bytes(s, n);
                 CHECK(s == to);
+            }
+        }
+        {   // errors with comments
+            {   using COM = cxon::JSON<cxon::test::allow_comments_traits<>>;
+                cxon::json::node n;
+                    auto const r = cxon::from_bytes<COM>(n, "/{}");
+                CHECK(r.ec == cxon::json::read_error::unexpected);
+            }
+            {   using COM = cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_comments_traits<>>>;
+                cxon::json::node n;
+                    auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
+                CHECK(r.ec == cxon::json::read_error::unexpected);
+            }
+            {   using COM = cxon::JSON<cxon::test::unquoted_keys_traits<cxon::test::allow_comments_traits<>>>;
+                cxon::json::node n;
+                    auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
+                CHECK(r.ec == cxon::json::read_error::unexpected);
+            }
+            {   using COM = cxon::JSON<cxon::test::allow_comments_traits<>>;
+                cxon::cbor::node n;
+                    auto const r = cxon::from_bytes<COM>(n, "/{}");
+                CHECK(r.ec == cxon::json::read_error::unexpected);
+            }
+            {   using COM = cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_comments_traits<>>>;
+                cxon::cbor::node n;
+                    auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
+                CHECK(r.ec == cxon::json::read_error::unexpected);
+            }
+            {   using COM = cxon::JSON<cxon::test::unquoted_keys_traits<cxon::test::allow_comments_traits<>>>;
+                cxon::cbor::node n;
+                    auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
+                CHECK(r.ec == cxon::json::read_error::unexpected);
             }
         }
         {   // test the test (coverage)

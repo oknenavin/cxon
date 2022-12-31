@@ -49,22 +49,23 @@ namespace cxon { namespace cio { namespace cnt {
 
     namespace imp {
 
-        template <typename X, typename Cr, typename II, typename EA>
-            inline auto list_read_(II& i, II e, EA element_add) -> enable_if_t<!X::allow_trailing_separator> {
+        template <typename X, typename Cr, typename II, typename Cx, typename EA>
+            inline auto list_read_(II& i, II e, Cx& cx, EA element_add) -> enable_if_t<!X::allow_trailing_separator> {
                 // expects non-empty list
-                while (element_add() && consume<X>(Cr::sep, i, e)) ;
+                while (element_add() && consume<X>(i, e, cx) && consume<X>(Cr::sep, i, e)) ;
             }
-        template <typename X, typename Cr, typename II, typename EA>
-            inline auto list_read_(II& i, II e, EA element_add) -> enable_if_t< X::allow_trailing_separator> {
+        template <typename X, typename Cr, typename II, typename Cx, typename EA>
+            inline auto list_read_(II& i, II e, Cx& cx, EA element_add) -> enable_if_t< X::allow_trailing_separator> {
                 // expects non-empty list
-                while (element_add() && consume<X>(Cr::sep, i, e) && (consume<X>(i, e), peek(i, e) != Cr::end)) ;
+                while (element_add() && consume<X>(i, e, cx) && consume<X>(Cr::sep, i, e) && (consume<X>(i, e, cx) && peek(i, e) != Cr::end)) ;
             }
 
         template <typename X, typename Cr, typename II, typename Cx, typename EA>
             inline bool read_(II& i, II e, Cx& cx, EA element_add) {
                 if (!consume<X>(Cr::beg, i, e, cx)) return false;
-                if ( consume<X>(Cr::end, i, e))     return true;
-                return list_read_<X, Cr>(i, e, element_add), !cx.ec && consume<X>(Cr::end, i, e, cx);
+                    if (!consume<X>(i, e, cx)) return false;
+                        if (consume<X>(Cr::end, i, e)) return true;
+                return list_read_<X, Cr>(i, e, cx, element_add), !cx.ec && consume<X>(Cr::end, i, e, cx);
             }
 
         template <typename X, typename Cr, typename O, typename II, typename Cx, typename L>

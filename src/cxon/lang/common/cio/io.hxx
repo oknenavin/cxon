@@ -26,17 +26,16 @@ namespace cxon { namespace cio {
         inline char next(II& i, II e);
 
     template <typename X, typename II>
-        inline void consume(II& i, II e);
-
-    template <typename X, typename II, typename C>
-        inline bool consume(C c, II& i, II e);
-    template <typename X, typename II, typename C, typename Cx>
-        inline bool consume(C c, II& i, II e, Cx& cx);
+        inline bool consume(II& i, II e);
+    template <typename X, typename II, typename Cx>
+        inline bool consume(II& i, II e, Cx& cx);
 
     template <typename X, typename II>
         inline bool consume(char c, II& i, II e);
     template <typename X, typename II, typename Cx>
         inline bool consume(char c, II& i, II e, Cx& cx);
+    template <typename X, typename II, typename C, typename Cx>
+        inline bool consume(C c, II& i, II e, Cx& cx);
 
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e);
@@ -92,34 +91,65 @@ namespace cxon { namespace cio {
             return peek(++i, e);
         }
 
-    template <typename X, typename II>
-        inline void consume(II& i, II e) {
-            for ( ; i != e && chr::is<X>::space(*i); ++i) ;
-        }
+    namespace imp {
 
-    template <typename X, typename II, typename C>
-        inline bool consume(C c, II& i, II e) {
-            consume<X>(i, e);
-            return c(i, e);
+        template <typename X, typename II>
+            inline void consume_ws_(II& i, II e) {
+                for ( ; i != e && chr::is<X>::space(*i); ++i) ;
+            }
+
+        template <typename X, typename II>
+            inline auto consume_(II& i, II e) -> enable_if_t<!X::allow_comments, bool> {
+                return consume_ws_<X>(i, e), true;
+            }
+        template <typename X, typename II>
+            inline auto consume_(II& i, II e) -> enable_if_t< X::allow_comments, bool> {
+                consume_ws_<X>(i, e);
+                if (peek(i, e) == '/') {
+                    switch (next(i, e)) {
+                        case '*':
+                            for (++i; i != e; )
+                                     if (        *i != '*') { ++i; continue; }
+                                else if (next(i, e) == '/') { ++i; break;    }
+                            break;
+                        case '/':
+                            while (++i != e && *i != '\n')
+                                ;
+                            break;
+                        default:
+                            return false;
+                    }
+                    consume_ws_<X>(i, e);
+                }
+                return true;
+            }
+
+    }
+    template <typename X, typename II>
+        inline bool consume(II& i, II e) {
+            return imp::consume_<X>(i, e);
         }
-    template <typename X, typename II, typename C, typename Cx>
-        inline bool consume(C c, II& i, II e, Cx& cx) {
-            return consume<X>(c, i, e) || cx/X::read_error::unexpected;
+    template <typename X, typename II, typename Cx>
+        inline bool consume(II& i, II e, Cx& cx) {
+            return imp::consume_<X>(i, e) || cx/X::read_error::unexpected;
         }
 
     template <typename X, typename II>
         inline bool consume(char c, II& i, II e) {
-            consume<X>(i, e);
             return i != e && c == *i && (++i, true);
         }
     template <typename X, typename II, typename Cx>
         inline bool consume(char c, II& i, II e, Cx& cx) {
-            return consume<X>(c, i, e) || cx/X::read_error::unexpected;
+            return consume<X>(i, e, cx) && (consume<X>(c, i, e) || cx/X::read_error::unexpected);
+        }
+    template <typename X, typename II, typename C, typename Cx>
+        inline bool consume(C c, II& i, II e, Cx& cx) {
+            return consume<X>(i, e, cx) && (c(i, e) || cx/X::read_error::unexpected);
         }
 
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e) {
-            for (consume<X>(i, e); i != e && *s && *s == *i; ++i, ++s) ;
+            for ( ; i != e && *s && *s == *i; ++i, ++s) ;
             return *s == '\0';
         }
 
