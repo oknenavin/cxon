@@ -874,11 +874,11 @@ namespace {
 }
 
 TEST_BEG(struct_7, cxon::JSON<>, "/core") // macros inside
-    R_TEST(Struct7(1, 2), "{\"a\": 1, \"b\": 2}");
-    R_TEST(Struct7(3, 0), "{\"a\": 3}");
-    R_TEST(Struct7(0, 6), "{\"b\": 6}");
-    W_TEST("{\"a\":9,\"b\":10}", Struct7(9, 10));
-    R_TEST(Struct7(), "{\"x\": 0}", json::read_error::unexpected, 1);
+    R_TEST(Struct7(1, 2), R"({"a": 1, "b": 2})");
+    R_TEST(Struct7(0, 6), R"({"b": 6})");
+    W_TEST(R"({"a":9,"b":10})", Struct7(9, 10));
+    R_TEST(Struct7(1, 0), R"({"a": 1,"a": 3})", json::read_error::unexpected, 8); // duplicate key
+    R_TEST(Struct7(), R"({"x": 0})", json::read_error::unexpected, 1);
 TEST_END()
 
 
@@ -1439,4 +1439,15 @@ TEST_BEG(struct_15_input_iterator, cxon::JSON<cxon::test::unquoted_quoted_keys_t
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c c:"3",d\:d:"4"})", json::read_error::unexpected, 17);
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d:d:"4"})", json::read_error::unexpected, 26);
     W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
+TEST_END()
+
+
+namespace {
+    struct assume_unique_object_keys_traits : cxon::json::format_traits {
+        static constexpr bool assume_unique_object_keys = false;
+    };
+}
+TEST_BEG(struct_assume_unique_object_keys, cxon::JSON<assume_unique_object_keys_traits>, "/core")
+    R_TEST(Struct7(1, 2), R"({"a": 1, "b": 2})");
+    R_TEST(Struct7(3, 0), R"({"a": 1, "a": 3})");
 TEST_END()

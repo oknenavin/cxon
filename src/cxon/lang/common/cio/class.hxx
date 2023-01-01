@@ -150,11 +150,18 @@ namespace cxon { namespace cio { namespace cls {
 
         template <typename X, std::size_t N, std::size_t L>
             struct read_ {
-                template <typename S, typename F, typename II, typename Cx>
-                    static bool field(S& t, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) {
+                template <typename S, typename F, typename II, typename Cx, typename Y = X>
+                    static auto field(S& t, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) -> enable_if_t< Y::assume_unique_object_keys, bool> {
                         return st[N] == 0 && std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
-                            (st[N] = 1, read_field<X>(t, std::get<N>(fs), i, e, cx)) :
-                            read_<X, N + 1, L>::field(t, name, fs, st, i, e, cx)
+                            (st[N] = 1, read_field<Y>(t, std::get<N>(fs), i, e, cx)) :
+                            read_<Y, N + 1, L>::field(t, name, fs, st, i, e, cx)
+                        ;
+                    }
+                template <typename S, typename F, typename II, typename Cx, typename Y = X>
+                    static auto field(S& t, const char* name, const F& fs, int (&st)[L], II& i, II e, Cx& cx) -> enable_if_t<!Y::assume_unique_object_keys, bool> {
+                        return std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
+                            read_field<Y>(t, std::get<N>(fs), i, e, cx) :
+                            read_<Y, N + 1, L>::field(t, name, fs, st, i, e, cx)
                         ;
                     }
             };
