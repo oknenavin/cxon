@@ -85,7 +85,7 @@ namespace cxon { // character pointer & array
             };
         CXON_ARRAY(char)
         CXON_ARRAY(wchar_t)
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             CXON_ARRAY(char8_t)
 #       endif
         CXON_ARRAY(char16_t)
@@ -100,7 +100,7 @@ namespace cxon { // character pointer & array
             };
         CXON_POINTER(char)
         CXON_POINTER(wchar_t)
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             CXON_POINTER(char8_t)
 #       endif
         CXON_POINTER(char16_t)
@@ -115,7 +115,7 @@ namespace cxon { // character pointer & array
             };
         CXON_POINTER(char)
         CXON_POINTER(wchar_t)
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             CXON_POINTER(char8_t)
 #       endif
         CXON_POINTER(char16_t)
@@ -130,7 +130,7 @@ namespace cxon { // character pointer & array
             };
         CXON_ARRAY(char)
         CXON_ARRAY(wchar_t)
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             CXON_ARRAY(char8_t)
 #       endif
         CXON_ARRAY(char16_t)
@@ -145,7 +145,7 @@ namespace cxon { // character pointer & array
             };
         CXON_POINTER(char)
         CXON_POINTER(wchar_t)
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             CXON_POINTER(char8_t)
 #       endif
         CXON_POINTER(char16_t)
@@ -160,7 +160,7 @@ namespace cxon { // character pointer & array
             };
         CXON_POINTER(char)
         CXON_POINTER(wchar_t)
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             CXON_POINTER(char8_t)
 #       endif
         CXON_POINTER(char16_t)

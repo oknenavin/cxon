@@ -12,7 +12,7 @@
 
 namespace cxon { namespace ordered {
 
-    template <typename K, typename V, typename Al = std::allocator<void>>
+    template <typename K, typename V, typename Al = std::allocator<char>>
         struct keval {
             K first;
             V second;
@@ -39,7 +39,7 @@ namespace cxon { namespace ordered {
             bool operator  <(const keval& t) const noexcept { return first  < t.first || (first == t.first && second < t.second); }
         };
 
-    template <typename K, typename V, typename Al = std::allocator<void>>
+    template <typename K, typename V, typename Al = std::allocator<char>>
         using object = std::vector<keval<K, V, Al>, alc::rebind_t<Al, ordered::keval<K, V, Al>>>;
 
 }}
@@ -48,7 +48,7 @@ namespace cxon { namespace ordered {
 
     namespace cxon { namespace json {
 
-        template <typename Al = std::allocator<void>>
+        template <typename Al = std::allocator<char>>
             struct ordered_node_traits : cxon::json::node_traits<Al> {
                 template <typename K, typename V> using object_type = ordered::object<K, V, alc::rebind_t<Al, ordered::keval<K, V, Al>>>;
             };
@@ -62,7 +62,7 @@ namespace cxon { namespace ordered {
 
     namespace cxon { namespace cbor {
 
-        template <typename Al = std::allocator<void>>
+        template <typename Al = std::allocator<char>>
             struct ordered_node_traits : cxon::cbor::node_traits<Al> {
                 template <typename K, typename V> using map_type = ordered::object<K, V, alc::rebind_t<Al, ordered::keval<K, V, Al>>>;
             };

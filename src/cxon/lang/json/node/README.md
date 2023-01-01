@@ -240,7 +240,7 @@ The traits type specifies the allocator, the mapping between C++ and JSON and wh
 given type should be allocated on the stack or in the heap.
 
 ``` c++
-template <typename Al = std::allocator<void>>
+template <typename Al = std::allocator<...>>
     struct node_traits {
         // the allocator
         using                                       allocator_type  = Al;

@@ -214,7 +214,7 @@ namespace cxon {
                 static constexpr char const*        ninf = "-inf";
                 static constexpr char const*        nan =   "nan";
             };
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             template <>
                 struct nmst_<char8_t> {
                     static constexpr char8_t const* pinf =  u8"inf";

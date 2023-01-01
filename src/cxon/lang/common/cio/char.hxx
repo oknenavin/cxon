@@ -521,7 +521,7 @@ namespace cxon { namespace cio { namespace chr {
                     }
             };
 
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             template <typename X>
                 struct encode_<X, char8_t> {
                     template <typename O, typename Cx>

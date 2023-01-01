@@ -135,7 +135,7 @@ TEST_BEG(basic_string, cxon::JSON<>, "/boost")
         R_TEST(wstring(), "\"", json::read_error::unexpected, 1);
         R_TEST(wstring(), QS("\\u001"), json::read_error::escape_invalid, 1);
     // boost::container::basic_string<char8_t>
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             using u8string = basic_string<char8_t, std::char_traits<char8_t>, new_allocator<char8_t>>;
             R_TEST(u8string(u8"test"), QS("test"));
             W_TEST(QS("test"), u8string(u8"test"));
