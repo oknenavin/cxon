@@ -420,11 +420,7 @@ TEST_BEG(struct_bare_3, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
 TEST_END()
 
 
-struct trailing_separator_traits : cxon::json::format_traits {
-    static constexpr bool allow_trailing_separator = true;
-};
-
-TEST_BEG(trailing_separator_1, cxon::JSON<trailing_separator_traits>, "/core")
+TEST_BEG(trailing_separator_1, cxon::JSON<cxon::test::allow_trailing_separators_traits<>>, "/core")
     R_TEST(std::vector<int> {1, 3}, "[1, 3,]");
     R_TEST(std::vector<int> {1, 3}, "[1, 3 ]");
     R_TEST(std::map<char, int> {{'x', 1}, {'y', 3}}, R"({"x": 1, "y": 3,})");
@@ -442,12 +438,12 @@ CXON_JSON_CLS(struct_trailing_separator_1,
     CXON_JSON_CLS_FIELD_ASIS(y)
 )
 
-TEST_BEG(trailing_separator_2, cxon::JSON<trailing_separator_traits>, "/core")
+TEST_BEG(trailing_separator_2, cxon::JSON<cxon::test::allow_trailing_separators_traits<>>, "/core")
     R_TEST(struct_trailing_separator_1 {1, 3}, R"({"x": 1, "y": 3,})");
     R_TEST(struct_trailing_separator_1 {1, 3}, R"({"x": 1, "y": 3 })");
 TEST_END()
 
-TEST_BEG(trailing_separator_3, cxon::JSON<trailing_separator_traits>, "/core")
+TEST_BEG(trailing_separator_3, cxon::JSON<cxon::test::allow_trailing_separators_traits<>>, "/core")
     TEST_CHECK("[\n\ta,\n\tb,\n]" == cxon::json::tidy<std::string>(R"([a, b,])"));
     TEST_CHECK("[\n\ta,\n\tb\n]" == cxon::json::tidy<std::string>(R"([a, b ])"));
     TEST_CHECK("{\n\ta: 1,\n\tb: 2,\n}" == cxon::json::tidy<std::string>(R"({a: 1, b: 2,})"));

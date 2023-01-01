@@ -540,11 +540,11 @@ TEST_BEG(utf8_check_input_iterator, cxon::JSON<cxon::test::input_iterator_traits
 TEST_END()
 
 
-struct input_iterator_no_read_validate_string_utf8_traits : cxon::test::input_iterator_traits<> {
-    static constexpr bool read_validate_string_utf8 = false;
-    //static constexpr bool read_validate_string_ctrl = false;
+struct input_iterator_no_validate_string_encoding_traits : cxon::test::input_iterator_traits<> {
+    static constexpr bool validate_string_encoding = false;
+    //static constexpr bool validate_string_escapes = false;
 };
-TEST_BEG(utf8_check_input_iterator_no_read_validate_string_utf8, cxon::JSON<input_iterator_no_read_validate_string_utf8_traits>, "/core")
+TEST_BEG(utf8_check_input_iterator_no_validate_string_encoding, cxon::JSON<input_iterator_no_validate_string_encoding_traits>, "/core")
     // 1
         R_TEST("\x7F", "\"\x7F\"");
         R_TEST("", "\"\x80", json::read_error::character_invalid);

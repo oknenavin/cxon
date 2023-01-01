@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+
 #include "json.node.hxx"
 
 #ifdef CXON_TIME_RAPIDJSON

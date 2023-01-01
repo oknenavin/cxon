@@ -401,14 +401,14 @@ the behaviour of the library or to change the `JSON` language:
 namespace cxon { namespace json { // format traits
 
     struct format_traits : cio::format_traits {
-        // enables/disables UTF-8 read validation
-        static constexpr bool read_validate_string_utf8 = true;
+        // enables/disables UTF-8 string validation
+        static constexpr bool validate_string_encoding  = true;
 
-        // check for unescaped control characters while reading
-        static constexpr bool read_validate_string_ctrl = true;
+        // check for unescaped control characters
+        static constexpr bool validate_string_escapes   = true;
 
-        // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (as they are invalid JavaScript) while writing
-        static constexpr bool write_strict_js = false;
+        // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
+        static constexpr bool produce_strict_javascript = false;
 
         // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
         // if false, this JSON {1: 2} will now be valid
@@ -416,6 +416,11 @@ namespace cxon { namespace json { // format traits
         // object keys for types serialized with quotes will be unquoted (e.g. strings)
         // if true, this JSON {key: 1} will now be valid
         static constexpr bool unquote_quoted_keys = false;
+
+        // allow c-style comments
+        static constexpr bool allow_comments            = false;
+        // allow trailing separators for objects and arrays
+        static constexpr bool allow_trailing_separators = false;
     };
 
 }}
