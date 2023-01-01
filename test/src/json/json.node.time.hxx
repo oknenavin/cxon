@@ -10,7 +10,7 @@
 #include "json.node.hxx"
 
 struct time_traits : cxon::json::format_traits {
-	static constexpr bool read_validate_string_utf8 = false;
+	static constexpr bool validate_string_encoding = false;
 };
 //using TIME = cxon::JSON<time_traits>;
 using TIME = cxon::JSON<>;

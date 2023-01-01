@@ -91,7 +91,7 @@ namespace cxon { namespace cio { namespace str {
                         CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
                             if (delim_en_check<X>(*i))      return delim_en_read<X>(i, e);
                         }
-                        CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                        CXON_IF_CONSTEXPR (X::validate_string_escapes) {
                             if (chr::is<X>::ctrl(*i))       return cx/X::read_error::unexpected;
                         }
                         if (!char_read_<X>(c, i, e, cx))    return false;
@@ -129,19 +129,19 @@ namespace cxon { namespace cio { namespace str {
                                     return rewind(i, l), cx/X::read_error::overflow;
                                 }
                             }
-                            CXON_IF_CONSTEXPR (X::read_validate_string_utf8) {
+                            CXON_IF_CONSTEXPR (X::validate_string_encoding) {
                                 if ((unsigned char)*i > 0x7F) {
                                     auto const bs = chr::utf8_check(i, e);
                                     if (bs == chr::bad_utf8)
                                         return cx/X::read_error::character_invalid;
                                     i += bs;
                                 }
-                                else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                                else CXON_IF_CONSTEXPR (X::validate_string_escapes) {
                                     if (chr::is<X>::ctrl(*i))
                                         return cx/X::read_error::unexpected;
                                 }
                             }
-                            else CXON_IF_CONSTEXPR (X::read_validate_string_ctrl) {
+                            else CXON_IF_CONSTEXPR (X::validate_string_escapes) {
                                 if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
                                     return cx/X::read_error::unexpected;
                             }
