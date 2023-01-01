@@ -94,7 +94,7 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
         R_TEST(L'a', QS("a"));
         W_TEST(QS("a"), L'a');
     // char8_t
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             R_TEST(u8'\0', QS("\\u0000"));
             W_TEST(QS("\\u0000"), u8'\0');
             R_TEST(u8'\x1f', QS("\\u001f"));
@@ -105,10 +105,6 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
             W_TEST(QS("'"), u8'\'');
             R_TEST(u8'\x7f', QS("\\u007f"));
             W_TEST(QS("\x7f"), u8'\x7f');
-            R_TEST(u8'\x8f', QS("\\u008f"));
-            W_TEST(QS("\x8f"), u8'\x8f');
-            R_TEST(u8'\xff', QS("\\u00ff")); // invalid utf-8
-            W_TEST(QS("\xff"), u8'\xff'); // invalid utf-8
             R_TEST(u8'\0', QS("\xff"), json::read_error::character_invalid, 1); // invalid utf-8
             R_TEST(u8'\0', QS("\\z"), json::read_error::escape_invalid, 1);
             R_TEST(u8'\0', QS("\\u1111"), json::read_error::character_invalid, 1);

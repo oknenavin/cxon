@@ -83,7 +83,7 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             W_TEST(QS("123"), a);
         }
     // char8_t[]
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             R_TEST(u8"", QS(""));
             W_TEST(QS(""), u8"");
             R_TEST(u8"123", QS("123"));
@@ -602,7 +602,7 @@ TEST_BEG(pointers, cxon::JSON<>, "/core")
         W_TEST(QS("test"), (const wchar_t*)L"test");
         R_TEST((const wchar_t*)nullptr, "\"", json::read_error::unexpected, 1);
     // const char8_t*
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             R_TEST((const char8_t*)"test", QS("test"));
             R_TEST((const char8_t*)nullptr, "null");
             W_TEST(QS("test"), (const char8_t*)u8"test");
@@ -627,7 +627,7 @@ TEST_BEG(pointers, cxon::JSON<>, "/core")
         R_TEST((wchar_t*)L"test", QS("test"));
         W_TEST(QS("test"), (wchar_t*)L"test");
     // char8_t*
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             R_TEST((char8_t*)"test", QS("test"));
             R_TEST((char8_t*)nullptr, "null");
             W_TEST(QS("test"), (char8_t*)u8"test");

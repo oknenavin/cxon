@@ -251,8 +251,8 @@ namespace cxon {
         template <typename T>   struct is_char_ : std::false_type {};
         template <>             struct is_char_<char> : std::true_type {};
         template <>             struct is_char_<wchar_t> : std::true_type {};
-#       if __cplusplus > 201703L /* C++20 */
-            template <>             struct is_char_<char8_t> : std::true_type {};
+#       if defined(__cpp_char8_t)
+            template <>         struct is_char_<char8_t> : std::true_type {};
 #       endif
         template <>             struct is_char_<char16_t> : std::true_type {};
         template <>             struct is_char_<char32_t> : std::true_type {};

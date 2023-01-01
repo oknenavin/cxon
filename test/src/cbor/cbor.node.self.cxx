@@ -24,7 +24,7 @@
 
 namespace test { namespace kind {
 
-    template <typename Al = std::allocator<void>>
+    template <typename Al = std::allocator<char>>
         struct unordered_node_traits : cxon::cbor::node_traits<Al> {
             template <typename K, typename V> using map_type = std::unordered_map<K, V, std::hash<K>, std::equal_to<K>, cxon::alc::rebind_t<Al, std::pair<const K, V>>>;
         };
@@ -792,7 +792,7 @@ namespace test { namespace kind {
             CHECK(n.is<node::map>() && n.get<node::map>().size() == 1);
         }
         {
-            using node = cxon::cbor::basic_node<cxon::cbor::node_traits<my_allocator<void>>>;
+            using node = cxon::cbor::basic_node<cxon::cbor::node_traits<my_allocator<char>>>;
             my_allocator<node> al;
             node n(al);
                 n = { 1, 2, 3};
