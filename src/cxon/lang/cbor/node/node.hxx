@@ -18,7 +18,7 @@
 
 namespace cxon { namespace cbor { // node
 
-    template <typename Al = std::allocator<void>>
+    template <typename Al = std::allocator<char>>
         struct node_traits;
 
     template <typename Tr>

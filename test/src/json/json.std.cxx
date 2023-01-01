@@ -92,7 +92,7 @@ TEST_BEG(basic_string, cxon::JSON<>, "/std")
                 TEST_CHECK(r.ec == json::write_error::output_failure);
             }
     // std::basic_string<char8_t> / std::u8string
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             R_TEST(u8string(u8"test"), QS("test"));
             W_TEST(QS("test"), u8string(u8"test"));
             R_TEST(u8string(u8"te\nst"), QS("te\\nst"));

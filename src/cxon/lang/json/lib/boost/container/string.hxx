@@ -14,7 +14,7 @@ namespace cxon { namespace cio { namespace key {
         template <typename ...R> struct is_quoted<boost::container::basic_string<T, R...>> : std::true_type  {};
         CXON_QUOTED(char)
         CXON_QUOTED(wchar_t)
-#       if __cplusplus > 201703L /* C++20 */
+#       if defined(__cpp_char8_t)
             CXON_QUOTED(char8_t)
 #       endif
         CXON_QUOTED(char16_t)

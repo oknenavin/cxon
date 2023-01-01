@@ -47,7 +47,7 @@ namespace test { namespace kind {
         )
     };
 
-    template <typename Al = std::allocator<void>>
+    template <typename Al = std::allocator<char>>
         struct unordered_node_traits : cxon::json::node_traits<Al> {
             template <typename K, typename V> using object_type = std::unordered_map<K, V, std::hash<K>, std::equal_to<K>, cxon::alc::rebind_t<Al, std::pair<const K, V>>>;
         };
@@ -942,7 +942,7 @@ namespace test { namespace kind {
             CHECK(n.is<node::object>() && n.get<node::object>().size() == 1);
         }
         {
-            using node = cxon::json::basic_node<cxon::json::node_traits<my_allocator<void>>>;
+            using node = cxon::json::basic_node<cxon::json::node_traits<my_allocator<char>>>;
             my_allocator<node> al;
             node n(al);
                 n = { 1, 2, 3};
@@ -950,7 +950,7 @@ namespace test { namespace kind {
         }
 #       ifdef CXON_HAS_LIB_STD_MEMORY_RESOURCE
         {
-            using node = cxon::json::basic_node<cxon::json::node_traits<std::pmr::polymorphic_allocator<void>>>;
+            using node = cxon::json::basic_node<cxon::json::node_traits<std::pmr::polymorphic_allocator<char>>>;
             char bf[4096];
             std::pmr::monotonic_buffer_resource ar(bf, sizeof(bf));
             std::pmr::polymorphic_allocator<node> al(&ar);

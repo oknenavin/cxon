@@ -14,11 +14,7 @@
 
 namespace cxon {
 
-#   if __cplusplus > 201703L /* C++20 */
-        CXON_PARAMETER(allocator, std::allocator<void>);
-#   else
-        CXON_PARAMETER(allocator, std::allocator<char>);
-#   endif
+    CXON_PARAMETER(allocator, std::allocator<char>);
 
 }
 
