@@ -144,7 +144,7 @@ namespace cxon { namespace cio { namespace chr {
 
         template <typename X, typename II, typename Cx>
             inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                -> enable_if_t< X::read_validate_string_utf8, char32_t>
+                -> enable_if_t< X::validate_string_encoding, char32_t>
             {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
                 CXON_ASSERT(i != e, "unexpected");
                 using U = unsigned char;
@@ -197,7 +197,7 @@ namespace cxon { namespace cio { namespace chr {
             }
         template <typename X, typename II, typename Cx>
             inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                -> enable_if_t<!X::read_validate_string_utf8, char32_t>
+                -> enable_if_t<!X::validate_string_encoding, char32_t>
             {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
                 CXON_ASSERT(i != e, "unexpected");
                 char32_t c0 = *i, c1, c2, c3;
@@ -456,7 +456,7 @@ namespace cxon { namespace cio { namespace chr {
                                 if (!value(o, *f, cx)) return false;
                                 a = f + 1;
                             }
-                            else CXON_IF_CONSTEXPR (X::write_strict_js) {
+                            else CXON_IF_CONSTEXPR (X::produce_strict_javascript) {
                                 if (*f == '\xE2' && l - f > 2) {
                                     if (f[1] == '\x80') {
                                         if (f[2] == '\xA8' || f[2] == '\xA9') {
@@ -564,7 +564,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X>
             struct encode_<X, char32_t> {
                 template <typename O, typename Cx, typename S = X>
-                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t<!S::write_strict_js, bool> {
+                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t<!S::produce_strict_javascript, bool> {
                         if (c > 0x7F) {
                                 char b[4]; int const n = utf32_to_utf8(b, c);
                                 return poke<X>(o, b, n, cx);
@@ -572,7 +572,7 @@ namespace cxon { namespace cio { namespace chr {
                         else    return encode_<X, char>::value(o, char(c), cx);
                     }
                 template <typename O, typename Cx, typename S = X>
-                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t< S::write_strict_js, bool> {
+                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t< S::produce_strict_javascript, bool> {
                         if (c > 0x7F) {
                                 if (c == 0x2028) return poke<X>(o, "\\u2028", 6, cx);
                                 if (c == 0x2029) return poke<X>(o, "\\u2029", 6, cx);

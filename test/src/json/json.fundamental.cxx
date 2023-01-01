@@ -735,12 +735,12 @@ TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_trai
 TEST_END()
 
 namespace cxon { namespace test {
-    struct write_strict_js_traits : cxon::json::format_traits {
-        static constexpr bool write_strict_js = true;
+    struct produce_strict_javascript_traits : cxon::json::format_traits {
+        static constexpr bool produce_strict_javascript = true;
     };
 }}
 
-TEST_BEG(write_strict_js_traits, cxon::JSON<cxon::test::write_strict_js_traits>, "/core")
+TEST_BEG(produce_strict_javascript_traits, cxon::JSON<cxon::test::produce_strict_javascript_traits>, "/core")
     W_TEST(QS("x"), "x");
     W_TEST(QS("\\u2028"), "\xE2\x80\xA8");
     W_TEST(QS("\\u2029"), "\xE2\x80\xA9");

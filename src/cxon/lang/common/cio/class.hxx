@@ -171,11 +171,11 @@ namespace cxon { namespace cio { namespace cls {
             }
 
         template <typename X, typename II>
-            inline auto check_end_(II&, II)     -> enable_if_t<!X::allow_trailing_separator, bool> {
+            inline auto check_end_(II&, II)     -> enable_if_t<!X::allow_trailing_separators, bool> {
                 return false;
             }
         template <typename X, typename II>
-            inline auto check_end_(II& i, II e) -> enable_if_t< X::allow_trailing_separator, bool> {
+            inline auto check_end_(II& i, II e) -> enable_if_t< X::allow_trailing_separators, bool> {
                 return consume<X>(i, e), peek(i, e) == X::map::end;
             }
 
