@@ -463,7 +463,7 @@ there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 #### Compilation
 
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
-`clang++ >= 3.5` and `msvc++ >= 14.1` (see the [builds](https://github.com/oknenavin/cxon/actions)).
+`clang++ >= 4.0` and `msvc++ >= 19.16` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
 *`CXON` uses [`<charconv>`][std-charconv] for floating-point conversions by default. By defining
 `CXON_USE_FAST_FLOAT` and [`fast_float`][ff] present in the include path, the floating-point parsing
