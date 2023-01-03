@@ -282,7 +282,16 @@ TEST_BEG(fundamental, cxon::CBOR<>, "/core")
         R_TEST((double)0x010101010101, BS("\x1B\x00\x00\x01\x01\x01\x01\x01\x01"));
         R_TEST((double)0x01010101010101, BS("\x1B\x00\x01\x01\x01\x01\x01\x01\x01"));
         R_TEST((double)0x0101010101010101, BS("\x1B\x01\x01\x01\x01\x01\x01\x01\x01"));
-        R_TEST((double)-0x0101010101010102, BS("\x3B\x01\x01\x01\x01\x01\x01\x01\x01"));
+#       if defined(__GNUC__)
+        {
+            double od; double const id = (double)-0x0101010101010102;
+            auto const is = BS("\x3B\x01\x01\x01\x01\x01\x01\x01\x01");
+            auto const rs = cxon::from_bytes<XXON>(od, is);
+            TEST_CHECK(rs && rs.end == std::end(is) && cxon::test::match<XXON>::values(od, id));
+        }
+#       else // g++ 12.2 -m32 -O3 fails the line below
+            R_TEST((double)-0x0101010101010102, BS("\x3B\x01\x01\x01\x01\x01\x01\x01\x01"));
+#       endif
         R_TEST((double)-0x01010101010102, BS("\x3B\x00\x01\x01\x01\x01\x01\x01\x01"));
         R_TEST((double)-0x010101010102, BS("\x3B\x00\x00\x01\x01\x01\x01\x01\x01"));
         R_TEST((double)-0x0101010102, BS("\x3B\x00\x00\x00\x01\x01\x01\x01\x01"));

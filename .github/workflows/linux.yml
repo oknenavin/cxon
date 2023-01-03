@@ -32,7 +32,7 @@ jobs:
       env:
         CXX: g++-${{ matrix.compiler }}
       run: $CXX --version; make -j check
-        
+ 
   gcc-cxx-std:
     runs-on: ubuntu-latest
     strategy:
@@ -53,7 +53,23 @@ jobs:
         CXX: g++-${{ matrix.compiler }}
         CXXFLAGS: -std=c++${{ matrix.standard }}
       run: $CXX --version; make -j check
-  
+
+  gcc-arch-32:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: APT Update
+      run: sudo apt update
+    - name: Compiler setup
+      run: sudo apt install gcc-12-multilib g++-12-multilib
+    - name: Boost setup
+      run: sudo apt install libboost-container-dev
+    - name: Check
+      env:
+        CXX: g++-12
+        CXXFLAGS: -m32 -O3 -std=c++20
+      run: $CXX --version; make -j check
+ 
   # clang ######################################################################
 
   clang:
@@ -79,7 +95,7 @@ jobs:
       env:
         CXX: clang++-${{ matrix.compiler }}
       run: $CXX --version; make -j check
-        
+
   clang-cxx-std:
     runs-on: ubuntu-latest
     strategy:

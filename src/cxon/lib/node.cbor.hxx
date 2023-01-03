@@ -145,12 +145,12 @@ namespace cxon {
                 static bool value(cbor::simple<T>& t, II& i, II e, Cx& cx) {
                     II const o = i;
                     auto const b = bio::get(i, e);
-                    switch (b & X::mjr) {
-                        case X::svn:
+                    switch (b & Y::mjr) {
+                        case Y::svn:
                             switch (b & X::mnr) {
                                 case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07: case 0x08: case 0x09:
                                 case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F: case 0x10: case 0x11: case 0x12: case 0x13:
-                                    return  (t = T(b & X::mnr), true);
+                                    return  (t = T(b & Y::mnr), true);
                                 case 0x18:
                                     return  (bio::get(t.value, 1, i, e)) ||
                                             (bio::rewind(i, o), cx/cbor::read_error::unexpected)
