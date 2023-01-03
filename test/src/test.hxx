@@ -88,7 +88,7 @@ namespace cxon { namespace test {
 #define W_TEST(ref, ...) TEST_CHECK(cxon::test::verify_write<XXON>(ref, __VA_ARGS__))
 
 #define QS(s) "\"" s "\""
-#define BS(s) test::bytes((test::byte*)s, sizeof(s) - 1)
+#define BS(s) cxon::test::bytes((cxon::test::byte*)s, sizeof(s) - 1)
 
 namespace cxon { namespace test {
 
@@ -257,16 +257,14 @@ namespace cxon { namespace test {
 
     template <typename X, typename T, typename C>
         static bool verify_read_(const T& ref, const C& sbj) {
-            T res{};
+            T res{}; clean<T> clean__(res);
                 auto const r = from_string<X>(res, sbj);
-            clean<T> clean__(res);
             return r && r.end == std::end(sbj) && match<T>::values(res, ref);
         }
     template <typename X, typename T, typename C, typename E>
         static bool verify_read_(const T&, const C& sbj, E err, int pos) {
-            T res{};
+            T res{}; clean<T> clean__(res);
                 auto const r = from_string<X>(res, sbj);
-            clean<T> clean__(res);
             return r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
         }
 

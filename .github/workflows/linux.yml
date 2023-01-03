@@ -67,7 +67,7 @@ jobs:
     - name: Check
       env:
         CXX: g++-12
-        CXXFLAGS: -m32 -O3 -std=c++20
+        CXXFLAGS: -m32 -std=c++20
       run: $CXX --version; make -j check
  
   # clang ######################################################################
