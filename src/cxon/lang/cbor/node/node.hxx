@@ -665,8 +665,8 @@ namespace cxon { namespace cbor { // helpers
 
     template <typename N, typename T>
         struct taggle {
-            public:     N tag;
-            public:     T value;
+            N tag;
+            T value;
 
             constexpr taggle() noexcept(std::is_nothrow_constructible<T>::value)
             :   tag(-1), value()
