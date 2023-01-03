@@ -15,7 +15,7 @@ namespace cxon { // array/read
         struct read<CBOR<X>, T[N]> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(T (&t)[N], II& i, II e, Cx& cx) {
-                    std::size_t tag;
+                    typename X::tag_type tag;
                     return  cbor::tag::read<Y>(tag, i, e, cx) &&
                             cbor::cnt::read_array<Y>(std::begin(t), std::end(t), tag, i, e, cx)
                     ;
@@ -55,7 +55,7 @@ namespace cxon { // pointer/read
             inline auto read_pointer_(T*& t, II& i, II e, Cx& cx)
                 -> enable_if_t< std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
             {
-                std::size_t tag;
+                typename X::tag_type tag;
                 if (!tag::read<X>(tag, i, e, cx))
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {
@@ -70,7 +70,7 @@ namespace cxon { // pointer/read
             inline auto read_pointer_(T*& t, II& i, II e, Cx& cx)
                 -> enable_if_t<!std::is_assignable<decltype(*t), decltype(*i)>::value, bool>
             {
-                std::size_t tag;
+                typename X::tag_type tag;
                 if (!tag::read<X>(tag, i, e, cx))
                     return false;
                 switch (bio::peek(i, e) & X::mjr) {

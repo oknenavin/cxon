@@ -46,6 +46,8 @@ namespace cxon { namespace cbor { // format traits
         static constexpr bio::byte  brk     = 0xFF; // 7, break stop code for indefinite length items
 
         static constexpr bool strict = false;
+
+        using tag_type = std::uint_fast64_t;
     };
 
 }}

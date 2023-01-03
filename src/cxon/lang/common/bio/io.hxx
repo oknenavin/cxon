@@ -8,6 +8,7 @@
 
 #include "cxon/utility.hxx"
 #include <cmath> // std::ldexp
+#include <cstdint>
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -147,32 +148,33 @@ namespace cxon { namespace bio {
         // coverity[ -tainted_data_return ]
         // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T, typename II>
-            inline T be_to_i_(const buffer_<2, II>& bs) {
-                using R = unsigned long;
+            inline bool be_to_i_(const buffer_<2, II>& bs, T& t) {
+                using R = std::uint_fast32_t;
+                R const x = (R(bs[1])<< 0) | (R(bs[0])<< 8) ;
                 CXON_ASSERT(sizeof(T) >= 2, "narrowing");
-                return  (R(bs[1])<< 0) | (R(bs[0])<< 8);
+                return sizeof(T) >= 2 && (t = T(x), true);
             }
         // coverity[ -tainted_data_return ]
         // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T, typename II>
-            inline T be_to_i_(const buffer_<4, II>& bs) {
-                using R = unsigned long;
+            inline bool be_to_i_(const buffer_<4, II>& bs, T& t) {
+                using R = std::uint_fast32_t;
+                R const x = (R(bs[3])<< 0) | (R(bs[2])<< 8) |
+                            (R(bs[1])<<16) | (R(bs[0])<<24) ;
                 CXON_ASSERT(sizeof(T) >= 4, "narrowing");
-                return  (R(bs[3])<< 0) | (R(bs[2])<< 8) |
-                        (R(bs[1])<<16) | (R(bs[0])<<24)
-                ;
+                return sizeof(T) >= 4 && (t = T(x), true);
             }
         // coverity[ -tainted_data_return ]
         // coverity[ -tainted_data_argument : arg-0 ]
         template <typename T, typename II>
-            inline T be_to_i_(const buffer_<8, II>& bs) {
-                using R = unsigned long long;
+            inline bool be_to_i_(const buffer_<8, II>& bs, T& t) {
+                using R = std::uint_fast64_t;
+                R const x = (R(bs[7])<< 0) | (R(bs[6])<< 8) |
+                            (R(bs[5])<<16) | (R(bs[4])<<24) |
+                            (R(bs[3])<<32) | (R(bs[2])<<40) |
+                            (R(bs[1])<<48) | (R(bs[0])<<56) ;
                 CXON_ASSERT(sizeof(T) >= 8, "narrowing");
-                return  (R(bs[7])<< 0) | (R(bs[6])<< 8) |
-                        (R(bs[5])<<16) | (R(bs[4])<<24) |
-                        (R(bs[3])<<32) | (R(bs[2])<<40) |
-                        (R(bs[1])<<48) | (R(bs[0])<<56)
-                ;
+                return sizeof(T) >= 8 && (t = T(x), true);
             }
 
         template <typename T, typename II>
@@ -217,7 +219,7 @@ namespace cxon { namespace bio {
         template <unsigned N, typename T, typename II>
             inline auto get_(T& t, II& i, II e) -> enable_if_t<N != 1, bool> {
                 buffer_<N, II> bs(i);
-                return get_n_(bs, i, e) && (t = be_to_i_<T>(bs), true);
+                return get_n_(bs, i, e) && be_to_i_<T>(bs, t);
             }
 
     }
