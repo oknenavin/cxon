@@ -113,12 +113,18 @@ namespace cxon { namespace cio { namespace chr {
                     case 'r' :  return ++i, U'\r';
                     case 't' :  return ++i, U'\t';
                     case 'u' :  return u_to_<X>::dec(i, e);
-                    case ' ' :  CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                    case ' ' :
+                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
                                 return ++i, U' ';
-                        CXON_FALLTHROUGH;
-                    case ':' :  CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                        else    return bad_utf32;
+                    case ':' :
+                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
                                 return ++i, U':';
-                        CXON_FALLTHROUGH;
+                        else    return bad_utf32;
+                    case '\'':
+                        CXON_IF_CONSTEXPR (X::string::del == '\'')
+                                return ++i, U'\'';
+                        else    return bad_utf32;
                     default  :  return bad_utf32;
                 }
             }
@@ -287,7 +293,7 @@ namespace cxon { namespace cio { namespace chr {
                 // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
                 // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
                 CXON_ASSERT(i != e, "unexpected");
-                unsigned char c0 = *i, c1, c2, c3;
+                unsigned c0 = (unsigned char)*i, c1, c2, c3;
                 auto const d = e - i;
                 if ((c0 >= 0xF0 && d < 4) || (c0 >= 0xE0 && d < 3) || (c0 >= 0xC2 && d < 2))
                     return bad_utf8;
@@ -296,44 +302,44 @@ namespace cxon { namespace cio { namespace chr {
                 //    return 0;
                 // 2
                 if (c0 >= 0xC2 && c0 <= 0xDF) {
-                    c1 = *++i;
+                    c1 = (unsigned char)*++i;
                     if (c1 >= 0x80 && c1 <= 0xBF)
                         return 1;
                 }
                 // 3
                 else if (c0 == 0xE0) {
-                    c1 = *++i, c2 = *++i;
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
                     if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
                         return 2;
                 }
                 else if (c0 >= 0xE1 && c0 <= 0xEC) {
-                    c1 = *++i, c2 = *++i;
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
                     if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
                         return 2;
                 }
                 else if (c0 == 0xED) {
-                    c1 = *++i, c2 = *++i;
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
                     if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
                         return 2;
                 }
                 else if (c0 >= 0xEE && c0 <= 0xEF) {
-                    c1 = *++i, c2 = *++i;
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
                     if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
                         return 2;
                 }
                 // 4
                 else if (c0 == 0xF0) {
-                    c1 = *++i, c2 = *++i, c3 = *++i;
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
                     if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
                         return 3;
                 }
                 else if (c0 >= 0xF1 && c0 <= 0xF3) {
-                    c1 = *++i, c2 = *++i, c3 = *++i;
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
                     if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
                         return 3;
                 }
                 else if (c0 == 0xF4) {
-                    c1 = *++i, c2 = *++i, c3 = *++i;
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
                     if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
                         return 3;
                 }
@@ -431,26 +437,30 @@ namespace cxon { namespace cio { namespace chr {
                             case '"':
                                 CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
                                         return poke<X>(o, "\\u0022", 6, cx);
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\'')
                                         return poke<X>(o, '"', cx);
                                 else    return poke<X>(o, "\\\"", 2, cx);
                             case '\\':  return poke<X>(o, "\\\\", 2, cx);
                             case ' ' :
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
                                         return poke<X>(o, "\\ ", 2, cx);
-                                CXON_FALLTHROUGH;
+                                else    return poke<X>(o, c, cx);
                             case ':' :
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
                                         return poke<X>(o, "\\:", 2, cx);
-                                CXON_FALLTHROUGH;
-                            default:    return poke<X>(o, c, cx);
+                                else    return poke<X>(o, c, cx);
+                            case '\'':
+                                CXON_IF_CONSTEXPR (X::string::del == '\'')
+                                        return poke<X>(o, "\\'", 2, cx);
+                                else    return poke<X>(o, c, cx);
+                            default  :  return poke<X>(o, c, cx);
                         }
                     }
                 template <typename O, typename Cx>
                     static bool range(O& o, const char* f, const char* l, Cx& cx) {
                         char const* a = f;
                         for ( ; f != l; ++f) {
-                            if (should_escape_(*f)) {
+                            if (should_escape_<X>(*f)) {
                                 if (a != f)
                                     if (!poke<X>(o, a, f, cx)) return false;
                                 if (!value(o, *f, cx)) return false;
@@ -471,8 +481,10 @@ namespace cxon { namespace cio { namespace chr {
                         }
                         return a == f || poke<X>(o, a, f, cx);
                     }
-                static bool should_escape_(char c) noexcept {
-                    CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
+                template <typename Y = X>
+                    static auto should_escape_(char c) noexcept
+                        -> enable_if_t<!is_quoted_key_context<Y>::value && Y::string::del == '"', bool>
+                    {
                         static constexpr char se_[] = {
                             1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                             0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -485,7 +497,32 @@ namespace cxon { namespace cio { namespace chr {
                         };
                         return se_[(unsigned char)c] == '\1';
                     }
-                    else {
+                template <typename Y = X>
+                    static auto should_escape_(char c) noexcept
+                        -> enable_if_t<!is_quoted_key_context<Y>::value && Y::string::del == '\'', bool>
+                    {
+                        static constexpr char se_[] = {
+                            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                            0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                        };
+                        return se_[(unsigned char)c] == '\1';
+                    }
+                template <typename Y = X>
+                    static auto should_escape_(char) noexcept
+                        -> enable_if_t<!is_quoted_key_context<Y>::value && Y::string::del != '"' && Y::string::del != '\'', bool>
+                    {
+                        static_assert(unexpected<Y>(), "expecting single or double quotes as a string delimiter");
+                    }
+                template <typename Y = X>
+                    static auto should_escape_(char c) noexcept
+                        -> enable_if_t< is_quoted_key_context<Y>::value, bool>
+                    {
                         static constexpr char se_[] = {
                             1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                             1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
@@ -498,7 +535,6 @@ namespace cxon { namespace cio { namespace chr {
                         };
                         return se_[(unsigned char)c] == '\1';
                     }
-                }
             };
 
         template <typename X>
