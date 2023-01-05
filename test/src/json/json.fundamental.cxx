@@ -623,6 +623,9 @@ TEST_BEG(json_escapes, cxon::JSON<>, "/core") // json
         R_TEST("", "\"\\u00X", json::read_error::escape_invalid, 1); // none
         R_TEST("", "\"\\u000", json::read_error::escape_invalid, 1); // none
         R_TEST("", "\"\\u000X", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\ ", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\:", json::read_error::escape_invalid, 1); // none
+        R_TEST("", "\"\\'", json::read_error::escape_invalid, 1); // none
         W_TEST(QS("\\u0001"), "\1");
         W_TEST(QS("\\u0002"), "\2");
         W_TEST(QS("\\u0003"), "\3");
@@ -656,6 +659,9 @@ TEST_BEG(json_escapes, cxon::JSON<>, "/core") // json
         W_TEST(QS("\\u001f"), "\37");
         W_TEST(QS("\\\""), "\42");
         W_TEST(QS("\\\\"), "\134");
+        W_TEST(QS(" "), L" ");
+        W_TEST(QS(":"), L":");
+        W_TEST(QS("'"), L"'");
 TEST_END()
 
 TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<>>, "/core") // json
@@ -695,6 +701,9 @@ TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_trai
         R_TEST("", "\"\\u00X", json::read_error::escape_invalid, 5); // none
         R_TEST("", "\"\\u000", json::read_error::escape_invalid, 6); // none
         R_TEST("", "\"\\u000X", json::read_error::escape_invalid, 6); // none
+        R_TEST("", "\"\\ ", json::read_error::escape_invalid, 2); // none
+        R_TEST("", "\"\\:", json::read_error::escape_invalid, 2); // none
+        R_TEST("", "\"\\'", json::read_error::escape_invalid, 2); // none
         W_TEST(QS("\\u0001"), "\1");
         W_TEST(QS("\\u0002"), "\2");
         W_TEST(QS("\\u0003"), "\3");
@@ -728,6 +737,9 @@ TEST_BEG(json_escapes_input_iterator, cxon::JSON<cxon::test::input_iterator_trai
         W_TEST(QS("\\u001f"), "\37");
         W_TEST(QS("\\\""), "\42");
         W_TEST(QS("\\\\"), "\134");
+        W_TEST(QS(" "), L" ");
+        W_TEST(QS(":"), L":");
+        W_TEST(QS("'"), L"'");
 TEST_END()
 
 namespace cxon { namespace test {

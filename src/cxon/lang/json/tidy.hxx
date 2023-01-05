@@ -118,9 +118,15 @@ namespace cxon { namespace json {
                         if (!poke(o_, '\n') || !poke(o_, lvl_ += tab_, pad_))
                             return false;
                         break;
-                    case stt::str:
+                    case stt::qst:
                         switch (c) {
                             case '"' : mut(stt::scl); break;
+                            case '\\': mut(stt::esc); break;
+                        }
+                        return poke(o_, c);
+                    case stt::ast:
+                        switch (c) {
+                            case '\'': mut(stt::scl); break;
                             case '\\': mut(stt::esc); break;
                         }
                         return poke(o_, c);
@@ -160,7 +166,9 @@ namespace cxon { namespace json {
                     case '}': case ']':
                         return mut(stt::scl),   poke(o_, '\n') && poke(o_, (lvl_ ? lvl_ -= tab_ : 0), pad_) && poke(o_, c);
                     case '"':
-                        nxt = stt::str; goto scl;
+                        nxt = stt::qst; goto scl;
+                    case '\'':
+                        nxt = stt::ast; goto scl;
                     case ',':
                         return mut(stt::com),   poke(o_, c);
                     case ':':
@@ -180,7 +188,7 @@ namespace cxon { namespace json {
                     switch (cur()) {
                         case stt::lst:
                             return  (mut(stt::scl),     poke(o_, '\n') && poke(o_, lvl_ += tab_, pad_)   && append(o_));
-                        case stt::str:
+                        case stt::qst: case stt::ast:
                             return  (                                                                       append(o_));
                         case stt::com:
                             return  (mut(stt::grn),     poke(o_, '\n') && poke(o_, lvl_, pad_)           && append(o_));
@@ -214,7 +222,7 @@ namespace cxon { namespace json {
             }
 
             private:
-                enum class stt { grn, lst, str, scl, esc, com };
+                enum class stt { grn, lst, qst, ast, scl, esc, com };
                 stt cur() const noexcept    { return cur_; }
                 stt pre() const noexcept    { return pre_; }
                 void mut(stt s) noexcept    { pre_ = cur_, cur_ = s; }

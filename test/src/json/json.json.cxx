@@ -516,6 +516,28 @@ TEST_BEG(allow_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterat
 TEST_END()
 
 
+namespace {
+    struct single_quotes_traits : cxon::json::format_traits {
+        struct string {
+#           if defined(__clang__)
+#               pragma clang diagnostic push
+#               pragma clang diagnostic ignored "-Wunused-const-variable" // buggy warning
+#           endif
+                static constexpr char del = '\'';
+#           if defined(__clang__)
+#               pragma clang diagnostic pop
+#           endif
+        };
+    };
+}
+TEST_BEG(single_quotes_tidy, cxon::JSON<single_quotes_traits>, "/core")
+    TEST_CHECK("[\n\t'xxx',\n\t'yyy'\n]" == cxon::json::tidy<std::string>(R"(['xxx', 'yyy'])"));
+    TEST_CHECK("[\n\t'x\\'x',\n\t'y\\'y'\n]" == cxon::json::tidy<std::string>(R"(['x\'x', 'y\'y'])"));
+    TEST_CHECK("[\n\t'x\"x',\n\t'y\"y'\n]" == cxon::json::tidy<std::string>(R"(['x"x', 'y"y'])"));
+    TEST_CHECK("[\n\t'x]x',\n\t'y]y'\n]" == cxon::json::tidy<std::string>(R"(['x]x', 'y]y'])"));
+TEST_END()
+
+
 namespace jsonrpc {
 
     // request

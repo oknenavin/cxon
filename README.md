@@ -465,10 +465,10 @@ there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
 `clang++ >= 4.0` and `msvc++ >= 19.16` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
-*`CXON` uses [`<charconv>`][std-charconv] for floating-point conversions by default. By defining
+*`CXON` is using [`<charconv>`][std-charconv] for floating-point conversions by default. By defining
 `CXON_USE_FAST_FLOAT` and [`fast_float`][ff] present in the include path, the floating-point parsing
-can be switched to it. This will give a good performance boost over current implementations of
-[`<charconv>`][std-charconv] - see [performance](#performance) for details.*
+can be switched to it. This will give a good performance boost for `C++11/14` and some erlier implementations of
+[`<charconv>`][std-charconv].*
 
 --------------------------------------------------------------------------------
 
