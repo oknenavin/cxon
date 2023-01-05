@@ -643,6 +643,74 @@ TEST_END()
 
 
 namespace {
+    struct single_quotes_traits : cxon::json::format_traits {
+        struct string {
+            static constexpr char del = '\'';
+        };
+    };
+}
+TEST_BEG(single_quotes, cxon::JSON<single_quotes_traits>, "/core")
+    // char[]
+        R_TEST("", "''");
+        W_TEST("''", "");
+        R_TEST("xxx", "'xxx'");
+        W_TEST("'xxx'", "xxx");
+        R_TEST("x'x", "'x\\'x'");
+        W_TEST("'x\\'x'", "x'x");
+        R_TEST("x'x", "'x'x'", json::read_error::ok, 3);
+        R_TEST("x\"x", "'x\"x'");
+        W_TEST("'x\"x'", "x\"x");
+        R_TEST("x\"x", "'x\\\"x'");
+    // wchar_t[]
+        R_TEST(L"", "''");
+        W_TEST("''", L"");
+        R_TEST(L"xxx", "'xxx'");
+        W_TEST("'xxx'", L"xxx");
+        R_TEST(L"x'x", "'x\\'x'");
+        W_TEST("'x\\'x'", L"x'x");
+        R_TEST(L"x'x", "'x'x'", json::read_error::ok, 3);
+        R_TEST(L"x\"x", "'x\"x'");
+        W_TEST("'x\"x'", L"x\"x");
+        R_TEST(L"x\"x", "'x\\\"x'");
+    // char8_t[]
+#       if defined(__cpp_char8_t)
+            R_TEST(u8"", "''");
+            W_TEST("''", u8"");
+            R_TEST(u8"xxx", "'xxx'");
+            W_TEST("'xxx'", u8"xxx");
+            R_TEST(u8"x'x", "'x\\'x'");
+            W_TEST("'x\\'x'", u8"x'x");
+            R_TEST(u8"x'x", "'x'x'", json::read_error::ok, 3);
+            R_TEST(u8"x\"x", "'x\"x'");
+            W_TEST("'x\"x'", u8"x\"x");
+            R_TEST(u8"x\"x", "'x\\\"x'");
+#       endif
+    // char16_t[]
+        R_TEST(u"", "''");
+        W_TEST("''", u"");
+        R_TEST(u"xxx", "'xxx'");
+        W_TEST("'xxx'", u"xxx");
+        R_TEST(u"x'x", "'x\\'x'");
+        W_TEST("'x\\'x'", u"x'x");
+        R_TEST(u"x'x", "'x'x'", json::read_error::ok, 3);
+        R_TEST(u"x\"x", "'x\"x'");
+        W_TEST("'x\"x'", u"x\"x");
+        R_TEST(u"x\"x", "'x\\\"x'");
+    // char32_t[]
+        R_TEST(U"", "''");
+        W_TEST("''", U"");
+        R_TEST(U"xxx", "'xxx'");
+        W_TEST("'xxx'", U"xxx");
+        R_TEST(U"x'x", "'x\\'x'");
+        W_TEST("'x\\'x'", U"x'x");
+        R_TEST(U"x'x", "'x'x'", json::read_error::ok, 3);
+        R_TEST(U"x\"x", "'x\"x'");
+        W_TEST("'x\"x'", U"x\"x");
+        R_TEST(U"x\"x", "'x\\\"x'");
+TEST_END()
+
+
+namespace {
     enum Enum1 { one, two, three, four };
 }
 
