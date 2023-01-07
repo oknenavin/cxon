@@ -295,7 +295,7 @@ namespace cxon {
 #                           define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
                                 case '{'                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(object),     i, e, cx); }
                                 case '['                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),      i, e, cx); }
-                                case '"'                :                       return read_key_(t, CXON_IMBUE(string),     i, e, cx);
+                                case '"': case '\''     :                       return read_key_(t, CXON_IMBUE(string), i, e, cx);
                                 case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
                                                         :                       return read_key_(t, CXON_IMBUE(real),       i, e, cx);
                                 case 't': case 'f'      :                       return read_key_(t, CXON_IMBUE(boolean),    i, e, cx);
@@ -387,7 +387,7 @@ namespace cxon {
 #                       define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
                             case '{'                : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(object),   i, e, cx); }
                             case '['                : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(array),    i, e, cx); }
-                            case '"'                :                       return read_value_(t, CXON_IMBUE(string),   i, e, cx);
+                            case '"': case '\''     :                       return read_value_(t, CXON_IMBUE(string),   i, e, cx);
                             case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
                                                     :                       return read_value_(t, CXON_IMBUE(real),     i, e, cx);
                             case 't': case 'f'      :                       return read_value_(t, CXON_IMBUE(boolean),  i, e, cx);
@@ -455,7 +455,7 @@ namespace cxon {
 #                               define CXON_IMBUE(T) t.template imbue<typename cbor::basic_node<Tr>::T>()
                                     case '{'                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(map),        i, e, cx); }
                                     case '['                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),      i, e, cx); }
-                                    case '"'                :                       return read_key_(t, CXON_IMBUE(text),       i, e, cx);
+                                    case '"': case '\''     :                       return read_key_(t, CXON_IMBUE(text),       i, e, cx);
                                     case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
                                                             :                       return read_key_(t, CXON_IMBUE(real),       i, e, cx);
                                     case 't': case 'f'      :                       return read_key_(t, CXON_IMBUE(boolean),    i, e, cx);
@@ -551,7 +551,7 @@ namespace cxon {
 #                           define CXON_IMBUE(T) t.template imbue<typename cbor::basic_node<Tr>::T>()
                                 case '{'                    : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(map),      i, e, cx); }
                                 case '['                    : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(array),    i, e, cx); }
-                                case '"'                    :                       return read_value_(t, CXON_IMBUE(text),     i, e, cx);
+                                case '"': case '\''         :                       return read_value_(t, CXON_IMBUE(text),     i, e, cx);
                                 case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
                                                             :                       return read_value_(t, CXON_IMBUE(real),     i, e, cx);
                                 case 't': case 'f'          :                       return read_value_(t, CXON_IMBUE(boolean),  i, e, cx);
