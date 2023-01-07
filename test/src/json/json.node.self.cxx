@@ -66,6 +66,14 @@ namespace test { namespace kind {
     using UK_JSON = cxon::JSON<cxon::test::unquoted_keys_traits<>>;
     using UQK_JSON = cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>;
 
+    struct single_quotes_traits : cxon::json::format_traits {
+        struct string {
+            static constexpr char del = '\'';
+        };
+    };
+    using SQ_JSON = cxon::JSON<single_quotes_traits>;
+    using SQ_UK_JSON = cxon::JSON<cxon::test::unquoted_keys_traits<single_quotes_traits>>;
+
     int self() {
         int a_ = 0;
         int f_ = 0;
@@ -1114,6 +1122,57 @@ namespace test { namespace kind {
                 {   std::string const s0 = R"({1:2})";
                     node n;         cxon::from_bytes<UQK_JSON>(n, s0); CHECK(n.is<node::map>() && n.get<node::map>()["1"].is<node::uint>());
                     std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
+            // single quoted string
+            {   using node = cxon::json::node;
+                {   std::string const s0 = R"({'a':'b','c':'d'})";
+                    node n;         cxon::from_bytes<SQ_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({'aaa':'bbb','ccc':'ddd'})";
+                    node n;         cxon::from_bytes<SQ_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({'a':'b','c':'d'})";
+                    node n;         cxon::from_bytes<SQ_UK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_UK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({'aaa':'bbb','ccc':'ddd'})";
+                    node n;         cxon::from_bytes<SQ_UK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_UK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
+            {   using node = cxon::cbor::node;
+                {   std::string const s0 = R"({'a':'b','c':'d'})";
+                    node n;         cxon::from_bytes<SQ_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
+            {   using node = cxon::cbor::node;
+                {   std::string const s0 = R"({'aaa':'bbb','ccc':'ddd'})";
+                    node n;         cxon::from_bytes<SQ_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
+            {   using node = cxon::cbor::node;
+                {   std::string const s0 = R"({'a':'b','c':'d'})";
+                    node n;         cxon::from_bytes<SQ_UK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_UK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
+            {   using node = cxon::cbor::node;
+                {   std::string const s0 = R"({'aaa':'bbb','ccc':'ddd'})";
+                    node n;         cxon::from_bytes<SQ_UK_JSON>(n, s0);
+                    std::string s1; cxon::to_bytes<SQ_UK_JSON>(s1, n);
                     CHECK(s1 == s0);
                 }
             }
