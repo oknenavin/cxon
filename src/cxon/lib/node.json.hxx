@@ -139,6 +139,9 @@ namespace cxon {
                                 CXON_STORE(c);
                             }
                     }
+                    else if (c == 'I' || c == 'N') {
+                        return read_value<X>(v, i, e, cx) && (!s || (v = -v, true));
+                    }
                     else
                         return cx/X::read_error::floating_point_invalid;
 
@@ -296,7 +299,7 @@ namespace cxon {
                                 case '{'                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(object),     i, e, cx); }
                                 case '['                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),      i, e, cx); }
                                 case '"': case '\''     :                       return read_key_(t, CXON_IMBUE(string), i, e, cx);
-                                case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
+                                case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case 'I': case 'N'
                                                         :                       return read_key_(t, CXON_IMBUE(real),       i, e, cx);
                                 case 't': case 'f'      :                       return read_key_(t, CXON_IMBUE(boolean),    i, e, cx);
                                 case 'n'                :                       return read_key_(t, CXON_IMBUE(null),       i, e, cx);
@@ -388,7 +391,7 @@ namespace cxon {
                             case '{'                : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(object),   i, e, cx); }
                             case '['                : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(array),    i, e, cx); }
                             case '"': case '\''     :                       return read_value_(t, CXON_IMBUE(string),   i, e, cx);
-                            case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
+                            case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case 'I': case 'N'
                                                     :                       return read_value_(t, CXON_IMBUE(real),     i, e, cx);
                             case 't': case 'f'      :                       return read_value_(t, CXON_IMBUE(boolean),  i, e, cx);
                             case 'n'                :                       return read_value_(t, CXON_IMBUE(null),     i, e, cx);
@@ -456,7 +459,7 @@ namespace cxon {
                                     case '{'                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(map),        i, e, cx); }
                                     case '['                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),      i, e, cx); }
                                     case '"': case '\''     :                       return read_key_(t, CXON_IMBUE(text),       i, e, cx);
-                                    case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
+                                    case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case 'I': case 'N'
                                                             :                       return read_key_(t, CXON_IMBUE(real),       i, e, cx);
                                     case 't': case 'f'      :                       return read_key_(t, CXON_IMBUE(boolean),    i, e, cx);
                                     case 'n'                :                       return read_key_(t, CXON_IMBUE(null),       i, e, cx);
@@ -552,7 +555,7 @@ namespace cxon {
                                 case '{'                    : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(map),      i, e, cx); }
                                 case '['                    : { CXON_NODE_RG();     return read_value_(t, CXON_IMBUE(array),    i, e, cx); }
                                 case '"': case '\''         :                       return read_value_(t, CXON_IMBUE(text),     i, e, cx);
-                                case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9'
+                                case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case 'I': case 'N'
                                                             :                       return read_value_(t, CXON_IMBUE(real),     i, e, cx);
                                 case 't': case 'f'          :                       return read_value_(t, CXON_IMBUE(boolean),  i, e, cx);
                                 case 'n'                    :                       return read_value_(t, CXON_IMBUE(null),     i, e, cx);
