@@ -66,6 +66,7 @@ namespace cxon { namespace cio { // format traits
         static constexpr bool allow_comments            = false;    // allow c-style comments
         static constexpr bool allow_trailing_separators = false;    // allow trailing separators (map & lists)
         static constexpr bool assume_unique_object_keys = true;     // assume that object keys are unique (for the class serializers)
+        static constexpr bool allow_javascript_nans     = false;    // allow NaN and Infinity
     };
 
 }}

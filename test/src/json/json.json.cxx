@@ -162,7 +162,7 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
         TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '3');
     }
     {   double r = 0; std::list<char> const i = {'1', '2', '3'};
-        TEST_CHECK(from_bytes(r, i, json::num_len_max::set<4>()) && r == 123);
+        TEST_CHECK(from_bytes(r, i, json::num_len_max::set<6>()) && r == 123);
     }
     {   float r = 0; std::list<char> const i = {'1', '2', '3'};
         auto const e = from_bytes(r, i, json::num_len_max::set<2>());

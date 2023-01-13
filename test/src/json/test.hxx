@@ -27,13 +27,18 @@ namespace cxon { namespace test {
         };
 
     template <typename T = cxon::json::format_traits>
-        struct allow_comments_traits : cxon::json::format_traits {
+        struct allow_comments_traits : T {
             static constexpr bool allow_comments = true;
         };
 
     template <typename T = cxon::json::format_traits>
-        struct allow_trailing_separators_traits : cxon::json::format_traits {
+        struct allow_trailing_separators_traits : T {
             static constexpr bool allow_trailing_separators = true;
+        };
+
+    template <typename T = cxon::json::format_traits>
+        struct allow_javascript_nans_traits : T {
+            static constexpr bool allow_javascript_nans = true;
         };
 
 }}
