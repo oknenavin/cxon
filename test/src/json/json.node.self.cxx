@@ -74,6 +74,9 @@ namespace test { namespace kind {
     using SQ_JSON = cxon::JSON<single_quotes_traits>;
     using SQ_UK_JSON = cxon::JSON<cxon::test::unquoted_keys_traits<single_quotes_traits>>;
 
+    using JS_NANS = cxon::JSON<cxon::test::allow_javascript_nans_traits<>>;
+    using UKJS_NANS = cxon::JSON<cxon::test::allow_javascript_nans_traits<cxon::test::unquoted_keys_traits<>>>;
+
     int self() {
         int a_ = 0;
         int f_ = 0;
@@ -1173,6 +1176,51 @@ namespace test { namespace kind {
                 {   std::string const s0 = R"({'aaa':'bbb','ccc':'ddd'})";
                     node n;         cxon::from_bytes<SQ_UK_JSON>(n, s0);
                     std::string s1; cxon::to_bytes<SQ_UK_JSON>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
+            // javascript nans
+            {   using node = cxon::json::node;
+                {   std::string const s0 = R"([Infinity,NaN,-NaN,-Infinity])";
+                    node n;         cxon::from_bytes<JS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<JS_NANS>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({-Infinity:-1,Infinity:1})";
+                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({-NaN:0})";
+                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({NaN:0})";
+                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
+                    CHECK(s1 == s0);
+                }
+            }
+            {   using node = cxon::cbor::node;
+                {   std::string const s0 = R"([Infinity,NaN,-NaN,-Infinity])";
+                    node n;         cxon::from_bytes<JS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<JS_NANS>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({-Infinity:-1,Infinity:1})";
+                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({-NaN:0})";
+                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
+                    CHECK(s1 == s0);
+                }
+                {   std::string const s0 = R"({NaN:0})";
+                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
+                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
                     CHECK(s1 == s0);
                 }
             }
