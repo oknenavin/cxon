@@ -339,9 +339,9 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
             "]"
         ;
         struct_bare_1 b0;
-            cxon::from_bytes<XXON>(b0, s0);
+            TEST_CHECK(cxon::from_bytes<XXON>(b0, s0));
         std::string s1;
-            cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0);
+            TEST_CHECK(cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0));
         TEST_CHECK(s1 == s0);
     }
     {   char const s0[] =
@@ -351,9 +351,9 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
             "]"
         ;
         std::vector<std::string> b0;
-            cxon::from_bytes<XXON>(b0, s0);
+            TEST_CHECK(cxon::from_bytes<XXON>(b0, s0));
         std::string s1;
-            cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0);
+            TEST_CHECK(cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0));
         TEST_CHECK(s1 == s0);
     }
     {

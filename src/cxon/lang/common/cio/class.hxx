@@ -217,7 +217,7 @@ namespace cxon { namespace cio { namespace cls {
                 if (!consume<X>(i, e, cx)) return false;
                     if (i == e) return true;
                 int st[sizeof...(F)] = {0};
-                for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; i != e; ) {
+                for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; i != e && *i; ) {
                     II const o = i;
                         if (!read_map_key<X>(id, i, e, cx))
                             return false;
