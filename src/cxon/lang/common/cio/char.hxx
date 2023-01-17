@@ -428,6 +428,7 @@ namespace cxon { namespace cio { namespace chr {
                             "\\u0018", "\\u0019", "\\u001a", "\\u001b", "\\u001c", "\\u001d", "\\u001e", "\\u001f"
                         };
                         static constexpr unsigned len_[] = { 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2, 6, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
+                        static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
                         switch (c) {
                             case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
                             case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
@@ -444,15 +445,17 @@ namespace cxon { namespace cio { namespace chr {
                             case ' ' :
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
                                         return poke<X>(o, "\\ ", 2, cx);
-                                else    return poke<X>(o, c, cx);
+                                else    return poke<X>(o, ' ', cx);
                             case ':' :
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
                                         return poke<X>(o, "\\:", 2, cx);
-                                else    return poke<X>(o, c, cx);
+                                else    return poke<X>(o, ':', cx);
                             case '\'':
-                                CXON_IF_CONSTEXPR (X::string::del == '\'')
-                                        return poke<X>(o, "\\'", 2, cx);
-                                else    return poke<X>(o, c, cx);
+                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
+                                        return poke<X>(o, '\'', cx);
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\"')
+                                        return poke<X>(o, '\'', cx);
+                                else    return poke<X>(o, "\\'", 2, cx);
                             default  :  return poke<X>(o, c, cx);
                         }
                     }
@@ -483,11 +486,11 @@ namespace cxon { namespace cio { namespace chr {
                     }
                 template <typename Y = X>
                     static auto should_escape_(char c) noexcept
-                        -> enable_if_t<!is_quoted_key_context<Y>::value && Y::string::del == '"', bool>
+                        -> enable_if_t<!is_quoted_key_context<Y>::value, bool>
                     {
                         static constexpr char se_[] = {
                             1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                            0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                            0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -496,28 +499,6 @@ namespace cxon { namespace cio { namespace chr {
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                         };
                         return se_[(unsigned char)c] == '\1';
-                    }
-                template <typename Y = X>
-                    static auto should_escape_(char c) noexcept
-                        -> enable_if_t<!is_quoted_key_context<Y>::value && Y::string::del == '\'', bool>
-                    {
-                        static constexpr char se_[] = {
-                            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                            0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                        };
-                        return se_[(unsigned char)c] == '\1';
-                    }
-                template <typename Y = X>
-                    static auto should_escape_(char) noexcept
-                        -> enable_if_t<!is_quoted_key_context<Y>::value && Y::string::del != '"' && Y::string::del != '\'', bool>
-                    {
-                        static_assert(unexpected<Y>(), "expecting single or double quotes as a string delimiter");
                     }
                 template <typename Y = X>
                     static auto should_escape_(char c) noexcept
