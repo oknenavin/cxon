@@ -1042,6 +1042,53 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
     }
 TEST_END()
 
+namespace {
+    struct single_quotes_traits : cxon::json::format_traits {
+        struct string {
+            static constexpr char del = '\'';
+        };
+    };
+}
+TEST_BEG(single_quoted_keys, cxon::JSON<single_quotes_traits>, "/std")
+    using namespace std;
+    {   using xmap = map<map<string, int>, int>;
+        R_TEST(xmap{{{{"x\ty'z", 1}}, 3}}, R"({'{\'x\ty\u0027z\':1}':3})");
+        R_TEST(xmap{{{{"x\ty'z", 1}}, 3}}, R"({'{\'x\ty'z\':1}':3})");
+        W_TEST(R"({'{\'x\ty'z\':1}':3})", xmap{{{{"x\ty'z", 1}}, 3}});
+    }
+    {   using xmap = map<map<wstring, int>, int>;
+        R_TEST(xmap{{{{L"x\ty'z", 1}}, 3}}, R"({'{\'x\ty\u0027z\':1}':3})");
+        R_TEST(xmap{{{{L"x\ty'z", 1}}, 3}}, R"({'{\'x\ty'z\':1}':3})");
+        W_TEST(R"({'{\'x\ty'z\':1}':3})", xmap{{{{L"x\ty'z", 1}}, 3}});
+    }
+    {   using xmap = map<map<u16string, int>, int>;
+        R_TEST(xmap{{{{u"x\ty'z", 1}}, 3}}, R"({'{\'x\ty\u0027z\':1}':3})");
+        R_TEST(xmap{{{{u"x\ty'z", 1}}, 3}}, R"({'{\'x\ty'z\':1}':3})");
+        W_TEST(R"({'{\'x\ty'z\':1}':3})", xmap{{{{u"x\ty'z", 1}}, 3}});
+    }
+    {   using xmap = map<map<u32string, int>, int>;
+        R_TEST(xmap{{{{U"x\ty'z", 1}}, 3}}, R"({'{\'x\ty\u0027z\':1}':3})");
+        R_TEST(xmap{{{{U"x\ty'z", 1}}, 3}}, R"({'{\'x\ty'z\':1}':3})");
+        W_TEST(R"({'{\'x\ty'z\':1}':3})", xmap{{{{U"x\ty'z", 1}}, 3}});
+    }
+    {   using xmap = map<map<map<string, int>, int>, int>;
+        R_TEST(xmap{{{{{{"x\ty'z", 1}}, 3}}, 5}}, R"({'{{\'x\ty'z\':1}:3}':5})");
+        W_TEST(R"({'{{\'x\ty'z\':1}:3}':5})", xmap{{{{{{"x\ty'z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<wstring, int>, int>, int>;
+        R_TEST(xmap{{{{{{L"x\ty'z", 1}}, 3}}, 5}}, R"({'{{\'x\ty'z\':1}:3}':5})");
+        W_TEST(R"({'{{\'x\ty'z\':1}:3}':5})", xmap{{{{{{L"x\ty'z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u16string, int>, int>, int>;
+        R_TEST(xmap{{{{{{u"x\ty'z", 1}}, 3}}, 5}}, R"({'{{\'x\ty'z\':1}:3}':5})");
+        W_TEST(R"({'{{\'x\ty'z\':1}:3}':5})", xmap{{{{{{u"x\ty'z", 1}}, 3}}, 5}});
+    }
+    {   using xmap = map<map<map<u32string, int>, int>, int>;
+        R_TEST(xmap{{{{{{U"x\ty'z", 1}}, 3}}, 5}}, R"({'{{\'x\ty'z\':1}:3}':5})");
+        W_TEST(R"({'{{\'x\ty'z\':1}:3}':5})", xmap{{{{{{U"x\ty'z", 1}}, 3}}, 5}});
+    }
+TEST_END()
+
 TEST_BEG(unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/std")
     using namespace std;
 
