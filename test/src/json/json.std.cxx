@@ -1755,3 +1755,85 @@ TEST_BEG(unquote_quoted_keys_input_iterator, cxon::JSON<cxon::test::unquoted_quo
         W_TEST(R"({01010101:"10101010"})", xmap {{bitset<8>(85), bitset<8>(170)}});
     }
 TEST_END()
+
+
+namespace {
+    struct map_div_traits : cxon::json::format_traits {
+        struct map : cxon::json::format_traits::map {
+            static constexpr char div = '=';
+        };
+    };
+}
+TEST_BEG(map_div, cxon::JSON<map_div_traits>, "/std")
+    using namespace std;
+    {   using xmap = map<string, int>;
+        R_TEST(xmap {{"x", 1}}, R"({"x"=1})");
+        W_TEST(R"({"x"=1})", xmap {{"x", 1}});
+        R_TEST(xmap {{"x:y", 1}}, R"({"x:y"=1})");
+        W_TEST(R"({"x:y"=1})", xmap {{"x:y", 1}});
+        R_TEST(xmap {{"x=y", 1}}, R"({"x=y"=1})");
+        W_TEST(R"({"x=y"=1})", xmap {{"x=y", 1}});
+        R_TEST(xmap {}, R"({"x":1})", cxon::json::read_error::unexpected, 4);
+    }
+TEST_END()
+
+TEST_BEG(map_div_unquoted_quoted_keys, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<map_div_traits>>, "/std")
+    using namespace std;
+    {   using xmap = map<string, int>;
+        R_TEST(xmap {{"x", 1}}, R"({x=1})");
+        W_TEST(R"({x=1})", xmap {{"x", 1}});
+        R_TEST(xmap {{"x:y", 1}}, R"({x:y=1})");
+        W_TEST(R"({x:y=1})", xmap {{"x:y", 1}});
+        R_TEST(xmap {{"x=y", 1}}, R"({x\=y=1})");
+        W_TEST(R"({x\=y=1})", xmap {{"x=y", 1}});
+        R_TEST(xmap {}, R"({x:1})", cxon::json::read_error::unexpected, 5);
+    }
+TEST_END()
+
+TEST_BEG(map_div_unquoted_quoted_keys_cov, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/std")
+    using namespace std;
+    {   using xmap = map<string, string>;
+        R_TEST(xmap {{"x=y", "z"}}, R"({x\=y:"z"})", json::read_error::escape_invalid, 2);
+        W_TEST(R"({x=y:"z"})", xmap {{"x=y", "z"}});
+    }
+TEST_END()
+
+
+namespace {
+    struct map_list_sep_traits : cxon::json::format_traits {
+        struct map : cxon::json::format_traits::map {
+            static constexpr char sep = ';';
+        };
+        struct list : cxon::json::format_traits::list {
+            static constexpr char sep = ';';
+        };
+    };
+}
+TEST_BEG(map_list_sep, cxon::JSON<map_list_sep_traits>, "/std")
+    using namespace std;
+    {   using xmap = map<string, string>;
+        R_TEST(xmap {{"a", "b"}, {"c", "d"}}, R"({"a":"b";"c":"d"})");
+        W_TEST(R"({"a":"b";"c":"d"})", xmap {{"a", "b"}, {"c", "d"}});
+    }
+    {   using xvec = vector<string>;
+        R_TEST(xvec {"a", "b"}, R"(["a";"b"])");
+        W_TEST(R"(["a";"b"])", xvec {"a", "b"});
+    }
+TEST_END()
+
+namespace {
+    struct map_list_trailing_sep_traits : map_list_sep_traits {
+        static constexpr bool allow_trailing_separators = true;
+    };
+}
+TEST_BEG(map_list_trailing_sep, cxon::JSON<map_list_trailing_sep_traits>, "/std")
+    using namespace std;
+    {   using xmap = map<string, string>;
+        R_TEST(xmap {{"a", "b"}, {"c", "d"}}, R"({"a":"b";"c":"d";})");
+        W_TEST(R"({"a":"b";"c":"d"})", xmap {{"a", "b"}, {"c", "d"}});
+    }
+    {   using xvec = vector<string>;
+        R_TEST(xvec {"a", "b"}, R"(["a";"b";])");
+        W_TEST(R"(["a";"b"])", xvec {"a", "b"});
+    }
+TEST_END()
