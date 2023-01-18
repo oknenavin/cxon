@@ -22,16 +22,16 @@ namespace cxon { namespace cio { // format traits
         struct map {
             static constexpr char               beg     = '{';
             static constexpr char               end     = '}';
-            static constexpr char               div     = ':';
-            static constexpr char               sep     = ',';
+            static constexpr char               div     = ':';  // : or =
+            static constexpr char               sep     = ',';  // , or ;
         };
         struct list {
             static constexpr char               beg     = '[';
             static constexpr char               end     = ']';
-            static constexpr char               sep     = ',';
+            static constexpr char               sep     = ',';  // , or ;
         };
         struct string {
-            static constexpr char               del     = '"';
+            static constexpr char               del     = '"';  // " or '
         };
         struct number {
             static constexpr bool               strict  = false;
@@ -94,7 +94,7 @@ namespace cxon { namespace cio { // key quoting helpers
                 CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
                     return c == X::string::del;
                 }
-                return chr::is<X>::space(c) || c == ':';
+                return chr::is<X>::space(c) || c == X::map::div;
             }
         template <typename X>
             inline auto delim_en_check(char c) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {

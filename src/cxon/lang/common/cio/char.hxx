@@ -118,8 +118,12 @@ namespace cxon { namespace cio { namespace chr {
                                 return ++i, U' ';
                         else    return bad_utf32;
                     case ':' :
-                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
                                 return ++i, U':';
+                        else    return bad_utf32;
+                    case '=' :
+                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
+                                return ++i, U'=';
                         else    return bad_utf32;
                     case '\'':
                         CXON_IF_CONSTEXPR (X::string::del == '\'')
@@ -429,6 +433,7 @@ namespace cxon { namespace cio { namespace chr {
                         };
                         static constexpr unsigned len_[] = { 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2, 6, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
                         static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
+                        static_assert(X::map::div == ':' || X::map::div == '=', "expecting colon or equal sign as a key/value divider");
                         switch (c) {
                             case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
                             case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
@@ -447,13 +452,17 @@ namespace cxon { namespace cio { namespace chr {
                                         return poke<X>(o, "\\ ", 2, cx);
                                 else    return poke<X>(o, ' ', cx);
                             case ':' :
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
                                         return poke<X>(o, "\\:", 2, cx);
                                 else    return poke<X>(o, ':', cx);
+                            case '=' :
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
+                                        return poke<X>(o, "\\=", 2, cx);
+                                else    return poke<X>(o, '=', cx);
                             case '\'':
                                 CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
                                         return poke<X>(o, '\'', cx);
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\"')
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '"')
                                         return poke<X>(o, '\'', cx);
                                 else    return poke<X>(o, "\\'", 2, cx);
                             default  :  return poke<X>(o, c, cx);
@@ -506,7 +515,7 @@ namespace cxon { namespace cio { namespace chr {
                     {
                         static constexpr char se_[] = {
                             1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                            1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
+                            1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
