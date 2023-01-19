@@ -28,8 +28,6 @@ namespace test {
 
     using cases = std::vector<test>;
 
-    bool parse_cl(int argc, char *argv[], cases& pass, cases& fail, cases& diff, cases& time_node, cases& time_native);
-
 }
 
 namespace test { namespace kind {
