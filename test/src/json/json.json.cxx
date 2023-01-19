@@ -357,19 +357,19 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
         TEST_CHECK(s1 == s0);
     }
     {
-        TEST_CHECK(
+        TEST_CHECK((
             "\"a\": [\n\t\"b\",\n\t1,\n\t\"c\"\n],\n\"d\": \"e\",\n\"f\": {\n\t\"g\": [\n\t\t2,\n\t\t\"h\",\n\t\t3\n\t],\n\t\"j\": \"k\"\n}" ==
-            cxon::json::tidy<std::string>(R"("a": ["b", 1, "c"], "d": "e", "f": {"g": [2, "h", 3], "j": "k"})")
-        );
-        TEST_CHECK(
+            cxon::json::tidy<XXON, std::string>(R"("a": ["b", 1, "c"], "d": "e", "f": {"g": [2, "h", 3], "j": "k"})")
+        ));
+        TEST_CHECK((
             "\"a\": [\n\t\"b\"\n\t1\n\t\"c\"\n]\n\"d\": \"e\"\n\"f\": {\n\t\"g\": [\n\t\t2\n\t\t\"h\"\n\t\t3\n\t]\n\t\"j\": \"k\"\n}" ==
-            cxon::json::tidy<std::string>(R"("a": ["b"  1  "c"]  "d": "e"  "f": {"g": [2  "h"  3]  "j": "k"})")
-        );
-        TEST_CHECK(
+            cxon::json::tidy<XXON, std::string>(R"("a": ["b"  1  "c"]  "d": "e"  "f": {"g": [2  "h"  3]  "j": "k"})")
+        ));
+        TEST_CHECK((
             "a: [\n\tb\n\t1\n\tc\n]\nd: e\nf: {\n\tg: [\n\t\t2\n\t\th\n\t\t3\n\t]\n\tj: k\n}" ==
-            cxon::json::tidy<std::string>(R"( a : [ b   1   c ]   d :  e    f : { g : [2   h   3]   j :  k })")
-        );
-        TEST_CHECK(R"(a\:b: c)" == cxon::json::tidy<std::string>(R"(a\:b: c)"));
+            cxon::json::tidy<XXON, std::string>(R"( a : [ b   1   c ]   d :  e    f : { g : [2   h   3]   j :  k })")
+        ));
+        TEST_CHECK((R"(a\:b: c)" == cxon::json::tidy<XXON, std::string>(R"(a\:b: c)")));
     }
 TEST_END()
 
@@ -444,10 +444,10 @@ TEST_BEG(trailing_separator_2, cxon::JSON<cxon::test::allow_trailing_separators_
 TEST_END()
 
 TEST_BEG(trailing_separator_3, cxon::JSON<cxon::test::allow_trailing_separators_traits<>>, "/core")
-    TEST_CHECK("[\n\ta,\n\tb,\n]" == cxon::json::tidy<std::string>(R"([a, b,])"));
-    TEST_CHECK("[\n\ta,\n\tb\n]" == cxon::json::tidy<std::string>(R"([a, b ])"));
-    TEST_CHECK("{\n\ta: 1,\n\tb: 2,\n}" == cxon::json::tidy<std::string>(R"({a: 1, b: 2,})"));
-    TEST_CHECK("{\n\ta: 1,\n\tb: 2\n}" == cxon::json::tidy<std::string>(R"({a: 1, b: 2 })"));
+    TEST_CHECK(("[\n\ta,\n\tb,\n]" == cxon::json::tidy<XXON, std::string>(R"([a, b,])")));
+    TEST_CHECK(("[\n\ta,\n\tb\n]" == cxon::json::tidy<XXON, std::string>(R"([a, b ])")));
+    TEST_CHECK(("{\n\ta: 1,\n\tb: 2,\n}" == cxon::json::tidy<XXON, std::string>(R"({a: 1, b: 2,})")));
+    TEST_CHECK(("{\n\ta: 1,\n\tb: 2\n}" == cxon::json::tidy<XXON, std::string>(R"({a: 1, b: 2 })")));
 TEST_END()
 
 
@@ -516,25 +516,19 @@ TEST_BEG(allow_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterat
 TEST_END()
 
 
-namespace {
-    struct single_quotes_traits : cxon::json::format_traits {
-        struct string {
-#           if defined(__clang__)
-#               pragma clang diagnostic push
-#               pragma clang diagnostic ignored "-Wunused-const-variable" // buggy warning
-#           endif
-                static constexpr char del = '\'';
-#           if defined(__clang__)
-#               pragma clang diagnostic pop
-#           endif
-        };
-    };
-}
-TEST_BEG(single_quotes_tidy, cxon::JSON<single_quotes_traits>, "/core")
-    TEST_CHECK("[\n\t'xxx',\n\t'yyy'\n]" == cxon::json::tidy<std::string>(R"(['xxx', 'yyy'])"));
-    TEST_CHECK("[\n\t'x\\'x',\n\t'y\\'y'\n]" == cxon::json::tidy<std::string>(R"(['x\'x', 'y\'y'])"));
-    TEST_CHECK("[\n\t'x\"x',\n\t'y\"y'\n]" == cxon::json::tidy<std::string>(R"(['x"x', 'y"y'])"));
-    TEST_CHECK("[\n\t'x]x',\n\t'y]y'\n]" == cxon::json::tidy<std::string>(R"(['x]x', 'y]y'])"));
+TEST_BEG(single_quotes_tidy, cxon::JSON<>, "/core")
+    TEST_CHECK(("[\n\t'xxx',\n\t'yyy'\n]" == cxon::json::tidy<XXON, std::string>(R"(['xxx', 'yyy'])")));
+    TEST_CHECK(("[\n\t'x\\'x',\n\t'y\\'y'\n]" == cxon::json::tidy<XXON, std::string>(R"(['x\'x', 'y\'y'])")));
+    TEST_CHECK(("[\n\t'x\"x',\n\t'y\"y'\n]" == cxon::json::tidy<XXON, std::string>(R"(['x"x', 'y"y'])")));
+    TEST_CHECK(("[\n\t'x]x',\n\t'y]y'\n]" == cxon::json::tidy<XXON, std::string>(R"(['x]x', 'y]y'])")));
+TEST_END()
+
+
+TEST_BEG(map_div_sep_tidy, cxon::JSON<>, "/core")
+    TEST_CHECK(("{\n\t'aaa' = 'bbb';\n\t'ccc' = 'ddd'\n}" == cxon::json::tidy<XXON, std::string>(R"({'aaa' = 'bbb'; 'ccc' = 'ddd'})")));
+    TEST_CHECK(("{\n\t'aaa': 'bbb',\n\t'ccc': 'ddd'\n}" == cxon::json::tidy<XXON, std::string>(R"({'aaa': 'bbb', 'ccc': 'ddd'})")));
+    TEST_CHECK(("{\n\t'aaa': 'bbb'\n\t'ccc' = 'ddd'\n}" == cxon::json::tidy<XXON, std::string>(R"({'aaa': 'bbb' 'ccc' = 'ddd'})")));
+    TEST_CHECK(("[\n\ta,\n\tb;\n\tc\n\td\n]" == cxon::json::tidy<XXON, std::string>(R"([a, b; c d])")));
 TEST_END()
 
 

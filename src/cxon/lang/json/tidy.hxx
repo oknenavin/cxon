@@ -140,7 +140,7 @@ namespace cxon { namespace json {
                                 return poke(o_, c);
                             case '}': case ']':// case '"':
                                 break;
-                            case ',': case ':':
+                            case ',': case ';': case ':': case '=':
                                 mut(stt::grn); break;
                         }
                         break;
@@ -169,10 +169,12 @@ namespace cxon { namespace json {
                         nxt = stt::qst; goto scl;
                     case '\'':
                         nxt = stt::ast; goto scl;
-                    case ',':
+                    case ',': case ';':
                         return mut(stt::com),   poke(o_, c);
                     case ':':
                         return mut(stt::grn),   poke(o_, c) && poke(o_, ' ');
+                    case '=':
+                        return mut(stt::grn),   poke(o_, ' ') && poke(o_, c) && poke(o_, ' ');
                     default:
                         nxt = stt::scl;// goto scl;
                 }
