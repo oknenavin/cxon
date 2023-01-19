@@ -23,11 +23,14 @@
 namespace test {
 
     template <typename B>
-        static double measure(B block);
+        inline double measure(B block);
 #   define CXON_MEASURE(...) ::test::measure([&] { __VA_ARGS__ })
 
     template <typename R, typename II>
-        static std::string format_error(const R& r, II b);
+        inline std::string format_error(const R& r, II b);
+
+    inline bool is_absolute(const char* fpth);
+    inline std::string get_directory(const char* fpth);
 
 }
 
@@ -64,7 +67,7 @@ namespace test {
     }
 
     template <typename B>
-        static double measure(B block) {
+        inline double measure(B block) {
             using clock = std::chrono::steady_clock;
             using ns = std::chrono::nanoseconds;
             std::vector<ns> sl;
@@ -101,9 +104,8 @@ namespace test {
             }
 
     }
-
     template <typename R, typename II>
-        static std::string format_error(const R& r, II b) {
+        inline std::string format_error(const R& r, II b) {
             auto const p = imp::position_(b, r.end);
             return std::string()
                 .append(r.ec.category().name())
@@ -113,6 +115,26 @@ namespace test {
                 .append(r.ec.message())
             ;
         }
+
+    inline bool is_absolute(const char* fpth) {
+#       ifdef _WIN32
+            return std::char_traits<char>::length(fpth) >=2 && (
+                (std::isalpha(fpth[0]) && fpth[1] == ':') ||
+                (fpth[0] == '\\' && fpth[1] == '\\')
+            );
+#       else
+            return *fpth == '/' || (std::char_traits<char>::length(fpth) >=2 && fpth[0] == '\\' && fpth[1] == '\\');
+#       endif
+    }
+
+    inline std::string get_directory(const char* fpth) {
+        std::string s = fpth;
+        auto l = s.rfind('/');
+#       ifdef _WIN32
+            if (l == std::string::npos) l = s.rfind('\\');
+#       endif
+        return l != std::string::npos ? s.substr(0, l + 1) : "";
+    }
 
 }
 

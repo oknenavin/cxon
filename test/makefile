@@ -42,37 +42,29 @@ check-json: build-json
 	@(cd $(outdir) && ./check-json)
 check-json-node: build-json-node
 	@(cd $(outdir) && ./check-json-node)
-	@(cd $(outdir) && ./check-json-node \
-                                            pass    @$(datdir)/json/set.1-pass.in \
-                                                    @$(datdir)/json/set.2-pass.in \
-                                            fail    @$(datdir)/json/set.1-fail.in \
-                                                    @$(datdir)/json/set.2-fail.in)
-	@(cd $(outdir) && ./check-json-node \
-                                            diff    @$(datdir)/json/set.3-diff.in \
-                                                    @$(datdir)/json/set.4-diff.in \
-                                                    @$(datdir)/json/set.5-diff.in \
-                                                    | xargs -n2 diff -q)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf pass fail)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf diff | xargs -n2 diff -q)
 check-cbor: build-cbor
 	@(cd $(outdir) && ./check-cbor)
 check-cbor-node: build-cbor-node
 	@(cd $(outdir) && ./check-cbor-node)
-	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/test-vector.in)
-	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/round-trip.in | xargs -n2 diff -q)
+	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/tests.cf test-vector)
+	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/tests.cf round-trip | xargs -n2 diff -q)
 
 
 time-json: time-json-s1 time-json-s2
 time-json-s1: time-json-node-s1 time-json-native-s1
 time-json-s2: time-json-node-s2 time-json-native-s2
 time-json-node-s1: build-json-node
-	@(cd $(outdir) && ./check-json-node time-node   @$(datdir)/json/time-s1.in)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf time-node-s1)
 time-json-node-s2: build-json-node
-	@(cd $(outdir) && ./check-json-node time-node   @$(datdir)/json/time-s2.in)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf time-node-s2)
 time-json-native-s1: build-json-node
-	@(cd $(outdir) && ./check-json-node time-native @$(datdir)/json/time-s1.in)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf time-native-s1)
 time-json-native-s2: build-json-node
-	@(cd $(outdir) && ./check-json-node time-native @$(datdir)/json/time-s2.in)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf time-native-s2)
 time-cbor: build-cbor-node
-	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/time.in)
+	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/tests.cf time)
 
 
 build-json: $(outdir)/check-json
