@@ -20,14 +20,10 @@ namespace test {
         std::string fail;
     };
     struct fixture {
-        std::string type;
-        std::vector<std::string> in;
-        std::map<std::string, struct fix> fix;
-    };
-
-    struct result {
-        int err = 0;
-        int all = 0;
+        using vector = std::vector<fixture>;
+        std::string label;
+        std::vector<std::string> group;
+        std::map<std::string, struct fix> fixup;
     };
 
 }
@@ -36,9 +32,9 @@ namespace test { namespace kind {
 
     int self();
 
-    result vector(const fixture& fixture);
-    result roundtrip(const fixture& fixture);
-    result time(const fixture& fixture);
+    int vector(const fixture::vector& fs);
+    int roundtrip(const fixture::vector& fs);
+    int time(const fixture::vector& fs);
 
 }}
 

@@ -15,6 +15,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace test {
+
+    struct config {
+        using index = std::map<std::string, fixture>;
+        index tests;
+        index sets;
+    };
+
+}
+
+
 int main(int argc, char *argv[]) {
     if (argc == 1) {
 #       ifndef CXON_TIME_ONLY
@@ -24,50 +35,56 @@ int main(int argc, char *argv[]) {
 #       endif
     }
 
-    test::result res;
-    bool has_diff = false;
+    test::config cf;
+    std::map<std::string, test::fixture::vector> sets;
 
-    for (int i = 1; i != argc; ++i) {
-        std::ifstream is(argv[i]);
-            if (!is) {
-                CXON_ASSERT(0, "unexpected");
-                ++res.err, std::fprintf(stderr, "cannot be opened: '%s'\n", argv[i]);
-                continue;
+    if (argc > 1) {
+        if (auto is = std::ifstream(argv[1])) {
+            auto const str = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+            auto const fbr = cxon::from_bytes<cxon::CXCF<>>(cf, str);
+            if (!fbr) {
+                std::fprintf(stderr, "%s\n", test::format_error(fbr, std::begin(str)).c_str());
+                std::fprintf(stderr, "usage: cxon-cbor-node <tests>.cf <label>*\n");
+                return -1;
             }
-        test::fixture fixture;
-            auto const r = cxon::from_bytes<cxon::JSON<>>(fixture, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-            if (!r) {
-                CXON_ASSERT(0, "unexpected");
-                ++res.err, std::fprintf(stderr, "error: fixture invalid: '%s': %s\n", argv[i], r.ec.message().c_str());
-                continue;
-            }
-
-#       ifndef CXON_TIME_ONLY
-            if (fixture.type == "test-vector") {
-                test::result const r = test::kind::vector(fixture);
-                res.all += r.all, res.err += r.err;
-            }
-            else if (fixture.type == "round-trip") {
-                has_diff = !fixture.in.empty();
-                test::result const r = test::kind::roundtrip(fixture);
-                res.all += r.all, res.err += r.err;
-            }
-            else
-#       endif
-        if (fixture.type == "timing") {
-            if (!fixture.in.empty() && has_diff)
-                std::fprintf(stdout, "\n");
-            test::result const r = test::kind::time(fixture);
-            res.all += r.all, res.err += r.err;
         }
         else {
-            CXON_ASSERT(0, "unexpected");
-            ++res.err, std::fprintf(stderr, "error: fixture type invalid: '%s'\n", argv[i]);
-            continue;
+            std::fprintf(stderr, "\"%s\": cannot be opened\n", argv[1]);
+            return -1;
         }
+        std::string const cfd = test::get_directory(argv[1]);
+        for (auto& s : cf.sets)
+            for (auto& f : s.second.group)
+                if (!test::is_absolute(f.c_str())) f = cfd + f;
+        static auto const load = [&](const test::fixture& ts) {
+            auto& fs = sets[ts.label];
+            for (auto& s : ts.group)
+                fs.push_back(cf.sets[s]);
+        };
+        if (argc > 2) {
+            for (int i = 2; i != argc; ++i)
+                if (cf.tests.find(argv[i]) == cf.tests.end()) {
+                        std::fprintf(stderr, "%s: test not found in \"%s\"\n", argv[i], argv[1]);
+                        return -1;
+                }
+                else    load(cf.tests[argv[i]]);
+        }
+        else
+            for (auto& ts : cf.tests) load(ts.second);
     }
 
-    return res.err;
+    int err = 0;
+
+#   ifndef CXON_TIME_ONLY
+        if (!sets["pass"].empty())
+            err += test::kind::vector(sets["pass"]);
+        if (!sets["round-trip"].empty())
+            err += test::kind::roundtrip(sets["round-trip"]);
+#   endif
+        if (!sets["time"].empty())
+            err += test::kind::time(sets["time"]);
+
+    return err;
 }
 
 CXON_JSON_CLS_READ(test::fix,
@@ -76,10 +93,15 @@ CXON_JSON_CLS_READ(test::fix,
     CXON_JSON_CLS_FIELD_ASIS(fail)
 )
 CXON_JSON_CLS_READ(test::fixture,
-    CXON_JSON_CLS_FIELD_ASIS(type),
-    CXON_JSON_CLS_FIELD_ASIS(in),
-    CXON_JSON_CLS_FIELD_ASIS(fix)
+    CXON_JSON_CLS_FIELD_ASIS(label),
+    CXON_JSON_CLS_FIELD_ASIS(group),
+    CXON_JSON_CLS_FIELD_ASIS(fixup)
 )
+CXON_JSON_CLS_READ(test::config,
+    CXON_JSON_CLS_FIELD_ASIS(tests),
+    CXON_JSON_CLS_FIELD_ASIS(sets)
+)
+CXON_JSON_CLS_BARE(test::config)
 
 namespace test { namespace kind { // test-vector
 
@@ -131,32 +153,30 @@ namespace test { namespace kind { // test-vector
         }
     };
 
-    result vector(const fixture& fixture) {
-        CXON_ASSERT(fixture.type == "test-vector", "unexpected");
+    int vector(const fixture::vector& fs) {
+        int all = 0, err = 0, skip = 0;
 
-        result res; int skip = 0;
-
-        for (auto& file: fixture.in) {
+        for (auto& fixture : fs) for (auto& file: fixture.group) {
             std::ifstream is(file);
                 if (!is) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
+                    ++err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
             test::vector vector;
                 auto const r = cxon::from_bytes<cxon::JSON<>>(vector, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
                 if (!r) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, std::fprintf(stderr, "error: test-vector invalid: '%s': %s\n", file.c_str(), r.ec.message().c_str());
+                    ++err, std::fprintf(stderr, "error: test-vector invalid: '%s': %s\n", file.c_str(), r.ec.message().c_str());
                     continue;
                 }
 
             for (auto& test : vector) {
-                ++res.all;
+                ++all;
                 cxon::json::node decoded;
                 std::string fail;
-                {   auto const fix = fixture.fix.find(test.hex);
-                    if (fix != fixture.fix.end()) {
+                {   auto const fix = fixture.fixup.find(test.hex);
+                    if (fix != fixture.fixup.end()) {
                         if (fix->second.act == "json") {
 #                           if !defined(__GNUC__) || (__GNUC__ > 10 || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
                                 auto const r = cxon::from_bytes<UQK_JSON>(
@@ -187,35 +207,33 @@ namespace test { namespace kind { // test-vector
                         auto const r = cxon::from_bytes(json, test.bin());
                     if (!r) {
                         fail.empty() ?
-                            (++res.err, std::fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
+                            (++err, std::fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
                             (/*std::fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
                         ;
                     }
                     else if (json != decoded) {
                         fail.empty() ?
-                            (++res.err, std::fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
+                            (++err, std::fprintf(stderr, "fail: '%s'\n", test.hex.c_str())) :
                             (/*std::fprintf(stderr, "must fail: '%s' (%s)\n", test.hex.c_str(), fail.c_str()), */0)
                         ;
                     }
                     else if (!fail.empty()) {
-                        ++res.err, std::fprintf(stderr, "must fail but passed: '%s' (%s)\n", test.hex.c_str(), fail.c_str());
+                        ++err, std::fprintf(stderr, "must fail but passed: '%s' (%s)\n", test.hex.c_str(), fail.c_str());
                     }
                 }
             }
         }
 
-        std::fprintf(stdout, "%-21s: %d of %4d failed (%d skipped)\n", "cxon/cbor/node/suite", res.err, res.all, skip); std::fflush(stdout);
+        std::fprintf(stdout, "%-21s: %d of %4d failed (%d skipped)\n", "cxon/cbor/node/suite", err, all, skip); std::fflush(stdout);
 
-        return res;
+        return err;
     }
 
 }}
 
 namespace test { namespace kind { // round-trip
 
-    result roundtrip(const fixture& fixture) {
-        CXON_ASSERT(fixture.type == "round-trip", "unexpected");
-        
+    int roundtrip(const fixture::vector& fs) {
         using JSON = cxon::JSON<>;
         using CBOR = cxon::CBOR<>;
 
@@ -225,14 +243,14 @@ namespace test { namespace kind { // round-trip
             return std::string(p, f, l - f);
         };
 
-        result res;
+        int err = 0;
+        std::vector<std::string> diff;
 
-        for (auto& file: fixture.in) {
-            ++res.all;
+        for (auto& fixture : fs) for (auto& file: fixture.group) {
             std::ifstream is(file);
                 if (!is) {
                     CXON_ASSERT(0, "unexpected");
-                    ++res.err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
+                    ++err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
             std::string const f0 = name(file) + ".ct(0).json";
@@ -240,7 +258,7 @@ namespace test { namespace kind { // round-trip
             {   // 0
                 std::ofstream os(f0, std::ofstream::binary);
                     if (!os) {
-                        ++res.err, std::fprintf(stderr, "error: cannot be opened: %s\n", f0.c_str());
+                        ++err, std::fprintf(stderr, "error: cannot be opened: %s\n", f0.c_str());
                         continue;
                     }
                 cxon::json::tidy<JSON>(
@@ -253,41 +271,44 @@ namespace test { namespace kind { // round-trip
                 cxon::cbor::ordered_node n0;
                     {   auto const r = cxon::from_bytes<JSON>(n0, std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
                         if (!r) {
-                            ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                            ++err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                             continue;
                         }
                     }
                 std::string cbor;
                     {   auto const r = cxon::to_bytes<CBOR>(cbor, n0);
                         if (!r) {
-                            ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                            ++err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                             continue;
                         }
                     }
                 cxon::json::ordered_node n1;
                     {   auto const r = cxon::from_bytes<CBOR>(n1, cbor);
                         if (!r) {
-                            ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                            ++err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                             continue;
                         }
                     }
                 {   // 1
                     std::ofstream os(f1, std::ofstream::binary);
                     if (!os) {
-                        ++res.err, std::fprintf(stderr, "error: cannot be opened: %s\n", f1.c_str());
+                        ++err, std::fprintf(stderr, "error: cannot be opened: %s\n", f1.c_str());
                         continue;
                     }
                     auto const r = cxon::to_bytes<JSON>(cxon::json::make_indenter<JSON>(std::ostreambuf_iterator<char>(os)), n1);
                     if (!r) {
-                        ++res.err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
+                        ++err, std::fprintf(stderr, "error: %s: %s\n", r.ec.category().name(), r.ec.message().c_str());
                         continue;
                     }
                 }
-                std::fprintf(stdout, "%s %s ", f0.c_str(), f1.c_str());
+                diff.push_back(f0), diff.push_back(f1);
             }
         }
+        for (auto& d : diff)
+            std::fprintf(stdout, "%s ", d.c_str());
+        std::fputc('\n', stdout);
 
-        return res;
+        return err;
     }
 
 }}
@@ -302,15 +323,13 @@ namespace test { namespace kind { // time
         double write = 0;
     };
 
-    result time(const fixture& fixture) {
-        CXON_ASSERT(fixture.type == "timing", "unexpected");
-        
+    int time(const fixture::vector& fs) {
         using JSON = cxon::JSON<>;
         using CBOR = cxon::CBOR<>;
 
         std::vector<test_time> time;
 
-        for (auto& file: fixture.in) {
+        for (auto& fixture : fs) for (auto& file: fixture.group) {
             test_time t;
 
             std::string cbor;
@@ -422,10 +441,10 @@ namespace test { namespace kind { // time
             std::fflush(stdout);
         }
 
-        result res;
+        int err = 0;
             for (auto& t : time)
-                ++res.all, res.err += !t.error.empty();
-        return res;
+                err += !t.error.empty();
+        return err;
     }
 
 }}

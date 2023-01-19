@@ -6,16 +6,35 @@
 #include "json.node.hxx"
 
 #include "cxon/json.hxx"
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/map.hxx"
 #include "cxon/lib/node.ordered.hxx"
 #include "cxon/lang/json/tidy.hxx"
 
 #include <fstream>
 #include <cstdio>
 #include <cstring>
+#include <cctype>
 
 ////////////////////////////////////////////////////////////////////////////////
 
 using node = cxon::json::ordered_node;
+
+namespace test {
+
+    struct config {
+        struct set {
+            std::string label;
+            std::vector<std::string> group;
+        };
+        using index = std::map<std::string, set>;
+        index tests;
+        index sets;
+    };
+
+}
+
 
 int main(int argc, char *argv[]) {
     if (argc == 1)
@@ -25,80 +44,73 @@ int main(int argc, char *argv[]) {
             return -1;
 #       endif
 
-    test::cases pass, fail, diff, time_node, time_native;
+    test::config cf;
+    std::map<std::string, test::cases> sets;
 
-    if (!test::parse_cl(argc, argv, pass, fail, diff, time_node, time_native))
-        return std::fprintf(stderr, "usage: cxon/json/node ((pass|fail|diff|time-node|time-native) (file|@file)+)+\n"), std::fflush(stderr), 1;
+    if (argc > 1) {
+        if (auto is = std::ifstream(argv[1])) {
+            auto const str = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+            auto const fbr = cxon::from_bytes<cxon::CXCF<>>(cf, str);
+            if (!fbr) {
+                std::fprintf(stderr, "%s\n", test::format_error(fbr, std::begin(str)).c_str());
+                std::fprintf(stderr, "usage: cxon-json-node <tests>.cf <label>*\n");
+                return -1;
+            }
+        }
+        else {
+            std::fprintf(stderr, "\"%s\": cannot be opened\n", argv[1]);
+            return -1;
+        }
+        std::string const cfd = test::get_directory(argv[1]);
+        static auto const load = [&](const test::config::set& ts) {
+            auto& cs = sets[ts.label];
+            for (auto& t : ts.group) {
+                auto& ss = cf.sets[t];
+                for (auto& s : ss.group) {
+                    auto const p = !test::is_absolute(s.c_str()) ? cfd + s : s;
+                    cs.push_back({p, 0, {}, {}, false});
+                }
+            }
+        };
+        if (argc > 2) {
+            for (int i = 2; i != argc; ++i)
+                if (cf.tests.find(argv[i]) == cf.tests.end()) {
+                        std::fprintf(stderr, "%s: test not found in \"%s\"\n", argv[i], argv[1]);
+                        return -1;
+                }
+                else    load(cf.tests[argv[i]]);
+        }
+        else
+            for (auto& ts : cf.tests) load(ts.second);
+    }
 
     int err = 0;
 
 #   ifndef CXON_TIME_ONLY
-        if (!pass.empty())
-            err += test::kind::pass(pass);
-        if (!fail.empty())
-            err += test::kind::fail(fail);
-        if (!diff.empty())
-            err += test::kind::diff(diff);
-#   endif // CXON_TIME_ONLY
-
-    if (!time_node.empty())
-        test::kind::time(time_node, test::kind::time_cxon_node);
-    if (!time_native.empty())
-        test::kind::time(time_native, test::kind::time_cxon_native);
+        if (!sets["pass"].empty())
+            err += test::kind::pass(sets["pass"]);
+        if (!sets["fail"].empty())
+            err += test::kind::fail(sets["fail"]);
+        if (!sets["diff"].empty())
+            err += test::kind::diff(sets["diff"]);
+#   endif
+        if (!sets["time-node"].empty())
+            test::kind::time(sets["time-node"], test::kind::time_cxon_node);
+        if (!sets["time-native"].empty())
+            test::kind::time(sets["time-native"], test::kind::time_cxon_native);
 
     return err;
 }
 
-namespace test {
-
-    bool parse_cl(int argc, char *argv[], cases& pass, cases& fail, cases& diff, cases& time_node, cases& time_native) {
-        if (argc < 2) return false;
-        static auto const key = [](const char* v) {
-            return  std::strcmp("pass", v) == 0 || std::strcmp("fail", v) == 0 ||
-                    std::strcmp("time-node", v) == 0 || std::strcmp("time-native", v) == 0 ||
-                    std::strcmp("diff", v) == 0
-            ;
-        };
-        static auto const add = [](const char* v, cases& c) {
-            if (*v == '@') {
-                std::ifstream is(v + 1);
-                if (is) {
-                        std::string l;
-                        while (std::getline(is, l)) {
-                            auto const f = l.find_first_not_of(" \t");
-                            if (f != std::string::npos && l[f] != '#') {
-                                c.push_back({l, 0, {}, {}, false});
-                            }
-                        }
-                }
-                else    std::fprintf(stderr, "%s: cannot be opened\n", v);
-            }
-            else {
-                c.push_back({v, 0, {}, {}, false});
-            }
-        };
-        for (int i = 1; i < argc; ++i) {
-            restart:
-#           define CXON_JSON_PROC(k, c)\
-                if (std::strcmp(#k, argv[i]) == 0) {\
-                    if (++i == argc || key(argv[i])) return false;\
-                    do {\
-                        if (key(argv[i])) goto restart;\
-                        add(argv[i], c);\
-                    }   while (++i < argc);\
-                    continue;\
-                }
-                CXON_JSON_PROC(pass, pass)
-                CXON_JSON_PROC(fail, fail)
-                CXON_JSON_PROC(diff, diff)
-                CXON_JSON_PROC(time-node, time_node)
-                CXON_JSON_PROC(time-native, time_native)
-#           undef CXON_JSON_PROC
-        }
-        return true;
-    }
-
-}
+CXON_JSON_CLS_READ(test::config::set,
+    CXON_JSON_CLS_FIELD_ASIS(label),
+    CXON_JSON_CLS_FIELD_ASIS(group)
+)
+CXON_JSON_CLS_READ(test::config,
+    CXON_JSON_CLS_FIELD_ASIS(tests),
+    CXON_JSON_CLS_FIELD_ASIS(sets)
+)
+CXON_JSON_CLS_BARE(test::config)
 
 #ifndef CXON_TIME_ONLY
 

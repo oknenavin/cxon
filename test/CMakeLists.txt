@@ -31,10 +31,10 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.json.node src/json/json.node.cxx src/json/json.node.self.cxx src/json/json.node.time.node.cxx src/json/json.node.time.native.cxx src/json/json.node.time.boost.cxx src/json/json.node.time.rapidjson.cxx src/json/json.node.time.nlohmann.cxx
+    cxon-json-node src/json/json.node.cxx src/json/json.node.self.cxx src/json/json.node.time.node.cxx src/json/json.node.time.native.cxx src/json/json.node.time.boost.cxx src/json/json.node.time.rapidjson.cxx src/json/json.node.time.nlohmann.cxx
 )
 set_target_properties (
-    cxon.json.node PROPERTIES
+    cxon-json-node PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
@@ -51,10 +51,10 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.cbor.node src/cbor/cbor.node.cxx src/cbor/cbor.node.self.cxx
+    cxon-cbor-node src/cbor/cbor.node.cxx src/cbor/cbor.node.self.cxx
 )
 set_target_properties (
-    cxon.cbor.node PROPERTIES
+    cxon-cbor-node PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
@@ -68,17 +68,17 @@ add_test (
 )
 add_test (
     NAME cxon/json/node/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json.node
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node
 )
 add_test (
     NAME cxon/json/node/pass
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json.node pass @../data/json/set.1-pass.in @../data/json/set.2-pass.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf pass
 )
 add_test (
     NAME cxon/json/node/fail
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json.node fail @../data/json/set.1-fail.in @../data/json/set.2-fail.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf fail
 )
 
 find_program (CMAKE_BASH bash)
@@ -89,7 +89,7 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxon/json/node/diff
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon.json.node diff @../data/json/set.3-diff.in @../data/json/set.4-diff.in @../data/json/set.5-diff.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf diff | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
 
@@ -100,17 +100,17 @@ add_test (
 
 add_test (
     NAME cxon/cbor/node/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor.node
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node
 )
 add_test (
     NAME cxon/cbor/node/test-vector
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor.node ../data/cbor/test-vector.in
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node ../data/cbor/tests.cf test-vector
 )
 
 if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxon/cbor/node/round-trip
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon.cbor.node ../data/cbor/round-trip.in | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node ../data/cbor/tests.cf round-trip | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
