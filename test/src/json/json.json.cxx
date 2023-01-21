@@ -475,6 +475,12 @@ TEST_BEG(allow_comments_core, cxon::JSON<cxon::test::allow_comments_traits<>>, "
     R_TEST((unsigned)42, "/***/ 42");
     R_TEST((unsigned)42, "/*/*/ 42");
     R_TEST((unsigned)42, "/**/ 42");
+    R_TEST((unsigned)42, "// comment1\n// comment2\n42");
+    R_TEST((unsigned)42, "// comment1\n/* comment2 */ 42");
+    R_TEST((unsigned)42, "/* comment1 */// comment2\n 42");
+    R_TEST((unsigned)42, "/* comment1 */\n// comment2\n 42");
+    R_TEST((unsigned)42, "/* comment1 *//* comment2 */ 42");
+    R_TEST((unsigned)42, "/* comment1 */\n/* comment2 */ 42");
     R_TEST((unsigned)42, "/", json::read_error::unexpected, 1);
     R_TEST((unsigned)42, "//", json::read_error::integral_invalid, 2);
     R_TEST((unsigned)42, "/*", json::read_error::integral_invalid, 2);
@@ -499,6 +505,12 @@ TEST_BEG(allow_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterat
     R_TEST((unsigned)42, "/***/ 42");
     R_TEST((unsigned)42, "/*/*/ 42");
     R_TEST((unsigned)42, "/**/ 42");
+    R_TEST((unsigned)42, "// comment1\n// comment2\n42");
+    R_TEST((unsigned)42, "// comment1\n/* comment2 */ 42");
+    R_TEST((unsigned)42, "/* comment1 */// comment2\n 42");
+    R_TEST((unsigned)42, "/* comment1 */\n// comment2\n 42");
+    R_TEST((unsigned)42, "/* comment1 *//* comment2 */ 42");
+    R_TEST((unsigned)42, "/* comment1 */\n/* comment2 */ 42");
     R_TEST((unsigned)42, "/", json::read_error::unexpected, 1);
     R_TEST((unsigned)42, "//", json::read_error::integral_invalid, 2);
     R_TEST((unsigned)42, "/*", json::read_error::integral_invalid, 2);
