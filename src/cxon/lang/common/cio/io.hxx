@@ -42,9 +42,9 @@ namespace cxon { namespace cio {
 
     // output
 
-    template <typename O, typename C>
-        inline auto poke(O& o, C c)
-            -> enable_if_t<std::is_invocable<C, typename std::add_lvalue_reference<O>::type>::value, bool>;
+    template <typename O, typename CB>
+        inline auto poke(O& o, CB cb)
+            -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool());
     template <typename O>
         inline bool poke(O& o, char c);
     template <typename O>
@@ -56,9 +56,9 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, unsigned n, char c);
 
-    template <typename X, typename O, typename C, typename Cx>
-        inline auto poke(O& o, C c, Cx& cx)
-            -> enable_if_t<std::is_invocable<C, typename std::add_lvalue_reference<O>::type>::value, bool>;
+    template <typename X, typename O, typename CB, typename Cx>
+        inline auto poke(O& o, CB cb, Cx& cx)
+            -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool());
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx);
     template <typename X, typename O, typename Cx>
@@ -213,9 +213,9 @@ namespace cxon { namespace cio {
 
     }
 
-    template <typename O, typename C>
-        inline auto poke(O& o, C c) -> enable_if_t<std::is_invocable<C, typename std::add_lvalue_reference<O>::type>::value, bool>
-                                                                { return c(o); }
+    template <typename O, typename CB>
+        inline auto poke(O& o, CB cb) -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool())
+                                                                { return cb(o); }
     template <typename O>
         inline bool poke(O& o, char c)                          { return imp::poke_(o, c); }
     template <typename O>
@@ -227,9 +227,9 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, unsigned n, char c)              { return imp::poke_(o, n, c); }
 
-    template <typename X, typename O, typename C, typename Cx>
-        inline auto poke(O& o, C c, Cx& cx) -> enable_if_t<std::is_invocable<C, typename std::add_lvalue_reference<O>::type>::value, bool>
-                                                                        { return c(o)           || cx/X::write_error::output_failure; }
+    template <typename X, typename O, typename CB, typename Cx>
+        inline auto poke(O& o, CB cb, Cx& cx) -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool())
+                                                                        { return cb(o)          || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx)                          { return poke(o, c)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
