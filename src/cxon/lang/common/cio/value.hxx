@@ -107,6 +107,8 @@ namespace cxon { namespace cio { namespace val {
         struct sink {
             C value;
             bool append(typename C::value_type c) { return poke(value, c); }
+            bool operator ==(const sink& t) const { return value == t.value; }
+            bool operator  <(const sink& t) const { return value  < t.value; }
         };
     template <>
         struct sink<void> {

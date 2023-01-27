@@ -713,7 +713,6 @@ TEST_END()
 namespace {
     enum Enum1 { one, two, three, four };
 }
-
 CXON_JSON_ENM(Enum1,
     CXON_JSON_ENM_VALUE_ASIS(one),
     CXON_JSON_ENM_VALUE_NAME("Two (2)", two),
@@ -765,7 +764,6 @@ TEST_END()
 
 
 namespace {
-
     struct Struct1 {
         int a;
         Enum1 b;
@@ -773,16 +771,13 @@ namespace {
         Struct1(int a = 0, Enum1 b = Enum1::one, int c = 0) : a(a), b(b), c(c) {}
         bool operator ==(const Struct1& t) const { return a == t.a && b == t.b && c == t.c; }
     };
-
     struct Struct2 {
         int a;
         int b;
         Struct2(int a = 0, int b = 0) : a(a), b(b) {}
         bool operator ==(const Struct2& t) const { return a == t.a && b == t.b; }
     };
-
 }
-
 CXON_JSON_CLS_READ(Struct1,
     CXON_JSON_CLS_FIELD_NAME("A", a),
     CXON_JSON_CLS_FIELD_ASIS(b)
@@ -791,7 +786,6 @@ CXON_JSON_CLS_WRITE(Struct1,
     CXON_JSON_CLS_FIELD_NAME("A", a),
     CXON_JSON_CLS_FIELD_ASIS(b)
 )
-
 CXON_JSON_CLS(Struct2,
     CXON_JSON_CLS_FIELD_ASIS(a),
     CXON_JSON_CLS_FIELD_NAME("B", b)
@@ -816,16 +810,13 @@ TEST_END()
 
 
 namespace {
-
     struct Struct3 {
         int a;
         Struct3* b;
         Struct3(int a = 0, Struct3* b = nullptr) : a(a), b(b) {}
         bool operator ==(const Struct3& t) const { return a == t.a && ((!b && !t.b) || (b && t.b && *b == *t.b)); }
     };
-
 }
-
 CXON_JSON_CLS(Struct3,
     CXON_JSON_CLS_FIELD_ASIS(a),
     CXON_JSON_CLS_FIELD_ASIS(b)
@@ -843,7 +834,6 @@ TEST_END()
 
 
 namespace {
-
     struct Struct4 {
         Struct4(int a = 0) : a(a) {}
         bool operator ==(const Struct4& t) const { return a == t.a; }
@@ -860,9 +850,7 @@ namespace {
     private:
         int a;
     };
-
 }
-
 TEST_BEG(struct_4, cxon::JSON<>, "/core")
     R_TEST(Struct4(1), "1");
     W_TEST("3", Struct4(3));
@@ -870,7 +858,6 @@ TEST_END()
 
 
 namespace {
-
     struct Struct5 {
         Struct5(int a = 0) : a(a) {}
         bool operator ==(const Struct5& t) const { return a == t.a; }
@@ -887,9 +874,7 @@ namespace {
     private:
         int a;
     };
-
 }
-
 TEST_BEG(struct_5, cxon::JSON<>, "/core")
     R_TEST(Struct5(1), "1");
     W_TEST("3", Struct5(3));
@@ -897,15 +882,12 @@ TEST_END()
 
 
 namespace {
-
     struct Struct6 {
         int a;
         Struct6(int a = 0) : a(a) {}
         bool operator ==(const Struct6& t) const { return a == t.a; }
     };
-
 }
-
 namespace cxon {
     template <typename X, typename II, typename C>
         inline enable_for_t<X, JSON> read_value(Struct6& t, II& b, II e, C& ctx) {
@@ -924,7 +906,6 @@ TEST_END()
 
 
 namespace {
-
     struct Struct7 {
         Struct7(int a = 0, int b = 0) : a(a), b(b) {}
         bool operator ==(const Struct7& t) const { return a == t.a && b == t.b; }
@@ -938,7 +919,6 @@ namespace {
         int a;
         int b;
     };
-
 }
 
 TEST_BEG(struct_7, cxon::JSON<>, "/core") // macros inside
@@ -951,7 +931,6 @@ TEST_END()
 
 
 namespace {
-
     struct Struct8 {
         Struct8(int a = 0, int b = 0) : a(a), b(b) {}
         bool operator ==(const Struct8& t) const { return a == t.a && b == t.b; }
@@ -979,7 +958,6 @@ namespace {
         int a;
         int b;
     };
-
 }
 
 TEST_BEG(struct_8, cxon::JSON<>, "/core")
@@ -990,7 +968,6 @@ TEST_END()
 
 
 namespace {
-
     struct Struct9 {
         static int a;
         static int const b;
@@ -1007,7 +984,6 @@ namespace {
     };
     int Struct9::a = 0;
     int const Struct9::b = 3;
-
 }
 
 TEST_BEG(struct_9, cxon::JSON<>, "/core") // static field
@@ -1024,16 +1000,13 @@ TEST_END()
 
 
 namespace {
-
     struct Struct10 {
         int a;
         int b;
         Struct10(int a = 0, int b = 0) : a(a), b(b) {}
         bool operator ==(const Struct10& t) const { return a == t.a && b == t.b; }
     };
-
 }
-
 CXON_JSON_CLS_READ(Struct10,
     CXON_JSON_CLS_FIELD_ASIS(a),
     CXON_JSON_CLS_FIELD_SKIP("skip1"),
@@ -1162,17 +1135,14 @@ TEST_END()
 
 
 namespace {
-
     struct Struct11 {
         using sink = cxon::cio::val::sink<std::string>;
         int a;
         sink b;
         Struct11(int a = 0, sink b = sink{}) : a(a), b(b) {}
-        bool operator ==(const Struct11& t) const { return a == t.a && b.value == t.b.value; }
+        bool operator ==(const Struct11& t) const { return a == t.a && b == t.b; }
     };
-
 }
-
 CXON_JSON_CLS_READ(Struct11,
     CXON_JSON_CLS_FIELD_ASIS(a),
     CXON_JSON_CLS_FIELD_ASIS(b)
@@ -1192,16 +1162,13 @@ TEST_END()
 
 
 namespace {
-
     struct Struct12 {
         int x;
         int y;
         int z;
         bool operator ==(const Struct12& t) const { return x == t.x && y == t.y && z == t.z; }
     };
-
 }
-
 CXON_JSON_CLS(Struct12,
     CXON_JSON_CLS_FIELD_ASIS_DFLT(x, self.x == 0),
     CXON_JSON_CLS_FIELD_ASIS_DFLT(y, self.y == 0),
@@ -1229,14 +1196,11 @@ TEST_END()
 
 
 namespace {
-
     struct Struct13 {
         int x, y, z;
         bool operator ==(const Struct13& t) const { return x == t.x && y == t.y && z == t.z; }
     };
-
 }
-
 CXON_JSON_CLS(Struct13,
     CXON_JSON_CLS_FIELD_ASIS(x),
     CXON_JSON_CLS_FIELD_ASIS(y),
@@ -1247,22 +1211,22 @@ TEST_BEG(struct_13, cxon::JSON<>, "/core") // errors
     R_TEST(Struct13 {3, 1, 0}, R"({"x":3,"y":1,"z":0})");
     R_TEST(Struct13 {}, R"()", json::read_error::unexpected, 0);
     R_TEST(Struct13 {}, R"({)", json::read_error::unexpected, 1);
-    R_TEST(Struct13 {}, R"({")", json::read_error::unexpected, 2);
-    R_TEST(Struct13 {}, R"({"x)", json::read_error::unexpected, 3);
-    R_TEST(Struct13 {}, R"({"x")", json::read_error::unexpected, 4);
+    R_TEST(Struct13 {}, R"({")", json::read_error::unexpected, 1);
+    R_TEST(Struct13 {}, R"({"x)", json::read_error::unexpected, 1);
+    R_TEST(Struct13 {}, R"({"x")", json::read_error::unexpected, 1);
     R_TEST(Struct13 {}, R"({"x":)", json::read_error::integral_invalid, 5);
     R_TEST(Struct13 {}, R"({"x":x)", json::read_error::integral_invalid, 5);
     R_TEST(Struct13 {}, R"({"x":3,)", json::read_error::unexpected, 7);
-    R_TEST(Struct13 {}, R"({"x":3,")", json::read_error::unexpected, 8);
-    R_TEST(Struct13 {}, R"({"x":3,"y)", json::read_error::unexpected, 9);
-    R_TEST(Struct13 {}, R"({"x":3,"y")", json::read_error::unexpected, 10);
+    R_TEST(Struct13 {}, R"({"x":3,")", json::read_error::unexpected, 7);
+    R_TEST(Struct13 {}, R"({"x":3,"y)", json::read_error::unexpected, 7);
+    R_TEST(Struct13 {}, R"({"x":3,"y")", json::read_error::unexpected, 7);
     R_TEST(Struct13 {}, R"({"x":3,"y":)", json::read_error::integral_invalid, 11);
     R_TEST(Struct13 {}, R"({"x":3,"y":x)", json::read_error::integral_invalid, 11);
     R_TEST(Struct13 {}, R"({"x":3,"y":1)", json::read_error::unexpected, 12);
     R_TEST(Struct13 {}, R"({"x":3,"y":1,)", json::read_error::unexpected, 13);
-    R_TEST(Struct13 {}, R"({"x":3,"y":1,")", json::read_error::unexpected, 14);
-    R_TEST(Struct13 {}, R"({"x":3,"y":1,"z)", json::read_error::unexpected, 15);
-    R_TEST(Struct13 {}, R"({"x":3,"y":1,"z")", json::read_error::unexpected, 16);
+    R_TEST(Struct13 {}, R"({"x":3,"y":1,")", json::read_error::unexpected, 13);
+    R_TEST(Struct13 {}, R"({"x":3,"y":1,"z)", json::read_error::unexpected, 13);
+    R_TEST(Struct13 {}, R"({"x":3,"y":1,"z")", json::read_error::unexpected, 13);
     R_TEST(Struct13 {}, R"({"x":3,"y":1,"z":)", json::read_error::integral_invalid, 17);
     R_TEST(Struct13 {}, R"({"x":3,"y":1,"z":x)", json::read_error::integral_invalid, 17);
     R_TEST(Struct13 {}, R"({"x":3,"y":1,"z":0)", json::read_error::unexpected, 18);
@@ -1371,16 +1335,12 @@ TEST_BEG(struct_13, cxon::JSON<>, "/core") // errors
 TEST_END()
 
 
-
 namespace {
-
     struct Struct14 {
         int x, y;
         bool operator ==(const Struct14& t) const { return x == t.x && y == t.y; }
     };
-
 }
-
 CXON_JSON_CLS(Struct14,
     CXON_JSON_CLS_FIELD_SKIP("s1"),
     CXON_JSON_CLS_FIELD_ASIS(x),
@@ -1393,15 +1353,15 @@ TEST_BEG(struct_14, cxon::JSON<>, "/core") // errors
     R_TEST(Struct14 {3, 1}, R"({"x":3,"y":1})");
     R_TEST(Struct14 {}, R"()", json::read_error::unexpected, 0);
     R_TEST(Struct14 {}, R"({)", json::read_error::unexpected, 1);
-    R_TEST(Struct14 {}, R"({")", json::read_error::unexpected, 2);
-    R_TEST(Struct14 {}, R"({"x)", json::read_error::unexpected, 3);
-    R_TEST(Struct14 {}, R"({"x")", json::read_error::unexpected, 4);
+    R_TEST(Struct14 {}, R"({")", json::read_error::unexpected, 1);
+    R_TEST(Struct14 {}, R"({"x)", json::read_error::unexpected, 1);
+    R_TEST(Struct14 {}, R"({"x")", json::read_error::unexpected, 1);
     R_TEST(Struct14 {}, R"({"x":)", json::read_error::integral_invalid, 5);
     R_TEST(Struct14 {}, R"({"x":x)", json::read_error::integral_invalid, 5);
     R_TEST(Struct14 {}, R"({"x":3,)", json::read_error::unexpected, 7);
-    R_TEST(Struct14 {}, R"({"x":3,")", json::read_error::unexpected, 8);
-    R_TEST(Struct14 {}, R"({"x":3,"y)", json::read_error::unexpected, 9);
-    R_TEST(Struct14 {}, R"({"x":3,"y")", json::read_error::unexpected, 10);
+    R_TEST(Struct14 {}, R"({"x":3,")", json::read_error::unexpected, 7);
+    R_TEST(Struct14 {}, R"({"x":3,"y)", json::read_error::unexpected, 7);
+    R_TEST(Struct14 {}, R"({"x":3,"y")", json::read_error::unexpected, 7);
     R_TEST(Struct14 {}, R"({"x":3,"y":)", json::read_error::integral_invalid, 11);
     R_TEST(Struct14 {}, R"({"x":3,"y":x)", json::read_error::integral_invalid, 11);
     R_TEST(Struct14 {}, R"({"x":3,"y":1)", json::read_error::unexpected, 12);
@@ -1496,7 +1456,7 @@ CXON_JSON_CLS(Struct15,
 TEST_BEG(struct_15, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})");
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b\"b:"2",c\ c:"3",d\:d:"4"})");
-    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c c:"3",d\:d:"4"})", json::read_error::unexpected, 17);
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c c:"3",d\:d:"4"})", json::read_error::unexpected, 15);
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d:d:"4"})", json::read_error::unexpected, 24);
     W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
 TEST_END()
@@ -1518,4 +1478,42 @@ namespace {
 TEST_BEG(struct_assume_unique_object_keys, cxon::JSON<assume_unique_object_keys_traits>, "/core")
     R_TEST(Struct7(1, 2), R"({"a": 1, "b": 2})");
     R_TEST(Struct7(3, 0), R"({"a": 1, "a": 3})");
+TEST_END()
+
+
+namespace {
+    struct lima_ws_sep_traits : cxon::json::format_traits {
+        struct map : cxon::json::format_traits::map {
+            static constexpr char sep = ' ';
+        };
+        struct list : cxon::json::format_traits::list {
+            static constexpr char sep = ' ';
+        };
+    };
+}
+TEST_BEG(lima_ws_sep_cls, cxon::JSON<lima_ws_sep_traits>, "/core")
+    R_TEST(Struct7(1, 2), R"({"a": 1 "b": 2})");
+    W_TEST(R"({"a":1 "b":2})", Struct7(1, 2));
+    R_TEST(Struct7(1, 2), R"({"a": 1, "b": 2})", cxon::json::read_error::unexpected, 7);
+TEST_END()
+
+namespace {
+    struct Struct16 {
+        using sink = cxon::cio::val::sink<std::string>;
+        int x;
+        sink y;
+        bool operator ==(const Struct16& t) const { return x == t.x && y == t.y; }
+    };
+
+}
+CXON_JSON_CLS(Struct16,
+    CXON_JSON_CLS_FIELD_ASIS(x),
+    CXON_JSON_CLS_FIELD_ASIS(y)
+)
+
+TEST_BEG(lima_ws_sep_cls_skip, cxon::JSON<lima_ws_sep_traits>, "/core")
+    R_TEST(Struct16 {1, {"[2 3 4]"}}, "{\"x\": 1 \"y\":\t \n [2 3 4]}");
+    W_TEST("{\"x\":1 \"y\":[2 3 4]}", Struct16 {1, {"[2 3 4]"}});
+    R_TEST(Struct16 {1, {"[2\t  3 \n  4]"}}, "{\"x\": 1 \"y\":\t \n [2\t  3 \n  4]}");
+    W_TEST("{\"x\":1 \"y\":[2\t  3 \n  4]}", Struct16 {1, {"[2\t  3 \n  4]"}});
 TEST_END()

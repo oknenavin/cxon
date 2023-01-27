@@ -36,6 +36,10 @@ namespace cxon { namespace json { // format traits
     struct cxcf_traits : format_traits {
         struct map : format_traits::map {
             static constexpr char div = '=';
+            static constexpr char sep = ' ';
+        };
+        struct list : format_traits::list {
+            static constexpr char sep = ' ';
         };
         static constexpr bool quote_unquoted_keys       = false;
         static constexpr bool unquote_quoted_keys       = true;
