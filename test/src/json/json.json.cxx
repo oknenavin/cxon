@@ -180,7 +180,7 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
     }
     {   Struct11 r(42);
         auto const e = from_bytes(r, "{ \"field\": 42 }", json::ids_len_max::set<2>());
-        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == 'f');
+        TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '\"');
     }
 TEST_END()
 
