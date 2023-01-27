@@ -177,34 +177,24 @@ namespace cxon { namespace cio { namespace cls {
                 return read_<X, 0, N>::field(s, name, fs, st, i, e, cx);
             }
 
-        template <typename X, typename II>
-            inline auto check_end_(II&, II)     -> enable_if_t<!X::allow_trailing_separators, bool> {
-                return false;
-            }
-        template <typename X, typename II>
-            inline auto check_end_(II& i, II e) -> enable_if_t< X::allow_trailing_separators, bool> {
-                return consume<X>(i, e), peek(i, e) == X::map::end;
-            }
-
         template <typename X, typename S, typename ...F, typename II, typename Cx>
             inline auto read_fields_(S& s, const fields<F...>& fs, II& i, II e, Cx& cx)
                 -> enable_if_t<!is_bare_class<S>::value, bool>
             {
-                if (!consume<X>(X::map::beg, i, e, cx)) return false;
-                    if (!consume<X>(i, e, cx)) return false;
-                        if (consume<X>(X::map::end, i, e)) return true;
+                if (!consume<X>(X::map::beg, i, e, cx))
+                    return false;
                 int st[sizeof...(F)] = {0};
                 for (char id[ids_len_max::constant<napa_type<Cx>>(64)]; ; ) {
                     if (!consume<X>(i, e, cx))
                         return false;
+                    if (peek(i, e) == X::map::end)
+                        return ++i, true;
                     II const o = i;
                         if (!read_map_key<X>(id, i, e, cx))
-                            return false;
+                            return rewind(i, o), false;
                         if (!read_field_<X>(s, id, fs, st, i, e, cx))
                             return cx && (rewind(i, o), cx/X::read_error::unexpected);
-                        if (!consume<X>(i, e, cx))
-                            return false;
-                        if (consume<X>(X::map::sep, i, e) && !imp::check_end_<X>(i, e))
+                        if (cnt::consume_sep<X, typename X::map>(i, e, cx))
                             continue;
                     return consume<X>(X::map::end, i, e, cx);
                 }

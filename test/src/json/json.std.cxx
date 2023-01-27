@@ -1800,7 +1800,7 @@ TEST_END()
 
 
 namespace {
-    struct map_list_sep_traits : cxon::json::format_traits {
+    struct lima_sep_traits : cxon::json::format_traits {
         struct map : cxon::json::format_traits::map {
             static constexpr char sep = ';';
         };
@@ -1809,7 +1809,7 @@ namespace {
         };
     };
 }
-TEST_BEG(map_list_sep, cxon::JSON<map_list_sep_traits>, "/std")
+TEST_BEG(lima_sep, cxon::JSON<lima_sep_traits>, "/std")
     using namespace std;
     {   using xmap = map<string, string>;
         R_TEST(xmap {{"a", "b"}, {"c", "d"}}, R"({"a":"b";"c":"d"})");
@@ -1821,12 +1821,13 @@ TEST_BEG(map_list_sep, cxon::JSON<map_list_sep_traits>, "/std")
     }
 TEST_END()
 
+
 namespace {
-    struct map_list_trailing_sep_traits : map_list_sep_traits {
+    struct lima_trailing_sep_traits : lima_sep_traits {
         static constexpr bool allow_trailing_separators = true;
     };
 }
-TEST_BEG(map_list_trailing_sep, cxon::JSON<map_list_trailing_sep_traits>, "/std")
+TEST_BEG(lima_trailing_sep, cxon::JSON<lima_trailing_sep_traits>, "/std")
     using namespace std;
     {   using xmap = map<string, string>;
         R_TEST(xmap {{"a", "b"}, {"c", "d"}}, R"({"a":"b";"c":"d";})");
@@ -1835,5 +1836,31 @@ TEST_BEG(map_list_trailing_sep, cxon::JSON<map_list_trailing_sep_traits>, "/std"
     {   using xvec = vector<string>;
         R_TEST(xvec {"a", "b"}, R"(["a";"b";])");
         W_TEST(R"(["a";"b"])", xvec {"a", "b"});
+    }
+TEST_END()
+
+
+namespace {
+    struct lima_ws_sep_traits : cxon::json::format_traits {
+        struct map : cxon::json::format_traits::map {
+            static constexpr char sep = ' ';
+        };
+        struct list : cxon::json::format_traits::list {
+            static constexpr char sep = ' ';
+        };
+    };
+}
+TEST_BEG(lima_ws_sep, cxon::JSON<lima_ws_sep_traits>, "/std")
+    using namespace std;
+    {   using xmap = map<string, string>;
+        R_TEST(xmap {{"a", "b"}, {"c", "d"}}, R"({"a":"b" "c":"d"})");
+        W_TEST(R"({"a":"b" "c":"d"})", xmap {{"a", "b"}, {"c", "d"}});
+    }
+    {   using xvec = vector<string>;
+        R_TEST(xvec {"a", "b"}, R"(["a" "b"])");
+        W_TEST(R"(["a" "b"])", xvec {"a", "b"});
+    }
+    {   using xvec = vector<map<string, string>>;
+        R_TEST(xvec {{{"a", "b"}}, {{"c", "d"}}}, R"([{"a": "b"}, {"c": "d"}])", cxon::json::read_error::unexpected, 11);
     }
 TEST_END()
