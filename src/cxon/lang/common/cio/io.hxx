@@ -11,17 +11,10 @@
 
 // interface ///////////////////////////////////////////////////////////////////
 
-namespace cxon { namespace cio {
-
-    template<typename II>
-        inline auto rewind(II& i, II o) noexcept -> enable_if_t<!cxon::is_forward_iterator<II>::value>;
-    template<typename II>
-        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value>;
-
-    // input
+namespace cxon { namespace cio { // input
 
     template <typename II>
-        inline char peek(II i, II e);
+        inline char peek(II  i, II e);
     template <typename II>
         inline char next(II& i, II e);
 
@@ -34,17 +27,20 @@ namespace cxon { namespace cio {
         inline bool consume(char c, II& i, II e);
     template <typename X, typename II, typename Cx>
         inline bool consume(char c, II& i, II e, Cx& cx);
-    template <typename X, typename II, typename C, typename Cx>
-        inline bool consume(C c, II& i, II e, Cx& cx);
-
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e);
 
-    // output
+    template <typename X, typename II, typename RD, typename Cx>
+        inline auto consume(RD read, II& i, II e, Cx& cx)
+            -> enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>;
 
-    template <typename O, typename CB>
-        inline auto poke(O& o, CB cb)
-            -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool());
+    template<typename II>
+        inline void rewind(II& i, II o) noexcept;
+
+}}
+
+namespace cxon { namespace cio { // output
+
     template <typename O>
         inline bool poke(O& o, char c);
     template <typename O>
@@ -56,9 +52,10 @@ namespace cxon { namespace cio {
     template <typename O>
         inline bool poke(O& o, unsigned n, char c);
 
-    template <typename X, typename O, typename CB, typename Cx>
-        inline auto poke(O& o, CB cb, Cx& cx)
-            -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool());
+    template <typename O, typename WR>
+        inline auto poke(O& o, WR write)
+            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx);
     template <typename X, typename O, typename Cx>
@@ -70,18 +67,15 @@ namespace cxon { namespace cio {
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, unsigned n, char c, Cx& cx);
 
+    template <typename X, typename O, typename WR, typename Cx>
+        inline auto poke(O& o, WR write, Cx& cx)
+            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+
 }}
 
 // implementation //////////////////////////////////////////////////////////////
 
-namespace cxon { namespace cio {
-
-    template<typename II>
-        inline auto rewind(II&, II) noexcept     -> enable_if_t<!cxon::is_forward_iterator<II>::value> {}
-    template<typename II>
-        inline auto rewind(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value> { i = o; }
-
-    // input
+namespace cxon { namespace cio { // input
 
     template <typename II>
         inline char peek(II i, II e) {
@@ -144,68 +138,95 @@ namespace cxon { namespace cio {
         inline bool consume(char c, II& i, II e, Cx& cx) {
             return consume<X>(i, e, cx) && (consume<X>(c, i, e) || cx/X::read_error::unexpected);
         }
-    template <typename X, typename II, typename C, typename Cx>
-        inline bool consume(C c, II& i, II e, Cx& cx) {
-            return consume<X>(i, e, cx) && (c(i, e) || cx/X::read_error::unexpected);
-        }
-
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e) {
             for ( ; i != e && *s && *s == *i; ++i, ++s) ;
             return *s == '\0';
         }
 
-    // output
+    template <typename X, typename II, typename RD, typename Cx>
+        inline auto consume(RD read, II& i, II e, Cx& cx)
+            -> enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>
+        {
+            return consume<X>(i, e, cx) && (read(i, e) || cx/X::read_error::unexpected);
+        }
 
     namespace imp {
+        template<typename II>
+            inline auto rewind_(II&  , II  ) noexcept -> enable_if_t<!cxon::is_forward_iterator<II>::value> {        }
+        template<typename II>
+            inline auto rewind_(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value> { i = o; }
+    }
+    template<typename II>
+        inline void rewind(II& i, II o) noexcept {
+            return imp::rewind_(i, o);
+        }
 
+}}
+
+namespace cxon { namespace cio { // output
+
+    namespace imp {
+        // char
         template <typename O>
-            inline auto push_(O& o, char c) -> enable_if_t<is_output_iterator<O>::value> {
+            inline auto push_(O& o, char c)
+                -> enable_if_t<is_output_iterator<O>::value>
+            {
                 *o = c, ++o;
             }
         template <typename O>
-            inline auto push_(O& o, char c) -> enable_if_t<is_back_insertable<O>::value> {
+            inline auto push_(O& o, char c)
+                -> enable_if_t<is_back_insertable<O>::value>
+            {
                 o.push_back(c);
             }
-
-        template <typename O>
-            inline auto push_(option<1>, O& o, const char* s, std::size_t n) -> decltype(o.append(s, n), void()) {
-                o.append(s, n);
-            }
-        template <typename O>
-            inline void push_(option<0>, O& o, const char* s, std::size_t n) {
-                for (auto const e = s + n; s != e; ++s) push_(o, *s);
-            }
+        // char[]
+            template <typename O>
+                inline auto push_(option<1>, O& o, const char* s, std::size_t n)
+                    -> decltype(o.append(s, n), void())
+                {
+                    o.append(s, n);
+                }
+            template <typename O>
+                inline void push_(option<0>, O& o, const char* s, std::size_t n) {
+                    for (auto const e = s + n; s != e; ++s) push_(o, *s);
+                }
         template <typename O>
             inline void push_(O& o, const char* s, std::size_t n) {
                 push_(option<1>(), o, s, n);
             }
-
-        template <typename O>
-            inline auto push_(option<1>, O& o, unsigned n, char c) -> decltype(o.append(n, c), void()) {
-                o.append(n, c);
-            }
-        template <typename O>
-            inline void push_(option<0>, O& o, unsigned n, char c) {
-                while (n) push_(o, c), --n;
-            }
+        // x char
+            template <typename O>
+                inline auto push_(option<1>, O& o, unsigned n, char c)
+                    -> decltype(o.append(n, c), void())
+                {
+                    o.append(n, c);
+                }
+            template <typename O>
+                inline void push_(option<0>, O& o, unsigned n, char c) {
+                    while (n) push_(o, c), --n;
+                }
         template <typename O>
             inline void push_(O& o, unsigned n, char c) {
                 push_(option<1>(), o, n, c);
             }
-
-        template <typename O, typename ...P>
-            inline auto poke_(option<2>, O& o, P... p) -> enable_if_t<std::is_same<decltype(o.append(p...)), bool>::value, bool> {
-                return o.append(p...);
-            }
-        template <typename O, typename ...P>
-            inline auto poke_(option<1>, O& o, P... p) -> decltype(o.good()) {
-                return push_(o, p...), o.good();
-            }
-        template <typename O, typename ...P>
-            inline bool poke_(option<0>, O& o, P... p) {
-                return push_(o, p...), true;
-            }
+        // bool bridge
+            template <typename O, typename ...P>
+                inline auto poke_(option<2>, O& o, P... p)
+                    -> enable_if_t<std::is_same<decltype(o.append(p...)), bool>::value, bool>
+                {
+                    return o.append(p...);
+                }
+            template <typename O, typename ...P>
+                inline auto poke_(option<1>, O& o, P... p)
+                    -> enable_if_t<std::is_same<decltype(o.good()), bool>::value, bool>
+                {
+                    return push_(o, p...), o.good();
+                }
+            template <typename O, typename ...P>
+                inline bool poke_(option<0>, O& o, P... p) {
+                    return push_(o, p...), true;
+                }
         template <typename O, typename ...P>
             inline bool poke_(O& o, P... p) {
                 return poke_(option<2>(), o, p...);
@@ -213,33 +234,35 @@ namespace cxon { namespace cio {
 
     }
 
-    template <typename O, typename CB>
-        inline auto poke(O& o, CB cb) -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool())
-                                                                { return cb(o); }
     template <typename O>
-        inline bool poke(O& o, char c)                          { return imp::poke_(o, c); }
+        inline bool poke(O& o, char c)                                          { return imp::poke_(o, c); }
     template <typename O>
-        inline bool poke(O& o, const char* s, std::size_t n)    { return imp::poke_(o, s, n); }
+        inline bool poke(O& o, const char* s, std::size_t n)                    { return imp::poke_(o, s, n); }
     template <typename O>
-        inline bool poke(O& o, const char* f, const char* l)    { return imp::poke_(o, f, l - f); }
+        inline bool poke(O& o, const char* f, const char* l)                    { return imp::poke_(o, f, l - f); }
     template <typename O>
-        inline bool poke(O& o, const char* s)                   { return imp::poke_(o, s, std::char_traits<char>::length(s)); }
+        inline bool poke(O& o, const char* s)                                   { return imp::poke_(o, s, std::char_traits<char>::length(s)); }
     template <typename O>
-        inline bool poke(O& o, unsigned n, char c)              { return imp::poke_(o, n, c); }
+        inline bool poke(O& o, unsigned n, char c)                              { return imp::poke_(o, n, c); }
 
-    template <typename X, typename O, typename CB, typename Cx>
-        inline auto poke(O& o, CB cb, Cx& cx) -> decltype(cb(std::declval<typename std::add_lvalue_reference<O>::type>()), bool())
-                                                                        { return cb(o)          || cx/X::write_error::output_failure; }
+    template <typename O, typename WR>
+        inline auto poke(O& o, WR write)
+            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool> { return write(o); }
+
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, char c, Cx& cx)                          { return poke(o, c)     || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, char c, Cx& cx)                                  { return poke(o, c)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, std::size_t n, Cx& cx)    { return poke(o, s, n)  || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, const char* s, std::size_t n, Cx& cx)            { return poke(o, s, n)  || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* f, const char* l, Cx& cx)    { return poke(o, f, l)  || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, const char* f, const char* l, Cx& cx)            { return poke(o, f, l)  || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, const char* s, Cx& cx)                   { return poke(o, s)     || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, const char* s, Cx& cx)                           { return poke(o, s)     || cx/X::write_error::output_failure; }
     template <typename X, typename O, typename Cx>
-        inline bool poke(O& o, unsigned n, char c, Cx& cx)              { return poke(o, n, c)  || cx/X::write_error::output_failure; }
+        inline bool poke(O& o, unsigned n, char c, Cx& cx)                      { return poke(o, n, c)  || cx/X::write_error::output_failure; }
+
+    template <typename X, typename O, typename WR, typename Cx>
+        inline auto poke(O& o, WR write, Cx& cx)
+            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool> { return write(o)       || cx/X::write_error::output_failure; }
 
 }}
 
