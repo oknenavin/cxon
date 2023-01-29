@@ -30,9 +30,11 @@ namespace cxon { namespace cio { // input
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e);
 
-    template <typename X, typename II, typename RD, typename Cx>
-        inline auto consume(RD read, II& i, II e, Cx& cx)
-            -> enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>;
+#   if defined(__GNUC__) && __GNUC__ > 11 && !defined(__clang__) // gcc does not like this forward declaration
+        template <typename X, typename II, typename RD, typename Cx>
+            inline auto consume(RD read, II& i, II e, Cx& cx)
+                -> enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>;
+#   endif
 
     template<typename II>
         inline void rewind(II& i, II o) noexcept;
@@ -52,9 +54,11 @@ namespace cxon { namespace cio { // output
     template <typename O>
         inline bool poke(O& o, unsigned n, char c);
 
-    template <typename O, typename WR>
-        inline auto poke(O& o, WR write)
-            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+#   if defined(__GNUC__) && __GNUC__ > 11 && !defined(__clang__) // gcc does not like this forward declaration
+        template <typename O, typename WR>
+            inline auto poke(O& o, WR write)
+                -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+#   endif
 
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx);
@@ -67,9 +71,11 @@ namespace cxon { namespace cio { // output
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, unsigned n, char c, Cx& cx);
 
-    template <typename X, typename O, typename WR, typename Cx>
-        inline auto poke(O& o, WR write, Cx& cx)
-            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+#   if defined(__GNUC__) && __GNUC__ > 11 && !defined(__clang__) // gcc does not like this forward declaration
+        template <typename X, typename O, typename WR, typename Cx>
+            inline auto poke(O& o, WR write, Cx& cx)
+                -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+#   endif
 
 }}
 
