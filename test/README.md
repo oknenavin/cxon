@@ -9,12 +9,12 @@ The tests are located in `cxon/test`. A group of tests for given `Traits`
 can be defined like this:
 
 ``` c++
-TEST_BEG(<name>, <traits>, <category>)
+TEST_BEG(<identifier>, <traits>, <category>)
     ...
 TEST_END()
 ```
 
-For trivial cases, `R_TEST` and `W_TEST` macros can be used:
+For trivial cases, the `R_TEST` and `W_TEST` macros can be used:
 
 ``` c++
 TEST_BEG(a_test, cxon::JSON<>, "/core")
@@ -24,18 +24,18 @@ TEST_BEG(a_test, cxon::JSON<>, "/core")
 TEST_END()
 ```
 
-For more complex cases, free code can be used, provided that:
+For more complex cases, arbitrary code can be used provided that:
 - `suite::info::count("<category>")` is incremented for each new test
 - `suite::info::errors("<category>")` is incremented for each failed test
-- in case of failure, error message + an `assert` shall be used to point out failure's location
+- in case of failure, an error message + `assert` shall be used to point out failure's location
 
-example:
+###### Example
 
 ``` c++
 TEST_BEG(a_test, cxon::JSON<>, "/a-category")
     ++suite::info::count(category);
-    int r; char const i[] = "1";
-    if (!cxon::from_bytes(r, std::begin(i), std::end(i)) || r != 1) {
+    int ot; char const in[] = "1";
+    if (!cxon::from_bytes(ot, in) || ot != 1) {
         ++suite::info::errors(category);
         CXON_ASSERT(false, "check failed");
     }
@@ -47,21 +47,43 @@ TEST_END()
 
 #### `CXON/JSON/NODE`
 
-Is a utility that accepts a command and a list of inputs (or a `@file`, see below):
+Is a utility that accepts a test configuration and optionally a list of tests to be executed:
 
-    cxon.json.node ((pass|fail|diff) (file|@file)+)*
+``` bash
+    cxon-json-node tests.cf <test-name>*
+```
 
-- `pass`  - the input is a list of files that must be read successfully
-- `fail`  - the input is a list of files that must fail to read
-- `diff`  - for each input file, a pair of files is produced, such that the first file 
-             is just the input file pretty-printed, and the second one is the result of a 
-             read/write/pretty-print sequence. These files shall be further diffed
-- `file`  - arbitrary valid or invalid `JSON`. Must be relative to the current directory
-- `@file` - is a new-line separated list of files. The files must be relative to the 
-             current directory. Lines starting with `#` are ignored
+The test configuration is in [`CXCF`](../src/cxon/lang/cxcf/README.md) format with following content:
+
+```
+tests = {
+    <test-name> = {
+        label       = "<test-kind>"
+        group       = ["<set-name>"+]
+    }
+}
+sets = {
+    <set-name> = {
+        label       = "<set description>"
+        group       = ["<file-name>"+]
+    }
+}
+```
+
+See [`JSON`](data/json/tests.cf) and [`CBOR`](data/cbor/tests.cf) configuration of `CXON`'s test suites 
+for real example.  
+Currently, these test-kinds are implemented:
+
+kind        | description
+------------|---------------------------------------------------------------------------------------------------------
+pass        | the input is a list of files that must be read successfully
+fail        | the input is a list of files that must fail to read
+diff        | a pair of files is produced for each input file - prety-print and prety-printed serialization round-trip
+time-node   | the serialization times for each input are measured (using cxon/json/node)
+time-native | same as above,  but with native types (so, the types must be implemented in code)
 
 If no parameters are provided, the self tests will be executed.  
-For example of its usage, see `check-json-node` rule in the [makefile](makefile).
+For example of its usage, see `check-*` rules in the [makefile](makefile).
 
 ###### Suites
 
@@ -75,7 +97,7 @@ Suite                                 | Type | Origin
 [set.4-diff](data/json/set.4-diff.in) | diff | [github/gemoji](https://github.com/github/gemoji)
 [set.5-diff](data/json/set.5-diff.in) | diff | [lemire/simdjson](https://github.com/lemire/simdjson)
 
-Note that some of the inputs are commented out, because of different reasons - for example:
+Note that some of the inputs are commented out, because of different reasons, for example:
 - [data/set.1/fail1.json](data/set.1/fail1.json) - is ignored because `cxon::json::node` 
   allows arbitrary top-level value
 - [data/set.1/fail18.json](data/set.1/fail18.json) - is ignored because `cxon::json::node` 
@@ -90,7 +112,7 @@ Note that some of the inputs are commented out, because of different reasons - f
 
 #### `CXON/CBOR/NODE`
 
-*Under construction.*
+Same as for `JSON`.
 
 
 --------------------------------------------------------------------------------
