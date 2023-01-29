@@ -18,9 +18,9 @@
 
 #### Introduction
 
-The implementation strictly complies with [`RFC7159`][RFC7159] / [`ECMA-404`][ECMA-404].  
+The implementation strictly complies with [`RFC8259`][RFC8259] / [`ECMA-404`][ECMA-404].  
 The mapping between `C++` and `JSON`
-types is as follow:
+types is as follows:
 
   - [fundamental types][cpp-fund-types]
 
@@ -201,6 +201,11 @@ macros for binding of enumeration and class types:
     #define CXON_JSON_CLS_FIELD_ASIS_DFLT(Field, ...)
     // defines a key Name, which will be ignored when reading (only meaningful for reading)
     #define CXON_JSON_CLS_FIELD_SKIP(Name)
+
+    // specifies that `Type` will be serialized without parentheses
+    // only a 'root' type can be 'bare', the behavior is undefined otherwise
+    // e.g. if set for a class, 'a: {b: 1}, c: 3' is valid
+    #define CXON_JSON_CLS_BARE(Type)
     ```
 
     ###### Example
@@ -243,7 +248,7 @@ Distributed under the MIT license. See [`LICENSE`](../../../../LICENSE) for more
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
-[RFC7159]: https://www.ietf.org/rfc/rfc7159.txt
+[RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
 [std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
@@ -281,6 +286,3 @@ Distributed under the MIT license. See [`LICENSE`](../../../../LICENSE) for more
 [std-priority_queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/priority_queue&oldid=103092
 [std-optional]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-variant]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
-[std-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
-[std-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
-[std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
