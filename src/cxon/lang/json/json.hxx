@@ -33,12 +33,16 @@ namespace cxon { namespace json { // format traits
         static constexpr bool allow_javascript_nans     = false;    // allow NaN and Infinity
     };
 
-    struct cxcf_traits : format_traits {
-        struct map : format_traits::map {
+}}
+
+namespace cxon { namespace cxcf { // format traits
+
+    struct format_traits : json::format_traits {
+        struct map : json::format_traits::map {
             static constexpr char div = '=';
             static constexpr char sep = ' ';
         };
-        struct list : format_traits::list {
+        struct list : json::format_traits::list {
             static constexpr char sep = ' ';
         };
         static constexpr bool quote_unquoted_keys       = false;
@@ -54,7 +58,7 @@ namespace cxon { // format selector
     template <typename T>
         struct JSON : format_selector<T> {};
 
-    template <typename T = json::cxcf_traits>
+    template <typename T = cxcf::format_traits>
         using CXCF = JSON<T>;
 
 }

@@ -20,7 +20,7 @@
 
 The implementation strictly complies with [`RFC7049`][RFC7049].  
 The mapping between `C++` and `CBOR`
-types is as follow:
+types is as follows:
 
   - [fundamental types][cpp-fund-types]
 
@@ -275,6 +275,3 @@ Distributed under the MIT license. See [`LICENSE`](../../../../LICENSE) for more
 [std-priority_queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/priority_queue&oldid=103092
 [std-optional]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
 [std-variant]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
-[std-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
-[std-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
-[std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869

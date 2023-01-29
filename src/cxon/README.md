@@ -63,7 +63,7 @@ namespace cxon {
 
 ###### Template parameters
 
-  - [`Traits`](#format-traits) - a trait type that defines a given serialization format
+  - [`Traits`](#format-traits) - trait type that defines a given serialization format
   - `T` - the type of the value to serialize
   - `InIt` - the type of the iterator, must meet [InputIterator][cpp-init] requirements
   - `Iterable` - a type, for which `std::begin(i)` and `std::end(i)` are defined
@@ -74,7 +74,7 @@ namespace cxon {
 
 ###### Parameters
 
-  - `t` - the out-parameter where the parsed value is stored in case of success
+  - `t` - the output value
   - `b`, `e` - a valid (`char`) range to parse
   - `i` - an iterable value representing a valid range (`char`) to parse
   - `p...` - named parameters (see [Context](#context))
@@ -82,7 +82,7 @@ namespace cxon {
 ###### Return value
 
 On success, returns a value of type `from_bytes_result`, such that `end` is one-past-the-end iterator of
-the matched range, or has the value equal to `e`, if the whole range match, and `ec` is value initialized.  
+the matched range, or has a value equal to `e`, if the whole range match. `ec` is value initialized.  
 On failure, returns a value of type `from_bytes_result`, such that `end` is an iterator pointing to
 the non-matching input, and `ec` contains the [error condition][std-err-cnd]. The value is in valid, but
 unspecified state.
@@ -150,7 +150,7 @@ namespace cxon {
 
 ###### Template parameters
 
-  - [`Traits`](#format-traits) - a traits type that defines a given serialization format
+  - [`Traits`](#format-traits) - traits type that defines a given serialization format
   - `T` - the type of the value to serialize
   - `OutIt` - the type of the iterator, must meet [OutputIterator][cpp-outit] requirements
   - `Insertable` - a type, for which `std::back_inserter(i)` and `std::begin(i)` are defined
@@ -164,9 +164,9 @@ namespace cxon {
 ###### Parameters
 
   - `o` - an output iterator to write to
-  - `i` - a back insertable value to write to
+  - `i` - a back-insertable to write to
   - `b`, `e` - a (`char`) range to write to
-  - `t` - input value
+  - `t` - the input value
   - `p...` - named parameters (see [Context](#context))
 
 ###### Return value
@@ -415,12 +415,22 @@ namespace cxon { namespace json { // format traits
         static constexpr bool quote_unquoted_keys = true;
         // object keys for types serialized with quotes will be unquoted (e.g. strings)
         // if true, this JSON {key: 1} will now be valid
+        // any whitespace characters and object/key separator character
+        // must be escaped - e.g. { a\ key: 1}
         static constexpr bool unquote_quoted_keys = false;
 
         // allow c-style comments
         static constexpr bool allow_comments            = false;
         // allow trailing separators for objects and arrays
         static constexpr bool allow_trailing_separators = false;
+
+        // controls whether class-types serializer should allow repeating of a key
+        // e.g. {key: 1, key: 2} will be valid or not
+        static constexpr bool assume_unique_object_keys = true;
+
+        // allow NaN and Infinity as a floating-point numbers
+        // by default these are serialized as strings "inf", "-inf", "nan", "-nan"
+        static constexpr bool allow_javascript_nans     = false;
     };
 
 }}
@@ -803,41 +813,5 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 [cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
 [cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
 [cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
-[cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
-[cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
-[cpp-ref]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/reference&oldid=105941
-[cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
-[cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
-[cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
-[cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
-[std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
-[std-valarr]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
-[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
-[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string&oldid=111300
-[std-strv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string_view&oldid=107572
-[std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
-[std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
-[std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
-[std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
-[cpp-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
-[std-array]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/array&oldid=111731
-[std-vector]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
-[std-deque]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/deque&oldid=107644
-[std-forward_list]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/forward_list&oldid=107645
-[std-list]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/list&oldid=107646
-[std-set]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/set&oldid=107670
-[std-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
-[std-multiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multiset&oldid=107671
-[std-multimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
-[std-uset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_set&oldid=107673
-[std-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
-[std-umultiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multiset&oldid=107674
-[std-umultimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
-[std-stack]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/stack&oldid=106350
-[std-queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/queue&oldid=103354
-[std-priority_queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/priority_queue&oldid=103092
-[std-optional]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
-[std-variant]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
 [std-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
 [std-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
-[std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
