@@ -7,24 +7,33 @@
 --------------------------------------------------------------------------------
 
 #### Contents
-  - [`CXON`](../src/cxon/README.md)
+  - [`CXON` core](../src/cxon/README.md)
     - [Introduction](../src/cxon/README.md#introduction)
+      - [Supported types](../src/cxon/README.md#supported-types)
     - [Interface](../src/cxon/README.md#interface)
+      - [`cxon::from_bytes`](../src/cxon/README.md#read-interface)
+      - [`cxon::to_bytes`](../src/cxon/README.md#write-interface)
     - [Implementation bridge](../src/cxon/README.md#implementation-bridge)
     - [Parametrization](../src/cxon/README.md#parametrization)
       - [Format traits](../src/cxon/README.md#format-traits)
       - [Named parameters](../src/cxon/README.md#named-parameters)
       - [Context](../src/cxon/README.md#context)
-    - [Example (`JSON-RPC`)](../src/cxon/README.md#example-json-rpc)
   - [`CXON/JSON`](../src/cxon/lang/json/README.md)
-    - [Introduction](../src/cxon/lang/json/node/README.md#introduction)
+    - [Introduction](../src/cxon/lang/json/README.md#introduction)
+    - [Errors](../src/cxon/lang/json/README.md#errors)
+    - [Parameters](../src/cxon/lang/json/README.md#parameters)
+    - [Helpers](../src/cxon/lang/json/README.md#helpers)
     - [`cxon::json::basic_node`](../src/cxon/lang/json/node/README.md#basic_node)
     - [`CXON` Integration](../src/cxon/lang/json/node/README.md#cxon-integration)
   - [`CXON/CBOR`](../src/cxon/lang/cbor/README.md)
-    - [Introduction](../src/cxon/lang/cbor/node/README.md#introduction)
+    - [Introduction](../src/cxon/lang/cbor/README.md#introduction)
+    - [Errors](../src/cxon/lang/cbor/README.md#errors)
+    - [Parameters](../src/cxon/lang/cbor/README.md#parameters)
+    - [Helpers](../src/cxon/lang/cbor/README.md#helpers)
     - [`cxon::cbor::basic_node`](../src/cxon/lang/cbor/node/README.md#basic_node)
     - [`CXON` Integration](../src/cxon/lang/cbor/node/README.md#cxon-integration)
-  - [`CXON/CXCF`](../src/cxon/lang/cxcf/README.md)
+  - [`CXON/CXCF` configuration format](../src/cxon/lang/cxcf/README.md)
+  - [Examples](../example/README.md)
 
 
 --------------------------------------------------------------------------------

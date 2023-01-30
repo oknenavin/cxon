@@ -83,7 +83,7 @@ specify this about object keys:*
 may be replaced or kept.*
 
 Complete example for a simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation 
-can be found here [`JSON-RPC`](../../README.md#example-json-rpc).
+can be found here [`JSON-RPC`](../../../../example/README.md#json-rpc).
 
 
 --------------------------------------------------------------------------------
@@ -248,8 +248,10 @@ Distributed under the MIT license. See [`LICENSE`](../../../../LICENSE) for more
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
+
 [RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+
 [cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
 [std-alloc]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Allocator&oldid=103869
 [cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
@@ -258,6 +260,7 @@ Distributed under the MIT license. See [`LICENSE`](../../../../LICENSE) for more
 [cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
 [cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
 [cpp-struct]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
+
 [std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
 [std-valarr]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
 [std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
