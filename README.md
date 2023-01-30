@@ -23,8 +23,8 @@
 --------------------------------------------------------------------------------
 
   - `CXON` is a C++ serialization interface  
-  - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (an example of text-based data format)  
-  - `CXON` implements [`CBOR`](https://cbor.io) as a serialization format (an example of binary data format)  
+  - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (an example of a text-based data format)  
+  - `CXON` implements [`CBOR`](https://cbor.io) as a serialization format (example of a binary data format)  
   - `CXON` is easy to extend for different formats and types with [zero-overhead][cpp-zeov]  
   - `CXON` is a `C++11` compliant, self contained and compact header-only library  
 
@@ -50,14 +50,14 @@ int main() {
 
 Once the data is loaded successfully it means, that it is syntactically and semantically correct.  
 In contrast, most of the `JSON`/`CBOR`/etc. libraries represent arbitrary data
-with a polymorphic type (called `DOM`, `value`, etc.) and parsing of the input only means,
+with a polymorphic type (called `DOM`, `value`, etc.), and successful parsing of the input only means,
 that it is syntactically correct.
 
 ###### Example
 ``` c++
 // pseudo code
 value_type json = json_lib::parse("[1, 2, 3]");
-assert(json.has_parsing_erros()); // check for syntax errors
+assert(json.has_parsing_errors()); // check for syntax errors
 // check the semantics, expected is a list of integers
 assert(json.is_array()); // check the type
 auto& array = json.get_array();
@@ -99,7 +99,8 @@ Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the
   - [Performance](#performance)
   - [Compilation](#compilation)
   - [Installation](#installation)
-  - [Documentation](#documentation)
+  - [Documentation](doc/README.md)
+  - [Examples](example/README.md)
   - [Contributing](#contributing)
 
 
@@ -107,7 +108,7 @@ Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the
 
 #### Overview
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] [interface](#interface).  
+`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv].  
 `CXON` extends `C++17`'s [`<charconv>`][std-charconv] interface with:
 
   - traits template parameter (support for different serialization formats, 
@@ -118,306 +119,14 @@ Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the
     see [`Interface`](src/cxon/README.md#interface))
 
 The traits can be stateful or stateless allowing arbitrary complex formats.  
-Named parameters can be compile time or runtime giving flexibility for the implementations.
+Named parameters can be compile time or runtime giving flexibility for the implementations.  
 
-- `CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box, including:
-  - [fundamental types][cpp-fund-types]
-      - `nullptr_t`
-      - `bool`
-      - character types - `char`, `wchar_t`, `char8_t`, `char16_t` and `char32_t`
-      - integral types - `signed` and `unsigned` `char`, `short int`, `int`, `long int`, `long long int`
-      - floating-point types - `float`, `double`, `long double`
-  - compound types
-      - [`pointer types`][cpp-ptr]
-      - [`array types`][cpp-arr]
-      - [`enumeration types`][cpp-enum]
-      - [`class types`][cpp-class]
-  - standard library types
-      - [`containers library`][std-container]
-      - [`std::pair`][std-pair]
-      - [`std::tuple`][std-tuple]
-      - [`std::optional`][std-opt]
-      - [`std::variant`][std-var]
-      - [`std::basic_string`][std-bstr]
-      - [`std::basic_string_view`][std-strv] - _write only_
-      - [`std::bitset`][std-bitset]
-      - [`std::complex`][std-complex]
-      - [`std::valarray`][std-valarr]
-      - [`std::chrono::duration`][std-duration]
-      - [`std::chrono::time_point`][std-time-pt]
-- `CXON` support of [`Boost/Containers`](https://www.boost.org/doc/libs/1_78_0/?view=category_containers) include:
-  - [`Container`](https://www.boost.org/doc/libs/1_78_0/doc/html/container.html)
-  - [`Dynamic Bitset`](https://www.boost.org/doc/libs/1_78_0/libs/dynamic_bitset/dynamic_bitset.html)
-  - [`Variant`](https://www.boost.org/doc/libs/1_78_0/doc/html/variant.html)
-  - [`Variant2`](https://www.boost.org/doc/libs/1_78_0/libs/variant2/doc/html/variant2.html)
+*More about the interface can be found in the [`MANUAL`](src/cxon/README.md#interface).*
 
-`CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
-(see the [`MANUAL`](src/cxon/README.md#implementation-bridge) for details).
+`CXON` supports good part of `C++`'s fundamental, compound and standard library types out of the box.  
+`CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods.  
 
-
-###### Interface
-
-```c++
-namespace cxon {
-
-    template <typename It>
-        struct from_bytes_result {
-            std::error_condition ec; // read error
-            It end; // one-past-the-end iterator of the matched range
-        };
-
-    // from input iterator
-    template <typename Traits, typename T, typename InIt, typename ...Parameters>
-        auto from_bytes(T& t, InIt b, InIt e, Parameters&&... ps)
-            -> from_bytes_result<InIt>;
-    // from iterable (e.g. std::string)
-    template <typename Traits, typename T, typename Iterable, typename ...Parameters>
-        auto from_bytes(T& t, const Iterable& i, Parameters&&... ps)
-            -> from_bytes_result<decltype(std::begin(i))>;
-
-
-    template <typename It>
-        struct to_bytes_result {
-            std::error_condition ec; // write error
-            It end; // one-past-the-end output iterator
-        };
-
-    // to output iterator
-    template <typename Traits, typename T, typename OutIt, typename ...Parameters>
-        auto to_bytes(OutIt o, const T& t, Parameters&&... ps)
-            -> to_bytes_result<OutIt>;
-    // to back insertable (e.g. std::string)
-    template <typename Traits, typename T, typename Insertable, typename ...Parameters>
-        auto to_bytes(Insertable& i, const T& t, Parameters&&... ps)
-            -> to_bytes_result<decltype(std::begin(i))>;
-    // to range
-    template <typename Traits, typename T, typename FwIt, typename ...Parameters>
-        auto to_bytes(FwIt b, FwIt e, const T& t, Parameters&&... ps)
-            -> to_bytes_result<FwIt>;
-
-}
-```
-
-
-###### Example
-
-``` c++
-// common interface
-
-#include "cxon/json.hxx" // included first, JSON will be the default format
-#include "cxon/cbor.hxx" // not the first, CBOR format must be explicitly specified
-
-// use for all formats, the relevant code will be included depending of the formats included above
-#include "cxon/lib/std/string.hxx"
-#include "cxon/lib/std/vector.hxx"
-
-#include <cassert>
-
-int main() {
-    using CBOR = cxon::CBOR<>;
-
-    char const  json_in[] = "[1,5,7]";
-    std::string json_out;
-
-    std::vector<unsigned char> cbor;
-    {
-        std::vector<int> cxx;
-        auto fbr = cxon::from_bytes(cxx, json_in);      // JSON to C++
-            assert(fbr);
-        auto tbr = cxon::to_bytes<CBOR>(cbor, cxx);     // C++ to CBOR
-            assert(tbr);
-    }
-    {
-        std::vector<int> cxx;
-        auto fbr = cxon::from_bytes<CBOR>(cxx, cbor);   // CBOR to C++
-            assert(fbr);
-        auto tbr = cxon::to_bytes(json_out, cxx);       // C++ to JSON
-            assert(tbr);
-    }
-
-    assert(json_out == json_in);
-}
-```
-
-###### Example
-
-``` c++
-// using of standard library types
-
-#include "cxon/json.hxx"
-
-#include "cxon/lib/std/string.hxx"
-#include "cxon/lib/std/vector.hxx"
-#include "cxon/lib/std/map.hxx"
-
-#include <cassert>
-
-using my_type = std::map<std::string, std::vector<int>>;
-
-int main() {
-    my_type mv1 = { {"even", {2, 4, 6}}, {"odd", {1, 3, 5}} },
-            mv2;
-    std::string json;
-        // write it to output-iterator, container, buffer, etc. - in this case, std::string
-        cxon::to_bytes(json, mv1);
-        // read it from input-iterator, container, buffer, etc. - in this case, std::string
-        cxon::from_bytes(mv2, json);
-    // json == "{ \"even\": [2, 4, 6], \"odd\": [1, 3, 5] }"
-    assert(mv1 == mv2);
-}
-```
-
-###### Example
-
-``` c++
-// using of user types
-
-#include "cxon/json.hxx"
-
-#include "cxon/lib/std/vector.hxx"
-#include "cxon/lib/std/list.hxx"
-
-#include <cassert>
-
-struct my_type {
-    std::vector<int> even;
-    std::list<int> odd;
-    bool operator ==(const my_type& v) const noexcept {
-        return even == v.even && odd == v.odd;
-    }
-};
-
-// in this simple case, some trivial macros can be used to implement the type for CXON
-// see cxon/lang/json/class.hxx
-CXON_JSON_CLS(my_type,
-    CXON_JSON_CLS_FIELD_ASIS(even),
-    CXON_JSON_CLS_FIELD_ASIS(odd)
-)
-
-int main() {
-    my_type mv1 = { {2, 4, 6}, {1, 3, 5} },
-            mv2;
-    std::string json;
-        cxon::to_bytes(json, mv1);
-        cxon::from_bytes(mv2, json);
-    // json == "{ \"even\": [2, 4, 6], \"odd\": [1, 3, 5] }"
-    assert(mv1 == mv2);
-}
-```
-
-###### Example
-
-``` c++
-// format traits
-
-#include "cxon/json.hxx"
-#include "cxon/lib/std/map.hxx"
-#include <string>
-#include <cassert>
-
-struct unquoted_keys_traits : cxon::json::format_traits {
-    // allow arbitrary keys without quotes
-    static constexpr bool quote_unquoted_keys = false;
-};
-using UQK = cxon::JSON<unquoted_keys_traits>;
-
-int main() {
-    std::map<int, int> map;
-        cxon::from_bytes<UQK>(map, R"({1: 2, 3: 4})");
-    assert(map == (std::map<int, int> {{1, 2}, {3, 4}}));
-    std::string str;
-        cxon::to_bytes<UQK>(str, map);
-    assert(str == R"({1:2,3:4})");
-}
-```
-
-###### Example
-
-``` c++
-// format traits and named parameters
-
-#include "cxon/json.hxx"
-
-#include "cxon/lib/std/map.hxx"
-#include "cxon/lib/std/string.hxx"
-
-#include <cassert>
-
-// custom traits for given format
-struct custom_traits : cxon::json::format_traits {
-    // for example, enable unquoted keys
-    static constexpr bool unquote_quoted_keys = true;
-};
-using UQK_JSON = cxon::JSON<custom_traits>;
-
-int main() {
-    {   // using of custom traits
-        std::map<std::string, std::string> cxx;
-            cxon::from_bytes<UQK_JSON>(cxx, R"({ key: "value" })");
-        assert(cxx == (std::map<std::string, std::string> { {"key", "value"} }));
-    }
-    {   // passing of a named parameter
-        using namespace cxon::json;
-        std::string json;
-            cxon::to_bytes(json, 3.1415926, fp_precision::set<3>()); // floating-point precision
-        assert(json == "3.14");
-    }
-}
-```
-
-###### Example
-
-``` c++
-// overriding of a default parser
-
-#include "cxon/json.hxx"
-#include <cassert>
-
-namespace cxon {
-    // override the default double parser for JSON<X>
-    template <typename X>
-        struct read<JSON<X>, double> {
-            template <typename II, typename Cx>
-                static bool value(double& t, II& i, II e, Cx& cx) {
-                    // implement fast double parsing for example
-                    return t = 42., true;
-                }
-        };
-}
-
-struct custom_traits : cxon::json::format_traits {};
-using CUSTOM_JSON = cxon::JSON<custom_traits>;
-
-namespace cxon {
-    // override the default float parser for CUSTOM_JSON, leave the default JSON<> as is
-    template <>
-        struct read<CUSTOM_JSON, float> {
-            template <typename II, typename Cx>
-                static bool value(float& t, II& i, II e, Cx& cx) {
-                    // implement custom float parsing
-                    return t = 42., true;
-                }
-        };
-}
-
-int main() {
-    double d = 0.0;
-        cxon::from_bytes(d, "0");
-    assert(d == 42.);   // the override is used for double
-    int i = 0;
-        cxon::from_bytes(i, "42");
-    assert(i == 42);    // the other types are intact
-    float f = 0.0;
-        cxon::from_bytes<CUSTOM_JSON>(f, "0");
-    assert(f == 42.);   // the override is used for CUSTOM_JSON
-    unsigned u = 0;
-        cxon::from_bytes<CUSTOM_JSON>(i, "42");
-    assert(i == 42);    // the other types are as in JSON<>
-}
-```
-
-
-*Somewhat more meaningful example can be found here [`JSON-RPC`](src/cxon/README.md#example-json-rpc).*
+*More details can be found in the [`MANUAL`](src/cxon/README.md#supported-types).*
 
 
 --------------------------------------------------------------------------------
@@ -432,9 +141,13 @@ which can represent arbitrary `JSON` data.
 
 ##### [`CBOR`](https://cbor.io)
 
-The implementation strictly complies with [`RFC7049`][RFC7049].  
+The implementation complies with [`RFC7049`][RFC7049].  
 `CXON/CBOR` also provides a polymorphic type [`cxon::cbor::node`](src/cxon/lang/cbor/node/README.md),
 which can represent arbitrary `CBOR` data.
+
+##### [`CXCF`](src/cxon/lang/cxcf/README.md)
+
+`CXCF` is a simple configuration format derived from `JSON`.
 
 
 --------------------------------------------------------------------------------
@@ -466,8 +179,8 @@ there is hardly any compiler or `CPU` specific code, just pure `C++`.*
 `clang++ >= 4.0` and `msvc++ >= 19.16` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
 *`CXON` is using [`<charconv>`][std-charconv] for floating-point conversions by default. By defining
-`CXON_USE_FAST_FLOAT` and [`fast_float`][ff] present in the include path, the floating-point parsing
-can be switched to it. This will give a good performance boost for `C++11/14` and some erlier implementations of
+`CXON_USE_FAST_FLOAT` and [`fast_float`][lib-ff] present in the include path, the floating-point parsing
+can be switched to it. This will give a good performance boost for `C++11/14` and some earlier implementations of
 [`<charconv>`][std-charconv].*
 
 --------------------------------------------------------------------------------
@@ -486,13 +199,6 @@ or run the test suites with:
 ``` bash
 $ make check
 ```
-
-
---------------------------------------------------------------------------------
-
-#### Documentation
-
-See the [MANUAL](doc/README.md).
 
 
 --------------------------------------------------------------------------------
@@ -521,35 +227,17 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg
 [img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/develop/graph/badge.svg
-[img-cod]: https://app.codacy.com/project/badge/Grade/a4b8981f7ce34dd5963f10723f8188bf
-[img-cql]: https://github.com/oknenavin/cxon/workflows/CodeQL/badge.svg
-[img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
-[img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18
+<!--[img-cod]: https://app.codacy.com/project/badge/Grade/a4b8981f7ce34dd5963f10723f8188bf-->
+<!--[img-cql]: https://github.com/oknenavin/cxon/workflows/CodeQL/badge.svg-->
+<!--[img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18-->
+<!--[img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18-->
 [img-cvr]: https://scan.coverity.com/projects/18083/badge.svg
+
 [RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 [RFC7049]: https://tools.ietf.org/rfc/rfc7049.txt
-[RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt
+<!--[RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt-->
 [GitHub]: https://github.com/oknenavin/cxon
-[cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
-[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
-[cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
-[cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
-[cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
-[cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
-[cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
-[cpp-zeov]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/Zero-overhead_principle&oldid=118760
+
+[lib-ff]: https://github.com/fastfloat/fast_float
 [std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
-[std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
-[std-valarr]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
-[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
-[std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
-[std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
-[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string&oldid=111300
-[std-strv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string_view&oldid=107572
-[std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
-[std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
-[std-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
-[std-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
-[std-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
-[ff]: https://github.com/fastfloat/fast_float

@@ -7,8 +7,7 @@
 --------------------------------------------------------------------------------
 
 `CXCF` is a simple configuration format derived from `JSON`.  
-Its' defined as a [format-traits](../../README.md#format-traits) derived
-from `JSON` format-traits like this:
+It's defined as a [format-traits](../../README.md#format-traits) derived from the `JSON` format traits.
 
 ``` c++
 namespace cxon { namespace cxcf { // format traits
@@ -62,6 +61,8 @@ prop-object = {
 ###### Example
 
 ``` c++
+// CXCF configuration format
+
 #include "cxon/json.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
@@ -72,17 +73,11 @@ prop-object = {
 struct type1 {
     std::map<std::string, std::vector<int>> key1;
     bool key2 = false;
-
-    bool operator ==(const type1& t) const
-        { return key1 == t.key1 && key2 == t.key2; }
 };
 struct config {
     int prop1 = 0;
     std::vector<std::string> prop_array;
     type1 prop_object;
-
-    bool operator ==(const config& t) const
-        { return prop1 == t.prop1 && prop_array == t.prop_array && prop_object == t.prop_object; }
 };
 
 // implemented for CXON
@@ -121,14 +116,10 @@ int main() {
     // ready for use
     assert(
         r &&
-        cf == (config {
-            42,
-            {"one", "two", "three"},
-            {
-                {{"key.1", {1, 3, 5}}, {"key.2", {2, 4, 6}}},
-                true
-            }
-        })
+        (cf.prop1 == 42) &&
+        (cf.prop_array == decltype(cf.prop_array) {"one", "two", "three"}) &&
+        (cf.prop_object.key1 == decltype(cf.prop_object.key1) {{"key.1", {1, 3, 5}}, {"key.2", {2, 4, 6}}}) &&
+        (cf.prop_object.key2 == true)
     );
 }
 ```
