@@ -205,6 +205,7 @@ cxon = \
 
 check:
 	@$(MAKE) -C test check
+	@$(MAKE) -C example check
 check-json:
 	@$(MAKE) -C test check-json
 check-json-node:
@@ -293,5 +294,6 @@ uninstall:
 
 clean:
 	@$(MAKE) -C test clean
+	@$(MAKE) -C example clean
 
 .PHONY: check check-json check-json-node check-cbor check-cbor-node time time-json time-json-node time-json-native time-cbor build build-json build-json-node build-cbor build-cbor-node install install-cxon install-common install-lang uninstall clean

@@ -11,13 +11,14 @@
     - Formats
       - [`JSON`](lang/json/README.md)
       - [`CBOR`](lang/cbor/README.md)
+      - [`CXCF`](lang/cxcf/README.md)
+    - [Supported types](#supported-types)
   - [Interface](#interface)
   - [Implementation bridge](#implementation-bridge)
   - [Parametrization](#parametrization)
     - [Format traits](#format-traits)
     - [Named parameters](#named-parameters)
     - [Context](#context)
-  - [Example (`JSON-RPC`)](#example-json-rpc)
 
 
 --------------------------------------------------------------------------------
@@ -33,6 +34,42 @@
     type serializers, see [Named parameters](#named-parameters)
   - input and output iterators for I/O (allowing streams, containers and arrays, 
     see [`Interface`](#interface))
+
+##### Supported types
+
+- `CXON` `C++`'s fundamental, compound and standard library types:
+  - [fundamental types][cpp-fund-types]
+      - `nullptr_t`
+      - `bool`
+      - character types - `char`, `wchar_t`, `char8_t`, `char16_t` and `char32_t`
+      - integral types - `signed` and `unsigned` `char`, `short int`, `int`, `long int`, `long long int`
+      - floating-point types - `float`, `double`, `long double`
+  - compound types
+      - [`pointer types`][cpp-ptr]
+      - [`array types`][cpp-arr]
+      - [`enumeration types`][cpp-enum]
+      - [`class types`][cpp-class]
+  - standard library types
+      - [`containers library`][std-container]
+      - [`std::pair`][std-pair]
+      - [`std::tuple`][std-tuple]
+      - [`std::optional`][std-opt]
+      - [`std::variant`][std-var]
+      - [`std::basic_string`][std-bstr]
+      - [`std::basic_string_view`][std-strv] - _write only_
+      - [`std::bitset`][std-bitset]
+      - [`std::complex`][std-complex]
+      - [`std::valarray`][std-valarr]
+      - [`std::chrono::duration`][std-duration]
+      - [`std::chrono::time_point`][std-time-pt]
+- `CXON` [`Boost/Containers`][boost-containers]
+  - [`Container`][boost-container]
+  - [`Dynamic Bitset`][boost-dynbitset]
+  - [`Variant`][boost-variant]
+  - [`Variant2`][boost-variant2]
+
+`CXON` can be extended for arbitrary types, using intrusive and non-intrusive methods
+(see the [`implementation-bridge`](#implementation-bridge) for details).
 
 
 --------------------------------------------------------------------------------
@@ -394,8 +431,8 @@ namespace cxon {
 [`std::enable_if`][std-enab-if].*
 
 
-The implemntation defines the following paramteters, which can be used to tune
-the behaviour of the library or to change the `JSON` language:
+The implementation defines the following parameters, which can be used to tune
+the behavior of the library or to change the `JSON` language:
 
 ``` c++
 namespace cxon { namespace json { // format traits
@@ -634,174 +671,6 @@ See [Named parameters](#named-parameters).
 
 --------------------------------------------------------------------------------
 
-###### Example (`JSON-RPC`)
-
-A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and an 
-example of its usage with `CXON`.
-
-``` c++
-#include "cxon/json.hxx"
-#include "cxon/lib/std/string.hxx"
-#include "cxon/lib/std/tuple.hxx"
-#include <cassert>
-
-namespace jsonrpc {
-
-    // request
-
-    template <typename T>
-        struct napa { // named parameter
-            char const*const key;
-            T const value;
-
-            template <typename X, typename O, typename Cx, typename Y = X>
-                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<Y, cxon::JSON> {
-                    return  cxon::cio::write_map_key<Y>(o, key, cx) &&
-                            cxon::cio::write_map_val<Y>(o, value, cx)
-                    ;
-                }
-        };
-
-    template <typename T>
-        constexpr napa<T> make_napa(const char* k, T&& v) {
-            return {k, v};
-        }
-
-    template <typename ...P>
-        struct request {
-            static char const*const jsonrpc;
-            std::size_t const       id;
-            char const*const        method;
-            std::tuple<P...> const  params;
-
-            constexpr request(std::size_t id, const char* method, P&&... params) noexcept
-            :   id(id), method(method), params(std::forward<P>(params)...)
-            {
-            }
-
-            CXON_JSON_CLS_WRITE_MEMBER(request,
-                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
-                CXON_JSON_CLS_FIELD_ASIS(id),
-                CXON_JSON_CLS_FIELD_ASIS(method),
-                CXON_JSON_CLS_FIELD_ASIS(params)
-            )
-        };
-    template <typename ...P>
-        char const*const request<P...>::jsonrpc = "2.0";
-
-    template <typename ...P>
-        constexpr request<P...> make_request(std::size_t id, const char* method, P&&... params) {
-            return request<P...>(id, method, std::forward<P>(params)...);
-        }
-    template <typename ...P>
-        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>&&... params) {
-            return request<napa<P>...>(id, method, std::forward<napa<P>>(params)...);
-        }
-
-    // response
-
-    template <typename D>
-        struct error {
-            int         code;
-            std::string message;
-            D           data;
-
-            CXON_JSON_CLS_READ_MEMBER(error,
-                CXON_JSON_CLS_FIELD_ASIS(code),
-                CXON_JSON_CLS_FIELD_ASIS(message),
-                CXON_JSON_CLS_FIELD_ASIS(data)
-            )
-        };
-
-    template <typename R, typename D = cxon::cio::val::sink<>>
-        struct response {
-            char            jsonrpc[8];
-            std::size_t     id;
-            R               result;
-            struct error<D> error;
-
-            constexpr response() noexcept
-            :   jsonrpc{0}, id(), result(), error()
-            {
-            }
-
-            CXON_JSON_CLS_READ_MEMBER(response,
-                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
-                CXON_JSON_CLS_FIELD_ASIS(id),
-                CXON_JSON_CLS_FIELD_ASIS(result),
-                CXON_JSON_CLS_FIELD_ASIS(error)
-            )
-        };
-
-}
-
-namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON object instead of an array
-
-    template <typename X, typename ...T>
-        struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
-            template <typename O, typename Cx, typename J = JSON<X>>
-                static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
-                    return  cio::poke<J>(o, J::map::beg, cx) &&
-                                cio::cnt::write_tuple<J>(o, t, cx) &&
-                            cio::poke<J>(o, J::map::end, cx)
-                    ;
-                }
-        };
-
-}
-
-int main() {
-    using namespace cxon;
-    {   // params array
-        auto const call = jsonrpc::make_request(1, "sub", 42, 23);
-        std::string req; // serialize call to req
-            auto const w = to_bytes(req, call);
-        assert(w && req == R"({"jsonrpc":"2.0","id":1,"method":"sub","params":[42,23]})");
-    }
-    {   // params object
-        auto const call = jsonrpc::make_request(1, "sub", jsonrpc::make_napa("x", 42), jsonrpc::make_napa("y", 23));
-        std::string req; // serialize call to req
-            auto const w = to_bytes(req, call);
-        assert(w && req == R"({"jsonrpc":"2.0","id":1,"method":"sub","params":{"x":42,"y":23}})");
-    }
-    {   // round-trip: req -> res success
-        char const res[] = R"({"jsonrpc": "2.0", "result": 19, "id": 1})";
-        jsonrpc::response<int> ret; // serialize res to ret
-            auto const r = from_bytes(ret, res);
-        assert(r && ret.id == 1 && ret.result == 19);
-    }
-    {   // round-trip: req -> res failure
-        char const res[] = R"({
-            "jsonrpc": "2.0",
-            "error": {"code": 42, "message": "divide by zero", "data": "a black hole has been created somewhere"},
-            "id": 1
-        })";
-        {   // serialize res to ret, error's data will be skipped
-            jsonrpc::response<int> ret;
-                auto const r = from_bytes(ret, res);
-            assert( r &&
-                    ret.id == 1 &&
-                    ret.error.code == 42 &&
-                    ret.error.message == "divide by zero"
-            );
-        }
-        {   // serialize res to ret, error's data is bound to std::string
-            jsonrpc::response<int, std::string> ret;
-                auto const r = from_bytes(ret, res);
-            assert( r &&
-                    ret.id == 1 &&
-                    ret.error.code == 42 &&
-                    ret.error.message == "divide by zero" &&
-                    ret.error.data == "a black hole has been created somewhere"
-            );
-        }
-    }
-}
-```
-
-
---------------------------------------------------------------------------------
-
 Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 
@@ -809,9 +678,37 @@ Distributed under the MIT license. See [`LICENSE`](../../LICENSE) for more infor
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
-[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+
 [cpp-init]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/InputIterator&oldid=103892
 [cpp-outit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/OutputIterator&oldid=108758
 [cpp-fwit]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/ForwardIterator&oldid=106013
+[cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
+[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
+[cpp-fund-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
+[cpp-ptr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/pointer&oldid=109738
+[cpp-arr]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/array&oldid=111607
+[cpp-enum]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/enum&oldid=111809
+[cpp-class]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/class&oldid=101735
+[cpp-zeov]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/Zero-overhead_principle&oldid=118760
+
 [std-enab-if]: https://en.cppreference.com/mwiki/index.php?title=cpp/types/enable_if&oldid=109334
 [std-err-cnd]: https://en.cppreference.com/mwiki/index.php?title=cpp/error/error_condition&oldid=88237
+[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[std-complex]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/complex&oldid=103532
+[std-valarr]: https://en.cppreference.com/mwiki/index.php?title=cpp/numeric/valarray&oldid=109876
+[std-bitset]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/bitset&oldid=103231
+[std-duration]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/duration&oldid=100475
+[std-time-pt]: https://en.cppreference.com/mwiki/index.php?title=cpp/chrono/time_point&oldid=103361
+[std-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string&oldid=111300
+[std-strv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/string_view&oldid=107572
+[std-tuple]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/tuple&oldid=108562
+[std-pair]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/pair&oldid=92191
+[std-container]: https://en.cppreference.com/mwiki/index.php?title=cpp/container&oldid=105942
+[std-opt]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/optional&oldid=110327
+[std-var]: https://en.cppreference.com/mwiki/index.php?title=cpp/utility/variant&oldid=109919
+
+[boost-containers]: https://www.boost.org/doc/libs/1_81_0/?view=category_containers
+[boost-container]: https://www.boost.org/doc/libs/1_81_0/doc/html/container.html
+[boost-dynbitset]: https://www.boost.org/doc/libs/1_81_0/libs/dynamic_bitset/dynamic_bitset.html
+[boost-variant]: https://www.boost.org/doc/libs/1_81_0/doc/html/variant.html
+[boost-variant2]: https://www.boost.org/doc/libs/1_81_0/libs/variant2/doc/html/variant2.html
