@@ -151,7 +151,7 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
     {   int *r = nullptr;
         std::allocator<int> a;
         TEST_CHECK(from_bytes(r, "42", json::allocator::set(a)) && *r == 42);
-        std::allocator_traits<std::allocator<int>>::deallocate(a, r, 4);
+        std::allocator_traits<std::allocator<int>>::deallocate(a, r, 1);
     }
     {   std::size_t r = 0;
         TEST_CHECK(from_bytes(r, std::string("123"), json::num_len_max::set<4>()) && r == 123);
