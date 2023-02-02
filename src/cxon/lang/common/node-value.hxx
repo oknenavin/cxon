@@ -136,7 +136,7 @@ namespace cxon { namespace value {
                         -> enable_if_t< is_dynamic_type<T>::value &&  propagate_on_container_move_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
-                            get<T>(n).~T(), n.alloc_ = std::move(o.alloc_);
+                            destruct<T>(n), n.alloc_ = std::move(o.alloc_);
                             get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
                         }
                         else {
