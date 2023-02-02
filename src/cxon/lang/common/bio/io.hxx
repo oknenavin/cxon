@@ -173,7 +173,7 @@ namespace cxon { namespace bio {
                             (R(bs[5])<<16) | (R(bs[4])<<24) |
                             (R(bs[3])<<32) | (R(bs[2])<<40) |
                             (R(bs[1])<<48) | (R(bs[0])<<56) ;
-                CXON_ASSERT(sizeof(T) >= 8, "narrowing");
+                CXON_ASSERT(sizeof(T) >= 8, "narrowing"); // LCOV_EXCL_LINE
                 return sizeof(T) >= 8 && (t = T(x), true);
             }
 
