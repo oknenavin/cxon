@@ -200,9 +200,9 @@ namespace cxon {
                     using sint = typename N::sint;
                     using uint = typename N::uint;
                     U ?
-                        s ? n.template imbue<sint>() = U, n.template get<sint>() = -n.template get<sint>() :
+                        s ? n.template imbue<sint>() = -sint(1) - (U - 1) :
                             n.template imbue<uint>() = U :
-                        s ? n.template imbue<sint>() = u, n.template get<sint>() = -n.template get<sint>() :
+                        s ? n.template imbue<sint>() = -sint(1) - (u - 1) :
                             n.template imbue<uint>() = u
                     ;
                     return true;
