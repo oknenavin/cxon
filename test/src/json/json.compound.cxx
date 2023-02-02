@@ -814,6 +814,7 @@ namespace {
         int a;
         Struct3* b;
         Struct3(int a = 0, Struct3* b = nullptr) : a(a), b(b) {}
+        ~Struct3() { delete b; }
         bool operator ==(const Struct3& t) const { return a == t.a && ((!b && !t.b) || (b && t.b && *b == *t.b)); }
     };
 }

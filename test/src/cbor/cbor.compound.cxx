@@ -473,6 +473,7 @@ namespace {
         int x;
         Struct3* y;
         Struct3(int x = 0, Struct3* y = nullptr) : x(x), y(y) {}
+        ~Struct3() { delete y; }
         bool operator ==(const Struct3& t) const { return x == t.x && ((!y && !t.y) || (y && t.y && *y == *t.y)); }
     };
 
