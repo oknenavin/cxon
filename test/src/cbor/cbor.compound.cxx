@@ -230,8 +230,8 @@ TEST_BEG(arrays, cxon::CBOR<>, "/core")
         R_TEST(L"", BS("\x80"));        // definite
         R_TEST(L"", BS("\x9F\xFF"));    // indefinite
     // char16_t[]
-        R_TEST(u"", BS("\x80"));        // definite
-        R_TEST(u"", BS("\x9F\xFF"));    // indefinite
+        R_TEST(u"\0", BS("\x80"));        // definite
+        R_TEST(u"\0", BS("\x9F\xFF"));    // indefinite
         R_TEST(u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));        // definite
         R_TEST(u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF"));    // indefinite
         W_TEST(BS("\x85\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\x00"), u"\x00AE\x2708\xD83D\xDE80");
@@ -309,8 +309,8 @@ TEST_BEG(pointers, cxon::CBOR<>, "/core")
         R_TEST((const wchar_t*)L"", BS("\x80"));        // definite
         R_TEST((const wchar_t*)L"", BS("\x9F\xFF"));    // indefinite
     // const char16_t*
-        R_TEST((const char16_t*)u"", BS("\x80"));     // definite
-        R_TEST((const char16_t*)u"", BS("\x9F\xFF")); // indefinite
+        R_TEST((const char16_t*)u"\0", BS("\x80"));     // definite
+        R_TEST((const char16_t*)u"\0", BS("\x9F\xFF")); // indefinite
         R_TEST((const char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));     // definite
         R_TEST((const char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF")); // indefinite
         W_TEST(BS("\x85\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\x00"), (const char16_t*)u"\x00AE\x2708\xD83D\xDE80");
@@ -368,8 +368,8 @@ TEST_BEG(pointers, cxon::CBOR<>, "/core")
         R_TEST((wchar_t*)L"", BS("\x80"));      // definite
         R_TEST((wchar_t*)L"", BS("\x9F\xFF"));  // indefinite
     // char16_t*
-        R_TEST((char16_t*)u"", BS("\x80"));     // definite
-        R_TEST((char16_t*)u"", BS("\x9F\xFF")); // indefinite
+        R_TEST((char16_t*)u"\0", BS("\x80"));     // definite
+        R_TEST((char16_t*)u"\0", BS("\x9F\xFF")); // indefinite
         R_TEST((char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x84\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80"));     // definite
         R_TEST((char16_t*)u"\x00AE\x2708\xD83D\xDE80", BS("\x9F\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\xFF")); // indefinite
         W_TEST(BS("\x85\x18\xAE\x19\x27\x08\x19\xD8\x3D\x19\xDE\x80\00"), (char16_t*)u"\x00AE\x2708\xD83D\xDE80");
