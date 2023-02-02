@@ -11,16 +11,16 @@
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace json { // format traits
-
     struct format_traits;
+}}
 
+namespace cxon { namespace cxcf { // format traits
+    struct format_traits;
 }}
 
 namespace cxon { // format selector
-
     template <typename T = json::format_traits>
         struct JSON;
-
 }
 
 namespace cxon { namespace json { // errors
