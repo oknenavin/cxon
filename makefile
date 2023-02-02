@@ -150,7 +150,8 @@ cxon-lang-cbor-node = \
 
 cxon-lang = \
     $(srcdir)/json.hxx \
-    $(srcdir)/cbor.hxx
+    $(srcdir)/cbor.hxx \
+    $(srcdir)/cxcf.hxx
 
 cxon-lib-std = \
     $(srcdir)/lib/std/array.hxx \

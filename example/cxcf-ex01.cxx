@@ -1,6 +1,6 @@
 // CXCF configuration format
 
-#include "cxon/json.hxx"
+#include "cxon/cxcf.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/map.hxx"
@@ -44,12 +44,10 @@ static char const  cf_[] = R"(
     }
 )";
 
-using CXCF = cxon::CXCF<>;
-
 int main() {
     // load
     config cf;
-        auto const r = cxon::from_bytes<CXCF>(cf, cf_);
+        auto const r = cxon::from_bytes(cf, cf_);
     // ready for use
     assert(
         r &&
