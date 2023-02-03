@@ -38,6 +38,7 @@ jobs:
       env:
         CXX: g++
         CXXFLAGS: --coverage -O0 -std=c++20 -I ../.dep/boost
+        LDFLAGS: --coverage
       run: |
         make -j check
         make -j time
