@@ -21,10 +21,10 @@ endif ()
 include_directories (../src)
 
 add_executable (
-    cxon.json src/json/json.json.cxx src/json/json.fundamental.cxx src/json/json.compound.cxx src/json/json.std.cxx src/json/json.boost.cxx
+    cxon-json src/json/json.json.cxx src/json/json.fundamental.cxx src/json/json.compound.cxx src/json/json.std.cxx src/json/json.boost.cxx
 )
 set_target_properties (
-    cxon.json PROPERTIES
+    cxon-json PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
@@ -41,10 +41,10 @@ set_target_properties (
 )
 
 add_executable (
-    cxon.cbor src/cbor/cbor.cbor.cxx src/cbor/cbor.fundamental.cxx src/cbor/cbor.compound.cxx src/cbor/cbor.std.cxx src/cbor/cbor.boost.cxx
+    cxon-cbor src/cbor/cbor.cbor.cxx src/cbor/cbor.fundamental.cxx src/cbor/cbor.compound.cxx src/cbor/cbor.std.cxx src/cbor/cbor.boost.cxx
 )
 set_target_properties (
-    cxon.cbor PROPERTIES
+    cxon-cbor PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
@@ -64,7 +64,7 @@ enable_testing()
 
 add_test (
     NAME cxon/json/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.json
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-json
 )
 add_test (
     NAME cxon/json/node/self
@@ -95,7 +95,7 @@ endif ()
 
 add_test (
     NAME cxon/cbor/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon.cbor
+    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-cbor
 )
 
 add_test (
