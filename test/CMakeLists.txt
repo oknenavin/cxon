@@ -21,7 +21,12 @@ endif ()
 include_directories (../src)
 
 add_executable (
-    cxon-json src/json/json.json.cxx src/json/json.fundamental.cxx src/json/json.compound.cxx src/json/json.std.cxx src/json/json.boost.cxx
+    cxon-json
+        src/json/json.core-main.cxx
+        src/json/json.core-fundamental.cxx
+        src/json/json.core-compound.cxx
+        src/json/json.core-std.cxx
+        src/json/json.core-boost.cxx
 )
 set_target_properties (
     cxon-json PROPERTIES
@@ -31,7 +36,14 @@ set_target_properties (
 )
 
 add_executable (
-    cxon-json-node src/json/json.node.cxx src/json/json.node.self.cxx src/json/json.node.time.node.cxx src/json/json.node.time.native.cxx src/json/json.node.time.boost.cxx src/json/json.node.time.rapidjson.cxx src/json/json.node.time.nlohmann.cxx
+    cxon-json-node
+        src/json/json.node-main.cxx
+        src/json/json.node-self.cxx
+        src/json/json.node-time.node.cxx
+        src/json/json.node-time.native.cxx
+        src/json/json.node-time.boost.cxx
+        src/json/json.node-time.rapidjson.cxx
+        src/json/json.node-time.nlohmann.cxx
 )
 set_target_properties (
     cxon-json-node PROPERTIES
@@ -41,7 +53,12 @@ set_target_properties (
 )
 
 add_executable (
-    cxon-cbor src/cbor/cbor.cbor.cxx src/cbor/cbor.fundamental.cxx src/cbor/cbor.compound.cxx src/cbor/cbor.std.cxx src/cbor/cbor.boost.cxx
+    cxon-cbor
+        src/cbor/cbor.core-main.cxx
+        src/cbor/cbor.core-fundamental.cxx
+        src/cbor/cbor.core-compound.cxx
+        src/cbor/cbor.core-std.cxx
+        src/cbor/cbor.core-boost.cxx
 )
 set_target_properties (
     cxon-cbor PROPERTIES
@@ -51,7 +68,9 @@ set_target_properties (
 )
 
 add_executable (
-    cxon-cbor-node src/cbor/cbor.node.cxx src/cbor/cbor.node.self.cxx
+    cxon-cbor-node
+        src/cbor/cbor.node-main.cxx
+        src/cbor/cbor.node-self.cxx
 )
 set_target_properties (
     cxon-cbor-node PROPERTIES
