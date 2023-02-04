@@ -1,7 +1,9 @@
 SHELL = /bin/sh
 
+INCLUDE ?= ../src
+
+incdir = $(foreach inc,$(INCLUDE),$(addprefix -I,$(inc)))
 outdir = .out
-incdir = ../src
 srcdir = src
 datdir = ../data
 
@@ -83,25 +85,25 @@ $(outdir)/check-json: $(check-json-obj)
 	$(CXX) $(LDFLAGS) $(check-json-obj)  -o $@
 $(outdir)/json.core-%.o: $(srcdir)/json/json.core-%.cxx
 	@mkdir -p $(outdir)
-	$(CXX) -c -I $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
+	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
 
 $(outdir)/check-json-node: $(check-json-node-obj)
 	$(CXX) $(LDFLAGS) $(check-json-node-obj)  -o $@
 $(outdir)/json.node-%.o: $(srcdir)/json/json.node-%.cxx
 	@mkdir -p $(outdir)
-	$(CXX) -c -I $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
+	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
 
 $(outdir)/check-cbor: $(check-cbor-obj)
 	$(CXX) $(LDFLAGS) $(check-cbor-obj)  -o $@
 $(outdir)/cbor.core-%.o: $(srcdir)/cbor/cbor.core-%.cxx
 	@mkdir -p $(outdir)
-	$(CXX) -c -I $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
+	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
 
 $(outdir)/check-cbor-node: $(check-cbor-node-obj)
 	$(CXX) $(LDFLAGS) $(check-cbor-node-obj)  -o $@
 $(outdir)/cbor.node-%.o: $(srcdir)/cbor/cbor.node-%.cxx
 	@mkdir -p $(outdir)
-	$(CXX) -c -I $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
+	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
 
 
 clean:
@@ -110,4 +112,5 @@ clean:
 
 .PHONY: check check-all check-json check-json-node check-cbor check-cbor-node \
         time time-all time-json time-json-s1 time-json-s2 time-json-node-s1 time-json-native-s1 time-json-node-s2 time-json-native-s2 time-cbor \
-        build build-json build-json-node build-cbor build-cbor-node clean
+        build build-json build-json-node build-cbor build-cbor-node \
+        clean

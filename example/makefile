@@ -1,6 +1,8 @@
 SHELL = /bin/sh
 
-incdir = ../src
+INCLUDE ?= ../src
+
+incdir = $(foreach inc,$(INCLUDE),$(addprefix -I,$(inc)))
 outdir = .out
 SRC = $(wildcard *.cxx)
 BIN = $(patsubst %.cxx,$(outdir)/%,$(SRC))
@@ -9,7 +11,7 @@ check: $(BIN)
 
 $(outdir)/%: %.cxx
 	@mkdir -p $(outdir)
-	$(CXX) -I $(incdir) -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
+	$(CXX) $(incdir) -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
 	@$@ || (echo $@ failed; exit -1)
 
 clean:
