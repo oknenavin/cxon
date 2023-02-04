@@ -20,63 +20,40 @@ endif ()
 
 include_directories (../src)
 
-add_executable (
-    cxon-json
-        src/json/json.core-main.cxx
-        src/json/json.core-fundamental.cxx
-        src/json/json.core-compound.cxx
-        src/json/json.core-std.cxx
-        src/json/json.core-boost.cxx
-)
+file(GLOB JSON-CORE-SRC src/json/json.core-*.cxx)
+add_executable (cxon-json ${JSON-CORE-SRC})
 set_target_properties (
     cxon-json PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
 
-add_executable (
-    cxon-json-node
-        src/json/json.node-main.cxx
-        src/json/json.node-self.cxx
-        src/json/json.node-time.node.cxx
-        src/json/json.node-time.native.cxx
-        src/json/json.node-time.boost.cxx
-        src/json/json.node-time.rapidjson.cxx
-        src/json/json.node-time.nlohmann.cxx
-)
+file(GLOB JSON-NODE-SRC src/json/json.node-*.cxx)
+add_executable (cxon-json-node ${JSON-NODE-SRC})
 set_target_properties (
     cxon-json-node PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
 
-add_executable (
-    cxon-cbor
-        src/cbor/cbor.core-main.cxx
-        src/cbor/cbor.core-fundamental.cxx
-        src/cbor/cbor.core-compound.cxx
-        src/cbor/cbor.core-std.cxx
-        src/cbor/cbor.core-boost.cxx
-)
+file(GLOB CBOR-CORE-SRC src/cbor/cbor.core-*.cxx)
+add_executable (cxon-cbor ${CBOR-CORE-SRC})
 set_target_properties (
     cxon-cbor PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
 
-add_executable (
-    cxon-cbor-node
-        src/cbor/cbor.node-main.cxx
-        src/cbor/cbor.node-self.cxx
-)
+file(GLOB CBOR-NODE-SRC src/cbor/cbor.node-*.cxx)
+add_executable (cxon-cbor-node ${CBOR-NODE-SRC})
 set_target_properties (
     cxon-cbor-node PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
 
 enable_testing()
@@ -103,6 +80,7 @@ add_test (
 find_program (CMAKE_BASH bash)
 find_program (CMAKE_XARGS xargs)
 find_program (CMAKE_DIFF diff)
+find_program (CMAKE_MAKE make)
 
 if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
@@ -133,3 +111,8 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
         COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node ../data/cbor/tests.cf round-trip | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
+
+add_test (
+    NAME examples
+    COMMAND ${CMAKE_MAKE} -C ${PROJECT_SOURCE_DIR}/../example check
+)
