@@ -75,10 +75,10 @@ int x0 = array[0].get_integer(); // it's an int, but not quite
 ```
 
 To help with this, some of the libraries provide utilities to convert the value type to a
-`C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to` for this.
+`C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to`.
 
 For completeness, `CXON` also provides polymorphic types (called `node`) for the supported formats,
-which match the functionality provided by these libraries.  
+that match the functionality provided by these libraries.  
 The **performance** is often important and is emphasized by many libraries such as `Boost.JSON` and `RapidJSON`
 and in this respect, `CXON` is [close to the best](#performance). An important note here, is that many of
 the libraries emphasize the floating-point serialization and deserialization performance, utilizing very fast
@@ -167,9 +167,7 @@ which can represent arbitrary `CBOR` data.
 Information about the benchmarks and additional benchmark results can be found [here](https://github.com/oknenavin/workflows-data/tree/develop/cxon).
 
 *Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
-it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.  
-It is important to note, that no specific attempts have been made to optimize `CXON` for time or space - 
-there is hardly any compiler or `CPU` specific code, just pure `C++`.*
+it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.*
 
 --------------------------------------------------------------------------------
 
@@ -241,3 +239,6 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 
 [lib-ff]: https://github.com/fastfloat/fast_float
 [std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
+[cpp-zeov]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/Zero-overhead_principle&oldid=118760
+[cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771

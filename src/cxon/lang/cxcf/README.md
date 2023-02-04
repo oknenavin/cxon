@@ -45,7 +45,7 @@ namespace cxon { // format selector
 
 ###### Example
 ```
-// the root is a bare type
+// the root is a bare type, no braces needed
 prop1 = 42                          // the values are of arbitrary JSON type
 prop.array = ["one" "two" "three"]  // the keys are unquoted
                                     // the list/map values are separated with white-spaces
@@ -90,7 +90,7 @@ CXON_JSON_CLS(config,
     CXON_JSON_CLS_FIELD_NAME("prop.array", prop_array),
     CXON_JSON_CLS_FIELD_NAME("prop-object", prop_object)
 )
-CXON_JSON_CLS_BARE(config) // bare root
+CXON_JSON_CLS_BARE(config) // bare root, no braces
 
 // configuration data
 static char const  cf_[] = R"(
