@@ -202,7 +202,7 @@ macros for binding of enumeration and class types:
     // defines a key Name, which will be ignored when reading (only meaningful for reading)
     #define CXON_JSON_CLS_FIELD_SKIP(Name)
 
-    // specifies that `Type` will be serialized without parentheses
+    // specifies that `Type` will be serialized without braces
     // only a 'root' type can be 'bare', the behavior is undefined otherwise
     // e.g. if set for a class, 'a: {b: 1}, c: 3' is valid
     #define CXON_JSON_CLS_BARE(Type)
