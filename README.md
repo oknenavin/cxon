@@ -155,16 +155,16 @@ which can represent arbitrary `CBOR` data.
 #### Performance
 
 - `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  ![read/native](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg)
+  ![read/native][img-time-read]
 
 - `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  ![write/native (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg)
+  ![write/native (default)][img-time-write]
 
 - `CXON` binary size and compilation times.  
-  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg)  
-  ![space (default)](https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json-space.svg)
+  ![space (default)][img-space-gcc]  
+  ![space (default)][img-space-clang]
 
-Information about the benchmarks and additional benchmark results can be found [here](https://github.com/oknenavin/workflows-data/tree/develop/cxon).
+Information about the benchmarks and additional benchmark results can be found [here][img-bench].
 
 *Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
 it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.*
@@ -224,12 +224,16 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg
 [img-bld-mac]: https://github.com/oknenavin/cxon/workflows/macOS/badge.svg
 [img-bld-win]: https://github.com/oknenavin/cxon/workflows/Windows/badge.svg
-[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/develop/graph/badge.svg
-<!--[img-cod]: https://app.codacy.com/project/badge/Grade/a4b8981f7ce34dd5963f10723f8188bf-->
-<!--[img-cql]: https://github.com/oknenavin/cxon/workflows/CodeQL/badge.svg-->
-<!--[img-lgtm-qual]: https://img.shields.io/lgtm/grade/cpp/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18-->
-<!--[img-lgtm-alrt]: https://img.shields.io/lgtm/alerts/g/oknenavin/cxon.svg?logo=lgtm&logoWidth=18-->
 [img-cvr]: https://scan.coverity.com/projects/18083/badge.svg
+
+<!--{ branch-links -->
+[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[img-time-read]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg
+[img-time-write]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg
+[img-space-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json-space.svg
+[img-space-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json-space.svg
+[img-bench]: https://github.com/oknenavin/workflows-data/tree/master/cxon
+<!-- branch-links }-->
 
 [RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
 [ECMA-404]: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
