@@ -201,6 +201,21 @@ namespace cxon { namespace cio { // output
             inline void push_(O& o, const char* s, std::size_t n) {
                 push_(option<1>(), o, s, n);
             }
+        // char*
+            template <typename O>
+                inline auto push_(option<1>, O& o, const char* f, const char* l)
+                    -> decltype(o.append(f, l), void())
+                {
+                    o.append(f, l);
+                }
+            template <typename O>
+                inline void push_(option<0>, O& o, const char* f, const char* l) {
+                    for ( ; f != l; ++f) push_(o, *f);
+                }
+        template <typename O>
+            inline void push_(O& o, const char* f, const char* l) {
+                push_(option<1>(), o, f, l);
+            }
         // x char
             template <typename O>
                 inline auto push_(option<1>, O& o, unsigned n, char c)
@@ -245,7 +260,7 @@ namespace cxon { namespace cio { // output
     template <typename O>
         inline bool poke(O& o, const char* s, std::size_t n)                    { return imp::poke_(o, s, n); }
     template <typename O>
-        inline bool poke(O& o, const char* f, const char* l)                    { return imp::poke_(o, f, l - f); }
+        inline bool poke(O& o, const char* f, const char* l)                    { return imp::poke_(o, f, l); }
     template <typename O>
         inline bool poke(O& o, const char* s)                                   { return imp::poke_(o, s, std::char_traits<char>::length(s)); }
     template <typename O>
