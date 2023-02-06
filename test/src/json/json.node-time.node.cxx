@@ -32,7 +32,8 @@ namespace test { namespace kind {
             std::vector<std::string> vs;
             t.time.write.push_back(CXON_MEASURE(
                 vs.emplace_back();
-                cxon::to_bytes<TIME>(vs.back(), o);
+                auto b = cxon::cnt::make_buffered_back_inserter(vs.back());
+                cxon::to_bytes<TIME>(b, o);
             ));
     }
 
