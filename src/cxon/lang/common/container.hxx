@@ -12,7 +12,6 @@
 #include <type_traits>
 #include <iterator>
 #include <algorithm>
-#include <array>
 
 // interface ///////////////////////////////////////////////////////////////////
 

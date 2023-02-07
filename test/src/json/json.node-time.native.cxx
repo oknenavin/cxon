@@ -9,6 +9,7 @@
 
 #include "cxon/lib/node.ordered.hxx"
 
+#include <array>
 #include <fstream>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,9 +35,10 @@ namespace test { namespace kind {
             // write
                 auto o = vo.back(); vo.clear();
                 std::vector<std::string> vs;
+                std::array<char, 4 * 1024> bf;
                 t.time.write.push_back(CXON_MEASURE(
                     vs.emplace_back();
-                    cxon::to_bytes<TIME>(cxon::cio::buffered_back_inserter(vs.back()), o);
+                    cxon::to_bytes<TIME>(cxon::cio::buffered_back_inserter(vs.back(), bf), o);
                 ));
         }
 
