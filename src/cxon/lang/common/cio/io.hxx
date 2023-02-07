@@ -81,10 +81,10 @@ namespace cxon { namespace cio { // output
 
 namespace cxon { namespace cio { // output adapter
 
-    template <typename C, std::size_t S>
+    template <typename C, typename B>
         struct buffered_back_insert_iterator;
-    template <typename C, std::size_t S = 4 * 1024>
-        inline auto buffered_back_inserter(C& c) noexcept -> buffered_back_insert_iterator<C, S>;
+    template <typename C, typename B>
+        inline auto buffered_back_inserter(C& c, B& b) noexcept -> buffered_back_insert_iterator<C, B>;
 
 }}
 
@@ -308,7 +308,7 @@ namespace cxon { namespace cio { // output
 
 namespace cxon { namespace cio {
 
-    template <typename C, std::size_t S>
+    template <typename C, typename B>
         struct buffered_back_insert_iterator {
             using iterator_category = std::output_iterator_tag;
             using value_type        = void;
@@ -317,11 +317,11 @@ namespace cxon { namespace cio {
             using reference         = void;
             using container_type    = C;
             using T                 = typename C::value_type;
-            using buffer_type       = std::array<T, S>;
+            using buffer_type       = B;
 
             static_assert(std::is_scalar<T>::value, "not implemented");
 
-            buffered_back_insert_iterator(container_type& c) noexcept : b_(), c_(c), s_() {}
+            buffered_back_insert_iterator(container_type& c, buffer_type& b) noexcept : c_(c), b_(b), s_() {}
             ~buffered_back_insert_iterator() { if (s_) flush(); }
 
             buffered_back_insert_iterator& operator *()     noexcept    { return *this; }
@@ -362,13 +362,13 @@ namespace cxon { namespace cio {
             }
 
             private:
-                buffer_type b_;
                 container_type& c_;
+                buffer_type& b_;
                 typename buffer_type::size_type s_;
         };
-    template <typename C, std::size_t S>
-        inline auto buffered_back_inserter(C& c) noexcept -> buffered_back_insert_iterator<C, S> {
-            return c;
+    template <typename C, typename B>
+        inline auto buffered_back_inserter(C& c, B& b) noexcept -> buffered_back_insert_iterator<C, B> {
+            return {c, b};
         }
 
 }}
