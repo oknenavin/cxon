@@ -79,11 +79,6 @@ namespace cxon { namespace cnt { // adapters
     template <typename X, typename T, typename Cx>
         inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(alc::make_context_allocator<T>(cx))>;
 
-    template <typename BI>
-        struct buffered_back_inserter;
-    template <typename BI>
-        inline buffered_back_inserter<BI> make_buffered_back_inserter(BI& o) noexcept;
-
 }}
 
 // implementation //////////////////////////////////////////////////////////////
@@ -322,6 +317,7 @@ namespace cxon { namespace cnt {
                 CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
                 return *e_++;
             }
+
             void push_back(const value_type& t) noexcept {
                 CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
                 *e_ = t, ++e_;
@@ -329,6 +325,13 @@ namespace cxon { namespace cnt {
             void push_back(value_type&& t) noexcept {
                 CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
                 *e_ = std::move(t), ++e_;
+            }
+
+            bool append(value_type&& t) noexcept {
+                return e_ != l_ && (push_back(std::move(t)), true);
+            }
+            bool append(const value_type& t) noexcept {
+                return e_ != l_ && (push_back(t), true);
             }
 
             template <typename II>
@@ -341,12 +344,7 @@ namespace cxon { namespace cnt {
             bool append(const value_type* t, std::size_t n) noexcept {
                 return append(t, t + n);
             }
-            bool append(value_type&& t) noexcept {
-                return e_ != l_ && (push_back(std::move(t)), true);
-            }
-            bool append(const value_type& t) noexcept {
-                return e_ != l_ && (push_back(t), true);
-            }
+
             bool append(unsigned n, const value_type& t) noexcept {
                 return n > static_cast<std::size_t>(std::distance(e_, l_)) ?
                     (std::fill_n(e_, std::distance(e_, l_), t), e_ = l_, false) :
@@ -427,100 +425,6 @@ namespace cxon { namespace cnt {
         inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(alc::make_context_allocator<T>(cx))> {
             return { alc::make_context_allocator<T>(cx) };
         }
-
-}}
-
-namespace cxon { namespace cnt {
-
-    template <typename BI>
-        struct buffered_back_inserter {
-            using value_type = typename BI::value_type;
-            using reference = value_type&;
-
-            buffered_back_inserter(BI& o) noexcept : bf_(), o_(o), s_() {}
-            ~buffered_back_inserter() { flush(); }
-
-            typename BI::iterator begin() noexcept  { return o_.begin(); }
-            typename BI::iterator end() noexcept    { return o_.end(); }
-
-            void push_back(const value_type& t) {
-                    if (s_ == bf_.size()) flush();
-                bf_[s_++] = t;
-            }
-            void push_back(value_type&& t) {
-                    if (s_ == bf_.size()) flush();
-                bf_[s_++] = std::move(t);
-            }
-
-            void append(const value_type& t) {
-                push_back(t);
-            }
-            void append(value_type&& t) {
-                push_back(std::move(t));
-            }
-
-            template <typename II>
-                void append(II f, II l) {
-                    auto const s = std::distance(f, l);
-                        if (s_ + s > bf_.size()) {
-                            flush();
-                            if (std::size_t(s) > bf_.size())
-                                return o_.append(f, l), void();
-                        }
-                    std::copy(f, l, bf_.begin() + s_), s_ += s;
-                }
-            void append(const value_type* t, std::size_t n) {
-                append(t, t + n);
-            }
-            void append(unsigned n, const value_type& t) {
-                    if (s_ + n > bf_.size()) flush();
-                    CXON_ASSERT(s_ + n <= bf_.size(), "TODO");
-                std::fill_n(bf_.begin() + s_, n, t), s_ += n;
-            }
-
-            void flush() {
-                imp::flush(option<1>(), o_, bf_, s_), s_ = 0;
-            }
-
-            private:
-                using buffer_type = std::array<value_type, 4 * 1024>;
-
-                struct imp {
-                    template <typename U = BI>
-                        static auto flush(option<1>, U& o, const buffer_type& b, typename buffer_type::size_type s)
-                            -> decltype(o.append(b.data(), b.data() + s), void())
-                        {
-                            o.append(b.data(), b.data() + s);
-                        }
-                    template <typename U = BI>
-                        static auto flush(option<0>, U& o, const buffer_type& b, typename buffer_type::size_type s)
-                            -> decltype(o.insert(o.end(), b.data(), b.data() + s), void())
-                        {
-                            o.insert(o.end(), b.data(), b.data() + s);
-                        }
-                };
-
-            private:
-                buffer_type bf_;
-                BI& o_;
-                typename buffer_type::size_type s_;
-        };
-    template <typename BI>
-        inline buffered_back_inserter<BI> make_buffered_back_inserter(BI& o) noexcept {
-            return {o};
-        }
-
-    template <typename BI>
-        struct traits<buffered_back_inserter<BI>> {
-            template <typename II>
-                static bool append(buffered_back_inserter<BI>& c, II f, II l) {
-                    return c.append(f, l);
-                }
-            template <typename T = typename buffered_back_inserter<BI>::value_type>
-                static bool append(buffered_back_inserter<BI>& c, T t) {
-                    return c.append(std::forward<T>(t));
-                }
-        };
 
 }}
 

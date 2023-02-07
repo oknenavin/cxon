@@ -79,6 +79,15 @@ namespace cxon { namespace cio { // output
 
 }}
 
+namespace cxon { namespace cio { // output adapter
+
+    template <typename C, std::size_t S>
+        struct buffered_back_insert_iterator;
+    template <typename C, std::size_t S = 4 * 1024>
+        inline auto buffered_back_inserter(C& c) noexcept -> buffered_back_insert_iterator<C, S>;
+
+}}
+
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { // input
@@ -174,17 +183,27 @@ namespace cxon { namespace cio { // output
 
     namespace imp {
         // char
+            template <typename O>
+                inline auto push_(option<2>, O& o, char c)
+                    -> decltype(o.append(c), void())
+                {
+                    o.append(c);
+                }
+            template <typename O>
+                inline auto push_(option<1>, O& o, char c)
+                    -> enable_if_t<is_back_insertable<O>::value>
+                {
+                    o.push_back(c);
+                }
+            template <typename O>
+                inline auto push_(option<0>, O& o, char c)
+                    -> enable_if_t<is_output_iterator<O>::value>
+                {
+                    *o = c, ++o;
+                }
         template <typename O>
-            inline auto push_(O& o, char c)
-                -> enable_if_t<is_output_iterator<O>::value>
-            {
-                *o = c, ++o;
-            }
-        template <typename O>
-            inline auto push_(O& o, char c)
-                -> enable_if_t<is_back_insertable<O>::value>
-            {
-                o.push_back(c);
+            inline void push_(O& o, char c) {
+                push_(option<2>(), o, c);
             }
         // char[]
             template <typename O>
@@ -284,6 +303,73 @@ namespace cxon { namespace cio { // output
     template <typename X, typename O, typename WR, typename Cx>
         inline auto poke(O& o, WR write, Cx& cx)
             -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool> { return write(o)       || cx/X::write_error::output_failure; }
+
+}}
+
+namespace cxon { namespace cio {
+
+    template <typename C, std::size_t S>
+        struct buffered_back_insert_iterator {
+            using iterator_category = std::output_iterator_tag;
+            using value_type        = void;
+            using difference_type   = std::ptrdiff_t;
+            using pointer           = void;
+            using reference         = void;
+            using container_type    = C;
+            using T                 = typename C::value_type;
+            using buffer_type       = std::array<T, S>;
+
+            static_assert(std::is_scalar<T>::value, "not implemented");
+
+            buffered_back_insert_iterator(container_type& c) noexcept : b_(), c_(c), s_() {}
+            ~buffered_back_insert_iterator() { if (s_) flush(); }
+
+            buffered_back_insert_iterator& operator *()     noexcept    { return *this; }
+            buffered_back_insert_iterator& operator ++()    noexcept    { return *this; }
+            buffered_back_insert_iterator  operator ++(int) noexcept    { return *this; }
+            buffered_back_insert_iterator& operator =(T t)              { return append(t), *this; }
+
+            void append(T t) {
+                    if (s_ == b_.size()) flush();
+                b_[s_++] = t;
+            }
+
+            template <typename II>
+                void append(II f, II l) {
+                    auto const s = std::distance(f, l);
+                        if (s_ + s > b_.size()) {
+                            flush();
+                            if (std::size_t(s) > b_.size())
+                                return poke(c_, f, l), void();
+                        }
+                    std::copy(f, l, b_.begin() + s_), s_ += s;
+                }
+            void append(const T* t, std::size_t n) {
+                append(t, t + n);
+            }
+
+            void append(unsigned n, T t) {
+                    if (s_ + n > b_.size()) {
+                        flush();
+                        if (n > b_.size())
+                            return poke(c_, n, t), void();
+                    }
+                std::fill_n(b_.begin() + s_, n, t), s_ += n;
+            }
+
+            void flush() {
+                poke(c_, b_.data(), b_.data() + s_), s_ = 0;
+            }
+
+            private:
+                buffer_type b_;
+                container_type& c_;
+                typename buffer_type::size_type s_;
+        };
+    template <typename C, std::size_t S>
+        inline auto buffered_back_inserter(C& c) noexcept -> buffered_back_insert_iterator<C, S> {
+            return c;
+        }
 
 }}
 

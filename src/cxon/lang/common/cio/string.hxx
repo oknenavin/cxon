@@ -171,7 +171,7 @@ namespace cxon { namespace cio { namespace str {
             -> enable_if_t<is_char<T>::value, bool>
         {
             auto c = cxon::cnt::make_range_container(f, l);
-            return consume<X>(i, e, cx) && string_read<X>(c, i, e, cx) && (c.append({}), true);
+            return consume<X>(i, e, cx) && string_read<X>(c, i, e, cx) && (cxon::cnt::append(c, {}), true);
         }
 
     template <typename X, typename T, typename II, typename Cx>
