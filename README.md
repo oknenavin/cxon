@@ -155,10 +155,12 @@ which can represent arbitrary `CBOR` data.
 #### Performance
 
 - `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  ![read/native][img-time-read]
+  ![read/native][img-time-read-gcc]  
+  ![read/native][img-time-read-clang]
 
 - `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
-  ![write/native (default)][img-time-write]
+  ![write/native (default)][img-time-write-gcc]  
+  ![write/native (default)][img-time-write-clang]
 
 - `CXON` binary size and compilation times.  
   ![space (default)][img-space-gcc]  
@@ -228,8 +230,10 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 
 <!--{ branch-links -->
 [img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/develop/graph/badge.svg
-[img-time-read]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg
-[img-time-write]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg
+[img-time-read-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg
+[img-time-read-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json.native-s1-read.svg
+[img-time-write-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg
+[img-time-write-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json.native-s1-write.svg
 [img-space-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg
 [img-space-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json-space.svg
 [img-bench]: https://github.com/oknenavin/workflows-data/tree/develop/cxon

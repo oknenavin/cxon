@@ -334,16 +334,15 @@ namespace cxon { namespace cio {
                 b_[s_++] = t;
             }
 
-            template <typename II>
-                void append(II f, II l) {
-                    auto const s = std::distance(f, l);
-                        if (s_ + s > b_.size()) {
-                            flush();
-                            if (std::size_t(s) > b_.size())
-                                return poke(c_, f, l), void();
-                        }
-                    std::copy(f, l, b_.begin() + s_), s_ += s;
-                }
+            void append(const T* f, const T* l) {
+                auto const s = std::distance(f, l);
+                    if (s_ + s > b_.size()) {
+                        flush();
+                        if (std::size_t(s) > b_.size())
+                            return poke(c_, f, l), void();
+                    }
+                std::copy(f, l, b_.data() + s_), s_ += s;
+            }
             void append(const T* t, std::size_t n) {
                 append(t, t + n);
             }
@@ -354,11 +353,11 @@ namespace cxon { namespace cio {
                         if (n > b_.size())
                             return poke(c_, n, t), void();
                     }
-                std::fill_n(b_.begin() + s_, n, t), s_ += n;
+                std::fill_n(b_.data() + s_, n, t), s_ += n;
             }
 
             void flush() {
-                poke(c_, b_.data(), b_.data() + s_), s_ = 0;
+                poke(c_, b_.data(), /*b_.data() + */s_), s_ = 0;
             }
 
             private:
