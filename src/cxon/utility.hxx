@@ -121,14 +121,16 @@ namespace cxon {
 
     template <typename ...> // C++20
         struct conjunction;
+    template <typename ...> // C++20
+        struct disjunction;
 
     template <typename ...T>
         struct aligned_union; // std::aligned_union deprecated in c++23
 
     // container
 
-    template <typename C>
-        using is_back_insertable    = std::is_same<decltype(std::declval<C>().push_back(std::declval<typename C::value_type&&>())), void>;
+    template <typename T>
+        using is_back_insertable = std::is_same<decltype(std::declval<T>().push_back(std::declval<typename T::value_type&&>())), void>;
 
     // iterators
 
@@ -149,8 +151,8 @@ namespace cxon { namespace napa { // named parameters
     template <typename ...Tg>
         using pack = std::tuple<Tg...>;
 
-    template <typename ...Tg>
-        inline constexpr pack<Tg...> make_pack(Tg&&... t);
+    //template <typename ...Tg>
+    //    inline constexpr pack<...> make_pack(Tg&&... t);
 
     template <typename Tg, typename T, bool E = std::is_scalar<T>::value>
         struct parameter;
@@ -270,6 +272,11 @@ namespace cxon {
     template <typename B, typename ...Bs>
         struct conjunction<B, Bs...>        : bool_constant<B::value && conjunction<Bs...>::value> {};
 
+    template <typename ...>
+        struct disjunction                  : std::false_type {};
+    template <typename B, typename ...Bs>
+        struct disjunction<B, Bs...>        : bool_constant<B::value || disjunction<Bs...>::value> {};
+
     // iterators
 
     template <typename, typename/* = void*/>
@@ -359,6 +366,9 @@ namespace cxon { namespace napa {
                 using type  = T;
 
                 static constexpr type value = v;
+
+                friend constexpr bool operator ==(const cst& c1, const cst& c2) { return c1.value == c2.value; }
+                friend constexpr bool operator  <(const cst& c1, const cst& c2) { return c1.value  < c2.value; }
             };
 
         template <typename Tg, typename T>
@@ -371,13 +381,59 @@ namespace cxon { namespace napa {
                 var()               : value() {}
                 var(type&& v)       : value(std::move(v)) {}
                 var(const type& v)  : value(v) {}
+
+                friend constexpr bool operator ==(const var& v1, const var& v2) { return v1.value == v2.value; }
+                friend constexpr bool operator  <(const var& v1, const var& v2) { return v1.value  < v2.value; }
             };
 
     }
+    
+    namespace imp {
 
+            template <typename Tg>
+                struct head_ {
+                    static constexpr std::tuple<Tg>     pack(Tg&& t)                        { return std::make_tuple(std::move(t)); }
+                    static constexpr std::tuple<Tg>     pack(const Tg& t)                   { return std::make_tuple(t); }
+                };
+            template <typename ...Tg>
+                struct head_<std::tuple<Tg...>> {
+                    static constexpr std::tuple<Tg...>  pack(std::tuple<Tg...>&& t)         { return std::move(t); }
+                    static constexpr std::tuple<Tg...>  pack(const std::tuple<Tg...>& t)    { return t; }
+                };
+        template <typename T>
+            inline constexpr auto head_pack_(T&& t)
+                -> decltype(head_<typename std::decay<T>::type>::pack(std::forward<T>(t)))
+            {
+                return      head_<typename std::decay<T>::type>::pack(std::forward<T>(t));
+            }
+
+        template <typename ...>
+            struct make_ {
+                static constexpr auto pack() -> std::tuple<> {
+                    return {};
+                }
+            };
+        template <typename H, typename ...T>
+            struct make_<H, T...> {
+                static constexpr auto pack(H&& h, T&&... t)
+                    -> decltype(std::tuple_cat(head_pack_(std::forward<H>(h)), make_<T...>::pack(std::forward<T>(t)...)))
+                {
+                    return      std::tuple_cat(head_pack_(std::forward<H>(h)), make_<T...>::pack(std::forward<T>(t)...));
+                }
+            };
+        template <typename T>
+            struct make_<T> {
+                static constexpr auto pack(T&& t)
+                    -> decltype(head_pack_(std::forward<T>(t)))
+                {
+                    return      head_pack_(std::forward<T>(t));
+                }
+            };
+
+    }
     template <typename ...Tg>
-        inline constexpr pack<Tg...> make_pack(Tg&&... t) {
-            return std::make_tuple(std::forward<Tg>(t)...);
+        inline constexpr auto make_pack(Tg&&... t) -> decltype(imp::make_<Tg...>::pack(std::forward<Tg>(t)...)) {
+            return imp::make_<Tg...>::pack(std::forward<Tg>(t)...);
         }
 
     template <typename Tg, typename T, bool E/* = std::is_scalar<T>::value*/>
@@ -392,12 +448,10 @@ namespace cxon { namespace napa {
             static constexpr imp::var<Tg, T> set(const T& v)    { return imp::var<Tg, T>(v); }
 
             template <typename Pk>
-                static constexpr auto constant(T)
-                    -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto constant(T)       -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
                 { return imp::get<Tg, Pk>(); }
             template <typename Pk>
-                static constexpr auto constant(T dflt)
-                    -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto constant(T dflt)  -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
                 { return dflt; }
 
             template <typename Pk>
@@ -406,12 +460,10 @@ namespace cxon { namespace napa {
                 static constexpr T value(const Pk& p)   { return imp::get<Tg>(p); }
 
             template <typename Pk>
-                static constexpr auto value(const Pk& p, T)
-                    -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto value(const Pk& p, T)     -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
                 { return imp::get<Tg>(p); }
             template <typename Pk>
-                static constexpr auto value(const Pk&, T dflt)
-                    -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto value(const Pk&, T dflt)  -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
                 { return dflt; }
         };
     template <typename Tg, typename T>

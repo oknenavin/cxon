@@ -10,6 +10,11 @@
 #define CXON_VERSION_MINOR 60
 #define CXON_VERSION_PATCH 0
 
+#ifndef CXON_DEFAULT_FORMAT
+#   error "Should only be included by format-specific headers."
+#   define CXON_DEFAULT_FORMAT void
+#endif
+
 #include "utility.hxx"
 
 #include <utility>
@@ -70,7 +75,7 @@ namespace cxon { // context
     template <typename X, typename ...NaPa> // ... named parameters
         struct context {
             using traits_type   = X;
-            using napa_type     = napa::pack<NaPa...>;
+            using napa_type     = decltype(napa::make_pack(std::declval<NaPa&&>()...));
 
             std::error_condition    ec;
             traits_type             tx;

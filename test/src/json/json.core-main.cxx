@@ -553,6 +553,38 @@ TEST_BEG(buffered_back_inserter, cxon::JSON<>, "/core")
 TEST_END()
 
 
+CXON_PARAMETER(napa_a, int);
+CXON_PARAMETER(napa_b, int);
+CXON_PARAMETER(napa_c, int);
+
+TEST_BEG(napa, cxon::JSON<>, "/core")
+    {   auto p1 = cxon::napa::make_pack(napa_a::set(1), napa_b::set<3>());
+        auto p2 = cxon::napa::make_pack(napa_c::set<7>());
+        auto p3 = cxon::napa::make_pack(p1, p2);
+        TEST_CHECK(p3 == std::make_tuple(napa_a::set(1), napa_b::set<3>(), napa_c::set<7>()));
+    }
+    {   auto p1 = cxon::napa::make_pack(napa_a::set(1), napa_b::set<3>());
+        auto p2 = cxon::napa::make_pack(napa_c::set<7>());
+        auto p3 = cxon::napa::make_pack(std::move(p1), std::move(p2));
+        TEST_CHECK(p3 == std::make_tuple(napa_a::set(1), napa_b::set<3>(), napa_c::set<7>()));
+    }
+    {   auto const p1 = cxon::napa::make_pack(napa_a::set(1), napa_b::set<3>());
+        auto const p2 = cxon::napa::make_pack(napa_c::set<7>());
+        auto const p3 = cxon::napa::make_pack(p1, p2);
+        TEST_CHECK(p3 == std::make_tuple(napa_a::set(1), napa_b::set<3>(), napa_c::set<7>()));
+    }
+    {   static constexpr auto ps = cxon::napa::make_pack(
+            cxon::json::fp_precision::set<3>(),
+            cxon::json::num_len_max::set<128>(),
+            cxon::json::ids_len_max::set<64>()
+        );
+        std::string o;
+            cxon::to_bytes(o, 3.1415926, ps);
+        TEST_CHECK(o == "3.14");
+    }
+TEST_END()
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 int main() {
