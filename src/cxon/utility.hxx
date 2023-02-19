@@ -398,7 +398,11 @@ namespace cxon { namespace napa {
             template <typename ...Tg>
                 struct head_<std::tuple<Tg...>> {
                     static constexpr std::tuple<Tg...>  pack(std::tuple<Tg...>&& t)         { return std::move(t); }
-                    static constexpr std::tuple<Tg...>  pack(const std::tuple<Tg...>& t)    { return t; }
+#                   if defined(__GNUC__) && (__GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ > 5)) && !defined(__clang__)
+                        static constexpr std::tuple<Tg...>  pack(const std::tuple<Tg...>& t)    { return t; }
+#                   else // type_traits:2204:7: error: static assertion failed: declval() must not be used!
+                        static /*constexpr */std::tuple<Tg...>  pack(const std::tuple<Tg...>& t)    { return t; }
+#                   endif
                 };
         template <typename T>
             inline constexpr auto head_pack_(T&& t)
