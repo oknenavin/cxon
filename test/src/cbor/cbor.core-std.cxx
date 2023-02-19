@@ -374,7 +374,7 @@ TEST_BEG(map, cxon::CBOR<>, "/std")
             auto r = cxon::to_bytes<cxon::CBOR<>>(c, map<int, int>{{3, 1}});
         TEST_CHECK(r.ec == cbor::write_error::output_failure);
     }
-#   if defined(__GNUC__) && !defined(__clang__)
+#   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
 #       pragma GCC diagnostic push
 #       pragma GCC diagnostic ignored "-Wstringop-overflow"
 #   endif
@@ -388,7 +388,7 @@ TEST_BEG(map, cxon::CBOR<>, "/std")
                 auto r = cxon::to_bytes<cxon::CBOR<>>(c, map<int, int>{{3, 1}});
             TEST_CHECK(r.ec == cbor::write_error::output_failure);
         }
-#   if defined(__GNUC__) && !defined(__clang__)
+#   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
 #       pragma GCC diagnostic pop
 #   endif
 TEST_END()
