@@ -322,8 +322,16 @@ namespace cxon { namespace cnt {
                 *e_ = t, ++e_;
             }
             void push_back(value_type&& t) noexcept {
-                CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
-                *e_ = std::move(t), ++e_;
+#               if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
+#                   pragma GCC diagnostic push
+                    // with -O3 only when called from append(value_type&&)
+#                   pragma GCC diagnostic ignored "-Wstringop-overflow"
+#               endif
+                    CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
+                    *e_ = std::move(t), ++e_;
+#               if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
+#                   pragma GCC diagnostic pop
+#               endif
             }
 
             bool append(value_type&& t) noexcept {
@@ -337,17 +345,24 @@ namespace cxon { namespace cnt {
                 auto append(II f, II l) noexcept
                     -> enable_if_t<is_random_access_iterator<II>::value, bool>
                 {
-                    auto const s = std::distance(f, l);
-                    return s <= std::distance(e_, l_) && (std::copy(f, l, e_), e_ += s, true);
+#                   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
+#                       pragma GCC diagnostic push
+                        // if f == l we have this with -O3 and seems it's only for unsigned char
+#                       pragma GCC diagnostic ignored "-Wstringop-overflow"
+#                   endif
+                        auto const s = std::distance(f, l);
+                        return s <= std::distance(e_, l_) && (std::copy(f, l, e_), e_ += s, true);
+#                   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
+#                       pragma GCC diagnostic pop
+#                   endif
                 }
             bool append(const value_type* t, std::size_t n) noexcept {
                 return append(t, t + n);
             }
 
             bool append(unsigned n, const value_type& t) noexcept {
-                return n > static_cast<std::size_t>(std::distance(e_, l_)) ?
-                    (std::fill_n(e_, std::distance(e_, l_), t), e_ = l_, false) :
-                    (std::fill_n(e_, n, t), std::advance(e_, n), true)
+                return  n <= static_cast<std::size_t>(std::distance(e_, l_)) &&
+                        (std::fill_n(e_, n, t), std::advance(e_, n), true)
                 ;
             }
 

@@ -362,7 +362,15 @@ namespace cxon { namespace cio { namespace num { // write
             inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
                 char s[std::numeric_limits<T>::digits10 + 3];
                     auto const r = charconv::to_chars(std::begin(s), std::end(s), t); CXON_ASSERT(r.ec == std::errc(), "unexpected");
-                return poke<X>(o, s, r.ptr, cx);
+#               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
+#                   pragma GCC diagnostic push
+                    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100366
+#                   pragma GCC diagnostic ignored "-Wrestrict"
+#               endif
+                    return poke<X>(o, s, r.ptr, cx);
+#               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
+#                   pragma GCC diagnostic pop
+#               endif
             }
 
         template <typename X, typename T, typename O, typename Cx>
