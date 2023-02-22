@@ -26,6 +26,7 @@
 #include "cxon/lib/std/variant.hxx"
 #include "cxon/lib/std/bitset.hxx"
 #include "cxon/lib/std/chrono.hxx"
+#include "cxon/lib/std/span.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1864,3 +1865,82 @@ TEST_BEG(lima_ws_sep, cxon::JSON<lima_ws_sep_traits>, "/std")
         R_TEST(xvec {{{"a", "b"}}, {{"c", "d"}}}, R"([{"a": "b"}, {"c": "d"}])", cxon::json::read_error::unexpected, 11);
     }
 TEST_END()
+
+
+#ifdef CXON_HAS_LIB_STD_SPAN
+    namespace cxon { namespace test {
+        template <typename T, std::size_t N>
+            struct match<std::span<T, N>> {
+                static bool values(const std::span<T, N>& s1, const std::span<T, N>& s2) {
+                    return std::equal(s1.begin(), s1.end(), s2.begin(), s2.end());
+                }
+            };
+    }}
+    TEST_BEG(span, cxon::JSON<>, "/std")
+        using namespace std;
+        {   // static
+            // std::span<int, 0>
+                R_TEST((span<int, 0>{}), "[]");
+                W_TEST("[]", (span<int, 0>{}));
+                R_TEST((span<int, 0>{}), "", json::read_error::unexpected, 0);
+                R_TEST((span<int, 0>{}), "]", json::read_error::unexpected, 0);
+                R_TEST((span<int, 0>{}), "[", json::read_error::unexpected, 1);
+            // std::span<int, 3>
+            {   std::array<int, 3> a; span s{a};
+                TEST_CHECK(cxon::from_bytes<XXON>(s, "[1, 2, 3]") && a == (array<int, 3>{{1, 2, 3}}));
+                W_TEST("[1,2,3]", span {a});
+                TEST_CHECK(cxon::from_bytes<XXON>(s, "[1, 2]") && a == (array<int, 3>{{1, 2, 3}}));
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1, 2, 3, 4]");
+                    TEST_CHECK(fbr.ec == json::read_error::overflow && *fbr.end == '[');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "");
+                    TEST_CHECK(fbr.ec == json::read_error::unexpected && *fbr.end == '\0');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[");
+                    TEST_CHECK(fbr.ec == json::read_error::integral_invalid && *fbr.end == '\0');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1x");
+                    TEST_CHECK(fbr.ec == json::read_error::unexpected && *fbr.end == 'x');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1,x");
+                    TEST_CHECK(fbr.ec == json::read_error::integral_invalid && *fbr.end == 'x');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1,1");
+                    TEST_CHECK(fbr.ec == json::read_error::unexpected && *fbr.end == '\0');
+                }
+            }
+        }
+        {   // dynamic
+            // std::span<int>/0
+                R_TEST((span<int, std::dynamic_extent>{}), "[]");
+                W_TEST("[]", (span<int, std::dynamic_extent>{}));
+                R_TEST((span<int, std::dynamic_extent>{}), "", json::read_error::unexpected, 0);
+                R_TEST((span<int, std::dynamic_extent>{}), "]", json::read_error::unexpected, 0);
+                R_TEST((span<int, std::dynamic_extent>{}), "[", json::read_error::unexpected, 1);
+            // std::span<int>/3
+            {   std::vector<int> v(3); span s{v};
+                TEST_CHECK(cxon::from_bytes<XXON>(s, "[1, 2, 3]") && v == (vector<int>{{1, 2, 3}}));
+                W_TEST("[1,2,3]", span {v});
+                TEST_CHECK(cxon::from_bytes<XXON>(s, "[1, 2]") && v == (vector<int>{{1, 2, 3}}));
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1, 2, 3, 4]");
+                    TEST_CHECK(fbr.ec == json::read_error::overflow && *fbr.end == '[');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "");
+                    TEST_CHECK(fbr.ec == json::read_error::unexpected && *fbr.end == '\0');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[");
+                    TEST_CHECK(fbr.ec == json::read_error::integral_invalid && *fbr.end == '\0');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1x");
+                    TEST_CHECK(fbr.ec == json::read_error::unexpected && *fbr.end == 'x');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1,x");
+                    TEST_CHECK(fbr.ec == json::read_error::integral_invalid && *fbr.end == 'x');
+                }
+                {   auto fbr = cxon::from_bytes<XXON>(s, "[1,1");
+                    TEST_CHECK(fbr.ec == json::read_error::unexpected && *fbr.end == '\0');
+                }
+            }
+        }
+    TEST_END()
+#endif

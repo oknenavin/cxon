@@ -27,6 +27,7 @@
 #include "cxon/lib/std/valarray.hxx"
 #include "cxon/lib/std/variant.hxx"
 #include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/span.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,17 +51,15 @@ TEST_BEG(array, cxon::CBOR<>, "/std")
         R_TEST((array<char, 0>{}), BS("\x5F\xFF"));
         R_TEST((array<char, 0>{}), BS("\x40"));
         W_TEST("\x60", (array<char, 0>{}));
-#       if !defined(__GNUC__) || defined(__clang__) // -Wstringop-overflow, not sure why for unsigned char only
-            R_TEST((array<unsigned char, 0>{}), BS("\x40"));
-            R_TEST((array<unsigned char, 0>{}), BS("\x5F\xFF"));
-            R_TEST((array<unsigned char, 0>{}), BS("\x5F\x40\xFF"));
-            R_TEST((array<unsigned char, 0>{}), BS("\x5F\x40\x40\xFF"));
-            R_TEST((array<unsigned char, 0>{}), BS("\x7F\x60\x60\xFF"));
-            R_TEST((array<unsigned char, 0>{}), BS("\x7F\x60\xFF"));
-            R_TEST((array<unsigned char, 0>{}), BS("\x7F\xFF"));
-            R_TEST((array<unsigned char, 0>{}), BS("\x60"));
-            W_TEST("\x40", (array<unsigned char, 0>{}));
-#       endif
+        R_TEST((array<unsigned char, 0>{}), BS("\x40"));
+        R_TEST((array<unsigned char, 0>{}), BS("\x5F\xFF"));
+        R_TEST((array<unsigned char, 0>{}), BS("\x5F\x40\xFF"));
+        R_TEST((array<unsigned char, 0>{}), BS("\x5F\x40\x40\xFF"));
+        R_TEST((array<unsigned char, 0>{}), BS("\x7F\x60\x60\xFF"));
+        R_TEST((array<unsigned char, 0>{}), BS("\x7F\x60\xFF"));
+        R_TEST((array<unsigned char, 0>{}), BS("\x7F\xFF"));
+        R_TEST((array<unsigned char, 0>{}), BS("\x60"));
+        W_TEST("\x40", (array<unsigned char, 0>{}));
         // more
         R_TEST((array<int, 0>{}), BS("\x81\x00"), cbor::read_error::size_invalid, 0);
         R_TEST((array<int, 0>{}), BS("\x9F\x00\xFF"), cbor::read_error::size_invalid, 0);
@@ -374,23 +373,16 @@ TEST_BEG(map, cxon::CBOR<>, "/std")
             auto r = cxon::to_bytes<cxon::CBOR<>>(c, map<int, int>{{3, 1}});
         TEST_CHECK(r.ec == cbor::write_error::output_failure);
     }
-#   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
-#       pragma GCC diagnostic push
-#       pragma GCC diagnostic ignored "-Wstringop-overflow"
-#   endif
-        {   char b[1];
-            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::CBOR<>>(c, map<int, int>{{3, 1}});
-            TEST_CHECK(r.ec == cbor::write_error::output_failure);
-        }
-        {   char b[2];
-            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
-                auto r = cxon::to_bytes<cxon::CBOR<>>(c, map<int, int>{{3, 1}});
-            TEST_CHECK(r.ec == cbor::write_error::output_failure);
-        }
-#   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
-#       pragma GCC diagnostic pop
-#   endif
+    {   char b[1];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::CBOR<>>(c, map<int, int>{{3, 1}});
+        TEST_CHECK(r.ec == cbor::write_error::output_failure);
+    }
+    {   char b[2];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<cxon::CBOR<>>(c, map<int, int>{{3, 1}});
+        TEST_CHECK(r.ec == cbor::write_error::output_failure);
+    }
 TEST_END()
 
 
@@ -755,3 +747,98 @@ TEST_BEG(tags, cxon::CBOR<>, "/std")
     R_TEST((array<int, 0>{}), BS("\xDC\x80"), cbor::read_error::tag_invalid, 0);
     R_TEST(string(""), BS("\xDC\x40"), cbor::read_error::tag_invalid, 0);
 TEST_END()
+
+
+#ifdef CXON_HAS_LIB_STD_SPAN
+    namespace cxon { namespace test {
+        template <typename T, std::size_t N>
+            struct match<std::span<T, N>> {
+                static bool values(const std::span<T, N>& s1, const std::span<T, N>& s2) {
+                    return std::equal(s1.begin(), s1.end(), s2.begin(), s2.end());
+                }
+            };
+    }}
+    TEST_BEG(span, cxon::CBOR<>, "/std")
+        {
+            R_TEST((span<int, 0> {}), BS("\x80"));
+            R_TEST((span<int, 0> {}), BS("\x9F\xFF"));
+            R_TEST((span<int, 0> {}), BS("\x40"));
+            R_TEST((span<int, 0> {}), BS("\x5F\xFF"));
+            R_TEST((span<int, 0> {}), BS("\x60"));
+            R_TEST((span<int, 0> {}), BS("\x7F\xFF"));
+            W_TEST("\x80", (span<int, 0> {}));
+        }
+        {
+            R_TEST((span<char, 0> {}), BS("\x60"));
+            R_TEST((span<char, 0> {}), BS("\x7F\xFF"));
+            R_TEST((span<char, 0> {}), BS("\x7F\x60\xFF"));
+            R_TEST((span<char, 0> {}), BS("\x7F\x60\x60\xFF"));
+            R_TEST((span<char, 0> {}), BS("\x5F\x40\x40\xFF"));
+            R_TEST((span<char, 0> {}), BS("\x5F\x40\xFF"));
+            R_TEST((span<char, 0> {}), BS("\x5F\xFF"));
+            R_TEST((span<char, 0> {}), BS("\x40"));
+            W_TEST("\x60", (span<char, 0> {}));
+        }
+        {
+            R_TEST((span<unsigned char, 0> {}), BS("\x40"));
+            R_TEST((span<unsigned char, 0> {}), BS("\x5F\xFF"));
+            R_TEST((span<unsigned char, 0> {}), BS("\x5F\x40\xFF"));
+            R_TEST((span<unsigned char, 0> {}), BS("\x5F\x40\x40\xFF"));
+            R_TEST((span<unsigned char, 0> {}), BS("\x7F\x60\x60\xFF"));
+            R_TEST((span<unsigned char, 0> {}), BS("\x7F\x60\xFF"));
+            R_TEST((span<unsigned char, 0> {}), BS("\x7F\xFF"));
+            R_TEST((span<unsigned char, 0> {}), BS("\x60"));
+            W_TEST("\x40", (span<unsigned char, 0> {}));
+        }
+        {
+            R_TEST((span<int, 0>{}), BS("\x81\x00"), cbor::read_error::size_invalid, 0);
+            R_TEST((span<int, 0>{}), BS("\x9F\x00\xFF"), cbor::read_error::size_invalid, 0);
+            R_TEST((span<char, 0>{}), BS("\x41\x00"), cbor::read_error::size_invalid, 0);
+            R_TEST((span<char, 0>{}), BS("\x5F\x42\x02\x01\x41\x00\xFF"), cbor::read_error::size_invalid, 1);
+            R_TEST((span<char, 0>{}), BS("\x7F\x61\x02\x62\x01\x00\xFF"), cbor::read_error::size_invalid, 1);
+            R_TEST((span<char, 0>{}), BS("\x61\x00"), cbor::read_error::size_invalid, 0);
+        }
+        {   array<int, 3> a; span s(a);
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x83\x02\x01\x00")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x9F\x02\x01\x00\xFF")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x63\x02\x01\x00")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x7F\x63\x02\x01\x00\xFF")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x7F\x62\x02\x01\x61\x00\xFF")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x5F\x42\x02\x01\x41\x00\xFF")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x5F\x43\x02\x01\x00\xFF")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x43\x02\x01\x00")) && a == (array<int, 3>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x82\x02\x01")) && a == (array<int, 3>{2, 1, 0})); // less
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x9F\x02\x01\xFF")) && a == (array<int, 3>{2, 1, 0})); // less
+        }
+        {   array<int, 3> a = {2, 1, 0}; span s(a);
+            W_TEST(BS("\x83\x02\x01\x00"), s);
+        }
+        {   array<char, 3> a = {2, 1, 0}; span s(a);
+            W_TEST(BS("\x63\x02\x01\x00"), s);
+        }
+        {   array<unsigned char, 3> a = {2, 1, 0}; span s(a);
+            W_TEST(BS("\x43\x02\x01\x00"), s);
+        }
+        {   vector<int> a = {0, 0, 0}; span s(a);
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x83\x02\x01\x00")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x9F\x02\x01\x00\xFF")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x63\x02\x01\x00")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x7F\x63\x02\x01\x00\xFF")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x7F\x62\x02\x01\x61\x00\xFF")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x5F\x42\x02\x01\x41\x00\xFF")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x5F\x43\x02\x01\x00\xFF")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x43\x02\x01\x00")) && a == (vector<int>{2, 1, 0}));
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x82\x02\x01")) && a == (vector<int>{2, 1, 0})); // less
+            TEST_CHECK(cxon::from_bytes<XXON>(s, BS("\x9F\x02\x01\xFF")) && a == (vector<int>{2, 1, 0})); // less
+        }
+        {   vector<int> a = {2, 1, 0}; span s(a);
+            W_TEST(BS("\x83\x02\x01\x00"), s);
+        }
+        {   vector<char> a = {2, 1, 0}; span s(a);
+            W_TEST(BS("\x63\x02\x01\x00"), s);
+        }
+        {   vector<unsigned char> a = {2, 1, 0}; span s(a);
+            W_TEST(BS("\x43\x02\x01\x00"), s);
+        }
+    TEST_END()
+#endif
