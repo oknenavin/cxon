@@ -25,7 +25,7 @@ namespace cxon {
     template <typename X, typename T>
         struct read<JSON<X>, std::span<T, 0>> {
             template <typename II, typename Cx, typename Y = JSON<X>>
-                static bool value(std::span<T, 0>& t, II& i, II e, Cx& cx) {
+                static bool value(std::span<T, 0>&, II& i, II e, Cx& cx) {
                     return cio::consume<Y>(Y::list::beg, i, e, cx) && cio::consume<Y>(Y::list::end, i, e, cx);
                 }
         };

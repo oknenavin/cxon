@@ -1498,6 +1498,7 @@ TEST_BEG(lima_ws_sep_cls, cxon::JSON<lima_ws_sep_traits>, "/core")
     R_TEST(Struct7(1, 2), R"({"a": 1, "b": 2})", cxon::json::read_error::unexpected, 7);
 TEST_END()
 
+
 namespace {
     struct Struct16 {
         using sink = cxon::cio::val::sink<std::string>;
@@ -1505,7 +1506,6 @@ namespace {
         sink y;
         bool operator ==(const Struct16& t) const { return x == t.x && y == t.y; }
     };
-
 }
 CXON_JSON_CLS(Struct16,
     CXON_JSON_CLS_FIELD_ASIS(x),
@@ -1517,4 +1517,38 @@ TEST_BEG(lima_ws_sep_cls_skip, cxon::JSON<lima_ws_sep_traits>, "/core")
     W_TEST("{\"x\":1 \"y\":[2 3 4]}", Struct16 {1, {"[2 3 4]"}});
     R_TEST(Struct16 {1, {"[2\t  3 \n  4]"}}, "{\"x\": 1 \"y\":\t \n [2\t  3 \n  4]}");
     W_TEST("{\"x\":1 \"y\":[2\t  3 \n  4]}", Struct16 {1, {"[2\t  3 \n  4]"}});
+TEST_END()
+
+
+namespace {
+    struct Struct17 {
+        using sink = cxon::cio::val::sink<std::string>;
+        int x;
+        sink y;
+        bool operator ==(const Struct17& t) const { return x == t.x && y == t.y; }
+    };
+    struct cxcf_single_quotes_traits : cxon::cxcf::format_traits {
+        struct string {
+            static constexpr char del = '\'';
+        };
+    };
+}
+CXON_JSON_CLS(Struct17,
+    CXON_JSON_CLS_FIELD_ASIS(x),
+    CXON_JSON_CLS_FIELD_ASIS(y)
+)
+CXON_JSON_CLS_BARE(Struct17)
+
+TEST_BEG(cxcf_sink, cxon::CXCF<>, "/core")
+    R_TEST(Struct17 {1, {"[2 3 4]"}}, "x = 1 y = [2 3 4]");
+    R_TEST(Struct17 {1, {R"([2 "]" 4])"}}, R"(x = 1 y = [2 "]" 4])");
+    R_TEST(Struct17 {1, {R"({ z = 2 })"}}, R"(x = 1 y = { z = 2 })");
+    R_TEST(Struct17 {1, {R"({ z = "}" })"}}, R"(x = 1 y = { z = "}" })");
+TEST_END()
+
+TEST_BEG(cxcf_sink_single_quotes, cxon::CXCF<cxcf_single_quotes_traits>, "/core")
+    R_TEST(Struct17 {1, {"[2 3 4]"}}, "x = 1 y = [2 3 4]");
+    R_TEST(Struct17 {1, {R"([2 ']' 4])"}}, R"(x = 1 y = [2 ']' 4])");
+    R_TEST(Struct17 {1, {R"({ z = 2 })"}}, R"(x = 1 y = { z = 2 })");
+    R_TEST(Struct17 {1, {R"({ z = '}' })"}}, R"(x = 1 y = { z = '}' })");
 TEST_END()
