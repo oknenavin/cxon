@@ -6,6 +6,10 @@
 #ifndef CXON_JSON_TIDY_HXX_
 #define CXON_JSON_TIDY_HXX_
 
+#include "json-fwd.hxx"
+#include "cxon/utility.hxx"
+#include "cxon/lang/common/container.hxx"
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace json { // interface
