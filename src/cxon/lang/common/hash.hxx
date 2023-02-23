@@ -6,9 +6,7 @@
 #ifndef CXON_HASH_HXX_
 #define CXON_HASH_HXX_
 
-#include <functional>
-#include <iterator>
-#include <utility>
+#include "cxon/utility.hxx"
 
 // interface ///////////////////////////////////////////////////////////////////
 

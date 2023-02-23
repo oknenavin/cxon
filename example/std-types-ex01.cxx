@@ -1,4 +1,4 @@
-// using of standard library types
+// string, arrays and objects
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/string.hxx"

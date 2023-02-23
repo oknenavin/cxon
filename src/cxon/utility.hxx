@@ -44,7 +44,7 @@
 
 namespace cxon {
 
-    template <typename ...>
+    template <typename ...> // C++17
         using void_t = void;
 
     template <bool C, typename T = void> // C++14

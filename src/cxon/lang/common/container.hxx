@@ -157,7 +157,7 @@ namespace cxon { namespace cnt {
                     }
                 template <typename C, typename ...A>
                     static auto emplace_(option<1>, C& c, A&&... as) -> decltype(T {std::allocator_arg, c.get_allocator(), std::forward<A>(as)...})& {
-                        return imp::emplace_(option<5>(), std::allocator_arg, c.get_allocator(), std::forward<A>(as)...);
+                        return imp::emplace_(option<5>(), c, std::allocator_arg, c.get_allocator(), std::forward<A>(as)...);
                     }
                 template <typename C, typename ...A>
                     static auto emplace_(option<0>, C& c, A&&... as) -> decltype(T {std::forward<A>(as)...})& {
