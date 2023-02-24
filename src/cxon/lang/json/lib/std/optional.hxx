@@ -16,7 +16,8 @@ namespace cxon {
                         return false;
                     if (cio::peek(i, e) == *Y::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
                         II const o = i;
-                        return cio::consume<Y>(Y::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected);
+                        return  (cio::consume<Y>(Y::id::nil, i, e) && (t = std::nullopt, true)) ||
+                                (cio::rewind(i, o), cx/json::read_error::unexpected);
                     }
                     return read_value<Y>(t.emplace(), i, e, cx);
                 }
