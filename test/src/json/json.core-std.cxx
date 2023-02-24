@@ -685,6 +685,12 @@ TEST_END()
             R_TEST(optional<int>(), "null");
             W_TEST("null", optional<int>());
             R_TEST(optional<int>(), "nil", json::read_error::unexpected, 0);
+            {   optional<int> o(42);
+                TEST_CHECK(cxon::from_bytes<XXON>(o, "null") && o == nullopt);
+            }
+            {   optional<int> o(0);
+                TEST_CHECK(cxon::from_bytes<XXON>(o, "null") && o == nullopt);
+            }
     TEST_END()
 
     TEST_BEG(allow_comments_optional, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")

@@ -402,6 +402,12 @@ TEST_END()
         W_TEST(BS("\x18\x2A"), optional<int>(42));
         R_TEST(optional<int>(), BS("\xF7"));
         W_TEST(BS("\xF7"), optional<int>());
+        {   optional<int> o(42);
+            TEST_CHECK(cxon::from_bytes<XXON>(o, BS("\xF7")) && o == nullopt);
+        }
+        {   optional<int> o(0);
+            TEST_CHECK(cxon::from_bytes<XXON>(o, BS("\xF7")) && o == nullopt);
+        }
         // errors
         R_TEST(optional<int>(42), BS("\xFF"), cbor::read_error::integer_invalid, 0);
         R_TEST(optional<int>(42), BS("\xDC"), cbor::read_error::tag_invalid, 0);

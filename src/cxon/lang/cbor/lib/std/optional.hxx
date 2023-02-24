@@ -13,7 +13,7 @@ namespace cxon {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
                     return cbor::tag::read<Y>(i, e, cx) && (
-                        (bio::peek(i, e) == Y::und && (bio::get(i, e), true)) ||
+                        (bio::peek(i, e) == Y::und && (bio::get(i, e), t = std::nullopt, true)) ||
                         (read_value<Y>(t.emplace(), i, e, cx))
                     );
                 }
