@@ -34,6 +34,7 @@ namespace test {
             std::vector<std::string> tags;
             std::string unicode_version;
             std::string ios_version;
+            bool skin_tones;
 
             CXON_JSON_CLS_MEMBER(entry,
                 CXON_JSON_CLS_FIELD_ASIS_DFLT(emoji             , self.emoji.empty()),
@@ -42,7 +43,8 @@ namespace test {
                 CXON_JSON_CLS_FIELD_ASIS(aliases),
                 CXON_JSON_CLS_FIELD_ASIS(tags),
                 CXON_JSON_CLS_FIELD_ASIS_DFLT(unicode_version   , self.emoji.empty()),
-                CXON_JSON_CLS_FIELD_ASIS_DFLT(ios_version       , self.ios_version.empty())
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(ios_version       , self.ios_version.empty()),
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(skin_tones        , !self.skin_tones)
             )
         };
 
