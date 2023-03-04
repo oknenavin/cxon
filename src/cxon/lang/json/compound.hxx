@@ -18,10 +18,10 @@ namespace cxon { // pointer
                 static bool value(T*& t, II& i, II e, Cx& cx) {
                     if (!cio::consume<Y>(i, e, cx))
                         return false;
-                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan'), but it's supposed to be used in structs anyway?
+                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: needs buffering
                         II const o = i;
-                        return  (cio::consume<Y>(Y::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected)) &&
-                                (t = nullptr, true)
+                        return  (cio::consume<Y>(Y::id::nil, i, e) && (t = nullptr, true)) ||
+                                (cio::rewind(i, o), cx/json::read_error::unexpected)
                         ;
                     }
                     auto al = alc::make_context_allocator<T>(cx);
@@ -41,9 +41,9 @@ namespace cxon { // pointer
 
     template <typename X, typename T>
         struct write<JSON<X>, T*> {
-            template <typename O, typename Cx, typename J = JSON<X>>
+            template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const T* t, Cx& cx) {
-                    return t ? write_value<J>(o, *t, cx) : cio::poke<J>(o, X::id::nil, cx);
+                    return t ? write_value<Y>(o, *t, cx) : cio::poke<Y>(o, Y::id::nil, cx);
                 }
         };
 

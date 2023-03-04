@@ -14,7 +14,7 @@ namespace cxon {
                 static bool value(std::optional<T>& t, II& i, II e, Cx& cx) {
                     if (!cio::consume<Y>(i, e, cx))
                         return false;
-                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: not correct as T may start with *X::id::nil (e.g. 'nan')
+                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: needs buffering
                         II const o = i;
                         return  (cio::consume<Y>(Y::id::nil, i, e) && (t = std::nullopt, true)) ||
                                 (cio::rewind(i, o), cx/json::read_error::unexpected);

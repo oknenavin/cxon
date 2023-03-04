@@ -184,6 +184,18 @@ namespace cxon { namespace test {
                 return r0.empty() && r1.empty();
             }
         };
+    template <typename T, typename D>
+        struct match<std::unique_ptr<T, D>> {
+            static bool values(const std::unique_ptr<T, D>& t0, const std::unique_ptr<T, D>& t1) {
+                return t0 == t1 || (t0 && t1 && match<T>::values(*t0.get(), *t1.get()));
+            }
+        };
+    template <typename T>
+        struct match<std::shared_ptr<T>> {
+            static bool values(const std::shared_ptr<T>& t0, const std::shared_ptr<T>& t1) {
+                return t0 == t1 || (t0 && t1 && match<T>::values(*t0.get(), *t1.get()));
+            }
+        };
 
     template <typename I>
         struct force_input_iterator {
