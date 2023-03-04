@@ -28,6 +28,7 @@
 #include "cxon/lib/std/variant.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/span.hxx"
+#include "cxon/lib/std/memory.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -848,3 +849,31 @@ TEST_END()
         }
     TEST_END()
 #endif
+
+
+static void memory_deleter(int *p) {
+    delete p;
+}
+
+TEST_BEG(memory, cxon::CBOR<>, "/std")
+    // std::unique_ptr<T, D>
+        R_TEST(unique_ptr<int>(), BS("\xF6"));
+        W_TEST(BS("\xF6"), unique_ptr<int>());
+        R_TEST(unique_ptr<int>(new int {0x01010101}), BS("\x1A\x01\x01\x01\x01"));
+        W_TEST(BS("\x1A\x01\x01\x01\x01"), unique_ptr<int>(new int {0x01010101}));
+        R_TEST(unique_ptr<int>(), BS("\xF7"), cbor::read_error::integer_invalid, 0);
+        {   auto up = unique_ptr<int, void(*)(int*)>(nullptr, memory_deleter);
+                auto fbr = cxon::from_bytes<XXON>(up, BS("\x1A\x01\x01\x01\x01"));
+            TEST_CHECK(fbr && up && *up == 0x01010101 && up.get_deleter() == memory_deleter);
+        }
+    // std::shared_ptr<T>
+        R_TEST(shared_ptr<int>(), BS("\xF6"));
+        W_TEST(BS("\xF6"), shared_ptr<int>());
+        R_TEST(shared_ptr<int>(new int {0x01010101}), BS("\x1A\x01\x01\x01\x01"));
+        W_TEST(BS("\x1A\x01\x01\x01\x01"), shared_ptr<int>(new int {0x01010101}));
+        R_TEST(shared_ptr<int>(), BS("\xF7"), cbor::read_error::integer_invalid, 0);
+        {   auto sp = shared_ptr<int>(nullptr, memory_deleter);
+                auto fbr = cxon::from_bytes<XXON>(sp, BS("\x1A\x01\x01\x01\x01"));
+            TEST_CHECK(fbr && sp && *sp == 0x01010101);
+        }
+TEST_END()
