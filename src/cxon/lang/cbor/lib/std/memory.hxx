@@ -14,13 +14,8 @@ namespace cxon {
         struct read<CBOR<X>, std::unique_ptr<T, D>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::unique_ptr<T, D>& t, II& i, II e, Cx& cx) {
-                    if (bio::peek(i, e) == Y::nil)
-                        return bio::get(i, e), t = nullptr, true;
-                    auto al = alc::make_context_allocator<T>(cx);
-                    T *const n = al.create();
-                        if (!n || !read_value<Y>(*n, i, e, cx))
-                            return al.release(n), false;
-                    return t.reset(n), true;
+                        T* p;
+                    return read_value<Y>(p, i, e, cx) && (t.reset(p), true);
                 }
         };
 
@@ -28,10 +23,7 @@ namespace cxon {
         struct write<CBOR<X>, std::unique_ptr<T, D>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::unique_ptr<T, D>& t, Cx& cx) {
-                    return t ?
-                        write_value<Y>(o, *t.get(), cx) :
-                        bio::poke<Y>(o, Y::nil, cx)
-                    ;
+                    return write_value<Y>(o, t.get(), cx);
                 }
         };
 
@@ -39,13 +31,9 @@ namespace cxon {
         struct read<CBOR<X>, std::shared_ptr<T>> {
             template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::shared_ptr<T>& t, II& i, II e, Cx& cx) {
-                    if (bio::peek(i, e) == Y::nil)
-                        return bio::get(i, e), t = nullptr, true;
                     auto al = alc::make_context_allocator<T>(cx);
-                    T *const n = al.create();
-                        if (!n || !read_value<Y>(*n, i, e, cx))
-                            return al.release(n), false;
-                    return t.reset(n, [al](T* p) mutable { al.release(p); }), true;
+                        T* p;
+                    return read_value<Y>(p, i, e, cx) && (t.reset(p, [al](T* p) mutable { al.release(p); }), true);
                 }
         };
 
@@ -53,10 +41,7 @@ namespace cxon {
         struct write<CBOR<X>, std::shared_ptr<T>> {
             template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::shared_ptr<T>& t, Cx& cx) {
-                    return t ?
-                        write_value<Y>(o, *t.get(), cx) :
-                        bio::poke<Y>(o, Y::nil, cx)
-                    ;
+                    return write_value<Y>(o, t.get(), cx);
                 }
         };
 

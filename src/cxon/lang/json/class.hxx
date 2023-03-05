@@ -39,9 +39,9 @@ namespace cxon { // cio::val::sink read
 
 #define CXON_JSON_CLS_FIELD(T, N, F)                cxon::json::cls::make_field<T>(N, &T::F)
 #if defined(__cpp_constexpr) && __cpp_constexpr >= 201603L
-#   define CXON_JSON_CLS_FIELD_DFLT(T, N, F, ...)      cxon::json::cls::make_field<T>(N, &T::F, [](const T& self) constexpr { return __VA_ARGS__; })
+#   define CXON_JSON_CLS_FIELD_DFLT(T, N, F, ...)   cxon::json::cls::make_field<T>(N, &T::F, [](const T& self) constexpr { return __VA_ARGS__; })
 #else
-#   define CXON_JSON_CLS_FIELD_DFLT(T, N, F, ...)      cxon::json::cls::make_field<T>(N, &T::F, [](const T& self)           { return __VA_ARGS__; })
+#   define CXON_JSON_CLS_FIELD_DFLT(T, N, F, ...)   cxon::json::cls::make_field<T>(N, &T::F, [](const T& self)           { return __VA_ARGS__; })
 #endif
 #define CXON_JSON_CLS_FIELD_NAME(N, F)              CXON_JSON_CLS_FIELD(T, N, F)
 #define CXON_JSON_CLS_FIELD_NAME_DFLT(N, F, ...)    CXON_JSON_CLS_FIELD_DFLT(T, N, F, __VA_ARGS__)

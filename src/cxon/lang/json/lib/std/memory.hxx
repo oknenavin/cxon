@@ -14,19 +14,8 @@ namespace cxon {
         struct read<JSON<X>, std::unique_ptr<T, D>> {
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(std::unique_ptr<T, D>& t, II& i, II e, Cx& cx) {
-                    if (!cio::consume<Y>(i, e, cx))
-                        return false;
-                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: needs buffering
-                        II const o = i;
-                        return  (cio::consume<Y>(Y::id::nil, i, e) && (t.reset(), true)) ||
-                                (cio::rewind(i, o), cx/json::read_error::unexpected)
-                        ;
-                    }
-                    auto al = alc::make_context_allocator<T>(cx);
-                    T *const n = al.create();
-                        if (!read_value<Y>(*n, i, e, cx))
-                            return al.release(n), false;
-                    return t.reset(n), true;
+                        T* p;
+                    return read_value<Y>(p, i, e, cx) && (t.reset(p), true);
                 }
         };
 
@@ -34,10 +23,7 @@ namespace cxon {
         struct write<JSON<X>, std::unique_ptr<T, D>> {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::unique_ptr<T, D>& t, Cx& cx) {
-                    return t ?
-                        write_value<Y>(o, *t.get(), cx) :
-                        cio::poke<Y>(o, X::id::nil, cx)
-                    ;
+                    return write_value<Y>(o, t.get(), cx);
                 }
         };
 
@@ -45,19 +31,9 @@ namespace cxon {
         struct read<JSON<X>, std::shared_ptr<T>> {
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(std::shared_ptr<T>& t, II& i, II e, Cx& cx) {
-                    if (!cio::consume<Y>(i, e, cx))
-                        return false;
-                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: needs buffering
-                        II const o = i;
-                        return  (cio::consume<Y>(Y::id::nil, i, e) && (t.reset(), true)) ||
-                                (cio::rewind(i, o), cx/json::read_error::unexpected)
-                        ;
-                    }
                     auto al = alc::make_context_allocator<T>(cx);
-                    T *const n = al.create();
-                        if (!read_value<Y>(*n, i, e, cx))
-                            return al.release(n), false;
-                    return t.reset(n, [al](T* p) mutable { al.release(p); }), true;
+                        T* p;
+                    return read_value<Y>(p, i, e, cx) && (t.reset(p, [al](T* p) mutable { al.release(p); }), true);
                 }
         };
 
@@ -65,10 +41,7 @@ namespace cxon {
         struct write<JSON<X>, std::shared_ptr<T>> {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::shared_ptr<T>& t, Cx& cx) {
-                    return t ?
-                        write_value<Y>(o, *t.get(), cx) :
-                        cio::poke<Y>(o, X::id::nil, cx)
-                    ;
+                    return write_value<Y>(o, t.get(), cx);
                 }
         };
 
