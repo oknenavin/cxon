@@ -216,9 +216,9 @@ namespace cxon { namespace cbor { namespace cls {
 
 #define CXON_CBOR_CLS_FIELD(T, N, F)                cxon::cbor::cls::make_field<T>(N, &T::F)
 #if defined(__cpp_constexpr) && __cpp_constexpr >= 201603L
-#   define CXON_CBOR_CLS_FIELD_DFLT(T, N, F, ...)      cxon::cbor::cls::make_field<T>(N, &T::F, [](const T& self) constexpr { return __VA_ARGS__; })
+#   define CXON_CBOR_CLS_FIELD_DFLT(T, N, F, ...)   cxon::cbor::cls::make_field<T>(N, &T::F, [](const T& self) constexpr { return __VA_ARGS__; })
 #else
-#   define CXON_CBOR_CLS_FIELD_DFLT(T, N, F, ...)      cxon::cbor::cls::make_field<T>(N, &T::F, [](const T& self)           { return __VA_ARGS__; })
+#   define CXON_CBOR_CLS_FIELD_DFLT(T, N, F, ...)   cxon::cbor::cls::make_field<T>(N, &T::F, [](const T& self)           { return __VA_ARGS__; })
 #endif
 #define CXON_CBOR_CLS_FIELD_NAME(N, F)              CXON_CBOR_CLS_FIELD(T, N, F)
 #define CXON_CBOR_CLS_FIELD_NAME_DFLT(N, F, ...)    CXON_CBOR_CLS_FIELD_DFLT(T, N, F, __VA_ARGS__)
