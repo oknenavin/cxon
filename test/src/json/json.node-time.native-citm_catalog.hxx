@@ -86,16 +86,16 @@ namespace test { namespace citm_catalog {
     };
 
     struct object {
-        cxon::ordered::object<std::string, std::string> areaNames;
-        cxon::ordered::object<std::string, std::string> audienceSubCategoryNames;
+        cxon::ordered::object<unsigned long long, std::string> areaNames;
+        cxon::ordered::object<unsigned long long, std::string> audienceSubCategoryNames;
         cxon::ordered::object<std::string, std::string> blockNames;
-        cxon::ordered::object<std::string, event> events;
+        cxon::ordered::object<unsigned long long, event> events;
         std::vector<performance> performances;
-        cxon::ordered::object<std::string, std::string> seatCategoryNames;
-        cxon::ordered::object<std::string, std::string> subTopicNames;
+        cxon::ordered::object<unsigned long long, std::string> seatCategoryNames;
+        cxon::ordered::object<unsigned long long, std::string> subTopicNames;
         cxon::ordered::object<std::string, std::string> subjectNames;
-        cxon::ordered::object<std::string, std::string> topicNames;
-        cxon::ordered::object<std::string, std::vector<unsigned long long>> topicSubTopics;
+        cxon::ordered::object<unsigned long long, std::string> topicNames;
+        cxon::ordered::object<unsigned long long, std::vector<unsigned long long>> topicSubTopics;
         cxon::ordered::object<std::string, std::string> venueNames;
 
         CXON_JSON_CLS_MEMBER(object,
