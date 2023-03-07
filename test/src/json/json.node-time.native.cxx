@@ -33,7 +33,7 @@ namespace test { namespace kind {
                     if (!r) t.error = format_error(r, json.begin());
                 ));
             // write
-                auto o = vo.back(); vo.clear();
+                auto o = std::move(vo.back()); vo.clear();
                 std::vector<std::string> vs;
                 std::array<char, 4 * 1024> bf;
                 t.time.write.push_back(CXON_MEASURE(
