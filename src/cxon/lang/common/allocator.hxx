@@ -37,7 +37,10 @@ namespace cxon { namespace alc {
     template <typename T, typename Cx, typename Al = decltype(allocator::value(std::declval<Cx&>().px, std::allocator<T>()))>
         inline auto make_context_allocator(Cx& cx) -> basic_allocator<T, Al>;
     template <typename T, typename Al>
-        inline auto make_allocator(const Al& al) -> basic_allocator<T, Al> ;
+        inline auto make_allocator(const Al& al) -> basic_allocator<T, Al>;
+
+    template <typename T, typename Cx, typename ...A>
+        inline T* make_in_context(Cx& cx, A&&... as);
 
 }}
 
@@ -202,10 +205,11 @@ namespace cxon { namespace alc {
 
             basic_allocator(const type& al) : al_(al) {}
 
-            T* create() {
-                auto t = tr::allocate(al_, 1);
-                return t ? construct(t), t : t;
-            }
+            template <typename ...A>
+                T* create(A&&... as) {
+                    auto t = tr::allocate(al_, 1);
+                    return t ? construct(t, std::forward<A>(as)...), t : t;
+                }
             T* create(std::size_t n) {
                 auto p = tr::allocate(al_, n);
                     if (p) for (T *t = p, *te = t + n; t != te; ++t)
@@ -224,8 +228,8 @@ namespace cxon { namespace alc {
                 }
             }
 
-            template <typename U = T> auto construct(U *u)
-                -> enable_if_t<!std::is_trivial<U>::value> { tr::construct(al_, u); }
+            template <typename U = T, typename ...A> auto construct(U *u, A&&... as)
+                -> enable_if_t<!std::is_trivial<U>::value> { tr::construct(al_, u, std::forward<A>(as)...); }
             template <typename U = T> auto construct(U *)
                 -> enable_if_t< std::is_trivial<U>::value> {}
 
@@ -246,6 +250,12 @@ namespace cxon { namespace alc {
     template <typename T, typename Al>
         inline auto make_allocator(const Al& al) -> basic_allocator<T, Al> {
             return basic_allocator<T, Al>(al);
+        }
+
+    template <typename T, typename Cx, typename ...A>
+        inline T* make_in_context(Cx& cx, A&&... as) {
+            auto al = alc::make_context_allocator<T>(cx);
+            return al.create(std::forward<A>(as)...);
         }
 
 }}
