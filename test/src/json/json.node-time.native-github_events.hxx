@@ -512,40 +512,37 @@ namespace cxon {
                 static bool value(test::github_events::payload*& t, II& i, II e, Cx& cx) {
                     if (!cio::consume<Y>(i, e, cx))
                         return false;
-                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: needs buffering
-                        II const o = i;
-                        return  (cio::consume<Y>(Y::id::nil, i, e) && (t = nullptr, true)) ||
-                                (cio::rewind(i, o), cx/json::read_error::unexpected)
-                        ;
-                    }
-                    test::github_events::payload_proxy p;
+                    if (cio::peek(i, e) == *Y::id::nil)
+                        return read_value<Y>(t, i, e, cx);
+                    using namespace test::github_events;
+                    payload_proxy p;
                         if (read_value<Y>(p, i, e, cx)) {
                             if (p.push_id != (unsigned long long)-1)
-                                return (t = new test::github_events::payload_push_event {
-                                    std::move(p.commits), p.distinct_size, std::move(p.ref), p.push_id, std::move(p.head), std::move(p.before), p.size
-                                });
+                                return (t = alc::make_in_context<payload_push_event>(
+                                    cx, std::move(p.commits), p.distinct_size, std::move(p.ref), p.push_id, std::move(p.head), std::move(p.before), p.size
+                                ));
                             if (!p.ref_type.empty())
-                                return (t = new test::github_events::payload_create_event {
-                                    std::move(p.ref), std::move(p.ref_type), std::move(p.description), std::move(p.master_branch)
-                                });
+                                return (t = alc::make_in_context<payload_create_event>(
+                                    cx, std::move(p.ref), std::move(p.ref_type), std::move(p.description), std::move(p.master_branch)
+                                ));
                             if (!p.forkee.url.empty())
-                                return (t = new test::github_events::payload_fork_event {
-                                    std::move(p.forkee)
-                                });
+                                return (t = alc::make_in_context<payload_fork_event>(
+                                    cx, std::move(p.forkee)
+                                ));
                             if (!p.issue.url.empty())
-                                return (t = new test::github_events::payload_issue_comment_event {
-                                    std::move(p.action), std::move(p.issue), std::move(p.comment)
-                                });
+                                return (t = alc::make_in_context<payload_issue_comment_event>(
+                                    cx, std::move(p.action), std::move(p.issue), std::move(p.comment)
+                                ));
                             if (!p.action.empty())
-                                return (t = new test::github_events::payload_watch_event {
-                                    std::move(p.action)
-                                });
+                                return (t = alc::make_in_context<payload_watch_event>(
+                                    cx, std::move(p.action)
+                                ));
                             if (!p.pages.empty())
-                                return (t = new test::github_events::payload_gollum_event {
-                                    std::move(p.pages)
-                                });
+                                return (t = alc::make_in_context<payload_gollum_event>(
+                                    cx, std::move(p.pages)
+                                ));
                         }
-                        return false;
+                    return false;
                 }
         };
 
@@ -554,20 +551,21 @@ namespace cxon {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const test::github_events::payload* t, Cx& cx) {
                     if (!t)
-                        return cio::poke<Y>(o, Y::id::nil, cx);
+                        return write_value<Y>(o, nullptr, cx);
+                    using namespace test::github_events;
                     switch (t->type) {
-                        case test::github_events::payload::push_event:
-                            return write_value<Y>(o, static_cast<const test::github_events::payload_push_event*>(t), cx);
-                        case test::github_events::payload::create_event:
-                            return write_value<Y>(o, static_cast<const test::github_events::payload_create_event*>(t), cx);
-                        case test::github_events::payload::fork_event:
-                            return write_value<Y>(o, static_cast<const test::github_events::payload_fork_event*>(t), cx);
-                        case test::github_events::payload::issue_comment_event:
-                            return write_value<Y>(o, static_cast<const test::github_events::payload_issue_comment_event*>(t), cx);
-                        case test::github_events::payload::watch_event:
-                            return write_value<Y>(o, static_cast<const test::github_events::payload_watch_event*>(t), cx);
-                        case test::github_events::payload::gollum_event:
-                            return write_value<Y>(o, static_cast<const test::github_events::payload_gollum_event*>(t), cx);
+                        case payload::push_event:
+                            return write_value<Y>(o, static_cast<const payload_push_event*>(t), cx);
+                        case payload::create_event:
+                            return write_value<Y>(o, static_cast<const payload_create_event*>(t), cx);
+                        case payload::fork_event:
+                            return write_value<Y>(o, static_cast<const payload_fork_event*>(t), cx);
+                        case payload::issue_comment_event:
+                            return write_value<Y>(o, static_cast<const payload_issue_comment_event*>(t), cx);
+                        case payload::watch_event:
+                            return write_value<Y>(o, static_cast<const payload_watch_event*>(t), cx);
+                        case payload::gollum_event:
+                            return write_value<Y>(o, static_cast<const payload_gollum_event*>(t), cx);
                     }
                     return false;
                 }
