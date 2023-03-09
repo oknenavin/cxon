@@ -17,7 +17,7 @@ struct B {
 struct D1 : B {
     int d1;
 
-    D1(int n) : B(type::D1), d1(n) {}
+    D1(int n) : B(B::D1), d1(n) {}
 };
 // derived classes should be writable
 CXON_JSON_CLS_WRITE(D1, CXON_JSON_CLS_FIELD_ASIS(d1))
@@ -25,7 +25,7 @@ CXON_JSON_CLS_WRITE(D1, CXON_JSON_CLS_FIELD_ASIS(d1))
 struct D2 : B {
     std::string d2;
 
-    D2(std::string&& s) : B(type::D2), d2(std::move(s)) {}
+    D2(std::string&& s) : B(B::D2), d2(std::move(s)) {}
 };
 CXON_JSON_CLS_WRITE(D2, CXON_JSON_CLS_FIELD_ASIS(d2))
 
