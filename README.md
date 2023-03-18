@@ -229,14 +229,14 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-cvr]: https://scan.coverity.com/projects/18083/badge.svg
 
 <!--{ branch-links -->
-[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
-[img-time-read-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg
-[img-time-read-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json.native-s1-read.svg
-[img-time-write-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg
-[img-time-write-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json.native-s1-write.svg
-[img-space-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json-space.svg
-[img-space-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json-space.svg
-[img-bench]: https://github.com/oknenavin/workflows-data/tree/master/cxon
+[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/develop/graph/badge.svg
+[img-time-read-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg
+[img-time-read-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json.native-s1-read.svg
+[img-time-write-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg
+[img-time-write-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json.native-s1-write.svg
+[img-space-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg
+[img-space-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json-space.svg
+[img-bench]: https://github.com/oknenavin/workflows-data/tree/develop/cxon
 <!-- branch-links }-->
 
 [RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
