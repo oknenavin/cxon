@@ -98,16 +98,31 @@ namespace cxon {
                 return read_value<X>(t, i, e, cx);
             }
 
+        template <typename T, typename C, bool S = std::is_signed<T>::value>
+            struct plm_;
+        template <typename T, typename C>
+            struct plm_<T, C, false> {
+                static constexpr T max =   std::numeric_limits<T>::max() / 10;
+                static constexpr C fst = C(std::numeric_limits<T>::max() - max * 10) + '0';
+            };
+        template <typename T, typename C>
+            struct plm_<T, C, true> {
+                static constexpr T max = -(std::numeric_limits<T>::min() / 10);
+                static constexpr C fst = C(max * -10 - std::numeric_limits<T>::min()) + '0';
+            };
+
 #       define CXON_STORE(c) if (!bf.put(c)) return cx/X::read_error::overflow
             template <typename X, typename N, typename II, typename Cx>
                 inline bool read_number_value_(N& n, typename N::real& v, II& i, II e, Cx& cx) {
-                    unsigned u = 0;
-                    unsigned long long U = 0;
-                    unsigned d = 0;
+                    using ittp = typename std::iterator_traits<II>::value_type;
+                    using sint = typename N::sint;
+                    using uint = typename N::uint;
                     buffer_<json::num_len_max::constant<napa_type<Cx>>(64), II> bf(i);
+                    uint u = 0;
+                    int r = 0;
                     auto c = cio::peek(i, e);
 
-                    bool s = c == '-';
+                    bool const s = c == '-';
                     if (s) {
                         CXON_STORE('-');
                         c = cio::next(i, e);
@@ -118,22 +133,20 @@ namespace cxon {
                         ++i;
                     }
                     else if (c >= '1' && c <='9') {
-                        CXON_STORE(c);
-                        u = static_cast<unsigned>(c - '0');
                         if (s)
-                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (u >= 214748364) // 2^31 = 2147483648
-                                    if (u != 214748364 || c > '8') {
-                                        U = u; break;
+                            for ( ; c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                if (u >= plm_<sint, ittp>::max)
+                                    if (u != plm_<sint, ittp>::max || c > plm_<sint, ittp>::fst) {
+                                        r = 1; break;
                                     }
                                 u = u * 10 + static_cast<unsigned>(c - '0');
                                 CXON_STORE(c);
                             }
                         else
-                            for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (u >= 429496729) // 2^32 - 1 = 4294967295
-                                    if (u != 429496729 || c > '5') {
-                                        U = u; break;
+                            for ( ; c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                                if (u >= plm_<uint, ittp>::max)
+                                    if (u != plm_<uint, ittp>::max || c > plm_<uint, ittp>::fst) {
+                                        r = 1; break;
                                     }
                                 u = u * 10 + static_cast<unsigned>(c - '0');
                                 CXON_STORE(c);
@@ -145,44 +158,25 @@ namespace cxon {
                     else
                         return cx/X::read_error::floating_point_invalid;
 
-                    if (U) {
-                        if (s)
-                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (U >= 922337203685477580ULL) // 2^63 = 9223372036854775808
-                                    if (U != 922337203685477580ULL || c > '8') {
-                                        d = 1; break;
-                                    }
-                                U = U * 10 + static_cast<unsigned>(c - '0');
-                                CXON_STORE(c);
-                            }
-                        else
-                            for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                                if (U >= 1844674407370955161ULL) // 2^64 - 1 = 18446744073709551615
-                                    if (U != 1844674407370955161ULL || c > '5') {
-                                        d = 1; break;
-                                    }
-                                U = U * 10 + static_cast<unsigned>(c - '0');
-                                CXON_STORE(c);
-                            }
-                    }
-
-                    if (d) {
-                        for (c = cio::peek(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
-                            CXON_STORE(c);
-                        }
-                    }
-                    if (cio::peek(i, e) == '.') {
-                        CXON_STORE('.');
-                        d = 1;
-                        for (c = cio::next(i, e); c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                    if (r) {
+                        for ( ; c >= '0' && c <= '9'; c = cio::next(i, e)) {
                             CXON_STORE(c);
                         }
                     }
 
                     c = cio::peek(i, e);
+
+                    if (c == '.') {
+                        CXON_STORE('.');
+                        r = 1; c = cio::next(i, e);
+                        for ( ; c >= '0' && c <= '9'; c = cio::next(i, e)) {
+                            CXON_STORE(c);
+                        }
+                    }
+
                     if (c == 'e' || c == 'E') {
                         CXON_STORE('e');
-                        d = 1, c = cio::next(i, e);
+                        r = 1, c = cio::next(i, e);
                         if (c == '-' || c == '+') {
                             CXON_STORE(c);
                             c = cio::next(i, e);
@@ -192,19 +186,14 @@ namespace cxon {
                         }
                     }
 
-                    if (d) {
+                    if (r) {
                         CXON_STORE('\0');
                         return read_number_value_<X>(v, bf.beg(), bf.end(), cx);
                     }
-
-                    using sint = typename N::sint;
-                    using uint = typename N::uint;
-                    U ?
-                        s ? n.template imbue<sint>() = -sint(1) - (U - 1) :
-                            n.template imbue<uint>() = U :
-                        s ? n.template imbue<sint>() = -sint(1) - (u - 1) :
-                            n.template imbue<uint>() = u
+                    s ? n.template imbue<sint>() = -sint(1) - (u - 1) :
+                        n.template imbue<uint>() = u
                     ;
+
                     return true;
                 }
 #       undef CXON_STORE
