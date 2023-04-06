@@ -25,14 +25,12 @@ namespace cxon { namespace ordered {
             :   first(alc::create_using_allocator<K>(al)),
                 second(alc::create_using_allocator<V>(al))
             {}
-            keval(K&& k, V&& v)
-            :   first(std::forward<K>(k)),
-                second(std::forward<V>(v))
-            {}
-            keval(const K& k, const V& v)
-            :   first(k),
-                second(v)
-            {}
+
+            template <typename KF, typename VF>
+                keval(KF&& k, VF&& v)
+                :   first(std::forward<KF>(k)),
+                    second(std::forward<VF>(v))
+                {}
 
             bool operator ==(const keval& t) const noexcept { return first == t.first && second == t.second; }
             bool operator !=(const keval& t) const noexcept { return first != t.first || second != t.second; }
