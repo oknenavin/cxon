@@ -34,7 +34,7 @@ namespace cxon { namespace cnt { // container mutation
         inline bool append(C& c, II f, II l);
     template <typename C, typename T = typename C::value_type>
         inline bool append(C& c, T&& t);
-        
+
     template <typename A>
         inline auto container(      A& a) ->       typename A::container_type&;
     template <typename A>
@@ -229,7 +229,7 @@ namespace cxon { namespace cnt {
             inline auto append_(option<0>, C& c, T&& t)
                 -> enable_if_t<std::is_same<decltype(emplace(c)), typename C::reference>::value, bool>
             {
-                return emplace(c) = std::move(t), true;
+                return emplace(c) = std::forward<T>(t), true;
             }
 
     }
@@ -381,7 +381,7 @@ namespace cxon { namespace cnt {
                     return c.append(f, l);
                 }
             template <typename T = typename range_container<FI>::value_type>
-                static bool append(range_container<FI>& c, T t) {
+                static bool append(range_container<FI>& c, T&& t) {
                     return c.append(std::forward<T>(t));
                 }
         };

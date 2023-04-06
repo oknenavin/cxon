@@ -193,7 +193,7 @@ namespace cxon { namespace cbor { // node
             :   kind_(o.kind_), alloc_(std::move(o.alloc_))
             {
                 switch (o.kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::move(o)); break
                         CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(tag);
@@ -214,7 +214,7 @@ namespace cxon { namespace cbor { // node
             :   kind_(o.kind_), alloc_(al)
             {
                 switch (o.kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::forward<basic_node>(o)); break
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::move_construct<T>(*this, std::move(o)); break
                         CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(tag);
@@ -234,7 +234,7 @@ namespace cxon { namespace cbor { // node
                 noexcept(value::is_nothrow_move_assignable<basic_node>::value)
             {
                 switch (o.kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::move_assign<T>(*this, std::forward<basic_node>(o))
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: return value::move_assign<T>(*this, std::move(o))
                         CXON_CBOR_TYPE_DEF(map);
                         CXON_CBOR_TYPE_DEF(array);
                         CXON_CBOR_TYPE_DEF(tag);
@@ -319,11 +319,11 @@ namespace cxon { namespace cbor { // node
 
 #           define CXON_CBOR_TYPE_DEF(T)\
                     basic_node(T&& v)                                   noexcept(value::is_nothrow_constructible<basic_node, T, T&&>::value) \
-                                                                        : kind_(node_kind::T)               { value::construct<T>(*this, std::forward<T>(v)); } \
+                                                                        : kind_(node_kind::T)               { value::construct<T>(*this, std::move(v)); } \
                     basic_node(T&& v, const allocator_type& al)         noexcept(value::is_nothrow_constructible<basic_node, T, T&&>::value) \
-                                                                        : kind_(node_kind::T), alloc_(al)   { value::construct<T>(*this, std::forward<T>(v)); } \
-                    basic_node& operator =(T&& v)                       noexcept(noexcept(std::declval<basic_node&>().template imbue<T>() = std::forward<T>(v))) \
-                                                                        { return imbue<T>() = std::forward<T>(v), *this; } \
+                                                                        : kind_(node_kind::T), alloc_(al)   { value::construct<T>(*this, std::move(v)); } \
+                    basic_node& operator =(T&& v)                       noexcept(noexcept(std::declval<basic_node&>().template imbue<T>() = std::move(v))) \
+                                                                        { return imbue<T>() = std::move(v), *this; } \
                     basic_node(const T& v)                              noexcept(value::is_nothrow_constructible<basic_node, T, T&>::value) \
                                                                         : kind_(node_kind::T)               { value::construct<T>(*this, v); } \
                     basic_node(const T& v, const allocator_type& al)    noexcept(value::is_nothrow_constructible<basic_node, T, T&>::value) \

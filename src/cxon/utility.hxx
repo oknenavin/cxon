@@ -448,7 +448,7 @@ namespace cxon { namespace napa {
             template <typename Pk>
                 using in = imp::has_tag<Tg, Pk>;
 
-            static constexpr imp::var<Tg, T> set(T&& v)         { return imp::var<Tg, T>(std::forward<T>(v)); }
+            static constexpr imp::var<Tg, T> set(T&& v)         { return imp::var<Tg, T>(std::move(v)); }
             static constexpr imp::var<Tg, T> set(const T& v)    { return imp::var<Tg, T>(v); }
 
             template <typename Pk>
