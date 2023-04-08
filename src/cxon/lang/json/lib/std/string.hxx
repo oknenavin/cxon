@@ -27,17 +27,17 @@ namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct read<JSON<X>, std::basic_string<T, R...>> {
-            template <typename II, typename Cx, typename J = JSON<X>>
+            template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(std::basic_string<T, R...>& t, II& i, II e, Cx& cx) {
-                    return cio::str::string_read<X>(t, i, e, cx);
+                    return cio::str::string_read<Y>(t, i, e, cx);
                 }
         };
 
     template <typename X, typename T, typename ...R>
         struct write<JSON<X>, std::basic_string<T, R...>> {
-            template <typename O, typename Cx, typename J = JSON<X>>
+            template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::basic_string<T, R...>& t, Cx& cx) {
-                    return cio::str::pointer_write<J>(o, t.data(), t.size(), cx);
+                    return cio::str::pointer_write<Y>(o, t.data(), t.size(), cx);
                 }
         };
 

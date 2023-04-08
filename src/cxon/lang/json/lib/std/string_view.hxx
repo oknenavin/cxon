@@ -34,9 +34,9 @@ namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct write<JSON<X>, std::basic_string_view<T, R...>> {
-            template <typename O, typename Cx, typename J = JSON<X>>
+            template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::basic_string_view<T, R...>& t, Cx& cx) {
-                    return cio::str::pointer_write<J>(o, t.data(), t.size(), cx);
+                    return cio::str::pointer_write<Y>(o, t.data(), t.size(), cx);
                 }
         };
 
