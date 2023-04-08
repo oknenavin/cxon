@@ -28,9 +28,9 @@ namespace cxon { // array/write
 
     template <typename X, typename T, std::size_t N>
         struct write<CBOR<X>, T[N]> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const T (&t)[N], Cx& cx) {
-                    return cbor::cnt::write_array<J>(o, std::begin(t), std::end(t), cx);
+                    return cbor::cnt::write_array<Y>(o, std::begin(t), std::end(t), cx);
                 }
         };
 

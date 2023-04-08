@@ -12,17 +12,17 @@ namespace cxon {
 
     template <typename X, typename T, typename ...R>
         struct read<CBOR<X>, std::forward_list<T, R...>> {
-            template <typename II, typename Cx, typename J = CBOR<X>>
+            template <typename II, typename Cx, typename Y = CBOR<X>>
                 static bool value(std::forward_list<T, R...>& t, II& i, II e, Cx& cx) {
-                    return cbor::cnt::read_array<J>(t, i, e, cx) && (t.reverse(), true);
+                    return cbor::cnt::read_array<Y>(t, i, e, cx) && (t.reverse(), true);
                 }
         };
 
     template <typename X, typename T, typename ...R>
         struct write<CBOR<X>, std::forward_list<T, R...>> {
-            template <typename O, typename Cx, typename J = CBOR<X>>
+            template <typename O, typename Cx, typename Y = CBOR<X>>
                 static bool value(O& o, const std::forward_list<T, R...>& t, Cx& cx) {
-                    return cbor::cnt::write_array<J>(o, t, cx);
+                    return cbor::cnt::write_array<Y>(o, t, cx);
                 }
         };
 
