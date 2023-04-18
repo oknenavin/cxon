@@ -9,7 +9,12 @@
 #include "cxon/lang/common/cio/char.hxx"
 #include "cxon/lang/common/cio/numeric.hxx"
 
-namespace cxon { // nullptr_t
+namespace cxon { namespace cio { // type traits
+    template <typename T>   struct is_string<T, enable_if_t<is_char<T>::value>> : std::true_type {};
+    template <>             struct is_null<std::nullptr_t>                      : std::true_type {};
+}}
+
+namespace cxon { // std::nullptr_t
 
     template <typename X>
         struct read<JSON<X>, std::nullptr_t> {

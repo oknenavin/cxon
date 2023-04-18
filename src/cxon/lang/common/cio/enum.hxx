@@ -10,6 +10,10 @@
 
 // interface ///////////////////////////////////////////////////////////////////
 
+namespace cxon { namespace cio { // type traits
+    template <typename T> struct is_string<T, enable_if_t<std::is_enum<T>::value>> : std::true_type {};
+}}
+
 namespace cxon { namespace cio { namespace enm { // enum reader/writer construction helpers
 
     template <typename E>
@@ -23,10 +27,6 @@ namespace cxon { namespace cio { namespace enm { // enum reader/writer construct
     template <typename X, typename E, typename V, typename O, typename Cx>
         inline bool write_value(O& o, E t, V f, V l, Cx& cx);
 
-}}}
-
-namespace cxon { namespace cio { namespace key {
-    template <typename T> struct is_quoted<T, enable_if_t<std::is_enum<T>::value>> : std::true_type  {};
 }}}
 
 // implementation //////////////////////////////////////////////////////////////

@@ -10,6 +10,11 @@
 #include "cxon/lang/common/cio/container.hxx"
 #include "cxon/lang/common/allocator.hxx"
 
+namespace cxon { namespace cio { // type traits
+    template <typename T, std::size_t N>    struct is_string<T[N]>  : is_char<T> {};
+    template <typename T>                   struct is_string<T*>    : is_char<T> {};
+}}
+
 namespace cxon { // pointer
 
     template <typename X, typename T>

@@ -8,20 +8,9 @@
 
 #include "cxon/lang/common/cio/string.hxx"
 
-namespace cxon { namespace cio { namespace key {
-
-#   define CXON_QUOTED(T)\
-        template <typename ...R> struct is_quoted<boost::container::basic_string<T, R...>> : std::true_type  {};
-        CXON_QUOTED(char)
-        CXON_QUOTED(wchar_t)
-#       if defined(__cpp_char8_t)
-            CXON_QUOTED(char8_t)
-#       endif
-        CXON_QUOTED(char16_t)
-        CXON_QUOTED(char32_t)
-#   undef CXON_QUOTED
-
-}}}
+namespace cxon { namespace cio { // type traits
+    template <typename T, typename ...R> struct is_string<boost::container::basic_string<T, R...>> : is_char<T> {};
+}}
 
 namespace cxon {
 

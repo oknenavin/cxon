@@ -419,8 +419,6 @@ namespace cxon {
 
         namespace cio { namespace key { // keys
 
-            //template <typename Tr> struct is_quoted<cbor::basic_node<Tr>> : std::true_type {};
-
             template <typename X, typename Tr>
                 struct read<JSON<X>, cbor::basic_node<Tr>> {
                     template <typename V, typename II, typename Cx, typename Y = JSON<X>>
