@@ -97,7 +97,7 @@ namespace cxon { namespace json { // node
                         typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
-                    using dt_   = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+                    using dt_   = conditional_t<is_dynamic_type_<T>::value, T*, T>;
                 using object_   = dt_<object>;
                 using array_    = dt_<array>;
                 using string_   = dt_<string>;
@@ -108,7 +108,7 @@ namespace cxon { namespace json { // node
                 using null_     = dt_<null>;
 
                 template <typename T>
-                    using dt_dbg_   = typename std::conditional<is_dynamic_type_<T>::value, T*, char>::type;
+                    using dt_dbg_   = conditional_t<is_dynamic_type_<T>::value, T*, char>;
                 using object_dbg_   = dt_dbg_<object>;
                 using array_dbg_    = dt_dbg_<array>;
                 using string_dbg_   = dt_dbg_<string>;

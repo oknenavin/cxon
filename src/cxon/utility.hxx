@@ -120,6 +120,9 @@ namespace cxon {
     template <typename T> using remove_cv_t = typename std::remove_cv<T>::type; // C++14
     template <typename T> using remove_reference_t = typename std::remove_reference<T>::type; // C++14
 
+    template <bool B, typename T, typename F> // C++14
+        using conditional_t = typename std::conditional<B, T, F>::type;
+
     template <bool B> // C++17
         using bool_constant = std::integral_constant<bool, B>;
 
