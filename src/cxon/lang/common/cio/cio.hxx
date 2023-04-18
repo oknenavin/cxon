@@ -8,6 +8,17 @@
 
 #include "io.hxx"
 
+namespace cxon { namespace cio { // type traits
+
+    template <typename T, typename E = void> struct is_object   : std::false_type {};
+    template <typename T, typename E = void> struct is_array    : std::false_type {};
+    template <typename T, typename E = void> struct is_string   : std::false_type {};
+    template <typename T, typename E = void> struct is_number   : bool_constant<cxon::is_numeric<T>::value> {};
+    template <typename T, typename E = void> struct is_bool     : bool_constant<cxon::is_bool<T>::value> {};
+    template <typename T, typename E = void> struct is_null     : std::false_type {};
+
+}}
+
 namespace cxon { namespace cio { // named parameters
 
     CXON_PARAMETER(fp_precision, int);      // write: constexpr: floating-points
@@ -74,7 +85,6 @@ namespace cxon { namespace cio { // format traits
 namespace cxon { namespace cio { // key quoting helpers
 
     namespace key {
-        template <typename T, typename E = void>    struct is_quoted;
         template <typename T>                       struct unquoted_traits  : T {};
         template <typename T>                       struct   quoted_traits  : T {};
     }

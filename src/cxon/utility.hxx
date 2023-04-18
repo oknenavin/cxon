@@ -116,16 +116,30 @@ namespace cxon {
     template <typename T> struct is_char;
     template <typename T> struct is_numeric;
 
+    template <typename T> using decay_t = typename std::decay<T>::type; // C++14
+    template <typename T> using remove_cv_t = typename std::remove_cv<T>::type; // C++14
+    template <typename T> using remove_reference_t = typename std::remove_reference<T>::type; // C++14
+
     template <bool B> // C++17
         using bool_constant = std::integral_constant<bool, B>;
 
-    template <typename ...> // C++20
+    template <typename ...> // C++17
         struct conjunction;
-    template <typename ...> // C++20
+    template <typename ...> // C++17
         struct disjunction;
+    template <typename B> // C++17
+        struct negation;
 
     template <typename ...T>
         struct aligned_union; // std::aligned_union deprecated in c++23
+
+    template <typename T> // C++20
+        struct type_identity;
+
+    template <typename T> // C++20
+        struct remove_cvref;
+    template <typename T> // C++20
+        using remove_cvref_t = typename remove_cvref<T>::type;
 
     // container
 
@@ -246,24 +260,23 @@ namespace cxon {
     // type traits
 
     namespace imp {
+        template <typename T>   struct is_bool_             : std::false_type {};
+        template <>             struct is_bool_<bool>       : std::true_type {};
 
-        template <typename T>   struct is_bool_ : std::false_type {};
-        template <>             struct is_bool_<bool> : std::true_type {};
-
-        template <typename T>   struct is_char_ : std::false_type {};
-        template <>             struct is_char_<char> : std::true_type {};
-        template <>             struct is_char_<wchar_t> : std::true_type {};
+        template <typename T>   struct is_char_             : std::false_type {};
+        template <>             struct is_char_<char>       : std::true_type {};
+        template <>             struct is_char_<wchar_t>    : std::true_type {};
 #       if defined(__cpp_char8_t)
-            template <>         struct is_char_<char8_t> : std::true_type {};
+            template <>         struct is_char_<char8_t>    : std::true_type {};
 #       endif
-        template <>             struct is_char_<char16_t> : std::true_type {};
-        template <>             struct is_char_<char32_t> : std::true_type {};
+        template <>             struct is_char_<char16_t>   : std::true_type {};
+        template <>             struct is_char_<char32_t>   : std::true_type {};
     }
 
     template <typename T>
-        struct is_bool      : bool_constant<imp::is_bool_<typename std::remove_cv<T>::type>::value> {};
+        struct is_bool      : bool_constant<imp::is_bool_<remove_cvref_t<T>>::value> {};
     template <typename T>
-        struct is_char      : bool_constant<imp::is_char_<typename std::remove_cv<T>::type>::value> {};
+        struct is_char      : bool_constant<imp::is_char_<remove_cvref_t<T>>::value> {};
     template <typename T>
         struct is_numeric   : bool_constant<std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value> {};
 
@@ -276,6 +289,15 @@ namespace cxon {
         struct disjunction                  : std::false_type {};
     template <typename B, typename ...Bs>
         struct disjunction<B, Bs...>        : bool_constant<B::value || disjunction<Bs...>::value> {};
+
+    template <typename B>
+        struct negation : bool_constant<!B::value> {};
+
+    template <typename T >
+        struct type_identity { using type = T; };
+
+    template <typename T> // C++20
+        struct remove_cvref : std::remove_cv<remove_reference_t<T>> {};
 
     // iterators
 
@@ -392,23 +414,23 @@ namespace cxon { namespace napa {
 
             template <typename Tg>
                 struct head_ {
-                    static constexpr std::tuple<Tg>     pack(Tg&& t)                        { return std::make_tuple(std::move(t)); }
-                    static constexpr std::tuple<Tg>     pack(const Tg& t)                   { return std::make_tuple(t); }
+                    static constexpr std::tuple<Tg> pack(Tg&& t)        { return std::make_tuple(std::move(t)); }
+                    static constexpr std::tuple<Tg> pack(const Tg& t)   { return std::make_tuple(t); }
                 };
             template <typename ...Tg>
                 struct head_<std::tuple<Tg...>> {
-                    static constexpr std::tuple<Tg...>  pack(std::tuple<Tg...>&& t)         { return std::move(t); }
+                    static constexpr std::tuple<Tg...>          pack(std::tuple<Tg...>&& t)         { return std::move(t); }
 #                   if defined(__GNUC__) && (__GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ > 5)) && !defined(__clang__)
-                        static constexpr std::tuple<Tg...>  pack(const std::tuple<Tg...>& t)    { return t; }
+                        static constexpr std::tuple<Tg...>      pack(const std::tuple<Tg...>& t)    { return t; }
 #                   else // type_traits:2204:7: error: static assertion failed: declval() must not be used!
                         static /*constexpr */std::tuple<Tg...>  pack(const std::tuple<Tg...>& t)    { return t; }
 #                   endif
                 };
         template <typename T>
             inline constexpr auto head_pack_(T&& t)
-                -> decltype(head_<typename std::decay<T>::type>::pack(std::forward<T>(t)))
+                -> decltype(head_<decay_t<T>>::pack(std::forward<T>(t)))
             {
-                return      head_<typename std::decay<T>::type>::pack(std::forward<T>(t));
+                return      head_<decay_t<T>>::pack(std::forward<T>(t));
             }
 
         template <typename ...>

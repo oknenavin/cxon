@@ -82,29 +82,9 @@ namespace cxon { namespace cio {
 
 namespace cxon { namespace cio { namespace key {
 
-    template <typename T, typename E> struct is_quoted : std::false_type {};
-#   define CXON_QUOTED(T)\
-        template <>                 struct is_quoted<T>             : std::true_type  {};\
-        template <std::size_t N>    struct is_quoted<T[N]>          : std::true_type  {};\
-        template <std::size_t N>    struct is_quoted<const T[N]>    : std::true_type  {};\
-        template <>                 struct is_quoted<T*>            : std::true_type  {};\
-        template <>                 struct is_quoted<const T*>      : std::true_type  {};
-        CXON_QUOTED(char)
-        CXON_QUOTED(wchar_t)
-#       if defined(__cpp_char8_t)
-            CXON_QUOTED(char8_t)
-#       endif
-        CXON_QUOTED(char16_t)
-        CXON_QUOTED(char32_t)
-#   undef CXON_QUOTED
-
-}}}
-
-namespace cxon { namespace cio { namespace key {
-
     namespace imp {
         template <typename X, typename T>
-            struct needs_quotes : bool_constant<!is_unquoted_key_context<X>::value && !is_quoted<T>::value && X::quote_unquoted_keys && !X::unquote_quoted_keys> {};
+            struct needs_quotes : bool_constant<!is_unquoted_key_context<X>::value && !is_string<T>::value && X::quote_unquoted_keys && !X::unquote_quoted_keys> {};
     }
 
     namespace imp {

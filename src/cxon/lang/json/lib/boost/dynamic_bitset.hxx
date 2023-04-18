@@ -6,9 +6,9 @@
 #ifndef CXON_JSON_LIB_BOOST_DYNAMIC_BITSET_HXX_
 #define CXON_JSON_LIB_BOOST_DYNAMIC_BITSET_HXX_
 
-namespace cxon { namespace cio { namespace key {
-    template <typename B, typename A> struct is_quoted<boost::dynamic_bitset<B, A>> : std::true_type {};
-}}}
+namespace cxon { namespace cio { // type traits
+    template <typename B, typename A> struct is_string<boost::dynamic_bitset<B, A>> : std::true_type {};
+}}
 
 namespace cxon { namespace json { namespace imp {
 
