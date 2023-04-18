@@ -119,7 +119,7 @@ namespace cxon { namespace cbor { // node
                         typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
-                    using dt_       = typename std::conditional<is_dynamic_type_<T>::value, T*, T>::type;
+                    using dt_       = conditional_t<is_dynamic_type_<T>::value, T*, T>;
                 using map_          = dt_<map>;
                 using array_        = dt_<array>;
                 using tag_          = dt_<tag>;
@@ -134,7 +134,7 @@ namespace cxon { namespace cbor { // node
                 using undefined_    = dt_<undefined>;
 
                 template <typename T>
-                    using dt_dbg_       = typename std::conditional<is_dynamic_type_<T>::value, T*, char>::type;
+                    using dt_dbg_       = conditional_t<is_dynamic_type_<T>::value, T*, char>;
                 using map_dbg_          = dt_dbg_<map>;
                 using array_dbg_        = dt_dbg_<array>;
                 using tag_dbg_          = dt_dbg_<tag>;
