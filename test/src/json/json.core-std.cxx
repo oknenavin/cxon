@@ -705,6 +705,11 @@ TEST_END()
     TEST_BEG(variant, cxon::JSON<>, "/std")
         using namespace std;
         // std::variant
+            R_TEST(variant<int, std::string>(42), R"(42)");
+            W_TEST(R"(42)", variant<int, std::string>(42));
+            R_TEST(variant<int, std::string>("42"), R"("42")");
+            W_TEST(R"("42")", variant<int, std::string>("42"));
+        // std::variant
             R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({"0":1})");
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"1":0})");
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"2":0})", json::read_error::unexpected, 1);
