@@ -35,9 +35,9 @@
 #endif
 
 #ifdef __cpp_if_constexpr
-#   define CXON_IF_CONSTEXPR(c) if constexpr (c)
+#   define CXON_IF_CONSTEXPR(...) if constexpr (__VA_ARGS__)
 #else 
-#   define CXON_IF_CONSTEXPR(c) if (c)
+#   define CXON_IF_CONSTEXPR(...) if (__VA_ARGS__)
 #endif
 
 // interface ///////////////////////////////////////////////////////////////////

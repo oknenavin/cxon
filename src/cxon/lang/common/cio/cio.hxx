@@ -10,8 +10,8 @@
 
 namespace cxon { namespace cio { // type traits
 
-    template <typename T, typename E = void> struct is_object   : std::false_type {};
-    template <typename T, typename E = void> struct is_array    : std::false_type {};
+    template <typename T, typename E = void> struct is_map      : std::false_type {};
+    template <typename T, typename E = void> struct is_list     : std::false_type {};
     template <typename T, typename E = void> struct is_string   : std::false_type {};
     template <typename T, typename E = void> struct is_number   : bool_constant<cxon::is_numeric<T>::value> {};
     template <typename T, typename E = void> struct is_bool     : bool_constant<cxon::is_bool<T>::value> {};
@@ -96,6 +96,9 @@ namespace cxon { namespace cio { // key quoting helpers
         using is_quoted_key_context = has_traits<key::quoted_traits<X>, X>;
     template <typename X>
         using quoted_key_context = conditional_t<is_quoted_key_context<X>::value, X, bind_traits_t<X, key::quoted_traits>>;
+
+    template <typename X>
+        using is_key_context = disjunction<is_unquoted_key_context<X>, is_quoted_key_context<X>>;
 
 }}
 
