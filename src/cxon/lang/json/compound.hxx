@@ -13,6 +13,7 @@
 namespace cxon { namespace cio { // type traits
     template <typename T, std::size_t N>    struct is_string<T[N]>  : is_char<T> {};
     template <typename T>                   struct is_string<T*>    : is_char<T> {};
+    template <typename T, std::size_t N>    struct is_list<T[N]>    : std::true_type {};
 }}
 
 namespace cxon { // pointer

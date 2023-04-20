@@ -8,6 +8,16 @@
 
 #include "cxon/lang/common/cio/variant.hxx"
 
+namespace cxon { namespace cio { // type traits
+    template <typename ...T>    struct is_map<std::variant<T...>>       : var::has_type<is_map, T...> {};
+    template <typename ...T>    struct is_list<std::variant<T...>>      : var::has_type<is_list, T...> {};
+    template <typename ...T>    struct is_string<std::variant<T...>>    : var::has_type<is_string, T...> {};
+    template <typename ...T>    struct is_number<std::variant<T...>>    : var::has_type<is_number, T...> {};
+    template <typename ...T>    struct is_bool<std::variant<T...>>      : var::has_type<is_bool, T...> {};
+    template <typename ...T>    struct is_null<std::variant<T...>>      : var::has_type<is_null, T...> {};
+    template <>                 struct is_null<std::monostate>          : std::true_type {};
+}}
+
 namespace cxon {
 
     namespace json { namespace imp {

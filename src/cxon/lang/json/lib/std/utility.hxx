@@ -6,6 +6,10 @@
 #ifndef CXON_JSON_LIB_STD_UTILITY_HXX_
 #define CXON_JSON_LIB_STD_UTILITY_HXX_
 
+namespace cxon { namespace cio { // type traits
+    template <typename F, typename S> struct is_list<std::pair<F, S>> : std::true_type {};
+}}
+
 namespace cxon {
 
     template <typename X, typename F, typename S>

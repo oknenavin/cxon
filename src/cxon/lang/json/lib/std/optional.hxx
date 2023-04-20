@@ -6,6 +6,15 @@
 #ifndef CXON_JSON_LIB_STD_OPTIONAL_HXX_
 #define CXON_JSON_LIB_STD_OPTIONAL_HXX_
 
+namespace cxon { namespace cio { // type traits
+    template <typename T> struct is_map<std::optional<T>>       : is_map<T> {};
+    template <typename T> struct is_list<std::optional<T>>      : is_list<T> {};
+    template <typename T> struct is_string<std::optional<T>>    : is_string<T> {};
+    template <typename T> struct is_number<std::optional<T>>    : is_number<T> {};
+    template <typename T> struct is_bool<std::optional<T>>      : is_bool<T> {};
+    template <typename T> struct is_null<std::optional<T>>      : std::true_type {};
+}}
+
 namespace cxon {
 
     template <typename X, typename T>

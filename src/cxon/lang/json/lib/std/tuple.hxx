@@ -6,6 +6,10 @@
 #ifndef CXON_JSON_LIB_STD_TUPLE_HXX_
 #define CXON_JSON_LIB_STD_TUPLE_HXX_
 
+namespace cxon { namespace cio { // type traits
+    template <typename ...T> struct is_list<std::tuple<T...>> : std::true_type {};
+}}
+
 namespace cxon { namespace cio { namespace cnt { // container read/write helpers
 
     namespace imp {
