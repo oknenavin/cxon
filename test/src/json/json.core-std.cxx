@@ -705,19 +705,48 @@ TEST_END()
     TEST_BEG(variant, cxon::JSON<>, "/std")
         using namespace std;
         // std::variant
-            R_TEST(variant<int, std::string>(42), R"(42)");
-            W_TEST(R"(42)", variant<int, std::string>(42));
-            R_TEST(variant<int, std::string>("42"), R"("42")");
-            W_TEST(R"("42")", variant<int, std::string>("42"));
+            R_TEST(variant<int, string>(42), R"(42)");
+            W_TEST(R"(42)", variant<int, string>(42));
+            R_TEST(variant<int, string>("42"), R"("42")");
+            W_TEST(R"("42")", variant<int, string>("42"));
+            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(map<int, int>{{1, 3}}), R"({"1":3})");
+            W_TEST(R"({"1":3})", variant<monostate, map<int, int>, vector<int>, string, int, bool>(map<int, int>{{1, 3}}));
+            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(vector<int>{1, 3}), R"([1,3])");
+            W_TEST(R"([1,3])", variant<monostate, map<int, int>, vector<int>, string, int, bool>(vector<int>{1, 3}));
+            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>("13"), R"("13")");
+            W_TEST(R"("13")", variant<monostate, map<int, int>, vector<int>, string, int, bool>("13"));
+            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(13), R"(13)");
+            W_TEST(R"(13)", variant<monostate, map<int, int>, vector<int>, string, int, bool>(13));
+            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(true), R"(true)");
+            W_TEST(R"(true)", variant<monostate, map<int, int>, vector<int>, string, int, bool>(true));
+            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(), R"(null)");
+            W_TEST(R"(null)", variant<monostate, map<int, int>, vector<int>, string, int, bool>());
+            R_TEST(variant<map<int, int>, vector<int>, string, int, bool, nullptr_t>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<map<int, int>, vector<int>, string, int, bool, nullptr_t>(nullptr));
+            R_TEST(variant<string, variant<int>>("13"), R"("13")");
+            W_TEST(R"("13")", variant<string, variant<int>>("13"));
+            R_TEST(variant<string, variant<int>>(13), R"(13)");
+            W_TEST(R"(13)", variant<string, variant<int>>(13));
+            R_TEST(variant<double, variant<int>>(13.), R"({"0":13})");
+            W_TEST(R"({"0":13})", variant<double, variant<int>>(13.));
+            R_TEST(variant<double, variant<int>>(13), R"({"1":13})");
+            W_TEST(R"({"1":13})", variant<double, variant<int>>(13));
+            R_TEST(variant<monostate>(), R"({"1":3})", json::read_error::unexpected, 0);
+            R_TEST(variant<monostate>(), R"([1,3])", json::read_error::unexpected, 0);
+            R_TEST(variant<monostate>(), R"([1,3])", json::read_error::unexpected, 0);
+            R_TEST(variant<monostate>(), R"("13")", json::read_error::unexpected, 0);
+            R_TEST(variant<monostate>(), R"(13)", json::read_error::unexpected, 0);
+            R_TEST(variant<monostate>(), R"(true)", json::read_error::unexpected, 0);
+            R_TEST(variant<int>(), R"(null)", json::read_error::unexpected, 0);
         // std::variant
             R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({"0":1})");
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"1":0})");
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"2":0})", json::read_error::unexpected, 1);
             W_TEST(R"({"0":1})", variant<int, double>(1));
             W_TEST(R"({"1":0})", variant<int, double>(in_place_index_t<1>(), 0));
-            R_TEST(variant<monostate, int>(), R"({"0":null})");
-            R_TEST(variant<monostate, int>(), R"({"0":1})", json::read_error::unexpected, 5);
-            W_TEST(R"({"0":null})", variant<monostate, int>());
+            R_TEST(variant<monostate, int>(), R"(null)");
+            R_TEST(variant<monostate, int>(), R"("1")", json::read_error::unexpected, 0);
+            W_TEST(R"(null)", variant<monostate, int>());
             R_TEST(variant<int, double>(0), R"()", json::read_error::unexpected, 0);
             R_TEST(variant<int, double>(0), R"({)", json::read_error::unexpected, 1);
             R_TEST(variant<int, double>(0), R"({")", json::read_error::unexpected, 1);
@@ -765,6 +794,12 @@ TEST_END()
             }
     TEST_END()
 
+    TEST_BEG(variant_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+        R_TEST(std::variant<std::monostate>(), R"(/**/null)");
+        R_TEST(std::variant<std::monostate>(), R"(/**/nil)", json::read_error::unexpected, 4);
+        R_TEST(std::variant<std::monostate>(), R"(/nil)", json::read_error::unexpected, 1);
+    TEST_END()
+
     TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/std")
         using namespace std;
         // std::variant
@@ -773,9 +808,9 @@ TEST_END()
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({2:0})", json::read_error::unexpected, 1);
             W_TEST(R"({0:1})", variant<int, double>(1));
             W_TEST(R"({1:0})", variant<int, double>(in_place_index_t<1>(), 0));
-            R_TEST(variant<monostate, int>(), R"({0:null})");
-            R_TEST(variant<monostate, int>(), R"({0:1})", json::read_error::unexpected, 3);
-            W_TEST(R"({0:null})", variant<monostate, int>());
+            R_TEST(variant<monostate, int>(), R"(null)");
+            R_TEST(variant<monostate, int>(), R"("1")", json::read_error::unexpected, 0);
+            W_TEST(R"(null)", variant<monostate, int>());
             R_TEST(variant<int, double>(0), R"()", json::read_error::unexpected, 0);
             R_TEST(variant<int, double>(0), R"({)", json::read_error::unexpected, 1);
             R_TEST(variant<int, double>(0), R"({x)", json::read_error::unexpected, 1);

@@ -6,6 +6,10 @@
 #ifndef CXON_JSON_LIB_STD_COMPLEX_HXX_
 #define CXON_JSON_LIB_STD_COMPLEX_HXX_
 
+namespace cxon { namespace cio { // type traits
+    template <typename T> struct is_list<std::complex<T>> : std::true_type {};
+}}
+
 namespace cxon {
 
     template <typename X, typename T>

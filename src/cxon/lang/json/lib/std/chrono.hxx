@@ -6,6 +6,11 @@
 #ifndef CXON_JSON_LIB_STD_CHRONO_HXX_
 #define CXON_JSON_LIB_STD_CHRONO_HXX_
 
+namespace cxon { namespace cio { // type traits
+    template <typename R, typename P> struct is_number<std::chrono::duration<R, P>>     : std::true_type {};
+    template <typename C, typename D> struct is_number<std::chrono::time_point<C, D>>   : std::true_type {};
+}}
+
 namespace cxon {
 
     template <typename X, typename R, typename P>

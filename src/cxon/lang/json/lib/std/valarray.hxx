@@ -8,6 +8,10 @@
 
 #include "cxon/lang/common/cio/container.hxx"
 
+namespace cxon { namespace cio { // type traits
+    template <typename T> struct is_list<std::valarray<T>> : std::true_type {};
+}}
+
 namespace cxon {
 
     template <typename X, typename T>
