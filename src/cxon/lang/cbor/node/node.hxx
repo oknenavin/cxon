@@ -69,7 +69,7 @@ namespace cxon { namespace cbor { // node traits
             using                                       boolean_type    = bool;
             using                                       null_type       = std::nullptr_t;
             using                                       undefined_type  = undefined;
-            using                                       dynamic_types   = integer_sequence<node_kind, node_kind::map, node_kind::array, node_kind::tag>;
+            using                                       dynamic_types   = scalar_sequence<node_kind, node_kind::map, node_kind::array, node_kind::tag>;
         };
 
 }}
@@ -115,7 +115,7 @@ namespace cxon { namespace cbor { // node
                 template <typename N> struct node_kind_<N, typename N::undefined>   : std::integral_constant<node_kind, node_kind::undefined>   {};
 
                 template <typename T>
-                    using is_dynamic_type_ = integer_sequence_contains<
+                    using is_dynamic_type_ = scalar_sequence_contains<
                         typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
