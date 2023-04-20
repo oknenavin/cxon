@@ -53,7 +53,7 @@ namespace cxon { namespace json { // node traits
             using                                       uint_type       = unsigned long long;
             using                                       boolean_type    = bool;
             using                                       null_type       = std::nullptr_t;
-            using                                       dynamic_types   = integer_sequence<node_kind, node_kind::object, node_kind::array>;
+            using                                       dynamic_types   = scalar_sequence<node_kind, node_kind::object, node_kind::array>;
         };
 
 }}
@@ -93,7 +93,7 @@ namespace cxon { namespace json { // node
                 template <typename N> struct node_kind_<N, typename N::null>    : std::integral_constant<node_kind, node_kind::null>    {};
 
                 template <typename T>
-                    using is_dynamic_type_ = integer_sequence_contains<
+                    using is_dynamic_type_ = scalar_sequence_contains<
                         typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>

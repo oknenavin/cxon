@@ -91,24 +91,41 @@ namespace cxon {
 
     // integer sequence
 
-    template <typename T, T ...> // C++14
-        struct integer_sequence;
+    template <typename T, T ...>
+        struct scalar_sequence;
     namespace imp {
         template <typename T, std::size_t H, T ...Ts>
-            struct make_integer_sequence_ : make_integer_sequence_<T, H - 1, H - 1, Ts...>  {};
+            struct make_scalar_sequence_ : make_scalar_sequence_<T, H - 1, H - 1, Ts...> {};
         template <typename T, T ...Ts>
-            struct make_integer_sequence_<T, 0, Ts...> : integer_sequence<T, Ts...>         { using type = integer_sequence<T, Ts...>; };
+            struct make_scalar_sequence_<T, 0, Ts...> : scalar_sequence<T, Ts...> {
+                using type = scalar_sequence<T, Ts...>;
+            };
     }
-    template <typename T, std::size_t N>
-        using make_integer_sequence = typename imp::make_integer_sequence_<T, N>::type;
-
-    template <std::size_t ...N> // C++14
-        using index_sequence = integer_sequence<std::size_t, N...>;
-    template <std::size_t N>
-        using make_index_sequence = make_integer_sequence<std::size_t, N>;
+    template <typename T, T N>
+        using make_scalar_sequence = typename imp::make_scalar_sequence_<T, N>::type;
 
     template <typename S, typename S::value_type>
-        struct integer_sequence_contains;
+        struct scalar_sequence_contains;
+
+#   if __cplusplus < 201402L
+        template <typename T, T ...Ts>  // C++14
+            using integer_sequence      = scalar_sequence<T, Ts...>;
+        template <typename T, T N>
+            using make_integer_sequence = make_scalar_sequence<T, N>;
+        template <std::size_t ...N>     // C++14
+            using index_sequence        = integer_sequence<std::size_t, N...>;
+        template <std::size_t N>
+            using make_index_sequence   = make_integer_sequence<std::size_t, N>;
+#   else
+        template <typename T, T ...Ts>  // C++14
+            using integer_sequence      = std::integer_sequence<T, Ts...>;
+        template <typename T, T N>
+            using make_integer_sequence = std::integer_sequence<T, N>;
+        template <std::size_t ...N>     // C++14
+            using index_sequence        = std::integer_sequence<std::size_t, N...>;
+        template <std::size_t N>
+            using make_index_sequence   = std::make_integer_sequence<std::size_t, N>;
+#   endif
 
     // type traits
 
@@ -116,33 +133,33 @@ namespace cxon {
     template <typename T> struct is_char;
     template <typename T> struct is_numeric;
 
-    template <typename T> using decay_t = typename std::decay<T>::type; // C++14
-    template <typename T> using remove_cv_t = typename std::remove_cv<T>::type; // C++14
-    template <typename T> using remove_reference_t = typename std::remove_reference<T>::type; // C++14
+    template <typename T> using decay_t             = typename std::decay<T>::type;             // C++14
+    template <typename T> using remove_cv_t         = typename std::remove_cv<T>::type;         // C++14
+    template <typename T> using remove_reference_t  = typename std::remove_reference<T>::type;  // C++14
+
+    template <typename T>       // C++20
+        struct remove_cvref     : std::remove_cv<remove_reference_t<T>> {};
+    template <typename T>       // C++20
+        using  remove_cvref_t   = typename remove_cvref<T>::type;
 
     template <bool B, typename T, typename F> // C++14
-        using conditional_t = typename std::conditional<B, T, F>::type;
+        using conditional_t     = typename std::conditional<B, T, F>::type;
 
-    template <bool B> // C++17
+    template <bool B>       // C++17
         using bool_constant = std::integral_constant<bool, B>;
+
+    template <typename T>   // C++20
+        struct type_identity { using type = T; };
 
     template <typename ...> // C++17
         struct conjunction;
     template <typename ...> // C++17
         struct disjunction;
-    template <typename B> // C++17
-        struct negation;
+    template <typename B>   // C++17
+        struct negation : bool_constant<!B::value> {};
 
     template <typename ...T>
         struct aligned_union; // std::aligned_union deprecated in c++23
-
-    template <typename T> // C++20
-        struct type_identity;
-
-    template <typename T> // C++20
-        struct remove_cvref;
-    template <typename T> // C++20
-        using remove_cvref_t = typename remove_cvref<T>::type;
 
     // container
 
@@ -240,25 +257,20 @@ namespace cxon {
     // integer sequence
 
     template <typename T, T ...Ts>
-        struct integer_sequence {
+        struct scalar_sequence {
             using value_type = T;
             static constexpr std::size_t size() noexcept { return sizeof...(Ts); }
         };
 
-
     namespace imp {
-
-        template <typename T, T V, typename W, T ...Es>
-            struct integer_sequence_contains_ :
-                std::false_type {};
-        template <typename T, T V, T E, T ...Es>
-            struct integer_sequence_contains_<T, V, integer_sequence<T, E, Es...>> :
-                bool_constant<V == E || integer_sequence_contains_<T, V, integer_sequence<T, Es...>>::value> {};
-
+        template <typename S, typename T, T V, T ...Ts>
+            struct scalar_sequence_contains_                        : std::false_type {};
+        template <template <typename U, U ...> class S, typename T, T V, T H, T ...Ts>
+            struct scalar_sequence_contains_<S<T, H, Ts...>, T, V>  :
+                bool_constant<H == V || scalar_sequence_contains_<S<T, Ts...>, T, V>::value> {};
     }
     template <typename S, typename S::value_type V>
-        struct integer_sequence_contains :
-            bool_constant<imp::integer_sequence_contains_<typename S::value_type, V, S>::value> {};
+        struct scalar_sequence_contains : bool_constant<imp::scalar_sequence_contains_<S, typename S::value_type, V>::value> {};
 
     // type traits
 
@@ -292,15 +304,6 @@ namespace cxon {
         struct disjunction                  : std::false_type {};
     template <typename B, typename ...Bs>
         struct disjunction<B, Bs...>        : bool_constant<B::value || disjunction<Bs...>::value> {};
-
-    template <typename B>
-        struct negation : bool_constant<!B::value> {};
-
-    template <typename T >
-        struct type_identity { using type = T; };
-
-    template <typename T> // C++20
-        struct remove_cvref : std::remove_cv<remove_reference_t<T>> {};
 
     // iterators
 
