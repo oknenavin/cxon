@@ -41,4 +41,4 @@ jobs:
     - name: Check
       run: |
         cd test/.bld
-        ctest -j -V -C Release
+        ctest --output-on-failure -j -V -C Release
