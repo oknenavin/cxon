@@ -34,7 +34,7 @@ jobs:
     - name: Configure
       run: |
         cd test
-        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=17 -D CMAKE_CXX_FLAGS="-I ../../.dep/boost"
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-I ../../.dep/boost"
     - name: Build
       run: |
         cd test
