@@ -702,6 +702,34 @@ TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_VARIANT
+
+    struct variant_struct_1 {
+        int x;
+        variant_struct_1(int x = 0) : x(x) {}
+        bool operator ==(const variant_struct_1& s) const noexcept { return x == s.x; }
+        CXON_JSON_CLS_MEMBER(variant_struct_1, CXON_JSON_CLS_FIELD_ASIS(x))
+    };
+    struct variant_struct_2 {
+        int x;
+        variant_struct_2(int x = 0) : x(x) {}
+        bool operator ==(const variant_struct_2& s) const noexcept { return x == s.x; }
+        CXON_JSON_CLS_MEMBER(variant_struct_2, CXON_JSON_CLS_FIELD_ASIS(x))
+    };
+    CXON_JSON_CLS_TRAITS(variant_struct_2)
+    template <typename T>
+        struct variant_struct_3 {
+            T x;
+            variant_struct_3(T x = 0) : x(x) {}
+            bool operator ==(const variant_struct_3& s) const noexcept { return x == s.x; }
+            CXON_JSON_CLS_MEMBER(variant_struct_3, CXON_JSON_CLS_FIELD_ASIS(x))
+        };
+    namespace cxon { namespace cio {
+        template <typename T> struct is_map<variant_struct_3<T>> : std::true_type {};
+    }}
+
+    enum class variant_enum { a, b };
+    CXON_JSON_ENM(variant_enum, CXON_JSON_ENM_VALUE_ASIS(a), CXON_JSON_ENM_VALUE_ASIS(b))
+
     TEST_BEG(variant, cxon::JSON<>, "/std")
         using namespace std;
         // std::variant
@@ -713,8 +741,8 @@ TEST_END()
             W_TEST(R"({"1":3})", variant<monostate, map<int, int>, vector<int>, string, int, bool>(map<int, int>{{1, 3}}));
             R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(vector<int>{1, 3}), R"([1,3])");
             W_TEST(R"([1,3])", variant<monostate, map<int, int>, vector<int>, string, int, bool>(vector<int>{1, 3}));
-            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>("13"), R"("13")");
-            W_TEST(R"("13")", variant<monostate, map<int, int>, vector<int>, string, int, bool>("13"));
+            R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>("13"), R"("13")"); // bug: msvc/toolset 143 C++17 selects bool, ok with C++20
+            W_TEST(R"("13")", variant<monostate, map<int, int>, vector<int>, string, int, bool>("13")); // bug: msvc/toolset 143 C++17 selects bool, ok with C++20
             R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(13), R"(13)");
             W_TEST(R"(13)", variant<monostate, map<int, int>, vector<int>, string, int, bool>(13));
             R_TEST(variant<monostate, map<int, int>, vector<int>, string, int, bool>(true), R"(true)");
@@ -729,8 +757,8 @@ TEST_END()
             W_TEST(R"(13)", variant<string, variant<int>>(13));
             R_TEST(variant<double, variant<int>>(13.), R"({"0":13})");
             W_TEST(R"({"0":13})", variant<double, variant<int>>(13.));
-            R_TEST(variant<double, variant<int>>(13), R"({"1":13})");
-            W_TEST(R"({"1":13})", variant<double, variant<int>>(13));
+            R_TEST(variant<double, variant<int>>(13), R"({"1":13})"); // bug: msvc/toolset 143 C++17 selects double, ok with C++20
+            W_TEST(R"({"1":13})", variant<double, variant<int>>(13)); // bug: msvc/toolset 143 C++17 selects double, ok with C++20
             R_TEST(variant<monostate>(), R"({"1":3})", json::read_error::unexpected, 0);
             R_TEST(variant<monostate>(), R"([1,3])", json::read_error::unexpected, 0);
             R_TEST(variant<monostate>(), R"([1,3])", json::read_error::unexpected, 0);
@@ -738,6 +766,22 @@ TEST_END()
             R_TEST(variant<monostate>(), R"(13)", json::read_error::unexpected, 0);
             R_TEST(variant<monostate>(), R"(true)", json::read_error::unexpected, 0);
             R_TEST(variant<int>(), R"(null)", json::read_error::unexpected, 0);
+            R_TEST(variant<nullptr_t, variant_struct_1>(13), R"({"1":{"x":13}})");
+            W_TEST(R"({"1":{"x":13}})", variant<nullptr_t, variant_struct_1>(13));
+            R_TEST(variant<nullptr_t, variant_struct_1>(nullptr), R"({"0":null})");
+            W_TEST(R"({"0":null})", variant<nullptr_t, variant_struct_1>(nullptr));
+            R_TEST(variant<nullptr_t, variant_struct_2>(13), R"({"x":13})");
+            W_TEST(R"({"x":13})", variant<nullptr_t, variant_struct_2>(13));
+            R_TEST(variant<nullptr_t, variant_struct_2>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<nullptr_t, variant_struct_2>(nullptr));
+            R_TEST(variant<nullptr_t, variant_struct_3<int>>(13), R"({"x":13})");
+            W_TEST(R"({"x":13})", variant<nullptr_t, variant_struct_3<int>>(13));
+            R_TEST(variant<nullptr_t, variant_struct_3<int>>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<nullptr_t, variant_struct_3<int>>(nullptr));
+            R_TEST(variant<nullptr_t, variant_enum>(variant_enum::b), R"("b")");
+            W_TEST(R"("b")", variant<nullptr_t, variant_enum>(variant_enum::b));
+            R_TEST(variant<nullptr_t, variant_enum>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<nullptr_t, variant_enum>(nullptr));
         // std::variant
             R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({"0":1})");
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"1":0})");
