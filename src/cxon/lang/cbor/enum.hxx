@@ -62,14 +62,14 @@ namespace cxon { namespace cbor { namespace enm {
 }}}
 
 #define CXON_CBOR_ENM_VALUE(T, A, V)   cxon::cbor::enm::make_value((A), T::V)
-#define CXON_CBOR_ENM_VALUE_NAME(A, V) CXON_CBOR_ENM_VALUE(T, (A), V)
-#define CXON_CBOR_ENM_VALUE_ASIS(V)    CXON_CBOR_ENM_VALUE(T, V, V)
+#define CXON_CBOR_ENM_VALUE_NAME(A, V) CXON_CBOR_ENM_VALUE(CXON_T_, (A), V)
+#define CXON_CBOR_ENM_VALUE_ASIS(V)    CXON_CBOR_ENM_VALUE(CXON_T_, V, V)
 
 #define CXON_CBOR_ENM_READ(Type, ...)\
     namespace cxon {\
         template <typename X, typename II, typename Cx>\
             inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {\
-                using T = Type;\
+                using CXON_T_ = Type;\
                 static constexpr cbor::enm::value<Type> v[] = { __VA_ARGS__ };\
                 return cbor::enm::read_value<X>(t, std::begin(v), std::end(v), i, e, cx);\
             }\
@@ -78,7 +78,7 @@ namespace cxon { namespace cbor { namespace enm {
     namespace cxon {\
         template <typename X, typename O, typename Cx>\
             inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, CBOR> {\
-                using T = Type;\
+                using CXON_T_ = Type;\
                 static constexpr cbor::enm::value<Type> v[] = { __VA_ARGS__ };\
                 return cbor::enm::write_value<X>(o, t, std::begin(v), std::end(v), cx);\
             }\
