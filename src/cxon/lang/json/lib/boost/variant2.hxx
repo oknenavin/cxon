@@ -53,7 +53,7 @@ namespace cxon {
 
         template <typename X, typename V, typename II, typename Cx>
             inline auto variant_read_(V& t, II& i, II e, Cx& cx)
-                -> enable_if_t< cio::is_key_context<X>::value || !cio::var::has_unambiguous_types<V>::value, bool>
+                -> enable_if_t< cio::is_key_context<X>::value ||  cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  cio::consume<X>(X::map::beg, i, e, cx) &&
                             read_<X, V, II, Cx>::variant(t, i, e, cx) &&
@@ -62,7 +62,7 @@ namespace cxon {
             }
         template <typename X, typename V, typename II, typename Cx>
             inline auto variant_read_(V& t, II& i, II e, Cx& cx)
-                -> enable_if_t<!cio::is_key_context<X>::value &&  cio::var::has_unambiguous_types<V>::value, bool>
+                -> enable_if_t<!cio::is_key_context<X>::value && !cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  cio::var::variant_read<X>(t, i, e, cx);
             }
@@ -94,7 +94,7 @@ namespace cxon {
 
         template <typename X, typename V, typename O, typename Cx>
             inline auto variant_write_(O& o, const V& t, Cx& cx)
-                -> enable_if_t< cio::is_key_context<X>::value || !cio::var::has_unambiguous_types<V>::value, bool>
+                -> enable_if_t< cio::is_key_context<X>::value ||  cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  cio::poke<X>(o, X::map::beg, cx) &&
                             write_<X, O, V, Cx>::variant(o, t, cx) &&
@@ -103,7 +103,7 @@ namespace cxon {
             }
         template <typename X, typename V, typename O, typename Cx>
             inline auto variant_write_(O& o, const V& t, Cx& cx)
-                -> enable_if_t<!cio::is_key_context<X>::value &&  cio::var::has_unambiguous_types<V>::value, bool>
+                -> enable_if_t<!cio::is_key_context<X>::value && !cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  write_<X, O, V, Cx>::variant(o, t, t.index(), cx);
             }

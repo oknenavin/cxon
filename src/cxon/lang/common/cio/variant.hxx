@@ -21,10 +21,10 @@ namespace cxon { namespace cio { namespace var { // variant type traits
         using  has_type = negation<std::is_same<get_type_t<P, T...>, void>>;
 
     template <typename ...T>
-        struct is_unambiguous;
+        struct is_ambiguous;
 
     template <typename T>
-        struct has_unambiguous_types;
+        struct has_ambiguous_types;
 
     template <typename X, typename V, typename II, typename Cx>
         inline bool variant_read(V& v, II& i, II e, Cx& cx);
@@ -67,18 +67,18 @@ namespace cxon { namespace cio { namespace var {
         >;
 
     template <typename ...>
-        struct is_unambiguous                   : std::false_type {};
+        struct is_ambiguous                 : std::true_type {};
     template <typename T>
-        struct is_unambiguous<T>                : std::true_type {};
+        struct is_ambiguous<T>              : std::false_type {};
     template <typename U, typename V>
-        struct is_unambiguous<U, V>             : conjunction<is_known<U>, is_known<V>, negation<are_same<U, V>>> {};
+        struct is_ambiguous<U, V>           : disjunction<negation<is_known<U>>, negation<is_known<V>>, are_same<U, V>> {};
     template <typename U, typename V, typename ...T>
-        struct is_unambiguous<U, V, T...>       : conjunction<is_unambiguous<U, V>, is_unambiguous<U, T...>, is_unambiguous<V, T...>> {};
+        struct is_ambiguous<U, V, T...>     : disjunction<is_ambiguous<U, V>, is_ambiguous<U, T...>, is_ambiguous<V, T...>> {};
 
     template <typename T>
-        struct has_unambiguous_types            : std::false_type {};
+        struct has_ambiguous_types          : std::true_type {};
     template <template <typename ...> class P, typename ...T>
-        struct has_unambiguous_types<P<T...>>   : cxon::bool_constant<cio::var::is_unambiguous<T...>::value> {};
+        struct has_ambiguous_types<P<T...>> : cxon::bool_constant<cio::var::is_ambiguous<T...>::value> {};
 
     namespace imp {
         template <typename X, template <typename, typename> class S, bool E, typename V, typename II, typename Cx>
