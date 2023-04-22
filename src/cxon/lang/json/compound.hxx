@@ -24,7 +24,7 @@ namespace cxon { // pointer
                 static bool value(T*& t, II& i, II e, Cx& cx) {
                     if (!cio::consume<Y>(i, e, cx))
                         return false;
-                    if (cio::peek(i, e) == *Y::id::nil) { // TODO: needs buffering
+                    if (cio::peek(i, e) == *Y::id::nil) {
                         II const o = i;
                         return  (cio::consume<Y>(Y::id::nil, i, e) && (t = nullptr, true)) ||
                                 (cio::rewind(i, o), cx/json::read_error::unexpected)
