@@ -22,9 +22,7 @@ namespace test { namespace mesh {
     };
 
     struct morph_targets {
-        bool dummy; // avoid compiler warning
-                    // TODO: fix the macros to handle empty structs
-        CXON_JSON_CLS_MEMBER(morph_targets, CXON_JSON_CLS_FIELD_ASIS(dummy))
+        CXON_JSON_CLS_MEMBER(morph_targets)
     };
 
     struct object {
