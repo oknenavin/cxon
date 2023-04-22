@@ -56,7 +56,7 @@ namespace cxon {
 
         template <typename X, typename II, typename Cx, typename ...T>
             inline auto variant_read_(::boost::variant<T...>& t, II& i, II e, Cx& cx)
-                -> enable_if_t< cio::is_key_context<X>::value || !cio::var::is_unambiguous<T...>::value, bool>
+                -> enable_if_t< cio::is_key_context<X>::value ||  cio::var::is_ambiguous<T...>::value, bool>
             {
                 return  cio::consume<X>(X::map::beg, i, e, cx) &&
                             read_<X, II, Cx, T...>::variant(t, i, e, cx) &&
@@ -65,7 +65,7 @@ namespace cxon {
             }
         template <typename X, typename II, typename Cx, typename ...T>
             inline auto variant_read_(::boost::variant<T...>& t, II& i, II e, Cx& cx)
-                -> enable_if_t<!cio::is_key_context<X>::value &&  cio::var::is_unambiguous<T...>::value, bool>
+                -> enable_if_t<!cio::is_key_context<X>::value && !cio::var::is_ambiguous<T...>::value, bool>
             {
                 return  cio::var::variant_read<X>(t, i, e, cx);
             }
@@ -95,7 +95,7 @@ namespace cxon {
 
         template <typename X, typename O, typename Cx, typename ...T>
             inline auto variant_write_(O& o, const ::boost::variant<T...>& t, Cx& cx)
-                -> enable_if_t< cio::is_key_context<X>::value || !cio::var::is_unambiguous<T...>::value, bool>
+                -> enable_if_t< cio::is_key_context<X>::value ||  cio::var::is_ambiguous<T...>::value, bool>
             {
                 return  cio::poke<X>(o, X::map::beg, cx) &&
                             write_<X, O, Cx, T...>::variant(o, t, cx) &&
@@ -104,7 +104,7 @@ namespace cxon {
             }
         template <typename X, typename O, typename Cx, typename ...T>
             inline auto variant_write_(O& o, const ::boost::variant<T...>& t, Cx& cx)
-                -> enable_if_t<!cio::is_key_context<X>::value &&  cio::var::is_unambiguous<T...>::value, bool>
+                -> enable_if_t<!cio::is_key_context<X>::value && !cio::var::is_ambiguous<T...>::value, bool>
             {
                 return  write_<X, O, Cx, T...>::variant(o, t, t.which(), cx);
             }
