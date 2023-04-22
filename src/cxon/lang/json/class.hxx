@@ -101,14 +101,14 @@ namespace cxon { // cio::val::sink read
 #   define CXON_JSON_CLS_READ_MEMBER(Type, ...)\
         template <typename X, typename II, typename Cx>\
             static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {\
-                using CXON_T_ = Type;\
+                using CXON_T_ = Type; ((void)((CXON_T_*)0));\
                 static constexpr auto f = cxon::json::cls::make_fields(__VA_ARGS__);\
                 return cxon::json::cls::read_fields<X>(t, f, i, e, cx);\
             }
 #   define CXON_JSON_CLS_WRITE_MEMBER(Type, ...)\
         template <typename X, typename O, typename Cx>\
             static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {\
-                using CXON_T_ = Type;\
+                using CXON_T_ = Type; ((void)((CXON_T_*)0));\
                 static constexpr auto f = cxon::json::cls::make_fields(__VA_ARGS__);\
                 return cxon::json::cls::write_fields<X>(o, t, f, cx);\
             }
@@ -116,14 +116,14 @@ namespace cxon { // cio::val::sink read
 #   define CXON_JSON_CLS_READ_MEMBER(Type, ...)\
         template <typename X, typename II, typename Cx>\
             static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {\
-                using CXON_T_ = Type;\
+                using CXON_T_ = Type; ((void)((CXON_T_*)0));\
                 static auto const f = cxon::json::cls::make_fields(__VA_ARGS__);\
                 return cxon::json::cls::read_fields<X>(t, f, i, e, cx);\
             }
 #   define CXON_JSON_CLS_WRITE_MEMBER(Type, ...)\
         template <typename X, typename O, typename Cx>\
             static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {\
-                using CXON_T_ = Type;\
+                using CXON_T_ = Type; ((void)((CXON_T_*)0));\
                 static auto const f = cxon::json::cls::make_fields(__VA_ARGS__);\
                 return cxon::json::cls::write_fields<X>(o, t, f, cx);\
             }

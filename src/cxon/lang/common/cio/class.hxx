@@ -177,6 +177,9 @@ namespace cxon { namespace cio { namespace cls {
                 return read_<X, 0, N>::field(s, name, fs, st, i, e, cx);
             }
 
+        template <typename X, typename S, typename II, typename Cx>
+            inline constexpr bool read_fields_(S&, const fields<>&, II&, II, Cx&) { return true; }
+
         template <typename X, typename S, typename ...F, typename II, typename Cx>
             inline auto read_fields_(S& s, const fields<F...>& fs, II& i, II e, Cx& cx)
                 -> enable_if_t<!is_bare_class<S>::value, bool>
