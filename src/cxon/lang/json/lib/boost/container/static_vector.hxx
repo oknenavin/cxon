@@ -8,6 +8,10 @@
 
 #include "cxon/lang/common/cio/container.hxx"
 
+namespace cxon { namespace cio { // type traits
+    template <typename T, std::size_t N> struct is_list<boost::container::static_vector<T, N>> : std::true_type {};
+}}
+
 namespace cxon {
 
     template <typename X, typename T, std::size_t N>

@@ -310,17 +310,97 @@ TEST_END()
 
 
 #ifdef CXON_HAS_BOOST_VARIANT2
+
+    struct boost_variant2_struct_1 {
+        int x;
+        boost_variant2_struct_1(int x = 0) : x(x) {}
+        bool operator ==(const boost_variant2_struct_1& s) const noexcept { return x == s.x; }
+        CXON_JSON_CLS_MEMBER(boost_variant2_struct_1, CXON_JSON_CLS_FIELD_ASIS(x))
+    };
+    struct boost_variant2_struct_2 {
+        int x;
+        boost_variant2_struct_2(int x = 0) : x(x) {}
+        bool operator ==(const boost_variant2_struct_2& s) const noexcept { return x == s.x; }
+        CXON_JSON_CLS_MEMBER(boost_variant2_struct_2, CXON_JSON_CLS_FIELD_ASIS(x))
+    };
+    CXON_JSON_CLS_TRAITS(boost_variant2_struct_2)
+    template <typename T>
+        struct boost_variant2_struct_3 {
+            T x;
+            boost_variant2_struct_3(T x = 0) : x(x) {}
+            bool operator ==(const boost_variant2_struct_3& s) const noexcept { return x == s.x; }
+            CXON_JSON_CLS_MEMBER(boost_variant2_struct_3, CXON_JSON_CLS_FIELD_ASIS(x))
+        };
+    namespace cxon { namespace cio {
+        template <typename T> struct is_map<boost_variant2_struct_3<T>> : std::true_type {};
+    }}
+
+    enum class boost_variant2_enum { a, b };
+    CXON_JSON_ENM(boost_variant2_enum, CXON_JSON_ENM_VALUE_ASIS(a), CXON_JSON_ENM_VALUE_ASIS(b))
+
     TEST_BEG(variant2, cxon::JSON<>, "/boost")
         using namespace boost::variant2;
+        using namespace boost::container;
+        // boost::variant
+            R_TEST(variant<int, string>(42), R"(42)");
+            W_TEST(R"(42)", variant<int, string>(42));
+            R_TEST(variant<int, string>("42"), R"("42")");
+            W_TEST(R"("42")", variant<int, string>("42"));
+            R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(map<int, int>{{1, 3}}), R"({"1":3})");
+            W_TEST(R"({"1":3})", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(map<int, int>{{1, 3}}));
+            R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(stable_vector<int>{1, 3}), R"([1,3])");
+            W_TEST(R"([1,3])", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(stable_vector<int>{1, 3}));
+            R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(string("13")), R"("13")");
+            W_TEST(R"("13")", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(string("13")));
+            R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(13), R"(13)");
+            W_TEST(R"(13)", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(13));
+            R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(true), R"(true)");
+            W_TEST(R"(true)", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(true));
+            R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(), R"(null)");
+            W_TEST(R"(null)", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>());
+            R_TEST(variant<map<int, int>, stable_vector<int>, string, int, bool, std::nullptr_t>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<map<int, int>, stable_vector<int>, string, int, bool, std::nullptr_t>(nullptr));
+            R_TEST(variant<string, variant<int>>("13"), R"("13")");
+            W_TEST(R"("13")", variant<string, variant<int>>("13"));
+            R_TEST(variant<string, variant<int>>(13), R"(13)");
+            W_TEST(R"(13)", variant<string, variant<int>>(13));
+            R_TEST(variant<double, variant<int>>(13.), R"({"0":13})");
+            W_TEST(R"({"0":13})", variant<double, variant<int>>(13.));
+            R_TEST(variant<double, variant<int>>(variant<int>(13)), R"({"1":13})");
+            W_TEST(R"({"1":13})", variant<double, variant<int>>(variant<int>(13)));
+            R_TEST(variant<std::nullptr_t>(), R"({"1":3})", cxon::json::read_error::unexpected, 0);
+            R_TEST(variant<std::nullptr_t>(), R"([1,3])", cxon::json::read_error::unexpected, 0);
+            R_TEST(variant<std::nullptr_t>(), R"([1,3])", cxon::json::read_error::unexpected, 0);
+            R_TEST(variant<std::nullptr_t>(), R"("13")", cxon::json::read_error::unexpected, 0);
+            R_TEST(variant<std::nullptr_t>(), R"(13)", cxon::json::read_error::unexpected, 0);
+            R_TEST(variant<std::nullptr_t>(), R"(true)", cxon::json::read_error::unexpected, 0);
+            R_TEST(variant<int>(), R"(null)", cxon::json::read_error::unexpected, 0);
+            R_TEST(variant<int>(), R"(TRUE)", json::read_error::unexpected, 0);
+            R_TEST(variant<std::nullptr_t, boost_variant2_struct_1>(13), R"({"1":{"x":13}})");
+            W_TEST(R"({"1":{"x":13}})", variant<std::nullptr_t, boost_variant2_struct_1>(13));
+            R_TEST(variant<std::nullptr_t, boost_variant2_struct_1>(nullptr), R"({"0":null})");
+            W_TEST(R"({"0":null})", variant<std::nullptr_t, boost_variant2_struct_1>(nullptr));
+            R_TEST(variant<std::nullptr_t, boost_variant2_struct_2>(13), R"({"x":13})");
+            W_TEST(R"({"x":13})", variant<std::nullptr_t, boost_variant2_struct_2>(13));
+            R_TEST(variant<std::nullptr_t, boost_variant2_struct_2>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<std::nullptr_t, boost_variant2_struct_2>(nullptr));
+            R_TEST(variant<std::nullptr_t, boost_variant2_struct_3<int>>(13), R"({"x":13})");
+            W_TEST(R"({"x":13})", variant<std::nullptr_t, boost_variant2_struct_3<int>>(13));
+            R_TEST(variant<std::nullptr_t, boost_variant2_struct_3<int>>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<std::nullptr_t, boost_variant2_struct_3<int>>(nullptr));
+            R_TEST(variant<std::nullptr_t, boost_variant2_enum>(boost_variant2_enum::b), R"("b")");
+            W_TEST(R"("b")", variant<std::nullptr_t, boost_variant2_enum>(boost_variant2_enum::b));
+            R_TEST(variant<std::nullptr_t, boost_variant2_enum>(nullptr), R"(null)");
+            W_TEST(R"(null)", variant<std::nullptr_t, boost_variant2_enum>(nullptr));
         // boost::variant2::variant
             R_TEST(variant<int, double>(in_place_index_t<0>(), 1), R"({"0":1})");
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"1":0})");
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({"2":0})", json::read_error::unexpected, 1);
             W_TEST(R"({"0":1})", variant<int, double>(1));
             W_TEST(R"({"1":0})", variant<int, double>(in_place_index_t<1>(), 0));
-            R_TEST(variant<monostate, int>(), R"({"0":null})");
-            R_TEST(variant<monostate, int>(), R"({"0":1})", json::read_error::unexpected, 5);
-            W_TEST(R"({"0":null})", variant<monostate, int>());
+            R_TEST(variant<monostate, int>(), R"(null)");
+            R_TEST(variant<monostate, int>(), R"("1")", json::read_error::unexpected, 0);
+            W_TEST(R"(null)", variant<monostate, int>());
         // errors
             R_TEST(variant<int, double>(0), R"()", json::read_error::unexpected, 0);
             R_TEST(variant<int, double>(0), R"({)", json::read_error::unexpected, 1);
@@ -369,6 +449,13 @@ TEST_END()
             }
     TEST_END()
 
+    TEST_BEG(variant2_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+        using namespace boost::variant2;
+        R_TEST(variant<std::nullptr_t>(), R"(/**/null)");
+        R_TEST(variant<std::nullptr_t>(), R"(/**/nil)", cxon::json::read_error::unexpected, 4);
+        R_TEST(variant<std::nullptr_t>(), R"(/nil)", cxon::json::read_error::unexpected, 1);
+    TEST_END()
+
     TEST_BEG(variant2_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/boost")
         using namespace boost::variant2;
         // boost::variant2::variant
@@ -377,9 +464,9 @@ TEST_END()
             R_TEST(variant<int, double>(in_place_index_t<1>(), 0), R"({2:0})", json::read_error::unexpected, 1);
             W_TEST(R"({0:1})", variant<int, double>(1));
             W_TEST(R"({1:0})", variant<int, double>(in_place_index_t<1>(), 0));
-            R_TEST(variant<monostate, int>(), R"({0:null})");
-            R_TEST(variant<monostate, int>(), R"({0:1})", json::read_error::unexpected, 3);
-            W_TEST(R"({0:null})", variant<monostate, int>());
+            R_TEST(variant<monostate, int>(), R"(null)");
+            R_TEST(variant<monostate, int>(), R"("1")", json::read_error::unexpected, 0);
+            W_TEST(R"(null)", variant<monostate, int>());
     // errors
         R_TEST(variant<int, double>(0), R"()", json::read_error::unexpected, 0);
         R_TEST(variant<int, double>(0), R"({)", json::read_error::unexpected, 1);
@@ -425,8 +512,88 @@ namespace cxon { namespace test {
             }
         };
 }}
-TEST_BEG(variant, cxon::JSON<>, "/boost")
+
+struct boost_variant_struct_1 {
+    int x;
+    boost_variant_struct_1(int x = 0) : x(x) {}
+    bool operator ==(const boost_variant_struct_1& s) const noexcept { return x == s.x; }
+    CXON_JSON_CLS_MEMBER(boost_variant_struct_1, CXON_JSON_CLS_FIELD_ASIS(x))
+};
+struct boost_variant_struct_2 {
+    int x;
+    boost_variant_struct_2(int x = 0) : x(x) {}
+    bool operator ==(const boost_variant_struct_2& s) const noexcept { return x == s.x; }
+    CXON_JSON_CLS_MEMBER(boost_variant_struct_2, CXON_JSON_CLS_FIELD_ASIS(x))
+};
+CXON_JSON_CLS_TRAITS(boost_variant_struct_2)
+template <typename T>
+    struct boost_variant_struct_3 {
+        T x;
+        boost_variant_struct_3(T x = 0) : x(x) {}
+        bool operator ==(const boost_variant_struct_3& s) const noexcept { return x == s.x; }
+        CXON_JSON_CLS_MEMBER(boost_variant_struct_3, CXON_JSON_CLS_FIELD_ASIS(x))
+    };
+namespace cxon { namespace cio {
+    template <typename T> struct is_map<boost_variant_struct_3<T>> : std::true_type {};
+}}
+
+enum class boost_variant_enum { a, b };
+CXON_JSON_ENM(boost_variant_enum, CXON_JSON_ENM_VALUE_ASIS(a), CXON_JSON_ENM_VALUE_ASIS(b))
+
+TEST_BEG(boost_variant, cxon::JSON<>, "/boost")
     using namespace boost;
+    using namespace boost::container;
+    // boost::variant
+        R_TEST(variant<int, string>(42), R"(42)");
+        W_TEST(R"(42)", variant<int, string>(42));
+        R_TEST(variant<int, string>("42"), R"("42")");
+        W_TEST(R"("42")", variant<int, string>("42"));
+        R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(map<int, int>{{1, 3}}), R"({"1":3})");
+        W_TEST(R"({"1":3})", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(map<int, int>{{1, 3}}));
+        R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(stable_vector<int>{1, 3}), R"([1,3])");
+        W_TEST(R"([1,3])", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(stable_vector<int>{1, 3}));
+        R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(string("13")), R"("13")");
+        W_TEST(R"("13")", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(string("13")));
+        R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(13), R"(13)");
+        W_TEST(R"(13)", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(13));
+        R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(true), R"(true)");
+        W_TEST(R"(true)", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(true));
+        R_TEST(variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>(), R"(null)");
+        W_TEST(R"(null)", variant<std::nullptr_t, map<int, int>, stable_vector<int>, string, int, bool>());
+        R_TEST(variant<map<int, int>, stable_vector<int>, string, int, bool, std::nullptr_t>(nullptr), R"(null)");
+        W_TEST(R"(null)", variant<map<int, int>, stable_vector<int>, string, int, bool, std::nullptr_t>(nullptr));
+        R_TEST(variant<string, variant<int>>("13"), R"("13")");
+        W_TEST(R"("13")", variant<string, variant<int>>("13"));
+        R_TEST(variant<string, variant<int>>(13), R"(13)");
+        W_TEST(R"(13)", variant<string, variant<int>>(13));
+        R_TEST(variant<double, variant<int>>(13.), R"({"0":13})");
+        W_TEST(R"({"0":13})", variant<double, variant<int>>(13.));
+        R_TEST(variant<double, variant<int>>(variant<int>(13)), R"({"1":13})");
+        W_TEST(R"({"1":13})", variant<double, variant<int>>(variant<int>(13)));
+        R_TEST(variant<std::nullptr_t>(), R"({"1":3})", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<std::nullptr_t>(), R"([1,3])", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<std::nullptr_t>(), R"([1,3])", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<std::nullptr_t>(), R"("13")", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<std::nullptr_t>(), R"(13)", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<std::nullptr_t>(), R"(true)", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<int>(), R"(null)", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<int>(), R"(TRUE)", cxon::json::read_error::unexpected, 0);
+        R_TEST(variant<std::nullptr_t, boost_variant_struct_1>(13), R"({"1":{"x":13}})");
+        W_TEST(R"({"1":{"x":13}})", variant<std::nullptr_t, boost_variant_struct_1>(13));
+        R_TEST(variant<std::nullptr_t, boost_variant_struct_1>(nullptr), R"({"0":null})");
+        W_TEST(R"({"0":null})", variant<std::nullptr_t, boost_variant_struct_1>(nullptr));
+        R_TEST(variant<std::nullptr_t, boost_variant_struct_2>(13), R"({"x":13})");
+        W_TEST(R"({"x":13})", variant<std::nullptr_t, boost_variant_struct_2>(13));
+        R_TEST(variant<std::nullptr_t, boost_variant_struct_2>(nullptr), R"(null)");
+        W_TEST(R"(null)", variant<std::nullptr_t, boost_variant_struct_2>(nullptr));
+        R_TEST(variant<std::nullptr_t, boost_variant_struct_3<int>>(13), R"({"x":13})");
+        W_TEST(R"({"x":13})", variant<std::nullptr_t, boost_variant_struct_3<int>>(13));
+        R_TEST(variant<std::nullptr_t, boost_variant_struct_3<int>>(nullptr), R"(null)");
+        W_TEST(R"(null)", variant<std::nullptr_t, boost_variant_struct_3<int>>(nullptr));
+        R_TEST(variant<std::nullptr_t, boost_variant_enum>(boost_variant_enum::b), R"("b")");
+        W_TEST(R"("b")", variant<std::nullptr_t, boost_variant_enum>(boost_variant_enum::b));
+        R_TEST(variant<std::nullptr_t, boost_variant_enum>(nullptr), R"(null)");
+        W_TEST(R"(null)", variant<std::nullptr_t, boost_variant_enum>(nullptr));
     // boost::variant
         R_TEST(variant<int, double>(  1), R"({"0":1})");
         R_TEST(variant<int, double>(0.0), R"({"1":0})");
@@ -483,6 +650,13 @@ TEST_BEG(variant, cxon::JSON<>, "/boost")
                 auto r = cxon::to_bytes<XXON>(c, variant<int, double>(0));
             TEST_CHECK(r.ec == cxon::json::write_error::output_failure);
         }
+TEST_END()
+
+TEST_BEG(variant_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+    using namespace boost;
+    R_TEST(variant<std::nullptr_t>(), R"(/**/null)");
+    R_TEST(variant<std::nullptr_t>(), R"(/**/nil)", cxon::json::read_error::unexpected, 4);
+    R_TEST(variant<std::nullptr_t>(), R"(/nil)", cxon::json::read_error::unexpected, 1);
 TEST_END()
 
 TEST_BEG(variant_unquoted_keys, cxon::JSON<cxon::test::unquoted_keys_traits<>>, "/boost")

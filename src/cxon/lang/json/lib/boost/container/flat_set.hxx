@@ -8,6 +8,11 @@
 
 #include "../../std/imp/set.hxx"
 
+namespace cxon { namespace cio { // type traits
+    template <typename T, typename ...R> struct is_list<boost::container::flat_set<T, R...>>      : std::true_type {};
+    template <typename T, typename ...R> struct is_list<boost::container::flat_multiset<T, R...>> : std::true_type {};
+}}
+
 namespace cxon { namespace cnt {
 
     template <typename X, typename T, typename ...R>

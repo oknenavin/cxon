@@ -766,6 +766,7 @@ TEST_END()
             R_TEST(variant<monostate>(), R"(13)", json::read_error::unexpected, 0);
             R_TEST(variant<monostate>(), R"(true)", json::read_error::unexpected, 0);
             R_TEST(variant<int>(), R"(null)", json::read_error::unexpected, 0);
+            R_TEST(variant<int>(), R"(TRUE)", json::read_error::unexpected, 0);
             R_TEST(variant<nullptr_t, variant_struct_1>(13), R"({"1":{"x":13}})");
             W_TEST(R"({"1":{"x":13}})", variant<nullptr_t, variant_struct_1>(13));
             R_TEST(variant<nullptr_t, variant_struct_1>(nullptr), R"({"0":null})");
