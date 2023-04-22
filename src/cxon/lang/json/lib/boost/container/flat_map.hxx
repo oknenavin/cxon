@@ -8,6 +8,11 @@
 
 #include "../../std/imp/map.hxx"
 
+namespace cxon { namespace cio { // type traits
+    template <typename K, typename V, typename ...R> struct is_map<boost::container::flat_map<K, V, R...>>      : std::true_type {};
+    template <typename K, typename V, typename ...R> struct is_map<boost::container::flat_multimap<K, V, R...>> : std::true_type {};
+}}
+
 namespace cxon { namespace cnt {
 
     template <typename X, typename K, typename V, typename ...R>

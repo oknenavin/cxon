@@ -6,9 +6,21 @@
 #ifndef CXON_JSON_LIB_BOOST_VARIANT2_HXX_
 #define CXON_JSON_LIB_BOOST_VARIANT2_HXX_
 
+#include "cxon/lang/common/cio/variant.hxx"
+
+namespace cxon { namespace cio { // type traits
+    template <typename ...T>    struct is_map<boost::variant2::variant<T...>>       : var::has_type<is_map, T...> {};
+    template <typename ...T>    struct is_list<boost::variant2::variant<T...>>      : var::has_type<is_list, T...> {};
+    template <typename ...T>    struct is_string<boost::variant2::variant<T...>>    : var::has_type<is_string, T...> {};
+    template <typename ...T>    struct is_number<boost::variant2::variant<T...>>    : var::has_type<is_number, T...> {};
+    template <typename ...T>    struct is_bool<boost::variant2::variant<T...>>      : var::has_type<is_bool, T...> {};
+    template <typename ...T>    struct is_null<boost::variant2::variant<T...>>      : var::has_type<is_null, T...> {};
+    template <>                 struct is_null<boost::variant2::monostate>          : std::true_type {};
+}}
+
 namespace cxon {
 
-    namespace json { namespace imp { namespace boost { namespace variant2 {
+    namespace imp { namespace json { namespace boost { namespace variant2 { // read
 
         template <typename X, typename V, typename II, typename Cx, typename N = make_index_sequence<::boost::variant2::variant_size<V>::value>>
             struct read_;
@@ -30,7 +42,7 @@ namespace cxon {
                 static bool index_(std::size_t& n, II& i, II e, Cx& cx) {
                     II const o = i;
                     return  (cio::read_map_key<X>(n, i, e, cx) && n < S_) ||
-                            (cio::rewind(i, o), cx/json::read_error::unexpected)
+                            (cio::rewind(i, o), cx/cxon::json::read_error::unexpected)
                     ;
                 }
                 static bool variant(V& t, II& i, II e, Cx& cx) {
@@ -40,9 +52,24 @@ namespace cxon {
             };
 
         template <typename X, typename V, typename II, typename Cx>
-            inline bool variant_read_(V& t, II& i, II e, Cx& cx) {
-                return read_<X, V, II, Cx>::variant(t, i, e, cx);
+            inline auto variant_read_(V& t, II& i, II e, Cx& cx)
+                -> enable_if_t< cio::is_key_context<X>::value || !cio::var::has_unambiguous_types<V>::value, bool>
+            {
+                return  cio::consume<X>(X::map::beg, i, e, cx) &&
+                            read_<X, V, II, Cx>::variant(t, i, e, cx) &&
+                        cio::consume<X>(X::map::end, i, e, cx)
+                ;
             }
+        template <typename X, typename V, typename II, typename Cx>
+            inline auto variant_read_(V& t, II& i, II e, Cx& cx)
+                -> enable_if_t<!cio::is_key_context<X>::value &&  cio::var::has_unambiguous_types<V>::value, bool>
+            {
+                return  cio::var::variant_read<X>(t, i, e, cx);
+            }
+
+    }}}}
+
+    namespace imp { namespace json { namespace boost { namespace variant2 { // write
 
         template <typename X, typename O, typename V, typename Cx, typename N = make_index_sequence<::boost::variant2::variant_size<V>::value>>
             struct write_;
@@ -54,20 +81,31 @@ namespace cxon {
                     static bool variant_write_(O& o, const V& t, Cx& cx) {
                         return cio::write_map_val<X>(o, ::boost::variant2::get<M>(t), cx);
                     }
-                static bool variant_write_(O& o, const V& t, std::size_t n, Cx& cx) {
+
+                static bool variant(O& o, const V& t, std::size_t n, Cx& cx) {
                     using wvp_ = bool (*)(O&, const V&, Cx&);
                     static constexpr wvp_ wv_[S_] = { &variant_write_<N>... };
                     return wv_[n](o, t, cx);
                 }
-
                 static bool variant(O& o, const V& t, Cx& cx) {
-                    return cio::write_map_key<X>(o, t.index(), cx) && variant_write_(o, t, t.index(), cx);
+                    return cio::write_map_key<X>(o, t.index(), cx) && variant(o, t, t.index(), cx);
                 }
             };
 
-        template <typename X, typename O, typename V, typename Cx>
-            inline bool variant_write_(O& o, const V& t, Cx& cx) {
-                return write_<X, O, V, Cx>::variant(o, t, cx);
+        template <typename X, typename V, typename O, typename Cx>
+            inline auto variant_write_(O& o, const V& t, Cx& cx)
+                -> enable_if_t< cio::is_key_context<X>::value || !cio::var::has_unambiguous_types<V>::value, bool>
+            {
+                return  cio::poke<X>(o, X::map::beg, cx) &&
+                            write_<X, O, V, Cx>::variant(o, t, cx) &&
+                        cio::poke<X>(o, X::map::end, cx)
+                ;
+            }
+        template <typename X, typename V, typename O, typename Cx>
+            inline auto variant_write_(O& o, const V& t, Cx& cx)
+                -> enable_if_t<!cio::is_key_context<X>::value &&  cio::var::has_unambiguous_types<V>::value, bool>
+            {
+                return  write_<X, O, V, Cx>::variant(o, t, t.index(), cx);
             }
 
     }}}}
@@ -80,7 +118,6 @@ namespace cxon {
                     return cio::consume<X>(i, e, cx) && (cio::consume<X>(X::id::nil, i, e) || (cio::rewind(i, o), cx/json::read_error::unexpected));
                 }
         };
-
     template <typename X>
         struct write<JSON<X>, boost::variant2::monostate> {
             template <typename O, typename Cx>
@@ -93,21 +130,14 @@ namespace cxon {
         struct read<JSON<X>, boost::variant2::variant<T...>> {
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(boost::variant2::variant<T...>& t, II& i, II e, Cx& cx) {
-                    return  cio::consume<Y>(Y::map::beg, i, e, cx) &&
-                                json::imp::boost::variant2::variant_read_<Y>(t, i, e, cx) &&
-                            cio::consume<Y>(Y::map::end, i, e, cx)
-                    ;
+                    return imp::json::boost::variant2::variant_read_<Y>(t, i, e, cx);
                 }
         };
-
     template <typename X, typename ...T>
         struct write<JSON<X>, boost::variant2::variant<T...>> {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const boost::variant2::variant<T...>& t, Cx& cx) {
-                    return  cio::poke<Y>(o, Y::map::beg, cx) &&
-                                json::imp::boost::variant2::variant_write_<Y>(o, t, cx) &&
-                            cio::poke<Y>(o, Y::map::end, cx)
-                    ;
+                    return imp::json::boost::variant2::variant_write_<Y>(o, t, cx);
                 }
         };
 

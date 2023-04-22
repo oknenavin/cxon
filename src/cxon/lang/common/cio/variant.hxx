@@ -21,10 +21,13 @@ namespace cxon { namespace cio { namespace var { // variant type traits
         using  has_type = negation<std::is_same<get_type_t<P, T...>, void>>;
 
     template <typename ...T>
-        struct is_disambiguous;
+        struct is_unambiguous;
 
     template <typename T>
-        struct has_disambiguous_pack;
+        struct has_unambiguous_types;
+
+    template <typename X, typename V, typename II, typename Cx>
+        inline bool variant_read(V& v, II& i, II e, Cx& cx);
 
 }}}
 
@@ -64,18 +67,58 @@ namespace cxon { namespace cio { namespace var {
         >;
 
     template <typename ...>
-        struct is_disambiguous                  : std::false_type {};
+        struct is_unambiguous                   : std::false_type {};
     template <typename T>
-        struct is_disambiguous<T>               : std::true_type {};
+        struct is_unambiguous<T>                : std::true_type {};
     template <typename U, typename V>
-        struct is_disambiguous<U, V>            : conjunction<is_known<U>, is_known<V>, negation<are_same<U, V>>> {};
+        struct is_unambiguous<U, V>             : conjunction<is_known<U>, is_known<V>, negation<are_same<U, V>>> {};
     template <typename U, typename V, typename ...T>
-        struct is_disambiguous<U, V, T...>      : conjunction<is_disambiguous<U, V>, is_disambiguous<U, T...>, is_disambiguous<V, T...>> {};
+        struct is_unambiguous<U, V, T...>       : conjunction<is_unambiguous<U, V>, is_unambiguous<U, T...>, is_unambiguous<V, T...>> {};
 
     template <typename T>
-        struct has_disambiguous_pack            : std::false_type {};
+        struct has_unambiguous_types            : std::false_type {};
     template <template <typename ...> class P, typename ...T>
-        struct has_disambiguous_pack<P<T...>>   : cxon::bool_constant<cio::var::is_disambiguous<T...>::value> {};
+        struct has_unambiguous_types<P<T...>>   : cxon::bool_constant<cio::var::is_unambiguous<T...>::value> {};
+
+    namespace imp {
+        template <typename X, template <typename, typename> class S, bool E, typename V, typename II, typename Cx>
+            struct variant_ {
+                static constexpr bool read(V&, II&, II, Cx& cx) {
+                    return cx/json::read_error::unexpected;
+                }
+            };
+        template <typename X, template <typename, typename> class S, template <typename ...> class V, typename II, typename Cx, typename ...T>
+            struct variant_<X, S, true, V<T...>, II, Cx> {
+                static bool read(V<T...>& v, II& i, II e, Cx& cx) {
+                    get_type_t<S, T...> t;
+                    return read_value<X>(t, i, e, cx) && (v = std::move(t), true);
+                }
+            };
+        template <typename X, template <typename, typename> class S, template <typename ...> class V, typename II, typename Cx, typename ...T>
+            inline bool variant_read_(V<T...>& v, II& i, II e, Cx& cx) {
+                return variant_<X, S, has_type<S, T...>::value, V<T...>, II, Cx>::read(v, i, e, cx);
+            }
+    }
+    template <typename X, typename V, typename II, typename Cx>
+        inline bool variant_read(V& v, II& i, II e, Cx& cx) {
+            if (!consume<X>(i, e, cx))
+                return false;
+            switch (peek(i, e)) {
+                case X::map::beg:
+                    return imp::variant_read_<X, is_map>(v, i, e, cx);
+                case X::list::beg:
+                    return imp::variant_read_<X, is_list>(v, i, e, cx);
+                case X::string::del:
+                    return imp::variant_read_<X, is_string>(v, i, e, cx);
+                case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case 'I': case 'N':
+                    return imp::variant_read_<X, is_number>(v, i, e, cx);
+                case *X::id::pos: case *X::id::neg:
+                    return imp::variant_read_<X, is_bool>(v, i, e, cx);
+                case *X::id::nil:
+                    return imp::variant_read_<X, is_null>(v, i, e, cx);
+            }
+            return cx/json::read_error::unexpected;
+        }
 
 }}}
 
