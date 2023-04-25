@@ -178,7 +178,9 @@ namespace cxon { namespace cio { namespace cls {
             }
 
         template <typename X, typename S, typename II, typename Cx>
-            inline constexpr bool read_fields_(S&, const fields<>&, II&, II, Cx&) { return true; }
+            inline constexpr bool read_fields_(S&, const fields<>&, II& i, II e, Cx& cx) {
+                return consume<X>(X::map::beg, i, e, cx) && consume<X>(X::map::end, i, e, cx);
+            }
 
         template <typename X, typename S, typename ...F, typename II, typename Cx>
             inline auto read_fields_(S& s, const fields<F...>& fs, II& i, II e, Cx& cx)
