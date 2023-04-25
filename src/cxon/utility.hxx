@@ -133,9 +133,11 @@ namespace cxon {
     template <typename T> struct is_char;
     template <typename T> struct is_numeric;
 
-    template <typename T> using decay_t             = typename std::decay<T>::type;             // C++14
+    template <typename T> using remove_const_t      = typename std::remove_const<T>::type;      // C++14
+    template <typename T> using remove_volatile_t   = typename std::remove_volatile<T>::type;   // C++14
     template <typename T> using remove_cv_t         = typename std::remove_cv<T>::type;         // C++14
     template <typename T> using remove_reference_t  = typename std::remove_reference<T>::type;  // C++14
+    template <typename T> using decay_t             = typename std::decay<T>::type;             // C++14
 
     template <typename T>       // C++20
         struct remove_cvref     : std::remove_cv<remove_reference_t<T>> {};
@@ -289,9 +291,9 @@ namespace cxon {
     }
 
     template <typename T>
-        struct is_bool      : bool_constant<imp::is_bool_<remove_cvref_t<T>>::value> {};
+        struct is_bool      : bool_constant<imp::is_bool_<remove_cv_t<T>>::value> {};
     template <typename T>
-        struct is_char      : bool_constant<imp::is_char_<remove_cvref_t<T>>::value> {};
+        struct is_char      : bool_constant<imp::is_char_<remove_cv_t<T>>::value> {};
     template <typename T>
         struct is_numeric   : bool_constant<std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value> {};
 
