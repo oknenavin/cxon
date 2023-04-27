@@ -21,7 +21,8 @@ namespace cxon { namespace cnt {
         struct traits<boost::container::static_vector<T, N>> {
             template <typename II>
                 static bool append(boost::container::static_vector<T, N>& c, II f, II l) {
-                    return c.size() < c.capacity() && (c.insert(c.end(), f, l), true);
+                    CXON_ASSERT(static_cast<std::size_t>(std::distance(f, l)) <= c.capacity(), "unexpected");
+                    return c.insert(c.end(), f, l), true;
                 }
         };
 
