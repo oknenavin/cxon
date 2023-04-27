@@ -446,6 +446,7 @@ TEST_BEG(vector_bool, cxon::JSON<>, "/std")
         W_TEST("[]", (vector<bool>{}));
         R_TEST((vector<bool>({true, false})), "[true,false]");
         W_TEST("[true,false]", (vector<bool>({true, false})));
+        R_TEST((vector<bool>({true, false})), "[ok,false]", json::read_error::boolean_invalid, 1);
 TEST_END()
 
 
