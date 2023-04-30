@@ -40,11 +40,8 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> enable_if_t<is_char_8<T>::value, int>;
 
-
-    static constexpr int bad_utf8 = std::numeric_limits<int>::max();
-
     template <typename II>
-        inline int utf8_check(II i, II e);
+        CXON_ALWAYS_INLINE int utf8_check(II i, II e);
 
 }}}
 
@@ -291,7 +288,7 @@ namespace cxon { namespace cio { namespace chr {
             }
 
         template <typename II>
-            inline auto utf8_check_(II i, II e) noexcept
+            CXON_ALWAYS_INLINE auto utf8_check_(II i, II e) noexcept
                 -> enable_if_t< is_random_access_iterator<II>::value, int>
             {
                 // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
@@ -300,7 +297,7 @@ namespace cxon { namespace cio { namespace chr {
                 unsigned c0 = (unsigned char)*i, c1, c2, c3;
                 auto const d = e - i;
                 if ((c0 >= 0xF0 && d < 4) || (c0 >= 0xE0 && d < 3) || (c0 >= 0xC2 && d < 2))
-                    return bad_utf8;
+                    return 0;
                 // 1
                 //if (c0 <= 0x7F)
                 //    return 0;
@@ -347,10 +344,10 @@ namespace cxon { namespace cio { namespace chr {
                     if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
                         return 3;
                 }
-                return bad_utf8;
+                return 0;
             }
         template <typename II>
-            inline auto utf8_check_(II i, II e)
+            CXON_ALWAYS_INLINE auto utf8_check_(II i, II e)
                 -> enable_if_t<!is_random_access_iterator<II>::value, int>
             {
                 // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
@@ -403,12 +400,12 @@ namespace cxon { namespace cio { namespace chr {
                     if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
                         return 3;
                 }
-                return bad_utf8;
+                return 0;
             }
 
     }
     template <typename II>
-        inline int utf8_check(II i, II e) {
+        CXON_ALWAYS_INLINE int utf8_check(II i, II e) {
             return imp::utf8_check_(i, e);
         }
 

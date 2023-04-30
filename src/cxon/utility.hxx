@@ -40,6 +40,14 @@
 #   define CXON_IF_CONSTEXPR(...) if (__VA_ARGS__)
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#   define CXON_ALWAYS_INLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#   define CXON_ALWAYS_INLINE inline __forceinline
+#else
+#   define CXON_ALWAYS_INLINE inline
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon {
