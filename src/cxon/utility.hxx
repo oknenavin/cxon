@@ -41,11 +41,11 @@
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#   define CXON_ALWAYS_INLINE inline __attribute__((always_inline))
+#   define CXON_INLAY inline __attribute__((always_inline))
 #elif defined(_MSC_VER)
-#   define CXON_ALWAYS_INLINE inline __forceinline
+#   define CXON_INLAY __forceinline
 #else
-#   define CXON_ALWAYS_INLINE inline
+#   define CXON_INLAY inline
 #endif
 
 // interface ///////////////////////////////////////////////////////////////////
