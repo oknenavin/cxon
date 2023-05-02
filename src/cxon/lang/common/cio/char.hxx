@@ -41,7 +41,7 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
             -> enable_if_t<is_char_8<T>::value, int>;
 
     template <typename II>
-        CXON_ALWAYS_INLINE int utf8_check(II i, II e);
+        CXON_INLAY int utf8_check(II i, II e);
 
 }}}
 
@@ -288,7 +288,7 @@ namespace cxon { namespace cio { namespace chr {
             }
 
         template <typename II>
-            CXON_ALWAYS_INLINE auto utf8_check_(II i, II e) noexcept
+            CXON_INLAY auto utf8_check_(II i, II e) noexcept
                 -> enable_if_t< is_random_access_iterator<II>::value, int>
             {
                 // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
@@ -347,7 +347,7 @@ namespace cxon { namespace cio { namespace chr {
                 return 0;
             }
         template <typename II>
-            CXON_ALWAYS_INLINE auto utf8_check_(II i, II e)
+            CXON_INLAY auto utf8_check_(II i, II e)
                 -> enable_if_t<!is_random_access_iterator<II>::value, int>
             {
                 // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
@@ -405,7 +405,7 @@ namespace cxon { namespace cio { namespace chr {
 
     }
     template <typename II>
-        CXON_ALWAYS_INLINE int utf8_check(II i, II e) {
+        CXON_INLAY int utf8_check(II i, II e) {
             return imp::utf8_check_(i, e);
         }
 
