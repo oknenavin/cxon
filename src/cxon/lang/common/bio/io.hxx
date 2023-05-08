@@ -398,8 +398,6 @@ namespace cxon { namespace bio {
                                     bs[n - 3] = byte(t >> 16); CXON_FALLTHROUGH;
                             case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
                             case 1: bs[n - 1] = byte(t >>  0);
-                            default:
-                                    CXON_ASSERT(0, "unexpected");
                         }
                     return poke_(o, bs, n);
 #               if defined(__GNUC__) && __GNUC__ == 13 && !defined(__clang__)
