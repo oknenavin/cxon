@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['4.0', '6.0', '7', '8', '9', '10', '11', '12', '13', '14'] # 5.0 - unmet dependencies
+        compiler: ['4.0', '6.0', '7', '8', '9', '10', '11', '12', '13', '14', '15'] # 5.0 - unmet dependencies
       fail-fast: false
     steps:
     - uses: actions/checkout@v3
@@ -153,7 +153,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['14']
+        compiler: ['15']
         standard: [11, 14, 17, 20]
       fail-fast: false
     steps:

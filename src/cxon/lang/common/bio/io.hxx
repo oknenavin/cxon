@@ -384,18 +384,25 @@ namespace cxon { namespace bio {
             inline auto put_(O& o, T t, unsigned n)
                 -> enable_if_t<std::is_integral<T>::value && sizeof(T) == 8, bool>
             {
-                byte bs[sizeof(T)];
-                    switch (n) {
-                        case 8: bs[n - 8] = byte(t >> 56);
-                                bs[n - 7] = byte(t >> 48);
-                                bs[n - 6] = byte(t >> 40);
-                                bs[n - 5] = byte(t >> 32); CXON_FALLTHROUGH;
-                        case 4: bs[n - 4] = byte(t >> 24);
-                                bs[n - 3] = byte(t >> 16); CXON_FALLTHROUGH;
-                        case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
-                        case 1: bs[n - 1] = byte(t >>  0);
-                    }
-                return poke_(o, bs, n);
+#               if defined(__GNUC__) && __GNUC__ == 13 && !defined(__clang__)
+#                   pragma GCC diagnostic push
+#                   pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#               endif
+                    byte bs[sizeof(T)];
+                        switch (n) {
+                            case 8: bs[n - 8] = byte(t >> 56);
+                                    bs[n - 7] = byte(t >> 48);
+                                    bs[n - 6] = byte(t >> 40);
+                                    bs[n - 5] = byte(t >> 32); CXON_FALLTHROUGH;
+                            case 4: bs[n - 4] = byte(t >> 24);
+                                    bs[n - 3] = byte(t >> 16); CXON_FALLTHROUGH;
+                            case 2: bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
+                            case 1: bs[n - 1] = byte(t >>  0);
+                        }
+                    return poke_(o, bs, n);
+#               if defined(__GNUC__) && __GNUC__ == 13 && !defined(__clang__)
+#                   pragma GCC diagnostic pop
+#               endif
             }
 
         template <typename O, typename FI>
