@@ -58,7 +58,7 @@ namespace test { namespace kind {
             my_allocator(int id = 0) : id(id) {}
             template <typename U>
                 my_allocator(const my_allocator<U>& al) : id(al.id) {}
-            template <class U>
+            template <typename U>
                 struct rebind { using other = my_allocator<U>; };
             int id;
         };
@@ -758,7 +758,11 @@ namespace test { namespace kind {
                         {-std::numeric_limits<node::real>::infinity(), 17U}
                     };
                     node n;
+#                   if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
                         cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
+#                   else
+                        cxon::from_bytes<UK_JSON>(n, in, cxon::node::json::extract_nans::set<true>());
+#                   endif
                     CHECK(n == out);
                     std::string s;
                         cxon::to_bytes<UK_JSON>(s, n);
@@ -768,7 +772,11 @@ namespace test { namespace kind {
                 {   char const in[] = R"({"nan": 18})";
                     node const out  = { {std::numeric_limits<node::real>::quiet_NaN(), 18U} };
                     node n;
+#                   if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
                         cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
+#                   else
+                        cxon::from_bytes<UK_JSON>(n, in, cxon::node::json::extract_nans::set<true>());
+#                   endif
                     CHECK(
                         n.is<node::object>() && n.get<node::object>().size() == 1 &&
                         (n.get<node::object>().begin()->first.is<node::real>() && std::isnan(n.get<node::object>().begin()->first.get<node::real>())) &&
@@ -777,11 +785,19 @@ namespace test { namespace kind {
                 }
             }
             {   node n; node const o = std::numeric_limits<node::real>::infinity();
+#               if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
                     cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+#               else
+                    cxon::from_bytes<UK_JSON>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+#               endif
                 CHECK(n == o);
             }
             {   node n;
+#               if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
                     auto const r = cxon::from_bytes<UK_JSON, cxon::json::node_traits<>>(n, "{\"x: 0}", cxon::node::json::extract_nans::set<true>());
+#               else
+                    auto const r = cxon::from_bytes<UK_JSON>(n, "{\"x: 0}", cxon::node::json::extract_nans::set<true>());
+#               endif
                 CHECK(!r && r.ec == cxon::json::read_error::unexpected);
             }
             {   node n;
@@ -818,14 +834,22 @@ namespace test { namespace kind {
                     {-std::numeric_limits<node::real>::infinity(), 17U}
                 };
                 node n;
+#               if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
                     cxon::from_bytes<UK_JSON, cxon::cbor::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
+#               else
+                    cxon::from_bytes<UK_JSON>(n, in, cxon::node::json::extract_nans::set<true>());
+#               endif
                 CHECK(n == out);
                 std::string s;
                     cxon::to_bytes<UK_JSON>(s, n);
                 CHECK(s == R"({{1:2}:3,[4]:5,"6":7,"-inf":17,12:13,"inf":16,-8:9,10:11,true:14,null:15})");
             }
             {   node n; node const o = std::numeric_limits<node::real>::infinity();
+#               if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
                     cxon::from_bytes<UK_JSON, cxon::cbor::node_traits<>>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+#               else
+                    cxon::from_bytes<UK_JSON>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
+#               endif
                 CHECK(n == o);
             }
             {   node n;

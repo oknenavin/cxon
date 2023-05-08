@@ -32,6 +32,8 @@ namespace test { namespace kind {
     template <typename T>
         struct my_allocator : std::allocator<T> {
             using std::allocator<T>::allocator;
+            template <typename U>
+                struct rebind { using other = my_allocator<U>; };
         };
 
     int self() {
