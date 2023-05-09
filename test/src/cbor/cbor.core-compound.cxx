@@ -734,7 +734,7 @@ namespace {
         int x;
         using sink = cxon::cbor::sink<cxon::test::bytes>;
         sink y;
-        Struct11(int x = 0, sink y = sink{}) : x(x), y(y) {}
+        Struct11(int x = 0, sink y = sink{}) : x(x), y(std::move(y)) {}
         bool operator ==(const Struct11& t) const { return x == t.x && y.value == t.y.value; }
     };
 

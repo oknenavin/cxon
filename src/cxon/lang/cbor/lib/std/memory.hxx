@@ -33,7 +33,11 @@ namespace cxon {
                 static bool value(std::shared_ptr<T>& t, II& i, II e, Cx& cx) {
                     auto al = alc::make_context_allocator<T>(cx);
                         T* p;
-                    return read_value<Y>(p, i, e, cx) && (t.reset(p, [al](T* p) mutable { al.release(p); }), true);
+#                   if __cplusplus < 201402L
+                        return read_value<Y>(p, i, e, cx) && (t.reset(p, [al](T* p) mutable { al.release(p); }), true);
+#                   else
+                        return read_value<Y>(p, i, e, cx) && (t.reset(p, [al = std::move(al)](T* p) mutable { al.release(p); }), true);
+#                   endif
                 }
         };
 
