@@ -1140,7 +1140,7 @@ namespace {
         using sink = cxon::cio::val::sink<std::string>;
         int a;
         sink b;
-        Struct11(int a = 0, sink b = sink{}) : a(a), b(b) {}
+        Struct11(int a = 0, sink b = sink{}) : a(a), b(std::move(b)) {}
         bool operator ==(const Struct11& t) const { return a == t.a && b == t.b; }
     };
 }

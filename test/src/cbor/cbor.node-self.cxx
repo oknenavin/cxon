@@ -537,7 +537,7 @@ namespace test { namespace kind {
                 a = b; CHECK(a == 42.0);
             }
             {   node a, b = node::simple {42};
-            a = b; CHECK(a == node::simple {42});
+                a = b; CHECK(a == node::simple {42});
             }
             // same kind
             {   node a = 24, b = 42;
