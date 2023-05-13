@@ -147,86 +147,92 @@ namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
 
+        template <typename II>
+            inline unsigned char head_(II& i, II e) { return next(i, e); }
+        template <typename II>
+            inline unsigned char tail_(II& i, II e) { return i != e ? peek(++i, e) : '\xFF'; }
+
 #       define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, bad_utf32
 
-        template <typename X, typename II, typename Cx>
-            inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                -> enable_if_t< X::validate_string_encoding, char32_t>
-            {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
-                CXON_ASSERT(i != e, "unexpected");
-                using U = unsigned char;
-                char32_t c0 = (U)*i, c1, c2, c3;
-                if (c0 <= 0x7F)
-                    return ++i, c0;
-                if (c0 >= 0xC2 && c0 <= 0xDF) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                    return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
+            template <typename X, typename II, typename Cx>
+                inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
+                    -> enable_if_t< X::validate_string_encoding, char32_t>
+                {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
+                    CXON_ASSERT(i != e, "unexpected");
+                    char32_t const  c0 = (unsigned char)*i;
+                    char32_t        c1, c2, c3;
+                    if (c0 <= 0x7F)
+                        return ++i, c0;
+                    if (c0 >= 0xC2 && c0 <= 0xDF) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                        return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
+                    }
+                    if (c0 == 0xE0) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0xA0 && c1 <= 0xBF);
+                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                    }
+                    if (c0 >= 0xE1 && c0 <= 0xEC) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                    }
+                    if (c0 == 0xED) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0x9F);
+                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                    }
+                    if (c0 >= 0xEE && c0 <= 0xEF) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                    }
+                    if (c0 == 0xF0) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x90 && c1 <= 0xBF);
+                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                        c3 = tail_(i, e);       CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                    }
+                    if (c0 >= 0xF1 && c0 <= 0xF3) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
+                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                        c3 = tail_(i, e);       CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                    }
+                    if (c0 == 0xF4) {
+                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0x8F);
+                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
+                        c3 = tail_(i, e);       CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
+                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                    }
+                    CXON_EXPECT(false);
                 }
-                if (c0 == 0xE0) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0xA0 && c1 <= 0xBF);
-                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+            template <typename X, typename II, typename Cx>
+                inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
+                    -> enable_if_t<!X::validate_string_encoding, char32_t>
+                {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
+                    CXON_ASSERT(i != e, "unexpected");
+                    char32_t const  c0 = (unsigned char)*i;
+                    char32_t        c1, c2, c3;
+                    if ((c0 & 0x80) == 0)
+                        return ++i, c0;
+                    if ((c0 & 0xE0) == 0xC0) {
+                        c1 = head_(i, e);       CXON_EXPECT((c1 & 0xC0) == 0x80);
+                        return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
+                    }
+                    if ((c0 & 0xF0) == 0xE0) {
+                        c1 = head_(i, e);       CXON_EXPECT((c1 & 0xC0) == 0x80);
+                        c2 = tail_(i, e);       CXON_EXPECT((c2 & 0xC0) == 0x80);
+                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+                    }
+                    if ((c0 & 0xF8) == 0xF0) {
+                        c1 = head_(i, e);       CXON_EXPECT((c1 & 0xC0) == 0x80);
+                        c2 = tail_(i, e);       CXON_EXPECT((c2 & 0xC0) == 0x80);
+                        c3 = tail_(i, e);       CXON_EXPECT((c3 & 0xC0) == 0x80);
+                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                    }
+                    CXON_EXPECT(false);
                 }
-                if (c0 >= 0xE1 && c0 <= 0xEC) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                }
-                if (c0 == 0xED) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0x9F);
-                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                }
-                if (c0 >= 0xEE && c0 <= 0xEF) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                }
-                if (c0 == 0xF0) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x90 && c1 <= 0xBF);
-                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    c3 = (U)next(i, e);         CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
-                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                }
-                if (c0 >= 0xF1 && c0 <= 0xF3) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    c3 = (U)next(i, e);         CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
-                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                }
-                if (c0 == 0xF4) {
-                    c1 = (U)next(i, e);         CXON_EXPECT(c1 >= 0x80 && c1 <= 0x8F);
-                    c2 = (U)next(i, e);         CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                    c3 = (U)next(i, e);         CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
-                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                }
-                CXON_EXPECT(false);
-            }
-        template <typename X, typename II, typename Cx>
-            inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                -> enable_if_t<!X::validate_string_encoding, char32_t>
-            {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
-                CXON_ASSERT(i != e, "unexpected");
-                char32_t c0 = *i, c1, c2, c3;
-                if ((c0 & 0x80) == 0)
-                    return ++i, c0;
-                if ((c0 & 0xE0) == 0xC0) {
-                    c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
-                    return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
-                }
-                if ((c0 & 0xF0) == 0xE0) {
-                    c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
-                    c2 = next(i, e);        CXON_EXPECT((c2 & 0xC0) == 0x80);
-                    return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                }
-                if ((c0 & 0xF8) == 0xF0) {
-                    c1 = next(i, e);        CXON_EXPECT((c1 & 0xC0) == 0x80);
-                    c2 = next(i, e);        CXON_EXPECT((c2 & 0xC0) == 0x80);
-                    c3 = next(i, e);        CXON_EXPECT((c3 & 0xC0) == 0x80);
-                    return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                }
-                CXON_EXPECT(false);
-            }
 
 #       undef CXON_EXPECT
 
@@ -280,133 +286,60 @@ namespace cxon { namespace cio { namespace chr {
             //return 0;
         }
 
-    namespace imp {
-
-        template <typename II>
-            inline char next_safe(II& i, II e) {
-                return i != e ? peek(++i, e) : '\xFF';
-            }
-
-        template <typename II>
-            CXON_INLAY auto utf8_check_(II i, II e) noexcept
-                -> enable_if_t< is_random_access_iterator<II>::value, int>
-            {
-                // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
-                // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
-                CXON_ASSERT(i != e, "unexpected");
-                unsigned c0 = (unsigned char)*i, c1, c2, c3;
-                auto const d = e - i;
-                if ((c0 >= 0xF0 && d < 4) || (c0 >= 0xE0 && d < 3) || (c0 >= 0xC2 && d < 2))
-                    return 0;
-                // 1
-                //if (c0 <= 0x7F)
-                //    return 0;
-                // 2
-                if (c0 >= 0xC2 && c0 <= 0xDF) {
-                    c1 = (unsigned char)*++i;
-                    if (c1 >= 0x80 && c1 <= 0xBF)
-                        return 1;
-                }
-                // 3
-                else if (c0 == 0xE0) {
-                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
-                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                else if (c0 >= 0xE1 && c0 <= 0xEC) {
-                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                else if (c0 == 0xED) {
-                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
-                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                else if (c0 >= 0xEE && c0 <= 0xEF) {
-                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                // 4
-                else if (c0 == 0xF0) {
-                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
-                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 3;
-                }
-                else if (c0 >= 0xF1 && c0 <= 0xF3) {
-                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 3;
-                }
-                else if (c0 == 0xF4) {
-                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
-                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 3;
-                }
-                return 0;
-            }
-        template <typename II>
-            CXON_INLAY auto utf8_check_(II i, II e)
-                -> enable_if_t<!is_random_access_iterator<II>::value, int>
-            {
-                // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
-                // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
-                CXON_ASSERT(i != e, "unexpected");
-                unsigned char c0 = *i, c1, c2, c3;
-                // 1
-                //if (c0 <= 0x7F)
-                //    return 0;
-                // 2
-                if (c0 >= 0xC2 && c0 <= 0xDF) {
-                    c1 = next(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF)
-                        return 1;
-                }
-                // 3
-                else if (c0 == 0xE0) {
-                    c1 = next(i, e), c2 = next_safe(i, e);
-                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                else if (c0 >= 0xE1 && c0 <= 0xEC) {
-                    c1 = next(i, e), c2 = next_safe(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                else if (c0 == 0xED) {
-                    c1 = next(i, e), c2 = next_safe(i, e);
-                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                else if (c0 >= 0xEE && c0 <= 0xEF) {
-                    c1 = next(i, e), c2 = next_safe(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 2;
-                }
-                // 4
-                else if (c0 == 0xF0) {
-                    c1 = next(i, e), c2 = next_safe(i, e), c3 = next_safe(i, e);
-                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 3;
-                }
-                else if (c0 >= 0xF1 && c0 <= 0xF3) {
-                    c1 = next(i, e), c2 = next_safe(i, e), c3 = next_safe(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 3;
-                }
-                else if (c0 == 0xF4) {
-                    c1 = next(i, e), c2 = next_safe(i, e), c3 = next_safe(i, e);
-                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 3;
-                }
-                return 0;
-            }
-
-    }
     template <typename II>
         CXON_INLAY int utf8_check(II i, II e) {
-            return imp::utf8_check_(i, e);
+            // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
+            // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
+            CXON_ASSERT(i != e, "unexpected");
+            unsigned const  c0 = (unsigned char)*i;
+            unsigned        c1, c2, c3;
+            // 1
+            //if (c0 < 0x80)
+            //    return 1;
+            // 2
+            if (c0 >= 0xC2 && c0 <= 0xDF) {
+                c1 = imp::head_(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF)
+                    return 2;
+            }
+            // 3
+            else if (c0 == 0xE0) {
+                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                    return 3;
+            }
+            else if (c0 >= 0xE1 && c0 <= 0xEC) {
+                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                    return 3;
+            }
+            else if (c0 == 0xED) {
+                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
+                    return 3;
+            }
+            else if (c0 >= 0xEE && c0 <= 0xEF) {
+                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                    return 3;
+            }
+            // 4
+            else if (c0 == 0xF0) {
+                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                    return 4;
+            }
+            else if (c0 >= 0xF1 && c0 <= 0xF3) {
+                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                    return 4;
+            }
+            else if (c0 == 0xF4) {
+                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                    return 4;
+            }
+            return 0;
         }
 
 }}}
