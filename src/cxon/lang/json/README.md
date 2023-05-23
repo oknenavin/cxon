@@ -82,9 +82,6 @@ specify this about object keys:*
 *and by picking `std::map` or `std::multi-map` as a `C++` mapping type, the value of an existing key 
 may be replaced or kept.*
 
-Complete example for a simple [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation 
-can be found here [`JSON-RPC`](../../../../example/README.md#json-rpc).
-
 
 --------------------------------------------------------------------------------
 

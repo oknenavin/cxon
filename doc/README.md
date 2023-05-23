@@ -33,7 +33,7 @@
     - [`cxon::cbor::basic_node`](../src/cxon/lang/cbor/node/README.md#basic_node)
     - [`CXON` Integration](../src/cxon/lang/cbor/node/README.md#cxon-integration)
   - [`CXON/CXCF` configuration format](../src/cxon/lang/cxcf/README.md)
-  - [Examples](../example/README.md)
+  - [Examples](../examples/README.md)
 
 
 --------------------------------------------------------------------------------
