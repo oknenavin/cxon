@@ -1,4 +1,4 @@
-// using of user types
+// user types
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx"

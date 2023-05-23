@@ -22,10 +22,9 @@ namespace jsonrpc {
                     ;
                 }
         };
-
     template <typename T>
         constexpr napa<T> make_napa(const char* k, T&& v) {
-            return {k, v};
+            return {k, std::forward<T>(v)};
         }
 
     template <typename ...P>
@@ -42,7 +41,7 @@ namespace jsonrpc {
 
             CXON_JSON_CLS_WRITE_MEMBER(request,
                 CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
-                CXON_JSON_CLS_FIELD_ASIS(id),
+                CXON_JSON_CLS_FIELD_ASIS_DFLT(id, self.id == std::size_t(-1)),
                 CXON_JSON_CLS_FIELD_ASIS(method),
                 CXON_JSON_CLS_FIELD_ASIS(params)
             )
@@ -53,10 +52,6 @@ namespace jsonrpc {
     template <typename ...P>
         constexpr request<P...> make_request(std::size_t id, const char* method, P&&... params) {
             return request<P...>(id, method, std::forward<P>(params)...);
-        }
-    template <typename ...P>
-        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>&&... params) {
-            return request<napa<P>...>(id, method, std::forward<napa<P>>(params)...);
         }
 
     // response
@@ -100,11 +95,11 @@ namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON obj
 
     template <typename X, typename ...T>
         struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
-            template <typename O, typename Cx, typename J = JSON<X>>
+            template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
-                    return  cio::poke<J>(o, J::map::beg, cx) &&
-                                cio::cnt::write_tuple<J>(o, t, cx) &&
-                            cio::poke<J>(o, J::map::end, cx)
+                    return  cio::poke<Y>(o, Y::map::beg, cx) &&
+                                cio::cnt::write_tuple<Y>(o, t, cx) &&
+                            cio::poke<Y>(o, Y::map::end, cx)
                     ;
                 }
         };
