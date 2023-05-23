@@ -10,7 +10,7 @@ dstdrs = $(patsubst $(srcdir)/%,$(insdir)/%,$(shell find $(srcdir) -type d))
 
 check:
 	@$(MAKE) -C test check
-	@$(MAKE) -C example check
+	@$(MAKE) -C examples check
 check-json:
 	@$(MAKE) -C test check-json
 check-json-node:
@@ -64,7 +64,7 @@ uninstall:
 
 clean:
 	@$(MAKE) -C test clean
-	@$(MAKE) -C example clean
+	@$(MAKE) -C examples clean
 
 
 .PHONY: check check-json check-json-node check-cbor check-cbor-node \

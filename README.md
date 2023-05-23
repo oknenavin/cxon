@@ -100,7 +100,7 @@ Like [`<charconv>`][std-charconv], `CXON` is **non-throwing**, provided that the
   - [Compilation](#compilation)
   - [Installation](#installation)
   - [Documentation](doc/README.md)
-  - [Examples](example/README.md)
+  - [Examples](examples/README.md)
   - [Contributing](#contributing)
 
 
