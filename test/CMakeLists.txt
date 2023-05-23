@@ -114,5 +114,5 @@ endif ()
 
 add_test (
     NAME examples
-    COMMAND ${CMAKE_MAKE} -C ${PROJECT_SOURCE_DIR}/../example check
+    COMMAND ${CMAKE_MAKE} -C ${PROJECT_SOURCE_DIR}/../examples check
 )
