@@ -8,11 +8,19 @@
 #### Contents
   - [Common interface](#common-interface)
   - [Standard library types](#standard-library-types)
+    - [Arrays and Objects](#example-1-1)
+    - [Heterogeneous arrays as a tuples](#example-1-2)
+    - [`null` as optional](#example-1-3)
+    - [Variants](#example-1-4)
   - [User types](#user-types)
+    - [Classes and structures](#example-2-1)
+    - [Inheritance](#example-2-2)
   - [Format traits](#format-traits)
+    - [Unquoted keys](#example-3-1)
+    - [Unquoted string keys and single quotes](#example-3-2)
   - [Named parameters](#named-parameters)
+    - [Floating-point precision](#example-4-1)
   - [Overriding default serializers](#overriding-default-serializers)
-  - [`JSON-RPC`](#json-rpc)
   - [`CXCF`](#cxcf)
 
 
@@ -64,7 +72,7 @@ int main() {
 
 #### Standard library types
 
-##### Example 1
+##### Example 1-1
 
 *[Source](std-types-ex01.cxx)*
 
@@ -92,12 +100,12 @@ int main() {
 }
 ```
 
-##### Example 2
+##### Example 1-2
 
 *[Source](std-types-ex02.cxx)*
 
 ``` c++
-// json heterogeneous arrays as a tuples
+// JSON heterogeneous arrays as a tuples
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/tuple.hxx"
@@ -122,7 +130,7 @@ int main() {
 }
 ```
 
-##### Example 3
+##### Example 1-3
 
 *[Source](std-types-ex03.cxx)*
 
@@ -148,6 +156,45 @@ int main() {
 }
 ```
 
+##### Example 1-4
+
+*[Source](std-types-ex04.cxx)*
+
+``` c++
+// JSON values mapped to std::variant
+
+#include "cxon/json.hxx"
+#include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/vector.hxx"
+#include "cxon/lib/std/map.hxx"
+#include "cxon/lib/std/variant.hxx"
+#include <cassert>
+
+int main() {
+#   ifdef CXON_HAS_LIB_STD_VARIANT
+    {   // JSON value types are unambiguous and so, if std::variant types are mapped
+        // to distinct JSON value types, they'll be serialized correspondingly
+        using uvar = std::variant<std::monostate, std::vector<int>, std::map<std::string, int>>; // std::variant<null, array, object>
+        uvar var;
+            cxon::from_bytes(var, R"([1, 3])");
+        assert(var == (uvar(std::vector<int>{1, 3})));
+            cxon::from_bytes(var, R"({"one": 1, "three": 3})");
+        assert(var == (uvar(std::map<std::string, int>{{"one", 1}, {"three", 3}})));
+            cxon::from_bytes(var, R"(null)");
+        assert(var == (uvar()));
+    }
+    {   // if not, they'll be serialized as object {"<index>": <value>}
+        using avar = std::variant<std::map<std::string, int>, std::map<int, std::string>>; // std::variant<object, object>
+        avar var;
+            cxon::from_bytes(var, R"({"0": {"one": 1, "three": 3}})");
+        assert(var == (avar(std::map<std::string, int>{{"one", 1}, {"three", 3}})));
+            cxon::from_bytes(var, R"({"1": {"1": "one", "3": "three"}})");
+        assert(var == (avar(std::map<int, std::string>{{1, "one"}, {3, "three"}})));
+    }
+#   endif
+}
+```
+
 *TODO: more examples needed here*
 
 
@@ -155,12 +202,12 @@ int main() {
 
 #### User types
 
-##### Example 1
+##### Example 2-1
 
 *[Source](user-types-ex01.cxx)*
 
 ``` c++
-// using of user types
+// user types
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/vector.hxx"
@@ -193,11 +240,13 @@ int main() {
 }
 ```
 
-##### Example 1
+##### Example 2-2
 
 *[Source](user-types-ex02.cxx)*
 
 ``` c++
+// inheritance
+
 #include "cxon/json.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
@@ -309,12 +358,12 @@ int main() {
 
 #### Format traits
 
-##### Example 1
+##### Example 3-1
 
 *[Source](format-traits-ex01.cxx)*
 
 ``` c++
-// format traits
+// format traits, unquoted keys
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/map.hxx"
@@ -337,12 +386,12 @@ int main() {
 }
 ```
 
-##### Example 2
+##### Example 3-2
 
 *[Source](format-traits-ex02.cxx)*
 
 ``` c++
-// format traits
+// format traits, unquoted string keys and single quotes
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/map.hxx"
@@ -375,12 +424,12 @@ int main() {
 
 #### Named parameters
 
-##### Example 1
+##### Example 4-1
 
 *[Source](named-parameters-ex01.cxx)*
 
 ``` c++
-// named parameters
+// named parameters, floating-point precision
 
 #include "cxon/json.hxx"
 #include <cassert>
@@ -454,179 +503,9 @@ int main() {
 
 --------------------------------------------------------------------------------
 
-##### `JSON-RPC`
-
-*[Source](json-rpc.cxx)*
-
-A toy [`JSON-RPC`](https://www.jsonrpc.org/specification) implementation and 
-an example of its usage with `CXON`.
-
-``` c++
-#include "cxon/json.hxx"
-#include "cxon/lib/std/string.hxx"
-#include "cxon/lib/std/tuple.hxx"
-#include <cassert>
-
-namespace jsonrpc {
-
-    // request
-
-    template <typename T>
-        struct napa { // named parameter
-            char const*const key;
-            T const value;
-
-            template <typename X, typename O, typename Cx, typename Y = X>
-                auto write_value(O& o, Cx& cx) const -> cxon::enable_for_t<Y, cxon::JSON> {
-                    return  cxon::cio::write_map_key<Y>(o, key, cx) &&
-                            cxon::cio::write_map_val<Y>(o, value, cx)
-                    ;
-                }
-        };
-
-    template <typename T>
-        constexpr napa<T> make_napa(const char* k, T&& v) {
-            return {k, v};
-        }
-
-    template <typename ...P>
-        struct request {
-            static char const*const jsonrpc;
-            std::size_t const       id;
-            char const*const        method;
-            std::tuple<P...> const  params;
-
-            constexpr request(std::size_t id, const char* method, P&&... params) noexcept
-            :   id(id), method(method), params(std::forward<P>(params)...)
-            {
-            }
-
-            CXON_JSON_CLS_WRITE_MEMBER(request,
-                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
-                CXON_JSON_CLS_FIELD_ASIS(id),
-                CXON_JSON_CLS_FIELD_ASIS(method),
-                CXON_JSON_CLS_FIELD_ASIS(params)
-            )
-        };
-    template <typename ...P>
-        char const*const request<P...>::jsonrpc = "2.0";
-
-    template <typename ...P>
-        constexpr request<P...> make_request(std::size_t id, const char* method, P&&... params) {
-            return request<P...>(id, method, std::forward<P>(params)...);
-        }
-    template <typename ...P>
-        constexpr request<napa<P>...> make_request(std::size_t id, const char* method, napa<P>&&... params) {
-            return request<napa<P>...>(id, method, std::forward<napa<P>>(params)...);
-        }
-
-    // response
-
-    template <typename D>
-        struct error {
-            int         code;
-            std::string message;
-            D           data;
-
-            CXON_JSON_CLS_READ_MEMBER(error,
-                CXON_JSON_CLS_FIELD_ASIS(code),
-                CXON_JSON_CLS_FIELD_ASIS(message),
-                CXON_JSON_CLS_FIELD_ASIS(data)
-            )
-        };
-
-    template <typename R, typename D = cxon::cio::val::sink<>>
-        struct response {
-            char            jsonrpc[8];
-            std::size_t     id;
-            R               result;
-            struct error<D> error;
-
-            constexpr response() noexcept
-            :   jsonrpc{0}, id(), result(), error()
-            {
-            }
-
-            CXON_JSON_CLS_READ_MEMBER(response,
-                CXON_JSON_CLS_FIELD_ASIS(jsonrpc),
-                CXON_JSON_CLS_FIELD_ASIS(id),
-                CXON_JSON_CLS_FIELD_ASIS(result),
-                CXON_JSON_CLS_FIELD_ASIS(error)
-            )
-        };
-
-}
-
-namespace cxon { // json-rpc - serialize tuple of named parameters as a JSON object instead of an array
-
-    template <typename X, typename ...T>
-        struct write<JSON<X>, std::tuple<jsonrpc::napa<T>...>> {
-            template <typename O, typename Cx, typename Y = JSON<X>>
-                static bool value(O& o, const std::tuple<jsonrpc::napa<T>...>& t, Cx& cx) {
-                    return  cio::poke<Y>(o, Y::map::beg, cx) &&
-                                cio::cnt::write_tuple<Y>(o, t, cx) &&
-                            cio::poke<Y>(o, Y::map::end, cx)
-                    ;
-                }
-        };
-
-}
-
-int main() {
-    using namespace cxon;
-    {   // params array
-        auto const call = jsonrpc::make_request(1, "sub", 42, 23);
-        std::string req; // serialize call to req
-            auto const w = to_bytes(req, call);
-        assert(w && req == R"({"jsonrpc":"2.0","id":1,"method":"sub","params":[42,23]})");
-    }
-    {   // params object
-        auto const call = jsonrpc::make_request(1, "sub", jsonrpc::make_napa("x", 42), jsonrpc::make_napa("y", 23));
-        std::string req; // serialize call to req
-            auto const w = to_bytes(req, call);
-        assert(w && req == R"({"jsonrpc":"2.0","id":1,"method":"sub","params":{"x":42,"y":23}})");
-    }
-    {   // round-trip: req -> res success
-        char const res[] = R"({"jsonrpc": "2.0", "result": 19, "id": 1})";
-        jsonrpc::response<int> ret; // serialize res to ret
-            auto const r = from_bytes(ret, res);
-        assert(r && ret.id == 1 && ret.result == 19);
-    }
-    {   // round-trip: req -> res failure
-        char const res[] = R"({
-            "jsonrpc": "2.0",
-            "error": {"code": 42, "message": "divide by zero", "data": "a black hole has been created somewhere"},
-            "id": 1
-        })";
-        {   // serialize res to ret, error's data will be skipped
-            jsonrpc::response<int> ret;
-                auto const r = from_bytes(ret, res);
-            assert( r &&
-                    ret.id == 1 &&
-                    ret.error.code == 42 &&
-                    ret.error.message == "divide by zero"
-            );
-        }
-        {   // serialize res to ret, error's data is bound to std::string
-            jsonrpc::response<int, std::string> ret;
-                auto const r = from_bytes(ret, res);
-            assert( r &&
-                    ret.id == 1 &&
-                    ret.error.code == 42 &&
-                    ret.error.message == "divide by zero" &&
-                    ret.error.data == "a black hole has been created somewhere"
-            );
-        }
-    }
-}
-```
-
-
---------------------------------------------------------------------------------
-
 #### `CXCF`
 
-##### Example 1
+##### Example 6-1
 
 *[Source](cxcf-ex01.cxx)*
 

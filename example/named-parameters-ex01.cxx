@@ -1,4 +1,4 @@
-// named parameters
+// named parameters, floating-point precision
 
 #include "cxon/json.hxx"
 #include <cassert>

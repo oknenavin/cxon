@@ -1,4 +1,4 @@
-// format traits
+// format traits, unquoted keys
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/map.hxx"

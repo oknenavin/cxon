@@ -1,4 +1,4 @@
-// json heterogeneous arrays as a tuples
+// JSON heterogeneous arrays as a tuples
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/tuple.hxx"

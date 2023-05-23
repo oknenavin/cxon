@@ -1,3 +1,5 @@
+// inheritance
+
 #include "cxon/json.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
