@@ -178,9 +178,9 @@ it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.*
 `CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
 `clang++ >= 4.0` and `msvc++ >= 19.16` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
-*`CXON` is using [`<charconv>`][std-charconv] for floating-point conversions by default. By defining
-`CXON_USE_FAST_FLOAT` and [`fast_float`][lib-ff] present in the include path, the floating-point parsing
-can be switched to it. This will give a good performance boost for `C++11/14` and some earlier implementations of
+*`CXON` is using [`<charconv>`][std-charconv] for numeric conversions if available.  
+If not (ex. pre-`C++17`) a fallback implementation (based on `strto*` and `sprintf`) will be used.  
+If `CXON_USE_BOOST_CHARCONV` is defined, [`boost::charconv`][lib-boost-charconv] will be used. This will provide a good performance boost for `C++11/14` and some earlier implementations of
 [`<charconv>`][std-charconv].*
 
 --------------------------------------------------------------------------------
@@ -245,8 +245,8 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 <!--[RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt-->
 [GitHub]: https://github.com/oknenavin/cxon
 
-[lib-ff]: https://github.com/fastfloat/fast_float
 [std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[lib-boost-charconv]: https://github.com/boostorg/charconv
 [cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
 [cpp-zeov]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/Zero-overhead_principle&oldid=118760
 [cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
