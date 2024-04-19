@@ -12,11 +12,6 @@
 
 #include <cmath> // isfinite, ...
 
-#ifdef CXON_USE_FAST_FLOAT
-#   include "fast_float/fast_float.h"
-#   define CXON_HAS_FAST_FLOAT
-#endif
-
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace num { // number conversion
@@ -296,19 +291,8 @@ namespace cxon { namespace cio { namespace num { // read
                         }
                     }
                 }
-#               ifdef CXON_HAS_FAST_FLOAT
-                    CXON_IF_CONSTEXPR (!(std::is_same<T, long double>::value)) {
-                        auto const r = fast_float::from_chars(b, e, t);
-                        return { r.ptr, r.ec };
-                    }
-                    else {
-                        auto const r = charconv::from_chars(b, e, t);
-                        return { r.ptr, r.ec };
-                    }
-#               else
-                    auto const r = charconv::from_chars(b, e, t);
-                    return { r.ptr, r.ec };
-#               endif
+                auto const r = charconv::from_chars(b, e, t);
+                return { r.ptr, r.ec };
             }
         template <typename X, typename T, typename II, typename Cx>
             inline auto number_read_(T& t, II& i, II e, Cx& cx)
