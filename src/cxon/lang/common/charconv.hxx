@@ -16,7 +16,11 @@
 #include <limits>
 #include <type_traits>
 
-#if __cplusplus >= 201703L
+#ifdef CXON_USE_BOOST_CHARCONV
+#   include "boost/charconv.hpp"
+#endif
+
+#if !defined(CXON_USE_BOOST_CHARCONV) && __cplusplus >= 201703L
 #   if defined(__has_include) && __has_include(<charconv>)
 #       include <charconv>
 #       ifdef __GLIBCXX__ // partial
@@ -294,8 +298,20 @@ namespace cxon { namespace charconv { // <charconv>
                 return to_chars_f_(option<2>(), f, l, t, precision);
             }
 #   else
-        using imp::from_chars;
-        using imp::to_chars;
+#       ifdef CXON_USE_BOOST_CHARCONV
+            using boost::charconv::from_chars;
+            using boost::charconv::to_chars;
+
+            template <typename T>
+                inline auto to_chars(char* f, char* l, T t, int precision) noexcept
+                    ->  enable_if_t<std::is_floating_point<T>::value, boost::charconv::to_chars_result>
+                {
+                    return to_chars(f, l, t, boost::charconv::chars_format::general, precision);
+                }
+#       else
+            using imp::from_chars;
+            using imp::to_chars;
+#       endif
 #   endif
 
 }}

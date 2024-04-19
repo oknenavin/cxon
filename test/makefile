@@ -82,25 +82,25 @@ build-cbor: $(outdir)/check-cbor
 build-cbor-node: $(outdir)/check-cbor-node
 
 $(outdir)/check-json: $(check-json-obj)
-	$(CXX) $(LDFLAGS) $(check-json-obj)  -o $@
+	$(CXX) $(check-json-obj)  $(LDFLAGS)  -o $@
 $(outdir)/json.core-%.o: $(srcdir)/json/json.core-%.cxx
 	@mkdir -p $(outdir)
 	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
 
 $(outdir)/check-json-node: $(check-json-node-obj)
-	$(CXX) $(LDFLAGS) $(check-json-node-obj)  -o $@
+	$(CXX) $(check-json-node-obj)  $(LDFLAGS)  -o $@
 $(outdir)/json.node-%.o: $(srcdir)/json/json.node-%.cxx
 	@mkdir -p $(outdir)
 	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
 
 $(outdir)/check-cbor: $(check-cbor-obj)
-	$(CXX) $(LDFLAGS) $(check-cbor-obj)  -o $@
+	$(CXX) $(check-cbor-obj)  $(LDFLAGS)  -o $@
 $(outdir)/cbor.core-%.o: $(srcdir)/cbor/cbor.core-%.cxx
 	@mkdir -p $(outdir)
 	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
 
 $(outdir)/check-cbor-node: $(check-cbor-node-obj)
-	$(CXX) $(LDFLAGS) $(check-cbor-node-obj)  -o $@
+	$(CXX) $(check-cbor-node-obj)  $(LDFLAGS)  -o $@
 $(outdir)/cbor.node-%.o: $(srcdir)/cbor/cbor.node-%.cxx
 	@mkdir -p $(outdir)
 	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@

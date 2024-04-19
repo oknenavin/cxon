@@ -38,12 +38,6 @@ jobs:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
-    - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v3
-      with:
-        repository: fastfloat/fast_float
-        ref: main
-        path: .dep/fast_float
     - name: Compiler setup
       run: |
         sudo apt-get update
@@ -54,10 +48,12 @@ jobs:
         git submodule update --init tools/build
         git submodule update --init tools/boostdep
         git submodule update --init libs/config
+        git submodule update --init libs/charconv
         git submodule update --init libs/json
+        python tools/boostdep/depinst/depinst.py charconv
         python tools/boostdep/depinst/depinst.py json
         ./bootstrap.sh
-        ./b2 headers
+        ./b2
     - name: Time setup
       run: mkdir test/.time
     - name: Time JSON (default)
@@ -77,23 +73,25 @@ jobs:
         make -s time-json-node-s2 | tee -a test/.time/g++.head.default.json.node-s2.data
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / native (default)" > test/.time/g++.head.default.json.native-s2.data
         make -s time-json-native-s2 | tee -a test/.time/g++.head.default.json.native-s2.data
-    - name: Time JSON (fast_float)
+    - name: Time JSON (boost::charconv)
       env:
         CXX: g++-12
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_charconv
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
         # S1
-        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > test/.time/g++.head.fast_float.json.node-s1.data
-        make -s time-json-node-s1 | tee -a test/.time/g++.head.fast_float.json.node-s1.data
-        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > test/.time/g++.head.fast_float.json.native-s1.data
-        make -s time-json-native-s1 | tee -a test/.time/g++.head.fast_float.json.native-s1.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > test/.time/g++.head.boost-charconv.json.node-s1.data
+        make -s time-json-node-s1 | tee -a test/.time/g++.head.boost-charconv.json.node-s1.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > test/.time/g++.head.boost-charconv.json.native-s1.data
+        make -s time-json-native-s1 | tee -a test/.time/g++.head.boost-charconv.json.native-s1.data
         # S2
-        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > test/.time/g++.head.fast_float.json.node-s2.data
-        make -s time-json-node-s2 | tee -a test/.time/g++.head.fast_float.json.node-s2.data
-        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > test/.time/g++.head.fast_float.json.native-s2.data
-        make -s time-json-native-s2 | tee -a test/.time/g++.head.fast_float.json.native-s2.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > test/.time/g++.head.boost-charconv.json.node-s2.data
+        make -s time-json-node-s2 | tee -a test/.time/g++.head.boost-charconv.json.node-s2.data
+        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > test/.time/g++.head.boost-charconv.json.native-s2.data
+        make -s time-json-native-s2 | tee -a test/.time/g++.head.boost-charconv.json.native-s2.data
     - name: Time CBOR (default)
       env:
         CXX: g++-12
@@ -150,12 +148,6 @@ jobs:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
-    - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v3
-      with:
-        repository: fastfloat/fast_float
-        ref: main
-        path: .dep/fast_float
     - name: Compiler setup
       run: |
         sudo apt-get update
@@ -166,10 +158,12 @@ jobs:
         git submodule update --init tools/build
         git submodule update --init tools/boostdep
         git submodule update --init libs/config
+        git submodule update --init libs/charconv
         git submodule update --init libs/json
+        python tools/boostdep/depinst/depinst.py charconv
         python tools/boostdep/depinst/depinst.py json
         ./bootstrap.sh
-        ./b2 headers
+        ./b2
     - name: Time setup
       run: mkdir test/.time
     - name: Time JSON (default)
@@ -189,23 +183,25 @@ jobs:
         make -s time-json-node-s2 | tee -a test/.time/clang++.head.default.json.node-s2.data
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / native (default)" > test/.time/clang++.head.default.json.native-s2.data
         make -s time-json-native-s2 | tee -a test/.time/clang++.head.default.json.native-s2.data
-    - name: Time JSON (fast_float)
+    - name: Time JSON (boost::cahrconv)
       env:
         CXX: clang++-15
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_charconv
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
         # S1
-        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > test/.time/clang++.head.fast_float.json.node-s1.data
-        make -s time-json-node-s1 | tee -a test/.time/clang++.head.fast_float.json.node-s1.data
-        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > test/.time/clang++.head.fast_float.json.native-s1.data
-        make -s time-json-native-s1 | tee -a test/.time/clang++.head.fast_float.json.native-s1.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > test/.time/clang++.head.boost-charconv.json.node-s1.data
+        make -s time-json-node-s1 | tee -a test/.time/clang++.head.boost-charconv.json.node-s1.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > test/.time/clang++.head.boost-charconv.json.native-s1.data
+        make -s time-json-native-s1 | tee -a test/.time/clang++.head.boost-charconv.json.native-s1.data
         # S2
-        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > test/.time/clang++.head.fast_float.json.node-s2.data
-        make -s time-json-node-s2 | tee -a test/.time/clang++.head.fast_float.json.node-s2.data
-        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > test/.time/clang++.head.fast_float.json.native-s2.data
-        make -s time-json-native-s2 | tee -a test/.time/clang++.head.fast_float.json.native-s2.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > test/.time/clang++.head.boost-charconv.json.node-s2.data
+        make -s time-json-node-s2 | tee -a test/.time/clang++.head.boost-charconv.json.node-s2.data
+        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > test/.time/clang++.head.boost-charconv.json.native-s2.data
+        make -s time-json-native-s2 | tee -a test/.time/clang++.head.boost-charconv.json.native-s2.data
     - name: Time CBOR (default)
       env:
         CXX: clang++-15
@@ -262,12 +258,6 @@ jobs:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
-    - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v3
-      with:
-        repository: fastfloat/fast_float
-        ref: main
-        path: .dep/fast_float
     - name: Boost setup
       shell: cmd
       run: |
@@ -275,7 +265,9 @@ jobs:
         git submodule update --init tools/build
         git submodule update --init tools/boostdep
         git submodule update --init libs/config
+        git submodule update --init libs/charconv
         git submodule update --init libs/json
+        python tools/boostdep/depinst/depinst.py charconv
         python tools/boostdep/depinst/depinst.py json
         .\bootstrap.bat
         #.\b2 # nothing runs after bootstrap.bat by some reason
@@ -311,28 +303,28 @@ jobs:
         ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/msvc++.head.default.json.node-s2.data
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (default)" > ../.time/msvc++.head.default.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/msvc++.head.default.json.native-s2.data
-    - name: Time JSON (fast_float)
+    - name: Time JSON (boost::charconv)
       shell: bash
       env:
-        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/fast_float/include -D CXON_USE_FAST_FLOAT -I ../../.dep/boost -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
+        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost -D CXON_USE_BOOST_CHARCONV -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
         LDFLAGS: -LTCG /LIBPATH:../../.dep/boost/stage/lib
       run: |
         cd test
         cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
+        cmake -S . -B .bld -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -D CMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
         cmake --build .bld --config Release --target cxon-json-node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
         # S1
-        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > ../.time/msvc++.head.fast_float.json.node-s1.data
-        ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/msvc++.head.fast_float.json.node-s1.data
-        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > ../.time/msvc++.head.fast_float.json.native-s1.data
-        ./cxon-json-node ../data/json/tests.cf time-native-s1 | tee -a ../.time/msvc++.head.fast_float.json.native-s1.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > ../.time/msvc++.head.boost-charconv.json.node-s1.data
+        ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/msvc++.head.boost-charconv.json.node-s1.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > ../.time/msvc++.head.boost-charconv.json.native-s1.data
+        ./cxon-json-node ../data/json/tests.cf time-native-s1 | tee -a ../.time/msvc++.head.boost-charconv.json.native-s1.data
         # S2
-        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > ../.time/msvc++.head.fast_float.json.node-s2.data
-        ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/msvc++.head.fast_float.json.node-s2.data
-        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > ../.time/msvc++.head.fast_float.json.native-s2.data
-        ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/msvc++.head.fast_float.json.native-s2.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > ../.time/msvc++.head.boost-charconv.json.node-s2.data
+        ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/msvc++.head.boost-charconv.json.node-s2.data
+        echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > ../.time/msvc++.head.boost-charconv.json.native-s2.data
+        ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/msvc++.head.boost-charconv.json.native-s2.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -366,31 +358,29 @@ jobs:
         repository: nlohmann/json
         ref: master
         path: .dep/nlohmann
-    - name: Checkout fastfloat/fast_float
-      uses: actions/checkout@v3
-      with:
-        repository: fastfloat/fast_float
-        ref: main
-        path: .dep/fast_float
     - name: Boost setup
       run: |
         cd .dep/boost
         git submodule update --init tools/build
         git submodule update --init tools/boostdep
         git submodule update --init libs/config
+        git submodule update --init libs/charconv
         git submodule update --init libs/json
+        python tools/boostdep/depinst/depinst.py charconv
         python tools/boostdep/depinst/depinst.py json
         ./bootstrap.sh
-        ./b2 headers
+        ./b2
     - name: Time setup
       run: |
         mkdir test/.time
         echo > test/.root
     - name: Time JSON (default)
+      env:
+        CXXFLAGS: -DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         cd test
         #cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -D CMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
         cmake --build .bld --target cxon-json-node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
@@ -404,24 +394,29 @@ jobs:
         ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.default.json.node-s2.data
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (default)" > ../.time/xcode.head.default.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/xcode.head.default.json.native-s2.data
-    - name: Time JSON (fast_float)
+    - name: Time JSON (boost::charconv)
+      env:
+        CXXFLAGS: -DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../../.dep/boost/stage/lib -l boost_charconv
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
+        DYLD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$DYLD_LIBRARY_PATH
       run: |
         cd test
         cmake --build .bld --target clean
-        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="-DCXON_TIME_ONLY -I ../../.dep/fast_float/include -DCXON_USE_FAST_FLOAT -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN"
+        cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -D CMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
         cmake --build .bld --target cxon-json-node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
         # S1
-        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > ../.time/xcode.head.fast_float.json.node-s1.data
-        ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/xcode.head.fast_float.json.node-s1.data
-        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > ../.time/xcode.head.fast_float.json.native-s1.data
-        ./cxon-json-node ../data/json/tests.cf time-native-s1 | tee -a ../.time/xcode.head.fast_float.json.native-s1.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > ../.time/xcode.head.boost-charconv.json.node-s1.data
+        ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/xcode.head.boost-charconv.json.node-s1.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > ../.time/xcode.head.boost-charconv.json.native-s1.data
+        ./cxon-json-node ../data/json/tests.cf time-native-s1 | tee -a ../.time/xcode.head.boost-charconv.json.native-s1.data
         # S2
-        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / node (fast_float)" > ../.time/xcode.head.fast_float.json.node-s2.data
-        ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.fast_float.json.node-s2.data
-        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (fast_float)" > ../.time/xcode.head.fast_float.json.native-s2.data
-        ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.fast_float.json.native-s2.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / node (boost::json)" > ../.time/xcode.head.boost-charconv.json.node-s2.data
+        ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.boost-charconv.json.node-s2.data
+        echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > ../.time/xcode.head.boost-charconv.json.native-s2.data
+        ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.boost-charconv.json.native-s2.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
