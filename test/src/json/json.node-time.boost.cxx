@@ -25,7 +25,7 @@ namespace test { namespace kind {
             std::vector<boost::json::value> vo;
             t.time.read.push_back(CXON_MEASURE(
                 vo.emplace_back();
-                boost::json::error_code ec;
+                boost::system::error_code ec;
                 vo.back() = boost::json::parse(json, ec);
                 if (ec) t.error = std::string("Boost/JSON: ") + ec.category().name() + ": " + ec.message();
             ));
