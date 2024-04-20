@@ -18,7 +18,7 @@ jobs:
         compiler: ['5', '6', '9', '10', '11', '12'] # 7, 8 - unmet dependencies
       fail-fast: false
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: |
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
@@ -41,7 +41,7 @@ jobs:
         standard: [11, 14, 17, 20]
       fail-fast: false
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
@@ -57,7 +57,7 @@ jobs:
   gcc-arch-32:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
@@ -74,7 +74,7 @@ jobs:
   gcc-ubsan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
@@ -91,7 +91,7 @@ jobs:
   gcc-asan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
@@ -108,7 +108,7 @@ jobs:
   make-install:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
@@ -132,7 +132,7 @@ jobs:
         compiler: ['4.0', '6.0', '7', '8', '9', '10', '11', '12', '13', '14', '15'] # 5.0 - unmet dependencies
       fail-fast: false
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: |
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
@@ -157,7 +157,7 @@ jobs:
         standard: [11, 14, 17, 20]
       fail-fast: false
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
