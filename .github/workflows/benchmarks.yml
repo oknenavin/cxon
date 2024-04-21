@@ -41,7 +41,7 @@ jobs:
     - name: Compiler setup
       run: |
         sudo apt-get update
-        sudo apt-get install g++-12
+        sudo apt-get install g++-13
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -58,7 +58,7 @@ jobs:
       run: mkdir test/.time
     - name: Time JSON (default)
       env:
-        CXX: g++-12
+        CXX: g++-13
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -75,7 +75,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/g++.head.default.json.native-s2.data
     - name: Time JSON (boost::charconv)
       env:
-        CXX: g++-12
+        CXX: g++-13
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
@@ -94,7 +94,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/g++.head.boost-charconv.json.native-s2.data
     - name: Time CBOR (default)
       env:
-        CXX: g++-12
+        CXX: g++-13
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -107,7 +107,7 @@ jobs:
         mkdir test/.space
     - name: Space JSON (default)
       env:
-        CXX: g++-12
+        CXX: g++-13
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
       run: |
@@ -116,9 +116,9 @@ jobs:
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/g++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/g++.head.default.json.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data
+        name: benchmark-data-gcc
         path: |
             test/.time/*.data
             test/.space/*.data
@@ -226,9 +226,9 @@ jobs:
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/clang++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/clang++.head.default.json.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data
+        name: benchmark-data-clang
         path: |
             test/.time/*.data
             test/.space/*.data
@@ -326,9 +326,9 @@ jobs:
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > ../.time/msvc++.head.boost-charconv.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/msvc++.head.boost-charconv.json.native-s2.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data
+        name: benchmark-data-msvc
         path: |
             test/.root
             test/.time/*.data
@@ -417,9 +417,9 @@ jobs:
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::json)" > ../.time/xcode.head.boost-charconv.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.boost-charconv.json.native-s2.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data
+        name: benchmark-data-xcode
         path: |
             test/.root
             test/.time/*.data
@@ -440,9 +440,10 @@ jobs:
         ref: master # branch-links
         path: .dep/workflows-data
     - name: Download Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: benchmark-data
+        pattern: benchmark-data-*
+        merge-multiple: true
         path: test/.data
     - name: Commit
       run: |
