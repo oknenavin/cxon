@@ -79,7 +79,7 @@ specify this about object keys:*
   > *The JSON syntax does not impose any restrictions on the strings used as names,
   > __does not require that name strings be unique__*...
 
-*and by picking `std::map` or `std::multi-map` as a `C++` mapping type, the value of an existing key 
+*and by picking `std::map` or `std::multimap` as a `C++` mapping type, the value of an existing key 
 may be replaced or kept.*
 
 

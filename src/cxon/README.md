@@ -26,7 +26,7 @@
 #### Introduction
 
 `CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv] [interface](#interface).  
-`CXON` extends `C++17`'s [`<charconv>`][std-charconv] interface with:
+`CXON` extends [`<charconv>`][std-charconv]'s interface with:
 
   - traits template parameter (support for different serialization formats, 
     see [`Format traits`](#format-traits))
