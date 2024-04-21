@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['5', '6', '9', '10', '11', '12'] # 7, 8 - unmet dependencies
+        compiler: ['5', '6', '9', '10', '11', '12', '13'] # 7, 8 - unmet dependencies
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['12']
+        compiler: ['13']
         standard: [11, 14, 17, 20]
       fail-fast: false
     steps:
@@ -61,12 +61,12 @@ jobs:
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
-      run: sudo apt install gcc-12-multilib g++-12-multilib
+      run: sudo apt install gcc-13-multilib g++-13-multilib
     - name: Boost setup
       run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-12
+        CXX: g++-13
         CXXFLAGS: -m32 -std=c++20
         LDFLAGS: -m32
       run: $CXX --version; make -j check
@@ -78,12 +78,12 @@ jobs:
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
-      run: sudo apt install gcc-12 g++-12
+      run: sudo apt install gcc-13 g++-13
     - name: Boost setup
       run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-12
+        CXX: g++-13
         CXXFLAGS: -std=c++20 -g -O0 -fsanitize=undefined
         LDFLAGS: -fsanitize=undefined
       run: $CXX --version; make -j check
@@ -95,12 +95,12 @@ jobs:
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
-      run: sudo apt install gcc-12 g++-12
+      run: sudo apt install gcc-13 g++-13
     - name: Boost setup
       run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-12
+        CXX: g++-13
         CXXFLAGS: -std=c++20 -g -O0 -fsanitize=address
         LDFLAGS: -fsanitize=address
       run: $CXX --version; make -j check
@@ -112,12 +112,12 @@ jobs:
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
-      run: sudo apt install gcc-12 g++-12
+      run: sudo apt install gcc-13 g++-13
     - name: Boost setup
       run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-12
+        CXX: g++-13
         CXXFLAGS: -std=c++20
       run: |
         sudo make install
