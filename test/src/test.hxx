@@ -197,6 +197,11 @@ namespace cxon { namespace test {
             }
         };
 
+    template <typename T>
+        inline bool equal(const T& t0, const T& t1) {
+            return match<T>::values(t0, t1);
+        }
+
     template <typename I>
         struct force_input_iterator {
             using iterator_category = std::input_iterator_tag;

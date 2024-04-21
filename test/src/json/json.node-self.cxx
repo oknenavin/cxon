@@ -718,11 +718,11 @@ namespace test { namespace kind {
                 r = cxon::from_bytes(n, "18446744073709551615"); // 2^64 - 1 = 18446744073709551615
             CHECK(r && n.is<node::uint>() && n.get<node::uint>() == std::numeric_limits<node::uint>::max());
                 r = cxon::from_bytes(n, "18446744073709551616"); // 2^64 - 1 = 18446744073709551615
-            CHECK(r && n.is<node::real>() && n.get<node::real>() == 1.8446744073709552e19);
+            CHECK(r && n.is<node::real>() && cxon::test::equal(n.get<node::real>(), 1.8446744073709552e+19));
                 r = cxon::from_bytes(n, "-9223372036854775808"); // 2^63 = 9223372036854775808
             CHECK(r && n.is<node::sint>() && n.get<node::sint>() == std::numeric_limits<node::sint>::min());
                 r = cxon::from_bytes(n, "-9223372036854775809"); // 2^63 = 9223372036854775808
-            CHECK(r && n.is<node::real>() && n.get<node::real>() == -9.2233720368547758e18);
+            CHECK(r && n.is<node::real>() && cxon::test::equal(n.get<node::real>(), -9.2233720368547758e+18));
         }
         {   node n = {
                 {{{1, 2}}, 3},
