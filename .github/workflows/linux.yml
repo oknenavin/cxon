@@ -61,12 +61,12 @@ jobs:
     - name: APT Update
       run: sudo apt update
     - name: Compiler setup
-      run: sudo apt install gcc-12-multilib g++-12-multilib
+      run: sudo apt install gcc-13-multilib g++-13-multilib
     - name: Boost setup
       run: sudo apt install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-12 # TODO: with g++-13 json.node-self.cxx checks 721, 725 fail
+        CXX: g++-13
         CXXFLAGS: -m32 -std=c++20
         LDFLAGS: -m32
       run: $CXX --version; make -j check
