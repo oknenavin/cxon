@@ -438,7 +438,7 @@ jobs:
       with:
         repository: oknenavin/workflows-data
         token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
-        ref: develop # branch-links
+        ref: master # branch-links
         path: .dep/workflows-data
     - name: Download Artifacts
       uses: actions/download-artifact@v3
