@@ -118,7 +118,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-${{ matrix.runs-on }}
+        name: benchmark-data-gcc
         path: |
             test/.time/*.data
             test/.space/*.data
@@ -228,7 +228,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-${{ matrix.runs-on }}
+        name: benchmark-data-clang
         path: |
             test/.time/*.data
             test/.space/*.data
@@ -328,7 +328,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-${{ matrix.runs-on }}
+        name: benchmark-data-msvc
         path: |
             test/.root
             test/.time/*.data
@@ -419,7 +419,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-${{ matrix.runs-on }}
+        name: benchmark-data-xcode
         path: |
             test/.root
             test/.time/*.data
