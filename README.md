@@ -50,9 +50,8 @@ int main() {
 
 Successful deserialization means that the input is syntactically and semantically correct.
 
-In contrast, most of the `JSON`/`CBOR`/etc. libraries represent arbitrary data
-with a polymorphic type (called `DOM`, `value`, etc.), and successful parsing of the input only means,
-that it is syntactically correct.
+Other such libraries represent arbitrary data with polymorphic type (called `DOM`, `value`, etc.),
+and successful parsing of the input data means only that it is syntactically correct.
 
 ###### Example
 ``` c++
@@ -69,14 +68,14 @@ assert( // check the values
     array[2].is_integer() &&
     ...
 );
-// the input is semantically correct, bu
+// the input is semantically correct, but
 // the values still need special attention
 int x0 = array[0].get_integer(); // it's an int, but not quite
 ...
 ```
 
 To help with this, some of the libraries provide utilities to convert the value type to a
-`C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to`.
+`C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to`.  
 For completeness, `CXON` also provides polymorphic types (called `node`) for the supported formats
 that match the functionality provided by these libraries.
 
