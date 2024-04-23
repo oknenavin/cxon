@@ -385,7 +385,9 @@ jobs:
     - name: Time JSON (default)
       env:
         CXXFLAGS: -DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../../.dep/boost/stage/lib -l boost_json -l boost_charconv
       run: |
+        export DYLD_LIBRARY_PATH=$(pwd)/.dep/boost/stage/lib:$DYLD_LIBRARY_PATH
         cd test
         #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -D CMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
@@ -405,7 +407,7 @@ jobs:
     - name: Time JSON (boost::charconv)
       env:
         CXXFLAGS: -DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L ../../.dep/boost/stage/lib -l boost_charconv
+        LDFLAGS: -L ../../.dep/boost/stage/lib -l boost_json -l boost_charconv
       run: |
         export DYLD_LIBRARY_PATH=$(pwd)/.dep/boost/stage/lib:$DYLD_LIBRARY_PATH
         cd test
