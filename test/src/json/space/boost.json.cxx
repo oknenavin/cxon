@@ -1,5 +1,4 @@
-#define BOOST_JSON_STANDALONE /* TODO: deprecated */
-#include "boost/json/src.hpp"
+#include "boost/json.hpp"
 
 int main() {
     boost::json::error_code ec;
