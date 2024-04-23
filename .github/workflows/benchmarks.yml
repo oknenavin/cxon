@@ -385,7 +385,7 @@ jobs:
     - name: Time JSON (default)
       env:
         CXXFLAGS: -DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L ../../.dep/boost/stage/lib -l boost_json -l boost_charconv
+        LDFLAGS: -L ../../.dep/boost/stage/lib -l boost_json
       run: |
         export DYLD_LIBRARY_PATH=$(pwd)/.dep/boost/stage/lib:$DYLD_LIBRARY_PATH
         cd test
