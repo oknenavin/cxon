@@ -60,6 +60,8 @@ jobs:
       env:
         CXX: g++-13
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
@@ -77,7 +79,7 @@ jobs:
       env:
         CXX: g++-13
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_charconv
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -110,6 +112,8 @@ jobs:
         CXX: g++-13
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         cd test
@@ -170,6 +174,8 @@ jobs:
       env:
         CXX: clang++-15
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
@@ -187,7 +193,7 @@ jobs:
       env:
         CXX: clang++-15
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_charconv
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -220,6 +226,8 @@ jobs:
         CXX: clang++-15
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         cd test
@@ -376,8 +384,13 @@ jobs:
         echo > test/.root
     - name: Time JSON (default)
       env:
-        CXXFLAGS: -DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN
+        LDFLAGS: -l boost_json
       run: |
+        DEP=$GITHUB_WORKSPACE/.dep
+        export CXXFLAGS="-I $DEP/boost -I $DEP/rapidjson/include -I $DEP/nlohmann/single_include $CXXFLAGS"
+        export LDFLAGS="-L $DEP/boost/stage/lib $LDFLAGS"
+        export DYLD_LIBRARY_PATH=$DEP/boost/stage/lib:$DYLD_LIBRARY_PATH
         cd test
         #cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -D CMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
@@ -396,10 +409,13 @@ jobs:
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/xcode.head.default.json.native-s2.data
     - name: Time JSON (boost::charconv)
       env:
-        CXXFLAGS: -DCXON_TIME_ONLY -I ../../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L ../../.dep/boost/stage/lib -l boost_charconv
+        CXXFLAGS: -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN
+        LDFLAGS: -l boost_json -l boost_charconv
       run: |
-        export DYLD_LIBRARY_PATH=$(pwd)/.dep/boost/stage/lib:$DYLD_LIBRARY_PATH
+        DEP=$GITHUB_WORKSPACE/.dep
+        export CXXFLAGS="-I $DEP/boost -I $DEP/rapidjson/include -I $DEP/nlohmann/single_include $CXXFLAGS"
+        export LDFLAGS="-L $DEP/boost/stage/lib $LDFLAGS"
+        export DYLD_LIBRARY_PATH=$DEP/boost/stage/lib:$DYLD_LIBRARY_PATH
         cd test
         cmake --build .bld --target clean
         cmake -S . -B .bld -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=20 -D CMAKE_CXX_FLAGS="$CXXFLAGS" -D CMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
