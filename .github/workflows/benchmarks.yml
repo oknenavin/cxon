@@ -60,6 +60,8 @@ jobs:
       env:
         CXX: g++-13
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
@@ -77,7 +79,7 @@ jobs:
       env:
         CXX: g++-13
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_charconv
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -110,6 +112,8 @@ jobs:
         CXX: g++-13
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         cd test
@@ -170,6 +174,8 @@ jobs:
       env:
         CXX: clang++-15
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
@@ -187,7 +193,7 @@ jobs:
       env:
         CXX: clang++-15
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_charconv
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -220,6 +226,8 @@ jobs:
         CXX: clang++-15
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
+        LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
+        LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         cd test
