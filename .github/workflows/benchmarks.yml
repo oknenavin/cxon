@@ -384,9 +384,9 @@ jobs:
         echo > test/.root
     - name: Time JSON (default)
       env:
-        CXXFLAGS: -DCXON_TIME_ONLY -I $(pwd)/.dep/boost -DCXON_TIME_BOOST_JSON -I $(pwd)/.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I $(pwd)/.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
-        LDFLAGS: -L $(pwd)/.dep/boost/stage/lib -l boost_json
-        DYLD_LIBRARY_PATH: $(pwd)/.dep/boost/stage/lib:$DYLD_LIBRARY_PATH
+        CXXFLAGS: -DCXON_TIME_ONLY -I $GITHUB_WORKSPACE/.dep/boost -DCXON_TIME_BOOST_JSON -I $GITHUB_WORKSPACE/.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I $GITHUB_WORKSPACE/.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        LDFLAGS: -L $GITHUB_WORKSPACE/.dep/boost/stage/lib -l boost_json
+        DYLD_LIBRARY_PATH: $GITHUB_WORKSPACE/.dep/boost/stage/lib:$DYLD_LIBRARY_PATH
       run: |
         cd test
         #cmake --build .bld --target clean
@@ -406,7 +406,7 @@ jobs:
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/xcode.head.default.json.native-s2.data
     - name: Time JSON (boost::charconv)
       env:
-        dep: $(pwd)/.dep
+        dep: $GITHUB_WORKSPACE/.dep
         CXXFLAGS: -DCXON_TIME_ONLY -I $dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I $dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I $dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L $dep/boost/stage/lib -l boost_json -l boost_charconv
         DYLD_LIBRARY_PATH: $dep/boost/stage/lib:$DYLD_LIBRARY_PATH
