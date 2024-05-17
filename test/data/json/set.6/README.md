@@ -1,3 +1,3 @@
 - fundamental types (`string`, `number`, `boolean` and `null`) - arrays of 100000 values of the given type `[type-value, ...]`
-- arrays - array of 50000 arrays `[[double, double], ...]`
-- objects - array of 50000 objects `[{"x": double, "y": double}, ...]`
+- arrays - array of 100000 arrays `[[null, null], ...]`
+- objects - array of 100000 objects `[{"x": null, "y": null}, ...]`
