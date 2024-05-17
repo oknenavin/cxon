@@ -28,10 +28,10 @@ namespace test { namespace synth {
     using object_null = std::vector<std::nullptr_t>;
     using object_bool = std::deque<bool>; // std::vector<bool> is a bit slow
     using object_string = std::vector<std::string>;
-    using object_array = std::vector<std::pair<double, double>>;
+    using object_array = std::vector<std::pair<std::nullptr_t, std::nullptr_t>>;
 
     struct point_2d {
-        double x, y;
+        std::nullptr_t x, y;
 
         CXON_JSON_CLS_MEMBER(point_2d, CXON_JSON_CLS_FIELD_ASIS(x), CXON_JSON_CLS_FIELD_ASIS(y))
     };
