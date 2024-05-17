@@ -40,7 +40,8 @@ jobs:
         path: .dep/nlohmann
     - name: Compiler setup
       run: |
-        sudo apt-get update
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
         sudo apt-get install g++-13
     - name: Boost setup
       run: |
@@ -155,7 +156,7 @@ jobs:
     - name: Compiler setup
       run: |
         sudo apt-get update
-        sudo apt-get install clang-14
+        sudo apt-get install clang-15
     - name: Boost setup
       run: |
         cd .dep/boost
