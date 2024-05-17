@@ -23,11 +23,12 @@ jobs:
       run: |
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic universe' | sudo tee -a /etc/apt/sources.list
-        sudo apt update
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt install gcc-${{ matrix.compiler }} g++-${{ matrix.compiler }}
+      run: sudo apt-get install gcc-${{ matrix.compiler }} g++-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: g++-${{ matrix.compiler }}
@@ -43,11 +44,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: APT Update
-      run: sudo apt update
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt install gcc-${{ matrix.compiler }} g++-${{ matrix.compiler }}
+      run: sudo apt-get install gcc-${{ matrix.compiler }} g++-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: g++-${{ matrix.compiler }}
@@ -59,11 +62,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: APT Update
-      run: sudo apt update
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt install gcc-13-multilib g++-13-multilib
+      run: sudo apt-get install gcc-13-multilib g++-13-multilib
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: g++-13
@@ -76,11 +81,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: APT Update
-      run: sudo apt update
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt install gcc-13 g++-13
+      run: sudo apt-get install gcc-13 g++-13
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: g++-13
@@ -93,11 +100,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: APT Update
-      run: sudo apt update
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt install gcc-13 g++-13
+      run: sudo apt-get install gcc-13 g++-13
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: g++-13
@@ -110,11 +119,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: APT Update
-      run: sudo apt update
+      run: sudo apt-get update
     - name: Compiler setup
-      run: sudo apt install gcc-13 g++-13
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
+        sudo apt-get install gcc-13 g++-13
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: g++-13
@@ -139,11 +151,11 @@ jobs:
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic universe' | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ focal main'      | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ focal universe'  | sudo tee -a /etc/apt/sources.list
-        sudo apt update
+        sudo apt-get update
     - name: Compiler setup
-      run: sudo apt install clang-${{ matrix.compiler }}
+      run: sudo apt-get install clang-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-${{ matrix.compiler }}
@@ -159,11 +171,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: APT Update
-      run: sudo apt update
+      run: sudo apt-get update
     - name: Compiler setup
-      run: sudo apt install clang-${{ matrix.compiler }}
+      run: sudo apt-get install clang-${{ matrix.compiler }}
     - name: Boost setup
-      run: sudo apt install libboost-container-dev
+      run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
         CXX: clang++-${{ matrix.compiler }}
