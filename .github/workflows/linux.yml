@@ -121,7 +121,10 @@ jobs:
     - name: APT Update
       run: sudo apt-get update
     - name: Compiler setup
-      run: sudo apt-get install gcc-13 g++-13
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
+        sudo apt-get install gcc-13 g++-13
     - name: Boost setup
       run: sudo apt-get install libboost-container-dev
     - name: Check
