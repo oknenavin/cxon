@@ -148,9 +148,13 @@ namespace cxon { namespace cio { namespace chr {
     namespace imp {
 
         template <typename II>
-            inline unsigned char head_(II& i, II e) { return next(i, e); }
+            inline auto head_(II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return next(i, e); }
         template <typename II>
-            inline unsigned char tail_(II& i, II e) { return i != e ? peek(++i, e) : '\xFF'; }
+            inline auto head_(II& i, II  ) -> enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
+        template <typename II>
+            inline auto tail_(II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return i != e ? peek(++i, e) : '\xFF'; }
+        template <typename II>
+            inline auto tail_(II& i, II  ) -> enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
 
 #       define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, bad_utf32
 
@@ -297,47 +301,59 @@ namespace cxon { namespace cio { namespace chr {
             //if (c0 < 0x80)
             //    return 1;
             // 2
-            if (c0 >= 0xC2 && c0 <= 0xDF) {
-                c1 = imp::head_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF)
-                    return 2;
+            if (c0 < 0xE0) {
+                CXON_IF_CONSTEXPR (is_random_access_iterator<II>::value)
+                    if (e - i < 2) return 0;
+                if (c0 >= 0xC2 && c0 <= 0xDF) {
+                    c1 = imp::head_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF)
+                        return 2;
+                }
             }
             // 3
-            else if (c0 == 0xE0) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
-            }
-            else if (c0 >= 0xE1 && c0 <= 0xEC) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
-            }
-            else if (c0 == 0xED) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
-            }
-            else if (c0 >= 0xEE && c0 <= 0xEF) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
+            else if (c0 < 0xF0) {
+                CXON_IF_CONSTEXPR (is_random_access_iterator<II>::value)
+                    if (e - i < 3) return 0;
+                if (c0 == 0xE0) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xE1 && c0 <= 0xEC) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 == 0xED) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xEE && c0 <= 0xEF) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
             }
             // 4
-            else if (c0 == 0xF0) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 4;
-            }
-            else if (c0 >= 0xF1 && c0 <= 0xF3) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 4;
-            }
-            else if (c0 == 0xF4) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 4;
+            else if (c0 < 0xF8) {
+                CXON_IF_CONSTEXPR (is_random_access_iterator<II>::value)
+                    if (e - i < 4) return 0;
+                if (c0 == 0xF0) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
+                else if (c0 >= 0xF1 && c0 <= 0xF3) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
+                else if (c0 == 0xF4) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
             }
             return 0;
         }
