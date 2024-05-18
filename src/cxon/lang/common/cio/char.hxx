@@ -41,7 +41,9 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
             -> enable_if_t<is_char_8<T>::value, int>;
 
     template <typename II>
-        CXON_INLAY int utf8_check(II i, II e);
+        CXON_INLAY auto utf8_check(II i, II e) -> enable_if_t< is_random_access_iterator<II>::value, int>;
+    template <typename II>
+        CXON_INLAY auto utf8_check(II i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, int>;
 
 }}}
 
@@ -287,7 +289,9 @@ namespace cxon { namespace cio { namespace chr {
         }
 
     template <typename II>
-        CXON_INLAY int utf8_check(II i, II e) {
+        CXON_INLAY auto utf8_check(II i, II e)
+            -> enable_if_t< is_random_access_iterator<II>::value, int>
+        {
             // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
             // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
             CXON_ASSERT(i != e, "unexpected");
@@ -297,47 +301,119 @@ namespace cxon { namespace cio { namespace chr {
             //if (c0 < 0x80)
             //    return 1;
             // 2
-            if (c0 >= 0xC2 && c0 <= 0xDF) {
-                c1 = imp::head_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF)
-                    return 2;
+            if (c0 < 0xE0) {
+                    if (e - i < 2) return 0;
+                if (c0 >= 0xC2 && c0 <= 0xDF) {
+                    c1 = (unsigned char)*++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF)
+                        return 2;
+                }
             }
             // 3
-            else if (c0 == 0xE0) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
-            }
-            else if (c0 >= 0xE1 && c0 <= 0xEC) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
-            }
-            else if (c0 == 0xED) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
-            }
-            else if (c0 >= 0xEE && c0 <= 0xEF) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                    return 3;
+            else if (c0 < 0xF0) {
+                    if (e - i < 3) return 0;
+                if (c0 == 0xE0) {
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
+                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xE1 && c0 <= 0xEC) {
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 == 0xED) {
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
+                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xEE && c0 <= 0xEF) {
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
             }
             // 4
-            else if (c0 == 0xF0) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 4;
+            else if (c0 < 0xF8) {
+                    if (e - i < 4) return 0;
+                if (c0 == 0xF0) {
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
+                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
+                else if (c0 >= 0xF1 && c0 <= 0xF3) {
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
+                else if (c0 == 0xF4) {
+                    c1 = (unsigned char)*++i, c2 = (unsigned char)*++i, c3 = (unsigned char)*++i;
+                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
             }
-            else if (c0 >= 0xF1 && c0 <= 0xF3) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 4;
+            return 0;
+        }
+    template <typename II>
+        CXON_INLAY auto utf8_check(II i, II e)
+            -> enable_if_t<!is_random_access_iterator<II>::value, int>
+        {
+            // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
+            // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
+            CXON_ASSERT(i != e, "unexpected");
+            unsigned const  c0 = (unsigned char)*i;
+            unsigned        c1, c2, c3;
+            // 1
+            //if (c0 < 0x80)
+            //    return 1;
+            // 2
+            if (c0 < 0xE0) {
+                if (c0 >= 0xC2 && c0 <= 0xDF) {
+                    c1 = imp::head_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF)
+                        return 2;
+                }
             }
-            else if (c0 == 0xF4) {
-                c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                    return 4;
+            // 3
+            else if (c0 < 0xF0) {
+                if (c0 == 0xE0) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xE1 && c0 <= 0xEC) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 == 0xED) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+                else if (c0 >= 0xEE && c0 <= 0xEF) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
+                        return 3;
+                }
+            }
+            // 4
+            else if (c0 < 0xF8) {
+                if (c0 == 0xF0) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
+                else if (c0 >= 0xF1 && c0 <= 0xF3) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
+                else if (c0 == 0xF4) {
+                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
+                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
+                        return 4;
+                }
             }
             return 0;
         }
