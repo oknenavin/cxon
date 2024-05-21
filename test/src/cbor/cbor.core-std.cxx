@@ -13,16 +13,18 @@
 #include "cxon/lib/std/deque.hxx"
 #include "cxon/lib/std/forward_list.hxx"
 #include "cxon/lib/std/list.hxx"
-#include "cxon/lib/std/map.hxx"
 #include "cxon/lib/std/optional.hxx"
 #include "cxon/lib/std/queue.hxx"
 #include "cxon/lib/std/set.hxx"
+#include "cxon/lib/std/flat_set.hxx"
+#include "cxon/lib/std/unordered_set.hxx"
+#include "cxon/lib/std/map.hxx"
+#include "cxon/lib/std/flat_map.hxx"
+#include "cxon/lib/std/unordered_map.hxx"
 #include "cxon/lib/std/stack.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/string_view.hxx"
 #include "cxon/lib/std/tuple.hxx"
-#include "cxon/lib/std/unordered_map.hxx"
-#include "cxon/lib/std/unordered_set.hxx"
 #include "cxon/lib/std/utility.hxx"
 #include "cxon/lib/std/valarray.hxx"
 #include "cxon/lib/std/variant.hxx"
@@ -386,6 +388,41 @@ TEST_BEG(map, cxon::CBOR<>, "/std")
     }
 TEST_END()
 
+#ifdef CXON_HAS_LIB_STD_FLAT_MAP
+    TEST_BEG(flat_map, cxon::CBOR<>, "/std")
+        R_TEST(flat_map<int, int>{}, BS("\xA0"));
+        R_TEST(flat_map<int, int>{}, BS("\xBF\xFF"));
+        W_TEST(BS("\xA0"), flat_map<int, int>{});
+        R_TEST(flat_map<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+        R_TEST(flat_map<int, int>{{1, 2}}, BS("\xA2\x01\x02\x01\x02"));
+        W_TEST(BS("\xA1\x01\x02"), flat_map<int, int>{{1, 2}});
+        R_TEST(flat_map<int, string>{{1, "2"}}, BS("\xA1\x01\x61\x32"));
+        W_TEST(BS("\xA1\x01\x61\x32"), flat_map<int, string>{{1, "2"}});
+        R_TEST(flat_map<string, int>{{"1", 2}}, BS("\xA1\x61\x31\x02"));
+        W_TEST(BS("\xA1\x61\x31\x02"), flat_map<string, int>{{"1", 2}});
+        // errors
+        R_TEST(flat_map<int, int>{}, BS("\xFF"), cbor::read_error::array_invalid, 0);
+        R_TEST(flat_map<int, int>{}, BS("\xA1\xFF"), cbor::read_error::integer_invalid, 1);
+        R_TEST(flat_map<int, int>{}, BS("\xA1\x01\xFF"), cbor::read_error::integer_invalid, 2);
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                c.push_back('x');
+                auto r = cxon::to_bytes<cxon::CBOR<>>(c, flat_map<int, int>{{3, 1}});
+            TEST_CHECK(r.ec == cbor::write_error::output_failure);
+        }
+        {   char b[1];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<cxon::CBOR<>>(c, flat_map<int, int>{{3, 1}});
+            TEST_CHECK(r.ec == cbor::write_error::output_failure);
+        }
+        {   char b[2];
+            auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+                auto r = cxon::to_bytes<cxon::CBOR<>>(c, flat_map<int, int>{{3, 1}});
+            TEST_CHECK(r.ec == cbor::write_error::output_failure);
+        }
+    TEST_END()
+#endif
+
 
 TEST_BEG(multimap, cxon::CBOR<>, "/std")
     R_TEST(multimap<int, int>{}, BS("\xA0"));
@@ -395,6 +432,18 @@ TEST_BEG(multimap, cxon::CBOR<>, "/std")
     R_TEST(multimap<int, int>{{1, 2}, {1, 3}}, BS("\xA2\x01\x02\x01\x03"));
     W_TEST(BS("\xA1\x01\x02"), multimap<int, int>{{1, 2}});
 TEST_END()
+
+
+#ifdef CXON_HAS_LIB_STD_FLAT_MAP
+    TEST_BEG(flat_multimap, cxon::CBOR<>, "/std")
+        R_TEST(flat_multimap<int, int>{}, BS("\xA0"));
+        R_TEST(flat_multimap<int, int>{}, BS("\xBF\xFF"));
+        W_TEST(BS("\xA0"), flat_multimap<int, int>{});
+        R_TEST(flat_multimap<int, int>{{1, 2}}, BS("\xA1\x01\x02"));
+        R_TEST(flat_multimap<int, int>{{1, 2}, {1, 3}}, BS("\xA2\x01\x02\x01\x03"));
+        W_TEST(BS("\xA1\x01\x02"), flat_multimap<int, int>{{1, 2}});
+    TEST_END()
+#endif
 
 
 #ifdef CXON_HAS_LIB_STD_OPTIONAL
@@ -449,6 +498,22 @@ TEST_BEG(set, cxon::CBOR<>, "/std")
 TEST_END()
 
 
+#ifdef CXON_HAS_LIB_STD_FLAT_SET
+    TEST_BEG(flat_set, cxon::CBOR<>, "/std")
+        R_TEST(flat_set<int>{}, BS("\x80"));
+        R_TEST(flat_set<int>{}, BS("\x9F\xFF"));
+        W_TEST(BS("\x80"), flat_set<int>{});
+        R_TEST(flat_set<int>{1, 2}, BS("\x82\x01\x02"));
+        R_TEST(flat_set<int>{1, 2}, BS("\x83\x01\x02\x01"));
+        W_TEST(BS("\x82\x01\x02"), flat_set<int>{1, 2});
+        // errors
+        R_TEST(flat_set<int>{1, 2}, BS("\xFF"), cbor::read_error::array_invalid, 0);
+        R_TEST(flat_set<int>{1, 2}, BS("\x82\xFF"), cbor::read_error::integer_invalid, 1);
+        R_TEST(flat_set<int>{1, 2}, BS("\x82\x01\xFF"), cbor::read_error::integer_invalid, 2);
+    TEST_END()
+#endif
+
+
 TEST_BEG(multiset, cxon::CBOR<>, "/std")
     R_TEST(multiset<int>{}, BS("\x80"));
     R_TEST(multiset<int>{}, BS("\x9F\xFF"));
@@ -458,6 +523,17 @@ TEST_BEG(multiset, cxon::CBOR<>, "/std")
     W_TEST(BS("\x82\x01\x02"), multiset<int>{1, 2});
 TEST_END()
 
+
+#ifdef CXON_HAS_LIB_STD_FLAT_SET
+    TEST_BEG(flat_multiset, cxon::CBOR<>, "/std")
+        R_TEST(flat_multiset<int>{}, BS("\x80"));
+        R_TEST(flat_multiset<int>{}, BS("\x9F\xFF"));
+        W_TEST(BS("\x80"), flat_multiset<int>{});
+        R_TEST(flat_multiset<int>{1, 2}, BS("\x82\x01\x02"));
+        R_TEST(flat_multiset<int>{1, 1, 2}, BS("\x83\x01\x02\x01"));
+        W_TEST(BS("\x82\x01\x02"), flat_multiset<int>{1, 2});
+    TEST_END()
+#endif
 
 TEST_BEG(pair, cxon::CBOR<>, "/std")
     R_TEST(pair<int, float>(1, 2.f), BS("\x82\x01\x02"));
