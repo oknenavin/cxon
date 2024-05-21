@@ -19,8 +19,10 @@
 #include "cxon/lib/std/list.hxx"
 #include "cxon/lib/std/forward_list.hxx"
 #include "cxon/lib/std/set.hxx"
+#include "cxon/lib/std/flat_set.hxx"
 #include "cxon/lib/std/unordered_set.hxx"
 #include "cxon/lib/std/map.hxx"
+#include "cxon/lib/std/flat_map.hxx"
 #include "cxon/lib/std/unordered_map.hxx"
 #include "cxon/lib/std/optional.hxx"
 #include "cxon/lib/std/variant.hxx"
@@ -465,6 +467,23 @@ TEST_BEG(set, cxon::JSON<>, "/std")
 TEST_END()
 
 
+#ifdef CXON_HAS_LIB_STD_FLAT_SET
+    TEST_BEG(flat_set, cxon::JSON<>, "/std")
+        using namespace std;
+        // std::flat_set<int>
+            R_TEST((flat_set<int>{}), "[]");
+            W_TEST("[]", (flat_set<int>{}));
+            R_TEST((flat_set<int>({1, 2, 3})), "[1, 1, 2, 3]");
+            W_TEST("[1,2,3]", (flat_set<int>({1, 2, 3})));
+        // std::flat_multiflat_set<int>;
+            R_TEST((flat_multiset<int>{}), "[]");
+            W_TEST("[]", (flat_multiset<int>{}));
+            R_TEST((flat_multiset<int>({1, 1, 2, 3})), "[1, 1, 2, 3]");
+            W_TEST("[1,1,2,3]", (flat_multiset<int>({1, 1, 2, 3})));
+    TEST_END()
+#endif
+
+
 TEST_BEG(map, cxon::JSON<>, "/std")
     using namespace std;
     // std::map
@@ -513,6 +532,58 @@ TEST_BEG(map, cxon::JSON<>, "/std")
             TEST_CHECK(r.ec == json::write_error::output_failure);
         }
 TEST_END()
+
+
+#ifdef CXON_HAS_LIB_STD_FLAT_MAP
+    TEST_BEG(map, cxon::JSON<>, "/std")
+        using namespace std;
+        // std::flat_map
+            R_TEST(flat_map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");
+            W_TEST(R"({"1":2,"3":4})", flat_map<int, int>{{1, 2}, {3, 4}});
+            R_TEST(flat_map<string, int>{{R"({"1":2})", 3}, {R"({"4":5})", 6}}, R"({"{\"1\":2}": 3, "{\"4\":5}": 6})");
+            W_TEST(R"({"{\"1\":2}":3,"{\"4\":5}":6})", flat_map<flat_map<string, int>, int>{{flat_map<string, int>{{"1", 2}}, 3}, {flat_map<string, int>{{"4", 5}}, 6}});
+        // std::flat_multimap
+            R_TEST(flat_multimap<string, int>{{"1", 2}, {"1", 3}}, R"({"1": 2, "1": 3})");
+            W_TEST(R"({"1":2,"1":3})", flat_multimap<int, int>{{1, 2}, {1, 3}});
+        // errors
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(begin(b), end(b));
+                    c.push_back('x');
+                    auto r = cxon::to_bytes<XXON>(c, flat_map<int, int>{{3, 1}});
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[1];
+                auto c = cxon::cnt::make_range_container(begin(b), end(b));
+                    auto r = cxon::to_bytes<XXON>(c, flat_map<int, int>{{3, 1}});
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[2];
+                auto c = cxon::cnt::make_range_container(begin(b), end(b));
+                    auto r = cxon::to_bytes<XXON>(c, flat_map<int, int>{{3, 1}});
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[3];
+                auto c = cxon::cnt::make_range_container(begin(b), end(b));
+                    auto r = cxon::to_bytes<XXON>(c, flat_map<int, int>{{3, 1}});
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[4];
+                auto c = cxon::cnt::make_range_container(begin(b), end(b));
+                    auto r = cxon::to_bytes<XXON>(c, flat_map<int, int>{{3, 1}});
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[5];
+                auto c = cxon::cnt::make_range_container(begin(b), end(b));
+                    auto r = cxon::to_bytes<XXON>(c, flat_map<int, int>{{3, 1}});
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+            {   char b[6];
+                auto c = cxon::cnt::make_range_container(begin(b), end(b));
+                    auto r = cxon::to_bytes<XXON>(c, flat_map<int, int>{{3, 1}});
+                TEST_CHECK(r.ec == json::write_error::output_failure);
+            }
+    TEST_END()
+#endif
 
 
 TEST_BEG(unordered_map, cxon::JSON<>, "/std")
