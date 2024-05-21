@@ -45,7 +45,7 @@ types is as follows:
   - standard library types
 
     type                                            | `JSON` type          | `cxon/lang/<format>/lib/std/<header>.hxx`<br> include
-    ------------------------------------------------|----------------------|------------------------------------------------------
+    ------------------------------------------------|----------------------|--------------------------------------------------------------
     [`std::pair`][std-pair]                         | `array`              | [`cxon/lib/std/utility.hxx`](lib/std/utility.hxx)
     [`std::tuple`][std-tuple]                       | `array`              | [`cxon/lib/std/tuple.hxx`](lib/std/tuple.hxx)
     [`std::optional`][std-optional]                 | `value_type`         | [`cxon/lib/std/optional.hxx`](lib/std/optional.hxx)
@@ -57,16 +57,20 @@ types is as follows:
     [`std::forward_list`][std-forward_list]         | `array`              | [`cxon/lib/std/forward_list.hxx`](lib/std/forward_list.hxx)
     [`std::list`][std-list]                         | `array`              | [`cxon/lib/std/list.hxx`](lib/std/list.hxx)
     [`std::map`][std-map]`(1)`                      | `object`             | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
+    [`std::flat_map`][std-fmap]`(1)`                | `object`             | [`cxon/lib/std/flat_map.hxx`](lib/std/flat_map.hxx)
+    [`std::unordered_map`][std-umap]`(1)`           | `object`             | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
     [`std::multimap`][std-multimap]`(1)`            | `object`             | [`cxon/lib/std/map.hxx`](lib/std/map.hxx)
+    [`std::flat_multimap`][std-fmultimap]`(1)`      | `object`             | [`cxon/lib/std/flat_map.hxx`](lib/std/flat_map.hxx)
+    [`std::unordered_multimap`][std-umultimap]`(1)` | `object`             | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
+    [`std::set`][std-set]                           | `array`              | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
+    [`std::flat_set`][std-fset]                     | `array`              | [`cxon/lib/std/flat_set.hxx`](lib/std/flat_set.hxx)
+    [`std::unordered_set`][std-uset]                | `array`              | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
     [`std::multiset`][std-multiset]                 | `array`              | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
+    [`std::flat_multiset`][std-fmultiset]           | `array`              | [`cxon/lib/std/flat_set.hxx`](lib/std/flat_set.hxx)
+    [`std::unordered_multiset`][std-umultiset]      | `array`              | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
     [`std::priority_queue`][std-priority_queue]     | `array`              | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
     [`std::queue`][std-queue]                       | `array`              | [`cxon/lib/std/queue.hxx`](lib/std/queue.hxx)
-    [`std::set`][std-set]                           | `array`              | [`cxon/lib/std/set.hxx`](lib/std/set.hxx)
     [`std::stack`][std-stack]                       | `array`              | [`cxon/lib/std/stack.hxx`](lib/std/stack.hxx)
-    [`std::unordered_map`][std-umap]`(1)`           | `object`             | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
-    [`std::unordered_set`][std-uset]                | `array`              | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
-    [`std::unordered_multimap`][std-umultimap]`(1)` | `object`             | [`cxon/lib/std/unordered_map.hxx`](lib/std/unordered_map.hxx)
-    [`std::unordered_multiset`][std-umultiset]      | `array`              | [`cxon/lib/std/unordered_set.hxx`](lib/std/unordered_set.hxx)
     [`std::vector`][std-vector]                     | `array`              | [`cxon/lib/std/vector.hxx`](lib/std/vector.hxx)
     [`std::bitset`][std-bitset]                     | `string`             | [`cxon/lib/std/bitset.hxx`](lib/std/bitset.hxx)
     [`std::complex`][std-complex]                   | `array`              | [`cxon/lib/std/complex.hxx`](lib/std/complex.hxx)
@@ -273,14 +277,18 @@ Distributed under the MIT license. See [`LICENSE`](../../../../LICENSE) for more
 [std-deque]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/deque&oldid=107644
 [std-forward_list]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/forward_list&oldid=107645
 [std-list]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/list&oldid=107646
-[std-set]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/set&oldid=107670
 [std-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
-[std-multiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multiset&oldid=107671
-[std-multimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
-[std-uset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_set&oldid=107673
+[std-fmap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/flat_map&oldid=171871
 [std-umap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_map&oldid=107669
-[std-umultiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multiset&oldid=107674
+[std-multimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multimap&oldid=107672
+[std-fmultimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/flat_multimap&oldid=171872
 [std-umultimap]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multimap&oldid=107675
+[std-set]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/set&oldid=107670
+[std-fset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/flat_set&oldid=171873
+[std-uset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_set&oldid=107673
+[std-multiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/multiset&oldid=107671
+[std-fmultiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/flat_multiset&oldid=171874
+[std-umultiset]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/unordered_multiset&oldid=107674
 [std-stack]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/stack&oldid=106350
 [std-queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/queue&oldid=103354
 [std-priority_queue]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/priority_queue&oldid=103092
