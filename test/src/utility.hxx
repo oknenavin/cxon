@@ -40,16 +40,16 @@ namespace test {
 
     namespace imp {
 
-        template <typename C>
-            inline auto median_(const C& c) -> typename C::value_type {
-                std::sort(std::begin(c), std::end(c));
-                return c.size() % 2 == 0 ? (c[c.size() / 2] + c[c.size() / 2 - 1]) / 2 : c[c.size() / 2];
-            }
+        //template <typename C>
+        //    inline auto median_(const C& c) -> typename C::value_type {
+        //        auto d = c;
+        //            std::sort(std::begin(d), std::end(d));
+        //        return d.size() % 2 == 0 ? (d[d.size() / 2] + d[d.size() / 2 - 1]) / 2 : d[d.size() / 2];
+        //    }
         template <typename C>
             inline auto median_(C& c) -> typename C::value_type {
-                auto d = c;
-                    std::sort(std::begin(d), std::end(d));
-                return d.size() % 2 == 0 ? (d[d.size() / 2] + d[d.size() / 2 - 1]) / 2 : d[d.size() / 2];
+                std::sort(std::begin(c), std::end(c));
+                return c.size() % 2 == 0 ? (c[c.size() / 2] + c[c.size() / 2 - 1]) / 2 : c[c.size() / 2];
             }
         template <typename C>
             inline auto average_(const C& c) -> typename C::value_type {
