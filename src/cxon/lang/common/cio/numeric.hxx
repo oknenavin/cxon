@@ -81,41 +81,49 @@ namespace cxon { namespace cio { namespace num { // read
             {   // as in RFC7159 (except nans)
                 CXON_ASSERT(f && f < l, "unexpected");
                 char c = peek(i, e);
-                    CXON_IF_CONSTEXPR(!X::allow_javascript_nans) {
-                        if (c == '"') {
-                            ;                               CXON_READ()
-                            if (is_sign_<T>(c))             CXON_NEXT()
-                            if (c == 'i') {
-                                CXON_NEXT() if (c != 'n')   return 0;
-                                CXON_NEXT() if (c != 'f')   return 0;
+#                   if defined(__GNUC__) && __GNUC__ == 14 && !defined(__clang__)
+#                       pragma GCC diagnostic push
+#                       pragma GCC diagnostic ignored "-Warray-bounds"
+#                       pragma GCC diagnostic ignored "-Wstringop-overflow"
+#                   endif
+                        CXON_IF_CONSTEXPR(!X::allow_javascript_nans) {
+                            if (c == '"') {
+                                ;                               CXON_READ()
+                                if (is_sign_<T>(c))             CXON_NEXT()
+                                if (c == 'i') {
+                                    CXON_NEXT() if (c != 'n')   return 0;
+                                    CXON_NEXT() if (c != 'f')   return 0;
+                                }
+                                else if (c == 'n') {
+                                    CXON_NEXT() if (c != 'a')   return 0;
+                                    CXON_NEXT() if (c != 'n')   return 0;
+                                }
+                                else                            return 0;
+                                CXON_NEXT() if (c != '"')       return 0;
+                                CXON_NEXT()                     goto trap_end;
                             }
-                            else if (c == 'n') {
-                                CXON_NEXT() if (c != 'a')   return 0;
-                                CXON_NEXT() if (c != 'n')   return 0;
+                        }
+                        if (is_sign_<T>(c))                     CXON_READ()
+                        CXON_IF_CONSTEXPR( X::allow_javascript_nans) {
+                            if (c == 'I') {
+                                CXON_NEXT() if (c != 'n')       return 0;
+                                CXON_NEXT() if (c != 'f')       return 0;
+                                CXON_NEXT() if (c != 'i')       return 0;
+                                CXON_NEXT() if (c != 'n')       return 0;
+                                CXON_NEXT() if (c != 'i')       return 0;
+                                CXON_NEXT() if (c != 't')       return 0;
+                                CXON_NEXT() if (c != 'y')       return 0;
+                                CXON_NEXT()                     goto trap_end;
                             }
-                            else                            return 0;
-                            CXON_NEXT() if (c != '"')       return 0;
-                            CXON_NEXT()                     goto trap_end;
+                            if (c == 'N') {
+                                CXON_NEXT() if (c != 'a')       return 0;
+                                CXON_NEXT() if (c != 'N')       return 0;
+                                CXON_NEXT()                     goto trap_end;
+                            }
                         }
-                    }
-                    if (is_sign_<T>(c))                     CXON_READ()
-                    CXON_IF_CONSTEXPR( X::allow_javascript_nans) {
-                        if (c == 'I') {
-                            CXON_NEXT() if (c != 'n')       return 0;
-                            CXON_NEXT() if (c != 'f')       return 0;
-                            CXON_NEXT() if (c != 'i')       return 0;
-                            CXON_NEXT() if (c != 'n')       return 0;
-                            CXON_NEXT() if (c != 'i')       return 0;
-                            CXON_NEXT() if (c != 't')       return 0;
-                            CXON_NEXT() if (c != 'y')       return 0;
-                            CXON_NEXT()                     goto trap_end;
-                        }
-                        if (c == 'N') {
-                            CXON_NEXT() if (c != 'a')       return 0;
-                            CXON_NEXT() if (c != 'N')       return 0;
-                            CXON_NEXT()                     goto trap_end;
-                        }
-                    }
+#                   if defined(__GNUC__) && __GNUC__ == 14 && !defined(__clang__)
+#                       pragma GCC diagnostic pop
+#                   endif
                     if (c == '0')                           goto trap_zero;
                 //trap_whole:
                        if (!chr::is<X>::digit10(c))         return 0;
