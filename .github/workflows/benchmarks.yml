@@ -245,7 +245,7 @@ jobs:
   # msvc ######################################################################
 
   msvc:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v4
@@ -278,13 +278,13 @@ jobs:
         git submodule update --init libs/json
         python tools/boostdep/depinst/depinst.py charconv
         python tools/boostdep/depinst/depinst.py json
-        .\bootstrap.bat
-        #.\b2 # nothing runs after bootstrap.bat by some reason
-    - name: Boost finalization
+    - name: Boost build
       shell: cmd
       run: |
         cd .dep/boost
-        .\b2
+        cmd /c bootstrap
+        b2 -d0 headers
+        b2 -j3 runtime-link=shared address-model=64 variant=release
     - name: Time setup
       shell: bash
       run: |
