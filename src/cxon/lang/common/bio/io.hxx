@@ -362,8 +362,8 @@ namespace cxon { namespace bio {
             {
                 byte bs[sizeof(T)];
                     switch (n) {
-                        default:    CXON_ASSERT(0, "unexpected");
-                                    return false;
+                        default:    CXON_ASSERT(0, "unexpected");   // LCOV_EXCL_LINE
+                                    return false;                   // LCOV_EXCL_LINE
                         case 2:     bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
                         case 1:     bs[n - 1] = byte(t >>  0);
                     }
@@ -375,8 +375,8 @@ namespace cxon { namespace bio {
             {
                 byte bs[sizeof(T)];
                     switch (n) {
-                        default:    CXON_ASSERT(0, "unexpected");
-                                    return false;
+                        default:    CXON_ASSERT(0, "unexpected");   // LCOV_EXCL_LINE
+                                    return false;                   // LCOV_EXCL_LINE
                         case 4:     bs[n - 4] = byte(t >> 24);
                                     bs[n - 3] = byte(t >> 16); CXON_FALLTHROUGH;
                         case 2:     bs[n - 2] = byte(t >>  8); CXON_FALLTHROUGH;
@@ -390,8 +390,8 @@ namespace cxon { namespace bio {
             {
                 byte bs[sizeof(T)];
                     switch (n) {
-                        default:    CXON_ASSERT(0, "unexpected");
-                                    return false;
+                        default:    CXON_ASSERT(0, "unexpected");   // LCOV_EXCL_LINE
+                                    return false;                   // LCOV_EXCL_LINE
                         case 8:     bs[n - 8] = byte(t >> 56);
                                     bs[n - 7] = byte(t >> 48);
                                     bs[n - 6] = byte(t >> 40);
