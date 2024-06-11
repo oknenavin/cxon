@@ -54,4 +54,4 @@ jobs:
         lcov -c -d . -o cov.info
         lcov -e cov.info '*/cxon/src/cxon/*.hxx' -o cxon.info
         lcov -l cxon.info
-        ./codecov -t ${CODECOV_TOKEN} -f cxon.info
+        ./codecov -t ${{ secrets.CODECOV_TOKEN }} -f cxon.info
