@@ -432,7 +432,7 @@ jobs:
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / node (boost::charconv)" > ../.time/xcode.head.boost-charconv.json.node-s2.data
         ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.boost-charconv.json.node-s2.data
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::charconv)" > ../.time/xcode.head.boost-charconv.json.native-s2.data
-        ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.boost-charconv.json.native-s2.data
+        ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/xcode.head.boost-charconv.json.native-s2.data
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
