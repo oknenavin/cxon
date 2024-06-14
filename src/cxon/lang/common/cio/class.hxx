@@ -141,7 +141,7 @@ namespace cxon { namespace cio { namespace cls {
 
     template <typename ...Fs>
         constexpr fields<Fs...> make_fields(Fs&&... fs) {
-            return { std::forward<Fs>(fs)... };
+            return std::make_tuple(std::forward<Fs>(fs)...);
         }
 
     // read
