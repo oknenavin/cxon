@@ -196,7 +196,7 @@ namespace cxon { namespace napa { // named parameters
         using pack = std::tuple<Tg...>;
 
     //template <typename ...Tg>
-    //    inline constexpr pack<...> make_pack(Tg&&... t);
+    //    constexpr pack<...> make_pack(Tg&&... t);
 
     template <typename Tg, typename T, bool E = std::is_scalar<T>::value>
         struct parameter;
@@ -384,16 +384,16 @@ namespace cxon { namespace napa {
             };
       
         template <typename Tg, typename Pk>
-            inline constexpr auto get(Pk& p) -> tag_type<Tg>& {
+            constexpr auto get(Pk& p) -> tag_type<Tg>& {
                 return pack<Tg, Pk>::get(p);
             }
         template <typename Tg, typename Pk>
-            inline constexpr auto get(const Pk& p) -> const tag_type<Tg>& {
+            constexpr auto get(const Pk& p) -> const tag_type<Tg>& {
                 return pack<Tg, Pk>::get(const_cast<Pk&>(p));
             }
 
         template <typename Tg, typename Pk>
-            inline constexpr auto get() -> tag_type<Tg> {
+            constexpr auto get() -> tag_type<Tg> {
                 return pack<Tg, Pk>::get();
             }
 
@@ -443,7 +443,7 @@ namespace cxon { namespace napa {
 #                   endif
                 };
         template <typename T>
-            inline constexpr auto head_pack_(T&& t)
+            constexpr auto head_pack_(T&& t)
                 -> decltype(head_<decay_t<T>>::pack(std::forward<T>(t)))
             {
                 return      head_<decay_t<T>>::pack(std::forward<T>(t));
@@ -474,7 +474,7 @@ namespace cxon { namespace napa {
 
     }
     template <typename ...Tg>
-        inline constexpr auto make_pack(Tg&&... t) -> decltype(imp::make_<Tg...>::pack(std::forward<Tg>(t)...)) {
+        constexpr auto make_pack(Tg&&... t) -> decltype(imp::make_<Tg...>::pack(std::forward<Tg>(t)...)) {
             return imp::make_<Tg...>::pack(std::forward<Tg>(t)...);
         }
 
