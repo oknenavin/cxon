@@ -135,7 +135,7 @@ namespace cxon { namespace alc {
                         return T {std::allocator_arg, al, std::forward<A>(as)...};
                     }
                 template <typename Al, typename ...A>
-                    static constexpr auto create_(option<0>, const Al&, A&&... as) -> decltype(T (std::forward<A>(as)...)) {
+                    static constexpr auto create_(option<0>, const Al&, A&&... as) -> T {
                         return T {std::forward<A>(as)...};
                     }
                 template <typename Al, typename ...A>
