@@ -99,7 +99,7 @@ namespace cxon { namespace cnt {
                 return c.reserve(s), true;
             }
         template <typename C>
-            inline constexpr bool reserve_(option<0>, C&, std::size_t) {
+            constexpr bool reserve_(option<0>, C&, std::size_t) {
                 return true;
             }
 
