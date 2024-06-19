@@ -37,6 +37,7 @@ namespace test { namespace citm_catalog {
             CXON_JSON_CLS_FIELD_ASIS(subtitle),
             CXON_JSON_CLS_FIELD_ASIS(topicIds)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct price {
@@ -45,6 +46,7 @@ namespace test { namespace citm_catalog {
         unsigned long long seatCategoryId;
 
         CXON_JSON_CLS_MEMBER(price, CXON_JSON_CLS_FIELD_ASIS(amount), CXON_JSON_CLS_FIELD_ASIS(audienceSubCategoryId), CXON_JSON_CLS_FIELD_ASIS(seatCategoryId))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct area {
@@ -59,6 +61,7 @@ namespace test { namespace citm_catalog {
         unsigned long long seatCategoryId;
 
         CXON_JSON_CLS_MEMBER(seat, CXON_JSON_CLS_FIELD_ASIS(areas), CXON_JSON_CLS_FIELD_ASIS(seatCategoryId))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct performance {
@@ -83,6 +86,7 @@ namespace test { namespace citm_catalog {
             CXON_JSON_CLS_FIELD_ASIS(start),
             CXON_JSON_CLS_FIELD_ASIS(venueCode)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -111,6 +115,7 @@ namespace test { namespace citm_catalog {
             CXON_JSON_CLS_FIELD_ASIS(topicSubTopics),
             CXON_JSON_CLS_FIELD_ASIS(venueNames)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}

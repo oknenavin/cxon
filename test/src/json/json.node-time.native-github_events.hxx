@@ -31,6 +31,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(url),
             CXON_JSON_CLS_FIELD_ASIS(id)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct repo {
@@ -39,6 +40,7 @@ namespace test { namespace github_events {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(repo, CXON_JSON_CLS_FIELD_ASIS(url), CXON_JSON_CLS_FIELD_ASIS(id), CXON_JSON_CLS_FIELD_ASIS(name))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct author {
@@ -46,6 +48,7 @@ namespace test { namespace github_events {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(author, CXON_JSON_CLS_FIELD_ASIS(email), CXON_JSON_CLS_FIELD_ASIS(name))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct commit {
@@ -62,6 +65,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(sha),
             CXON_JSON_CLS_FIELD_ASIS(author)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct user {
@@ -98,6 +102,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(followers_url),
             CXON_JSON_CLS_FIELD_ASIS(following_url)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct forkee {
@@ -232,6 +237,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(size),
             CXON_JSON_CLS_FIELD_ASIS(watchers)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct pull_request {
@@ -240,6 +246,7 @@ namespace test { namespace github_events {
         std::optional<std::string> diff_url;
 
         CXON_JSON_CLS_MEMBER(pull_request, CXON_JSON_CLS_FIELD_ASIS(html_url), CXON_JSON_CLS_FIELD_ASIS(patch_url), CXON_JSON_CLS_FIELD_ASIS(diff_url))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct issue {
@@ -284,6 +291,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(comments_url),
             CXON_JSON_CLS_FIELD_ASIS(comments)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct comment {
@@ -304,6 +312,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(updated_at),
             CXON_JSON_CLS_FIELD_ASIS(id)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct page {
@@ -322,6 +331,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(summary),
             CXON_JSON_CLS_FIELD_ASIS(action)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct payload {
@@ -368,6 +378,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(before),
             CXON_JSON_CLS_FIELD_ASIS(size)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct payload_create_event : payload {
@@ -387,6 +398,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(description),
             CXON_JSON_CLS_FIELD_ASIS(master_branch)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct payload_fork_event : payload {
@@ -395,6 +407,7 @@ namespace test { namespace github_events {
         payload_fork_event(struct forkee&& forkee) : payload(payload::fork_event), forkee(std::move(forkee)) {}
 
         CXON_JSON_CLS_WRITE_MEMBER(payload_fork_event, CXON_JSON_CLS_FIELD_ASIS(forkee))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct payload_watch_event : payload {
@@ -403,6 +416,7 @@ namespace test { namespace github_events {
         payload_watch_event(std::string&& action) : payload(payload::watch_event), action(std::move(action)) {}
 
         CXON_JSON_CLS_WRITE_MEMBER(payload_watch_event, CXON_JSON_CLS_FIELD_ASIS(action))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct payload_issue_comment_event : payload {
@@ -416,6 +430,7 @@ namespace test { namespace github_events {
         }
 
         CXON_JSON_CLS_WRITE_MEMBER(payload_issue_comment_event, CXON_JSON_CLS_FIELD_ASIS(action), CXON_JSON_CLS_FIELD_ASIS(issue), CXON_JSON_CLS_FIELD_ASIS(comment))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct payload_gollum_event : payload {
@@ -424,6 +439,7 @@ namespace test { namespace github_events {
         payload_gollum_event(std::vector<page>&& pages) : payload(payload::gollum_event), pages(std::move(pages)) {}
 
         CXON_JSON_CLS_WRITE_MEMBER(payload_gollum_event, CXON_JSON_CLS_FIELD_ASIS(pages))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct payload_proxy {
@@ -460,6 +476,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(comment),
             CXON_JSON_CLS_FIELD_ASIS(pages)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct org {
@@ -476,6 +493,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(url),
             CXON_JSON_CLS_FIELD_ASIS(id)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct event {
@@ -498,6 +516,7 @@ namespace test { namespace github_events {
             CXON_JSON_CLS_FIELD_ASIS(org),
             CXON_JSON_CLS_FIELD_ASIS(id)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     using object = std::vector<event>;

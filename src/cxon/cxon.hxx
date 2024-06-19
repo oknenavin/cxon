@@ -31,7 +31,7 @@ namespace cxon { // interface
         struct format_selector : T {};
 
     template <typename X, template <typename> class S>
-        using is_same_format = has_traits<S<X>, X>;
+        using is_same_format = has_traits<X, S>;
 
     template <typename X, template <typename> class S, typename R = bool>
         using enable_for_t = enable_if_t<is_same_format<X, S>::value, R>;

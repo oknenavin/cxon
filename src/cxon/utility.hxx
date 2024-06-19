@@ -34,6 +34,18 @@
 #   define CXON_FALLTHROUGH [[fallthrough]]
 #endif
 
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 201304L
+#   define CXON_CXX14_CONSTEXPR constexpr
+#else
+#   define CXON_CXX14_CONSTEXPR const
+#endif
+
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 201703L
+#   define CXON_CXX17_CONSTEXPR constexpr
+#else
+#   define CXON_CXX17_CONSTEXPR const
+#endif
+
 #ifdef __cpp_if_constexpr
 #   define CXON_IF_CONSTEXPR(...) if constexpr (__VA_ARGS__)
 #else 
@@ -68,23 +80,28 @@ namespace cxon {
     template <typename T, template <typename> class U>
         struct bind_traits;
     template <template <typename> class T, typename V, template <typename> class U>
-        struct bind_traits<T<V>, U>       { using type = T<U<V>>; };
+        struct bind_traits<T<V>, U>         { using type = T<U<V>>; };
     template <typename T, template <typename> class U>
         using bind_traits_t = typename bind_traits<T, U>::type;
 
     template <typename T, template <typename> class U>
-        struct unbind_traits                { using type = T; };
-    template <template <typename> class T, template <typename> class U, typename V>
-        struct unbind_traits<T<U<V>>, U>    { using type = T<V>; };
+        struct unbind_traits                    { using type = T; };
+    template <template <typename> class U, typename V>
+        struct unbind_traits<U<V>, U>           { using type = V; };
+    template <template <typename> class T, typename V, template <typename> class U>
+        struct unbind_traits<T<V>, U>           { using type = T<typename unbind_traits<V, U>::type>; };
     template <typename T, template <typename> class U>
         using unbind_traits_t = typename unbind_traits<T, U>::type;
 
-    template <typename T, typename X>
-        struct has_traits : std::integral_constant<bool, std::is_same<T, X>::value> {};
-    template <typename T, template <typename> class X, typename V>
-        struct has_traits<T, X<V>> : std::integral_constant<bool, std::is_same<T, V>::value || std::is_base_of<T, V>::value> {};
-    template <template <typename> class T, typename U, template <typename> class X, typename V>
-        struct has_traits<T<U>, X<V>> : std::integral_constant<bool, std::is_same<T<V>, X<V>>::value || has_traits<T<V>, V>::value> {};
+    template <typename T, template <typename> class D, template <typename> class A>
+        using rebind_traits_t = bind_traits_t<unbind_traits_t<T, D>, A>;
+
+    template <typename T, template <typename> class U>
+        struct has_traits                       : std::false_type {};
+    template <template <typename> class U, typename V>
+        struct has_traits<U<V>, U>              : std::true_type {};
+    template <template <typename> class T, typename V, template <typename> class U>
+        struct has_traits<T<V>, U>              : std::integral_constant<bool, has_traits<V, U>::value> {};
 
     // type sequence
 

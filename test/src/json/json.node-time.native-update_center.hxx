@@ -9,6 +9,7 @@
 #include "cxon/json.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
+#include <cstring>
 
 
 namespace test { namespace update_center {
@@ -27,6 +28,7 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(url),
             CXON_JSON_CLS_FIELD_ASIS(version)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct dependency {
@@ -35,6 +37,7 @@ namespace test { namespace update_center {
         std::string version;
 
         CXON_JSON_CLS_MEMBER(dependency, CXON_JSON_CLS_FIELD_ASIS(name), CXON_JSON_CLS_FIELD_ASIS(optional), CXON_JSON_CLS_FIELD_ASIS(version))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct developer {
@@ -43,6 +46,7 @@ namespace test { namespace update_center {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(developer, CXON_JSON_CLS_FIELD_ASIS(developerId), CXON_JSON_CLS_FIELD_ASIS(email), CXON_JSON_CLS_FIELD_ASIS(name))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct plugin {
@@ -85,6 +89,113 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(version),
             CXON_JSON_CLS_FIELD_ASIS(wiki)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
+
+//        static inline unsigned int hash(const char *str, std::size_t len) {
+//            static const unsigned char asso_values[] = {
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 10,  0,
+//                1, 11, 23, 11, 23, 23, 23, 23,  4, 23,
+//                5, 23,  0, 23,  0,  0,  3,  3,  0,  1,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+//                23, 23, 23, 23, 23, 23
+//            };
+//            return unsigned(len + asso_values[static_cast<unsigned char>(str[0])]);
+//        }
+//
+//        template <typename X, typename II, typename Cx>
+//            static bool read_value_(plugin& t, const char *str, std::size_t len, II& i, II e, Cx& cx) {
+//                enum {
+//                    TOTAL_KEYWORDS = 18,
+//                    MIN_WORD_LENGTH = 3,
+//                    MAX_WORD_LENGTH = 22,
+//                    MIN_HASH_VALUE = 3,
+//                    MAX_HASH_VALUE = 22
+//                };
+//
+//                using read_ = bool (*)(plugin&, II&, II, Cx&);
+//                struct field {
+//                    char const* name;
+//                    read_ call;
+//                };
+//
+//#               define FIELD(field) {#field, [](plugin& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.field, i, e, cx); } }
+//                static CXON_CXX17_CONSTEXPR struct field wordlist[] = {
+//                    { nullptr }, {nullptr }, {nullptr },
+//                    FIELD(scm),
+//                    FIELD(sha1),
+//                    FIELD(wiki),
+//                    FIELD(url),
+//                    FIELD(version),
+//                    FIELD(title),
+//                    FIELD(name),
+//                    FIELD(labels),
+//                    FIELD(developers),
+//                    FIELD(requiredCore),
+//                    FIELD(dependencies),
+//                    FIELD(gav),
+//                    FIELD(previousVersion),
+//                    FIELD(releaseTimestamp),
+//                    FIELD(previousTimestamp),
+//                    FIELD(excerpt),
+//                    FIELD(buildDate),
+//                    { nullptr }, { nullptr },
+//                    FIELD(compatibleSinceVersion)
+//                };
+//#               undef FIELD
+//
+//                if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
+//                    unsigned int key = hash(str, len);
+//                    if (key <= MAX_HASH_VALUE) {
+//                        if (wordlist[key].call)
+//                            return wordlist[key].call(t, i, e, cx);
+//                    }
+//                }
+//                return false;
+//            }
+//
+//
+//        template <typename X, typename II, typename Cx>
+//            static auto read_value(plugin& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {
+//                if (!cxon::cio::consume<X>(X::map::beg, i, e, cx))
+//                    return false;
+//                for (char id[cxon::cio::ids_len_max::constant<cxon::napa_type<Cx>>(64)]; ; ) {
+//                    if (!cxon::cio::consume<X>(i, e, cx))
+//                        return false;
+//                    if (cxon::cio::peek(i, e) == X::map::end)
+//                        return ++i, true;
+//                    II const o = i;
+//                        using Y = cxon::bind_traits_t<X, cxon::cio::str::raw_traits>;
+//                        if (!cxon::cio::read_map_key<Y>(id, i, e, cx))
+//                            return cxon::cio::rewind(i, o), false;
+//                        if (!read_value_<X>(t, id, std::strlen(id), i, e, cx))
+//                            return cx && (cxon::cio::rewind(i, o), cx/X::read_error::unexpected);
+//                        if (cxon::cio::cnt::consume_sep<X, typename X::map>(i, e, cx))
+//                            continue;
+//                    return cxon::cio::consume<X>(X::map::end, i, e, cx);
+//                }
+//                return true;
+//            }
     };
 
     struct signature_ {
@@ -101,6 +212,7 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(digest),
             CXON_JSON_CLS_FIELD_ASIS(signature)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -119,6 +231,7 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(signature),
             CXON_JSON_CLS_FIELD_ASIS(updateCenterVersion)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}

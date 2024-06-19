@@ -28,6 +28,7 @@ namespace test { namespace gsoc_2018 {
             CXON_JSON_CLS_FIELD_ASIS(url),
             CXON_JSON_CLS_FIELD_ASIS(logo)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct author {
@@ -35,6 +36,7 @@ namespace test { namespace gsoc_2018 {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(author, CXON_JSON_CLS_FIELD_NAME("@type", type), CXON_JSON_CLS_FIELD_ASIS(name))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct participant {
@@ -53,6 +55,7 @@ namespace test { namespace gsoc_2018 {
             CXON_JSON_CLS_FIELD_ASIS(sponsor),
             CXON_JSON_CLS_FIELD_ASIS(author)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     using object = cxon::ordered::object<std::string, participant>;

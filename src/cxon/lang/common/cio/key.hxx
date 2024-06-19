@@ -42,6 +42,9 @@ namespace cxon { namespace cio { namespace key { // key read/write extension poi
     template <typename X, typename T, typename O, typename Cx>
         inline bool write_key(O& o, const T& t, Cx& cx);
 
+    template <typename T> struct simple_traits : T {};
+    template <typename T>  using is_simple_key_context = has_traits<T, simple_traits>;
+
 }}}
 
 // implementation //////////////////////////////////////////////////////////////
@@ -63,7 +66,8 @@ namespace cxon { namespace cio {
             -> enable_if_t<is_char<T>::value, bool>
         {
             using Y = conditional_t<X::unquote_quoted_keys, quoted_key_context<X>, X>;
-            return str::pointer_write<Y>(o, t, s, cx) && poke<Y>(o, Y::map::div, cx);
+            using Z = conditional_t<key::is_simple_key_context<Y>::value, rebind_traits_t<Y, key::simple_traits, str::raw_traits>, Y>;
+            return str::pointer_write<Z>(o, t, s, cx) && poke<Z>(o, Z::map::div, cx);
         }
 
     template <typename X, typename T, typename II, typename Cx>
@@ -99,7 +103,8 @@ namespace cxon { namespace cio { namespace key {
         template <typename X, typename T, typename II, typename Cx>
             inline auto read_key_(T& t, II& i, II e, Cx& cx) -> enable_if_t<!needs_quotes<X, T>::value, bool> {
                 using Y = conditional_t<X::unquote_quoted_keys, quoted_key_context<X>, X>;
-                return  read_value<Y>(t, i, e, cx);
+                using Z = conditional_t<!is_unquoted_key_context<Y>::value && key::is_simple_key_context<Y>::value, rebind_traits_t<Y, key::simple_traits, str::raw_traits>, Y>;
+                return  read_value<Z>(t, i, e, cx);
             }
 
     }

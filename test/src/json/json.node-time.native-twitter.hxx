@@ -21,6 +21,7 @@ namespace test { namespace twitter {
         std::string iso_language_code;
 
         CXON_JSON_CLS_MEMBER(metadata, CXON_JSON_CLS_FIELD_ASIS(result_type), CXON_JSON_CLS_FIELD_ASIS(iso_language_code))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct url {
@@ -30,6 +31,7 @@ namespace test { namespace twitter {
         std::vector<unsigned> indices;
 
         CXON_JSON_CLS_MEMBER(url, CXON_JSON_CLS_FIELD_NAME("url", url_), CXON_JSON_CLS_FIELD_ASIS(expanded_url), CXON_JSON_CLS_FIELD_ASIS(display_url), CXON_JSON_CLS_FIELD_ASIS(indices))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct user_mention {
@@ -46,6 +48,7 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS(id_str),
             CXON_JSON_CLS_FIELD_ASIS(indices)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct size {
@@ -54,6 +57,7 @@ namespace test { namespace twitter {
         std::string resize;
 
         CXON_JSON_CLS_MEMBER(size, CXON_JSON_CLS_FIELD_ASIS(w), CXON_JSON_CLS_FIELD_ASIS(h), CXON_JSON_CLS_FIELD_ASIS(resize))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct sizes {
@@ -63,6 +67,7 @@ namespace test { namespace twitter {
         size small;
 
         CXON_JSON_CLS_MEMBER(sizes, CXON_JSON_CLS_FIELD_ASIS(medium), CXON_JSON_CLS_FIELD_ASIS(large), CXON_JSON_CLS_FIELD_ASIS(thumb), CXON_JSON_CLS_FIELD_ASIS(small))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct media {
@@ -93,18 +98,21 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS_DFLT(source_status_id      , self.source_status_id == 0),
             CXON_JSON_CLS_FIELD_ASIS_DFLT(source_status_id_str  , self.source_status_id_str.empty())
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct description {
         std::vector<url> urls;
 
         CXON_JSON_CLS_MEMBER(description, CXON_JSON_CLS_FIELD_ASIS(urls))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct urls {
         std::vector<url> urls_;
 
         CXON_JSON_CLS_MEMBER(urls, CXON_JSON_CLS_FIELD_NAME("urls", urls_))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct hashtag {
@@ -112,6 +120,7 @@ namespace test { namespace twitter {
         std::vector<unsigned> indices;
 
         CXON_JSON_CLS_MEMBER(hashtag, CXON_JSON_CLS_FIELD_ASIS(text), CXON_JSON_CLS_FIELD_ASIS(indices))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct entity {
@@ -132,6 +141,7 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS_DFLT(description       , self.description.urls.empty()),
             CXON_JSON_CLS_FIELD_ASIS_DFLT(media             , self.media.empty())
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct user {
@@ -218,6 +228,7 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS(follow_request_sent),
             CXON_JSON_CLS_FIELD_ASIS(notifications)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct retweeted_status {
@@ -272,6 +283,7 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS_DFLT(possibly_sensitive, !self.possibly_sensitive),
             CXON_JSON_CLS_FIELD_ASIS(lang)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct status {
@@ -328,6 +340,7 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS_DFLT(possibly_sensitive    , !self.possibly_sensitive),
             CXON_JSON_CLS_FIELD_ASIS(lang)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
     
     struct search_metadata {
@@ -352,6 +365,7 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS(since_id),
             CXON_JSON_CLS_FIELD_ASIS(since_id_str)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -359,6 +373,7 @@ namespace test { namespace twitter {
         struct search_metadata search_metadata;
 
         CXON_JSON_CLS_MEMBER(object, CXON_JSON_CLS_FIELD_ASIS(statuses), CXON_JSON_CLS_FIELD_ASIS(search_metadata))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}
