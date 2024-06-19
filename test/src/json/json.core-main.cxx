@@ -380,7 +380,7 @@ TEST_END()
 
 namespace {
     struct struct_bare_2 {
-        using bare_class_tag = cxon::json::cls::bare_class_tag;
+        using cxon_bare_class_tag = cxon::json::cls::cxon_bare_class_tag;
         std::vector<int> even, odd;
         bool operator ==(const struct_bare_2& t) const { return even == t.even && odd == t.odd; }
     };

@@ -226,88 +226,46 @@ namespace cxon { namespace cbor { namespace cls {
 #define CXON_CBOR_CLS_FIELD_ASIS_DFLT(F, ...)       CXON_CBOR_CLS_FIELD_DFLT(CXON_T_, #F, F, __VA_ARGS__)
 #define CXON_CBOR_CLS_FIELD_SKIP(N)                 cxon::cbor::cls::make_field<CXON_T_>(N, {})
 
-#if defined(__cpp_constexpr) && __cpp_constexpr >= 201603L
-#   define CXON_CBOR_CLS_READ(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename II, typename Cx>\
-                inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {\
-                    using CXON_T_ = Type;\
-                    static constexpr auto f = cbor::cls::make_fields(__VA_ARGS__);\
-                    return  cbor::tag::read<X>(i, e, cx) &&\
-                            cbor::cls::read_fields<X>(t, f, i, e, cx)\
-                    ;\
-                }\
-        }
-#   define CXON_CBOR_CLS_WRITE(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename O, typename Cx>\
-                inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, CBOR> {\
-                    using CXON_T_ = Type;\
-                    static constexpr auto f = cbor::cls::make_fields(__VA_ARGS__);\
-                    return cbor::cls::write_fields<X>(o, t, f, cx);\
-                }\
-        }
-#else
-#   define CXON_CBOR_CLS_READ(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename II, typename Cx>\
-                inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {\
-                    using CXON_T_ = Type;\
-                    static auto const f = cbor::cls::make_fields(__VA_ARGS__);\
-                    return  cbor::tag::read<X>(i, e, cx) &&\
-                            cbor::cls::read_fields<X>(t, f, i, e, cx)\
-                    ;\
-                }\
-        }
-#   define CXON_CBOR_CLS_WRITE(Type, ...)\
-        namespace cxon {\
-            template <typename X, typename O, typename Cx>\
-                inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, CBOR> {\
-                    using CXON_T_ = Type;\
-                    static auto const f = cbor::cls::make_fields(__VA_ARGS__);\
-                    return cbor::cls::write_fields<X>(o, t, f, cx);\
-                }\
-        }
-#endif
+#define CXON_CBOR_CLS_READ(Type, ...)\
+    namespace cxon {\
+        template <typename X, typename II, typename Cx>\
+            inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, CBOR> {\
+                using CXON_T_ = Type;\
+                static CXON_CXX17_CONSTEXPR auto f = cbor::cls::make_fields(__VA_ARGS__);\
+                return  cbor::tag::read<X>(i, e, cx) &&\
+                        cbor::cls::read_fields<X>(t, f, i, e, cx)\
+                ;\
+            }\
+    }
+#define CXON_CBOR_CLS_WRITE(Type, ...)\
+    namespace cxon {\
+        template <typename X, typename O, typename Cx>\
+            inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, CBOR> {\
+                using CXON_T_ = Type;\
+                static CXON_CXX17_CONSTEXPR auto f = cbor::cls::make_fields(__VA_ARGS__);\
+                return cbor::cls::write_fields<X>(o, t, f, cx);\
+            }\
+    }
 #define CXON_CBOR_CLS(Type, ...)\
     CXON_CBOR_CLS_READ(Type, __VA_ARGS__)\
     CXON_CBOR_CLS_WRITE(Type, __VA_ARGS__)
 
-#if defined(__cpp_constexpr) && __cpp_constexpr >= 201603L
-#   define CXON_CBOR_CLS_READ_MEMBER(Type, ...)\
-        template <typename X, typename II, typename Cx>\
-            static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
-                using CXON_T_ = Type;\
-                static constexpr auto f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
-                return  cxon::cbor::tag::read<X>(i, e, cx) &&\
-                        cxon::cbor::cls::read_fields<X>(t, f, i, e, cx)\
-                ;\
-            }
-#   define CXON_CBOR_CLS_WRITE_MEMBER(Type, ...)\
-        template <typename X, typename O, typename Cx>\
-            static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
-                using CXON_T_ = Type;\
-                static constexpr auto f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
-                return cxon::cbor::cls::write_fields<X>(o, t, f, cx);\
-            }
-#else
-#   define CXON_CBOR_CLS_READ_MEMBER(Type, ...)\
-        template <typename X, typename II, typename Cx>\
-            static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
-                using CXON_T_ = Type;\
-                static auto const f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
-                return  cxon::cbor::tag::read<X>(i, e, cx) &&\
-                        cxon::cbor::cls::read_fields<X>(t, f, i, e, cx)\
-                ;\
-            }
-#   define CXON_CBOR_CLS_WRITE_MEMBER(Type, ...)\
-        template <typename X, typename O, typename Cx>\
-            static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
-                using CXON_T_ = Type;\
-                static auto const f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
-                return cxon::cbor::cls::write_fields<X>(o, t, f, cx);\
-            }
-#endif
+#define CXON_CBOR_CLS_READ_MEMBER(Type, ...)\
+    template <typename X, typename II, typename Cx>\
+        static auto read_value(Type& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
+            using CXON_T_ = Type;\
+            static CXON_CXX17_CONSTEXPR auto f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
+            return  cxon::cbor::tag::read<X>(i, e, cx) &&\
+                    cxon::cbor::cls::read_fields<X>(t, f, i, e, cx)\
+            ;\
+        }
+#define CXON_CBOR_CLS_WRITE_MEMBER(Type, ...)\
+    template <typename X, typename O, typename Cx>\
+        static auto write_value(O& o, const Type& t, Cx& cx) -> cxon::enable_for_t<X, cxon::CBOR> {\
+            using CXON_T_ = Type;\
+            static CXON_CXX17_CONSTEXPR auto f = cxon::cbor::cls::make_fields(__VA_ARGS__);\
+            return cxon::cbor::cls::write_fields<X>(o, t, f, cx);\
+        }
 #define CXON_CBOR_CLS_MEMBER(Type, ...)\
     CXON_CBOR_CLS_READ_MEMBER(Type, __VA_ARGS__)\
     CXON_CBOR_CLS_WRITE_MEMBER(Type, __VA_ARGS__)
