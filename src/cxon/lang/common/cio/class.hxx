@@ -15,23 +15,27 @@
 
 namespace cxon { namespace cio { namespace cls { // structured types reader/writer construction helpers
 
-    template <typename T>
-        struct default_false {
-            constexpr bool operator ()(const T&) const noexcept { return false; }
-        };
-
-    template <typename F, typename D>
+    template <typename F, typename ...>
         struct field {
             using type  = F;
             char const* name;
             std::size_t nale;
-            type        value;
-            D           dflt;
+            type        unit;
+            template <typename T>
+                constexpr bool isdf(const T&) const noexcept { return false; }
+        };
+    template <typename F, typename D>
+        struct field<F, D> {
+            using type  = F;
+            char const* name;
+            std::size_t nale;
+            type        unit;
+            D           isdf;
         };
     template <typename T, std::size_t N, typename F = val::sink<>>
-        constexpr auto make_field(const char (&name)[N], F f) -> field<F, default_false<T>>;
+        constexpr auto make_field(const char (&name)[N], F f) -> field<F>;
     template <typename T, std::size_t N, typename F, typename D>
-        constexpr auto make_field(const char (&name)[N], F f, D dflt) -> field<F, D>;
+        constexpr auto make_field(const char (&name)[N], F f, D isdf) -> field<F, D>;
 
     template <typename X, typename T, typename F, typename II, typename Cx>
         inline bool read_field(T& t, const F& f, II& i, II e, Cx& cx);
@@ -52,20 +56,54 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
 
 namespace cxon { namespace cio { namespace cls { // bare object support structured types
 
-    struct bare_class_tag {};
+    struct cxon_bare_class_tag {};
 
     struct bare_class {
-        using bare_class_tag = cls::bare_class_tag;
+        using cxon_bare_class_tag = cls::cxon_bare_class_tag;
     };
 
     namespace imp {
         template <typename T, typename E = void_t<>>
-            struct is_bare_class_                                           : std::false_type {};
+            struct is_bare_class_                                               : std::false_type   {};
         template <typename T>
-            struct is_bare_class_<T, void_t<typename T::bare_class_tag>>    : std::true_type {};
+            struct is_bare_class_<T, void_t<typename T::cxon_bare_class_tag>>   : std::true_type    {};
     }
     template <typename T>
         struct is_bare_class : imp::is_bare_class_<T> {};
+
+    struct cxon_simple_key_class_tag {};
+
+    namespace imp {
+        template <typename T, typename E = void_t<>>
+            struct is_simple_key_class_                                                     : std::false_type   {};
+        template <typename T>
+            struct is_simple_key_class_<T, void_t<typename T::cxon_simple_key_class_tag>>   : std::true_type    {};
+    }
+    template <typename T>
+        struct is_simple_key_class : imp::is_simple_key_class_<T> {};
+
+    namespace imp {
+        //template <typename X, std::size_t N>
+        //    constexpr bool is_simple_key_(const char (&s)[N], unsigned i = 0) {
+        //        return i == N - 1 || (!chr::imp::should_escape_<X>(s[i]) && is_simple_key_<X>(s, i + 1));
+        //    }
+        template <typename X>
+            constexpr bool is_simple_key_(const char* s, std::size_t n, unsigned i = 0) {
+                return i == n || (!chr::imp::should_escape_<X>(s[i]) && is_simple_key_<X>(s, n, i + 1));
+            }
+        template <typename X>
+            constexpr bool are_simple_key_fields_() {
+                return true;
+            }
+        template <typename X, typename F, typename ...Fs>
+            constexpr bool are_simple_key_fields_(F&& f, Fs&&... fs) {
+                return imp::is_simple_key_<X>(f.name, f.nale) && are_simple_key_fields_<X>(std::forward<Fs>(fs)...);
+            }
+    }
+    template <typename X, typename ...Fs>
+        constexpr bool are_simple_key_fields(Fs&&... fs) {
+            return imp::are_simple_key_fields_<X>(std::forward<Fs>(fs)...);
+        }
 
 }}}
 
@@ -76,24 +114,24 @@ namespace cxon { namespace cio { namespace cls {
     // field
 
     template <typename T, std::size_t N, typename F>
-        constexpr auto make_field(const char (&name)[N], F f) -> field<F, default_false<T>> {
-            return { name, N - 1, f, {} };
+        constexpr auto make_field(const char (&name)[N], F f) -> field<F> {
+            return { name, N - 1, f };
         }
     template <typename T, std::size_t N, typename F, typename D>
-        constexpr auto make_field(const char (&name)[N], F f, D dflt) -> field<F, D> {
-            return { name, N - 1, f, dflt };
+        constexpr auto make_field(const char (&name)[N], F f, D isdf) -> field<F, D> {
+            return { name, N - 1, f, isdf };
         }
 
     namespace imp {
 
         template <typename T, typename F>
             constexpr auto field_value_(T& t, const F& f)
-                -> enable_if_t< std::is_member_pointer<typename F::type>::value, decltype(t.*f.value)&>
-            { return t.*f.value; }
+                -> enable_if_t< std::is_member_pointer<typename F::type>::value, decltype(t.*f.unit)&>
+            { return t.*f.unit; }
         template <typename T, typename F>
             constexpr auto field_value_(T&, const F& f)
-                -> enable_if_t<!std::is_member_pointer<typename F::type>::value, decltype(*f.value)&>
-            { return   *f.value; }
+                -> enable_if_t<!std::is_member_pointer<typename F::type>::value, decltype(*f.unit)&>
+            { return   *f.unit; }
 
     }
 
@@ -109,7 +147,7 @@ namespace cxon { namespace cio { namespace cls {
             inline auto read_field_(T&, const F& f, II& i, II e, Cx& cx)
                 -> enable_if_t< val::is_sink<typename F::type>::value, bool>
             {
-                return  val::sink_read<X>(f.value, i, e, cx);
+                return  val::sink_read<X>(f.unit, i, e, cx);
             }
 
         template <typename X, typename O, typename T, typename F, typename Cx>
@@ -249,12 +287,11 @@ namespace cxon { namespace cio { namespace cls {
                 template <typename T, typename Fs, typename O, typename Cx>
                     static bool field(O& o, const T& t, const Fs& fs, Cx& cx) {
                         using E = typename std::tuple_element<N, Fs>::type;
-                        CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value) {
-                            if (!std::get<N>(fs).dflt(t))
+                        CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value)
+                            if (!std::get<N>(fs).isdf(t))
                                 return  write_sep_<X, T>(o, cx) && write_field<X>(o, t, std::get<N>(fs), cx) &&
                                         write_next_<X, N + 1, L>::field(o, t, fs, cx)
                                 ;
-                        }
                         return          write_next_<X, N + 1, L>::field(o, t, fs, cx);
                     }
             };
@@ -271,12 +308,11 @@ namespace cxon { namespace cio { namespace cls {
                 template <typename T, typename Fs, typename O, typename Cx>
                     static bool field(O& o, const T& t, const Fs& fs, Cx& cx) {
                         using E = typename std::tuple_element<N, Fs>::type;
-                        CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value) {
-                            if (!std::get<N>(fs).dflt(t))
+                        CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value)
+                            if (!std::get<N>(fs).isdf(t))
                                 return  write_field<X>(o, t, std::get<N>(fs), cx) &&
                                         write_next_<X, N + 1, L>::field(o, t, fs, cx)
                                 ;
-                        }
                         return          write_<X, N + 1, L>::field(o, t, fs, cx);
                     }
             };

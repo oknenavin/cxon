@@ -19,6 +19,7 @@ namespace test { namespace marine_ik {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(image, CXON_JSON_CLS_FIELD_ASIS(url), CXON_JSON_CLS_FIELD_ASIS(uuid), CXON_JSON_CLS_FIELD_ASIS(name))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct key {
@@ -28,6 +29,7 @@ namespace test { namespace marine_ik {
         std::vector<float> rot;
 
         CXON_JSON_CLS_MEMBER(key, CXON_JSON_CLS_FIELD_ASIS(pos), CXON_JSON_CLS_FIELD_ASIS(time), CXON_JSON_CLS_FIELD_ASIS(scl), CXON_JSON_CLS_FIELD_ASIS(rot))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct element {
@@ -35,6 +37,7 @@ namespace test { namespace marine_ik {
         std::vector<key> keys;
 
         CXON_JSON_CLS_MEMBER(element, CXON_JSON_CLS_FIELD_ASIS(parent), CXON_JSON_CLS_FIELD_ASIS(keys))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct data_metadata {
@@ -55,6 +58,7 @@ namespace test { namespace marine_ik {
             CXON_JSON_CLS_FIELD_ASIS(bones),
             CXON_JSON_CLS_FIELD_ASIS(vertices)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct frame {
@@ -64,6 +68,7 @@ namespace test { namespace marine_ik {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(frame, CXON_JSON_CLS_FIELD_ASIS(hierarchy), CXON_JSON_CLS_FIELD_ASIS(length), CXON_JSON_CLS_FIELD_ASIS(fps), CXON_JSON_CLS_FIELD_ASIS(name))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct bone {
@@ -80,6 +85,7 @@ namespace test { namespace marine_ik {
             CXON_JSON_CLS_FIELD_ASIS(scl),
             CXON_JSON_CLS_FIELD_ASIS(name)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct data {
@@ -108,6 +114,7 @@ namespace test { namespace marine_ik {
             CXON_JSON_CLS_FIELD_ASIS(bones),
             CXON_JSON_CLS_FIELD_ASIS(faces)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 
@@ -117,6 +124,7 @@ namespace test { namespace marine_ik {
         struct data data;
 
         CXON_JSON_CLS_MEMBER(geometry, CXON_JSON_CLS_FIELD_ASIS(type), CXON_JSON_CLS_FIELD_ASIS(uuid), CXON_JSON_CLS_FIELD_ASIS(data))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct texture {
@@ -141,6 +149,7 @@ namespace test { namespace marine_ik {
             CXON_JSON_CLS_FIELD_ASIS(uuid),
             CXON_JSON_CLS_FIELD_ASIS(magFilter)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object_metadata {
@@ -150,6 +159,7 @@ namespace test { namespace marine_ik {
         float version;
 
         CXON_JSON_CLS_MEMBER(object_metadata, CXON_JSON_CLS_FIELD_ASIS(sourceFile), CXON_JSON_CLS_FIELD_ASIS(generator), CXON_JSON_CLS_FIELD_ASIS(type), CXON_JSON_CLS_FIELD_ASIS(version))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct material {
@@ -182,6 +192,7 @@ namespace test { namespace marine_ik {
             CXON_JSON_CLS_FIELD_ASIS(depthWrite),
             CXON_JSON_CLS_FIELD_ASIS(specular)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct child {
@@ -206,6 +217,7 @@ namespace test { namespace marine_ik {
             CXON_JSON_CLS_FIELD_ASIS(receiveShadow),
             CXON_JSON_CLS_FIELD_ASIS(geometry)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object_ {
@@ -215,6 +227,7 @@ namespace test { namespace marine_ik {
         std::string uuid;
 
         CXON_JSON_CLS_MEMBER(object_, CXON_JSON_CLS_FIELD_ASIS(children), CXON_JSON_CLS_FIELD_ASIS(type), CXON_JSON_CLS_FIELD_ASIS(matrix), CXON_JSON_CLS_FIELD_ASIS(uuid))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct animation {
@@ -223,6 +236,7 @@ namespace test { namespace marine_ik {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(animation, CXON_JSON_CLS_FIELD_ASIS(tracks), CXON_JSON_CLS_FIELD_ASIS(fps), CXON_JSON_CLS_FIELD_ASIS(name))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -243,6 +257,7 @@ namespace test { namespace marine_ik {
             CXON_JSON_CLS_FIELD_NAME("object", object_),
             CXON_JSON_CLS_FIELD_ASIS(animations)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}
