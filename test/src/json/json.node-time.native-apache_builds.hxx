@@ -20,6 +20,7 @@ namespace test { namespace apache_builds {
         std::string color;
 
         CXON_JSON_CLS_MEMBER(job, CXON_JSON_CLS_FIELD_ASIS(name), CXON_JSON_CLS_FIELD_ASIS(url), CXON_JSON_CLS_FIELD_ASIS(color))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct view {
@@ -27,6 +28,7 @@ namespace test { namespace apache_builds {
         std::string url;
 
         CXON_JSON_CLS_MEMBER(view, CXON_JSON_CLS_FIELD_ASIS(name), CXON_JSON_CLS_FIELD_ASIS(url))
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -63,6 +65,7 @@ namespace test { namespace apache_builds {
             CXON_JSON_CLS_FIELD_ASIS(useSecurity),
             CXON_JSON_CLS_FIELD_ASIS(views)
         )
+        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}

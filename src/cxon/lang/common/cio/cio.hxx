@@ -89,11 +89,11 @@ namespace cxon { namespace cio { // key quoting helpers
         template <typename T>                       struct   quoted_traits  : T {};
     }
     template <typename X>
-        using is_unquoted_key_context = has_traits<key::unquoted_traits<X>, X>;
+        using is_unquoted_key_context = has_traits<X, key::unquoted_traits>;
     template <typename X>
         using unquoted_key_context = conditional_t<is_unquoted_key_context<X>::value, X, bind_traits_t<X, key::unquoted_traits>>;
     template <typename X>
-        using is_quoted_key_context = has_traits<key::quoted_traits<X>, X>;
+        using is_quoted_key_context = has_traits<X, key::quoted_traits>;
     template <typename X>
         using quoted_key_context = conditional_t<is_quoted_key_context<X>::value, X, bind_traits_t<X, key::quoted_traits>>;
 
@@ -103,6 +103,8 @@ namespace cxon { namespace cio { // key quoting helpers
 }}
 
 namespace cxon { namespace cio { namespace str {
+
+    template <typename T> struct raw_traits : T {};
 
     template <typename X>
         inline auto delim_en_check(char c) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {

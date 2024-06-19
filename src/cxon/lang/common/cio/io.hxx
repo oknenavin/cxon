@@ -330,29 +330,29 @@ namespace cxon { namespace cio {
             buffered_back_insert_iterator& operator =(T t)              { return append(t), *this; }
 
             void append(T t) {
-                    if (s_ == b_.size()) flush();
+                if (s_ == b_.size())
+                    flush();
                 b_[s_++] = t;
             }
 
             void append(const T* f, const T* l) {
-                auto const s = std::distance(f, l);
-                    if (s_ + s > b_.size()) {
-                        flush();
-                        if (std::size_t(s) > b_.size())
-                            return poke(c_, f, l), void();
-                    }
-                std::copy(f, l, b_.data() + s_), s_ += s;
+                append(f, std::distance(f, l));
             }
             void append(const T* t, std::size_t n) {
-                append(t, t + n);
+                if (s_ + n > b_.size()) {
+                    flush();
+                    if (n > b_.size())
+                        return poke(c_, t, n), void();
+                }
+                std::copy_n(t, n, b_.data() + s_), s_ += n;
             }
 
             void append(unsigned n, T t) {
-                    if (s_ + n > b_.size()) {
-                        flush();
-                        if (n > b_.size())
-                            return poke(c_, n, t), void();
-                    }
+                if (s_ + n > b_.size()) {
+                    flush();
+                    if (n > b_.size())
+                        return poke(c_, n, t), void();
+                }
                 std::fill_n(b_.data() + s_, n, t), s_ += n;
             }
 
