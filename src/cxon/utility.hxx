@@ -78,11 +78,18 @@ namespace cxon {
     // format traits
 
     template <typename T, template <typename> class U>
+        struct has_traits                       : std::false_type {};
+    template <template <typename> class U, typename V>
+        struct has_traits<U<V>, U>              : std::true_type {};
+    template <template <typename> class T, typename V, template <typename> class U>
+        struct has_traits<T<V>, U>              : std::integral_constant<bool, has_traits<V, U>::value> {};
+
+    template <typename T, template <typename> class U>
         struct bind_traits;
     template <template <typename> class T, typename V, template <typename> class U>
-        struct bind_traits<T<V>, U>         { using type = T<U<V>>; };
+        struct bind_traits<T<V>, U>             { using type = T<U<V>>; };
     template <typename T, template <typename> class U>
-        using bind_traits_t = typename bind_traits<T, U>::type;
+        using bind_traits_t = typename std::conditional<!has_traits<T, U>::value, typename bind_traits<T, U>::type, T>::type;
 
     template <typename T, template <typename> class U>
         struct unbind_traits                    { using type = T; };
@@ -95,13 +102,6 @@ namespace cxon {
 
     template <typename T, template <typename> class D, template <typename> class A>
         using rebind_traits_t = bind_traits_t<unbind_traits_t<T, D>, A>;
-
-    template <typename T, template <typename> class U>
-        struct has_traits                       : std::false_type {};
-    template <template <typename> class U, typename V>
-        struct has_traits<U<V>, U>              : std::true_type {};
-    template <template <typename> class T, typename V, template <typename> class U>
-        struct has_traits<T<V>, U>              : std::integral_constant<bool, has_traits<V, U>::value> {};
 
     // type sequence
 
