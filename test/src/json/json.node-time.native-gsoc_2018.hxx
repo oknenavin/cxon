@@ -58,7 +58,7 @@ namespace test { namespace gsoc_2018 {
         CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
-    using object = cxon::ordered::object<std::string, participant>;
+    using object = cxon::ordered::object<unsigned, participant>;
 
 }}
 
