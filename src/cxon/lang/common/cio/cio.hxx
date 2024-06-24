@@ -91,11 +91,11 @@ namespace cxon { namespace cio { // key quoting helpers
     template <typename X>
         using is_unquoted_key_context = has_traits<X, key::unquoted_traits>;
     template <typename X>
-        using unquoted_key_context = conditional_t<is_unquoted_key_context<X>::value, X, bind_traits_t<X, key::unquoted_traits>>;
+        using unquoted_key_context = bind_traits_t<X, key::unquoted_traits>;
     template <typename X>
         using is_quoted_key_context = has_traits<X, key::quoted_traits>;
     template <typename X>
-        using quoted_key_context = conditional_t<is_quoted_key_context<X>::value, X, bind_traits_t<X, key::quoted_traits>>;
+        using quoted_key_context = bind_traits_t<X, key::quoted_traits>;
 
     template <typename X>
         using is_key_context = disjunction<is_unquoted_key_context<X>, is_quoted_key_context<X>>;

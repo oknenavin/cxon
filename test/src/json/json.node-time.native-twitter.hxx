@@ -229,6 +229,106 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS(notifications)
         )
         CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
+
+#       ifdef CXON_USE_GPERF
+            static unsigned hash(const char *str, std::size_t len) {
+                static const unsigned char asso_values[] = {
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 29, 45, 27,  7, 17,
+                     1,  3, 45,  2, 45, 10, 45, 45,  5, 45, 18,  6,  3, 45,  6,  2,  1, 11, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+                    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45
+                };
+                unsigned hval = (unsigned)len;
+                    switch (hval) {
+                        default:
+                            hval += asso_values[static_cast<unsigned char>(str[8])];
+                            CXON_FALLTHROUGH;
+                        case 8: case 7: case 6: case 5: case 4: case 3: case 2:
+                            break;
+                    }
+                return hval + asso_values[static_cast<unsigned char>(str[len - 1])];
+            }
+
+            template <typename X, typename II, typename Cx>
+                static bool read_field(user& t, const char *str, std::size_t len, II& i, II e, Cx& cx) {
+                    enum {
+                        TOTAL_KEYWORDS = 40,
+                        MIN_WORD_LENGTH = 2,
+                        MAX_WORD_LENGTH = 34,
+                        MIN_HASH_VALUE = 3,
+                        MAX_HASH_VALUE = 44
+                    };
+
+                    struct field {
+                        using read = bool (*)(user&, II&, II, Cx&);
+                        char const* name;
+                        read call;
+                    };
+
+#                   define CXON_FIELD(field) {#field, [](user& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.field, i, e, cx); } }
+                        static CXON_CXX17_CONSTEXPR struct field wordlist[] = {
+                            {(char*)0}, {(char*)0}, {(char*)0},
+                            CXON_FIELD(id),
+                            {(char*)0}, {(char*)0},
+                            CXON_FIELD(lang),
+                            CXON_FIELD(name),
+                            CXON_FIELD(url),
+                            CXON_FIELD(verified),
+                            CXON_FIELD(entities),
+                            {"protected", [](user& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.protected_, i, e, cx); } },
+                            CXON_FIELD(id_str),
+                            CXON_FIELD(following),
+                            CXON_FIELD(utc_offset),
+                            CXON_FIELD(time_zone),
+                            CXON_FIELD(notifications),
+                            CXON_FIELD(geo_enabled),
+                            CXON_FIELD(followers_count),
+                            CXON_FIELD(listed_count),
+                            CXON_FIELD(favourites_count),
+                            CXON_FIELD(default_profile),
+                            CXON_FIELD(contributors_enabled),
+                            CXON_FIELD(follow_request_sent),
+                            CXON_FIELD(is_translator),
+                            CXON_FIELD(profile_text_color),
+                            CXON_FIELD(location),
+                            CXON_FIELD(default_profile_image),
+                            CXON_FIELD(is_translation_enabled),
+                            CXON_FIELD(profile_link_color),
+                            CXON_FIELD(profile_banner_url),
+                            CXON_FIELD(friends_count),
+                            CXON_FIELD(profile_image_url),
+                            CXON_FIELD(profile_background_tile),
+                            CXON_FIELD(profile_sidebar_fill_color),
+                            CXON_FIELD(profile_image_url_https),
+                            CXON_FIELD(profile_sidebar_border_color),
+                            CXON_FIELD(profile_background_color),
+                            CXON_FIELD(created_at),
+                            CXON_FIELD(description),
+                            CXON_FIELD(profile_background_image_url),
+                            CXON_FIELD(screen_name),
+                            CXON_FIELD(profile_use_background_image),
+                            CXON_FIELD(profile_background_image_url_https),
+                            CXON_FIELD(statuses_count)
+                        };
+#                   undef CXON_FIELD
+
+                    if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
+                        unsigned int key = hash(str, len);
+                        if (key <= MAX_HASH_VALUE && wordlist[key].call)
+                            return wordlist[key].call(t, i, e, cx);
+                    }
+                    return false;
+                }
+#       endif // CXON_USE_GPERF
     };
 
     struct retweeted_status {
@@ -284,6 +384,91 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS(lang)
         )
         CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
+
+#       ifdef CXON_USE_GPERF
+            static unsigned hash(const char *str, std::size_t len) {
+                static const unsigned char asso_values[] = {
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,  0,
+                    28, 11,  6, 15, 28,  1, 28, 28, 12,  0,  0, 28,  9, 28,  4,  0,  0,  1, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28
+                };
+                unsigned hval = (unsigned)len;
+                    switch (hval) {
+                        default:
+                            hval += asso_values[static_cast<unsigned char>(str[12])];
+                            CXON_FALLTHROUGH;
+                        case 12: case 11: case 10: case 9: case 8: case 7: case 6: case 5: case 4: case 3: case 2: case 1:
+                            hval += asso_values[static_cast<unsigned char>(str[0])];
+                            break;
+                    }
+                return hval;
+            }
+
+            template <typename X, typename II, typename Cx>
+                static bool read_field(retweeted_status& t, const char *str, std::size_t len, II& i, II e, Cx& cx) {
+                    enum {
+                        TOTAL_KEYWORDS = 24,
+                        MIN_WORD_LENGTH = 2,
+                        MAX_WORD_LENGTH = 25,
+                        MIN_HASH_VALUE = 3,
+                        MAX_HASH_VALUE = 27
+                    };
+
+                    struct field {
+                        using read = bool (*)(retweeted_status&, II&, II, Cx&);
+                        char const* name;
+                        read call;
+                    };
+
+#                   define CXON_FIELD(field) {#field, [](retweeted_status& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.field, i, e, cx); } }
+                        static CXON_CXX17_CONSTEXPR struct field wordlist[] = {
+                            {(char*)0}, {(char*)0}, {(char*)0},
+                            CXON_FIELD(id),
+                            CXON_FIELD(text),
+                            CXON_FIELD(user),
+                            CXON_FIELD(source),
+                            CXON_FIELD(id_str),
+                            CXON_FIELD(metadata),
+                            CXON_FIELD(truncated),
+                            CXON_FIELD(created_at),
+                            CXON_FIELD(coordinates),
+                            CXON_FIELD(contributors),
+                            CXON_FIELD(retweeted),
+                            CXON_FIELD(place),
+                            CXON_FIELD(favorited),
+                            CXON_FIELD(lang),
+                            CXON_FIELD(retweet_count),
+                            CXON_FIELD(geo),
+                            CXON_FIELD(entities),
+                            CXON_FIELD(favorite_count),
+                            CXON_FIELD(in_reply_to_user_id),
+                            CXON_FIELD(in_reply_to_status_id),
+                            {(char*)0},
+                            CXON_FIELD(in_reply_to_screen_name),
+                            CXON_FIELD(in_reply_to_user_id_str),
+                            CXON_FIELD(in_reply_to_status_id_str),
+                            CXON_FIELD(possibly_sensitive)
+                        };
+#                   undef CXON_FIELD
+
+                    if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
+                        unsigned int key = hash(str, len);
+                        if (key <= MAX_HASH_VALUE && wordlist[key].call)
+                            return wordlist[key].call(t, i, e, cx);
+                    }
+                    return false;
+                }
+#       endif // CXON_USE_GPERF
     };
 
     struct status {
@@ -341,6 +526,91 @@ namespace test { namespace twitter {
             CXON_JSON_CLS_FIELD_ASIS(lang)
         )
         CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
+
+#       ifdef CXON_USE_GPERF
+            static unsigned hash(const char *str, std::size_t len) {
+                static const unsigned char asso_values[] = {
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,  3, 28,  0,
+                    28, 11,  6, 15, 28,  1, 28, 28, 12,  0,  0, 28,  9, 28,  4,  0,  0,  1, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+                    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28
+                };
+                unsigned hval = (unsigned)len;
+                    switch (hval) {
+                        default:
+                            hval += asso_values[static_cast<unsigned char>(str[12])];
+                            CXON_FALLTHROUGH;
+                        case 12: case 11: case 10: case 9: case 8: case 7: case 6: case 5: case 4: case 3: case 2: case 1:
+                            hval += asso_values[static_cast<unsigned char>(str[0])];
+                            break;
+                    }
+                return hval;
+            }
+
+            template <typename X, typename II, typename Cx>
+                static bool read_field(status& t, const char *str, std::size_t len, II& i, II e, Cx& cx) {
+                    enum {
+                        TOTAL_KEYWORDS = 25,
+                        MIN_WORD_LENGTH = 2,
+                        MAX_WORD_LENGTH = 25,
+                        MIN_HASH_VALUE = 3,
+                        MAX_HASH_VALUE = 27
+                    };
+
+                    struct field {
+                        using read = bool (*)(status&, II&, II, Cx&);
+                        char const* name;
+                        read call;
+                    };
+
+    #               define CXON_FIELD(field) {#field, [](status& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.field, i, e, cx); } }
+                        static CXON_CXX17_CONSTEXPR struct field wordlist[] = {
+                            {(char*)0}, {(char*)0}, {(char*)0},
+                            CXON_FIELD(id),
+                            CXON_FIELD(text),
+                            CXON_FIELD(user),
+                            CXON_FIELD(source),
+                            CXON_FIELD(id_str),
+                            CXON_FIELD(metadata),
+                            CXON_FIELD(truncated),
+                            CXON_FIELD(created_at),
+                            CXON_FIELD(coordinates),
+                            CXON_FIELD(contributors),
+                            CXON_FIELD(retweeted),
+                            CXON_FIELD(place),
+                            CXON_FIELD(favorited),
+                            CXON_FIELD(lang),
+                            CXON_FIELD(retweet_count),
+                            CXON_FIELD(geo),
+                            CXON_FIELD(entities),
+                            CXON_FIELD(favorite_count),
+                            CXON_FIELD(in_reply_to_user_id),
+                            CXON_FIELD(in_reply_to_status_id),
+                            CXON_FIELD(retweeted_status),
+                            CXON_FIELD(in_reply_to_screen_name),
+                            CXON_FIELD(in_reply_to_user_id_str),
+                            CXON_FIELD(in_reply_to_status_id_str),
+                            CXON_FIELD(possibly_sensitive)
+                        };
+    #               undef CXON_FIELD
+
+                    if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
+                        unsigned int key = hash(str, len);
+                        if (key <= MAX_HASH_VALUE && wordlist[key].call)
+                            return wordlist[key].call(t, i, e, cx);
+                    }
+                    return false;
+                }
+#       endif // CXON_USE_GPERF
     };
     
     struct search_metadata {
