@@ -114,6 +114,100 @@ namespace test { namespace instruments {
             CXON_JSON_CLS_FIELD_ASIS(volume_ramp_up)
         )
         CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
+
+#       ifdef CXON_USE_GPERF
+            static unsigned hash(const char *str, std::size_t len) {
+                static const unsigned char asso_values[] = {
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 11, 39, 17, 39, 39,
+                    39,  2,  0, 26, 39, 22, 39,  0, 39,  4,  0, 15,  0, 39, 39,  1, 39, 16,  0, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
+                    39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39
+                };
+                unsigned hval = (unsigned)len;
+                    switch (hval) {
+                        default:
+                            hval += asso_values[static_cast<unsigned char>(str[8])];
+                            CXON_FALLTHROUGH;
+                        case 8: case 7: case 6: case 5: case 4:
+                            break;
+                    }
+                return hval;
+            }
+
+            template <typename X, typename II, typename Cx>
+                static bool read_field(instrument& t, const char *str, std::size_t len, II& i, II e, Cx& cx) {
+                    enum {
+                        TOTAL_KEYWORDS = 33,
+                        MIN_WORD_LENGTH = 4,
+                        MAX_WORD_LENGTH = 32,
+                        MIN_HASH_VALUE = 4,
+                        MAX_HASH_VALUE = 38
+                    };
+
+                    struct field {
+                        using read = bool (*)(instrument&, II&, II, Cx&);
+                        char const* name;
+                        read call;
+                    };
+
+#                   define CXON_FIELD(field) {#field, [](instrument& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.field, i, e, cx); } }
+                        static CXON_CXX17_CONSTEXPR field wordlist[] = {
+                            {(char*)0}, {(char*)0}, {(char*)0}, {(char*)0},
+                            CXON_FIELD(name),
+                            {(char*)0},
+                            CXON_FIELD(tuning),
+                            CXON_FIELD(fadeout),
+                            CXON_FIELD(note_map),
+                            CXON_FIELD(midi_bank),
+                            {(char*)0},
+                            CXON_FIELD(default_pan),
+                            CXON_FIELD(midi_channel),
+                            CXON_FIELD(graph_insert),
+                            CXON_FIELD(pitch_envelope),
+                            CXON_FIELD(volume_envelope),
+                            CXON_FIELD(pitch_pan_center),
+                            CXON_FIELD(midi_drum_set),
+                            CXON_FIELD(panning_envelope),
+                            CXON_FIELD(default_filter_mode),
+                            CXON_FIELD(pitch_pan_separation),
+                            CXON_FIELD(default_filter_cutoff),
+                            CXON_FIELD(duplicate_check_type),
+                            CXON_FIELD(duplicate_note_action),
+                            CXON_FIELD(default_filter_resonance),
+                            CXON_FIELD(random_resonance_weight),
+                            CXON_FIELD(new_note_action),
+                            CXON_FIELD(sample_map),
+                            CXON_FIELD(global_volume),
+                            CXON_FIELD(default_filter_cutoff_enabled),
+                            CXON_FIELD(pitch_to_tempo_lock),
+                            CXON_FIELD(volume_ramp_up),
+                            CXON_FIELD(default_filter_resonance_enabled),
+                            CXON_FIELD(volume_ramp_down),
+                            CXON_FIELD(random_pan_weight),
+                            CXON_FIELD(random_volume_weight),
+                            CXON_FIELD(random_cutoff_weight),
+                            CXON_FIELD(legacy_filename),
+                            CXON_FIELD(midi_program)
+                        };
+#                   undef CXON_FIELD
+
+                    if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
+                        unsigned int key = hash(str, len);
+                        if (key <= MAX_HASH_VALUE && wordlist[key].call)
+                            return wordlist[key].call(t, i, e, cx);
+                    }
+                    return false;
+                }
+#       endif // CXON_USE_GPERF
     };
 
     struct pattern_data {

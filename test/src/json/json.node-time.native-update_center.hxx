@@ -91,111 +91,75 @@ namespace test { namespace update_center {
         )
         CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
 
-//        static inline unsigned int hash(const char *str, std::size_t len) {
-//            static const unsigned char asso_values[] = {
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 10,  0,
-//                1, 11, 23, 11, 23, 23, 23, 23,  4, 23,
-//                5, 23,  0, 23,  0,  0,  3,  3,  0,  1,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-//                23, 23, 23, 23, 23, 23
-//            };
-//            return unsigned(len + asso_values[static_cast<unsigned char>(str[0])]);
-//        }
-//
-//        template <typename X, typename II, typename Cx>
-//            static bool read_value_(plugin& t, const char *str, std::size_t len, II& i, II e, Cx& cx) {
-//                enum {
-//                    TOTAL_KEYWORDS = 18,
-//                    MIN_WORD_LENGTH = 3,
-//                    MAX_WORD_LENGTH = 22,
-//                    MIN_HASH_VALUE = 3,
-//                    MAX_HASH_VALUE = 22
-//                };
-//
-//                using read_ = bool (*)(plugin&, II&, II, Cx&);
-//                struct field {
-//                    char const* name;
-//                    read_ call;
-//                };
-//
-//#               define FIELD(field) {#field, [](plugin& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.field, i, e, cx); } }
-//                static CXON_CXX17_CONSTEXPR struct field wordlist[] = {
-//                    { nullptr }, {nullptr }, {nullptr },
-//                    FIELD(scm),
-//                    FIELD(sha1),
-//                    FIELD(wiki),
-//                    FIELD(url),
-//                    FIELD(version),
-//                    FIELD(title),
-//                    FIELD(name),
-//                    FIELD(labels),
-//                    FIELD(developers),
-//                    FIELD(requiredCore),
-//                    FIELD(dependencies),
-//                    FIELD(gav),
-//                    FIELD(previousVersion),
-//                    FIELD(releaseTimestamp),
-//                    FIELD(previousTimestamp),
-//                    FIELD(excerpt),
-//                    FIELD(buildDate),
-//                    { nullptr }, { nullptr },
-//                    FIELD(compatibleSinceVersion)
-//                };
-//#               undef FIELD
-//
-//                if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
-//                    unsigned int key = hash(str, len);
-//                    if (key <= MAX_HASH_VALUE) {
-//                        if (wordlist[key].call)
-//                            return wordlist[key].call(t, i, e, cx);
-//                    }
-//                }
-//                return false;
-//            }
-//
-//
-//        template <typename X, typename II, typename Cx>
-//            static auto read_value(plugin& t, II& i, II e, Cx& cx) -> cxon::enable_for_t<X, cxon::JSON> {
-//                if (!cxon::cio::consume<X>(X::map::beg, i, e, cx))
-//                    return false;
-//                for (char id[cxon::cio::ids_len_max::constant<cxon::napa_type<Cx>>(64)]; ; ) {
-//                    if (!cxon::cio::consume<X>(i, e, cx))
-//                        return false;
-//                    if (cxon::cio::peek(i, e) == X::map::end)
-//                        return ++i, true;
-//                    II const o = i;
-//                        using Y = cxon::bind_traits_t<X, cxon::cio::str::raw_traits>;
-//                        if (!cxon::cio::read_map_key<Y>(id, i, e, cx))
-//                            return cxon::cio::rewind(i, o), false;
-//                        if (!read_value_<X>(t, id, std::strlen(id), i, e, cx))
-//                            return cx && (cxon::cio::rewind(i, o), cx/X::read_error::unexpected);
-//                        if (cxon::cio::cnt::consume_sep<X, typename X::map>(i, e, cx))
-//                            continue;
-//                    return cxon::cio::consume<X>(X::map::end, i, e, cx);
-//                }
-//                return true;
-//            }
+#       ifdef CXON_USE_GPERF
+            static unsigned hash(const char *str, std::size_t len) {
+                static const unsigned char asso_values[] = {
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 10,  0,
+                     1, 11, 23, 11, 23, 23, 23, 23,  4, 23,  5, 23,  0, 23,  0,  0,  3,  3,  0,  1,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+                    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23
+                };
+                return unsigned(len + asso_values[static_cast<unsigned char>(str[0])]);
+            }
+
+            template <typename X, typename II, typename Cx>
+                static bool read_field(plugin& t, const char *str, std::size_t len, II& i, II e, Cx& cx) {
+                    enum {
+                        TOTAL_KEYWORDS = 18,
+                        MIN_WORD_LENGTH = 3,
+                        MAX_WORD_LENGTH = 22,
+                        MIN_HASH_VALUE = 3,
+                        MAX_HASH_VALUE = 22
+                    };
+
+                    struct field {
+                        using read = bool (*)(plugin&, II&, II, Cx&);
+                        char const* name;
+                        read call;
+                    };
+
+#                   define CXON_FIELD(field) {#field, [](plugin& t, II& i, II e, Cx& cx) -> bool { return cxon::cio::read_map_val<X>(t.field, i, e, cx); } }
+                        static CXON_CXX17_CONSTEXPR struct field wordlist[] = {
+                            { nullptr }, {nullptr }, {nullptr },
+                            CXON_FIELD(scm),
+                            CXON_FIELD(sha1),
+                            CXON_FIELD(wiki),
+                            CXON_FIELD(url),
+                            CXON_FIELD(version),
+                            CXON_FIELD(title),
+                            CXON_FIELD(name),
+                            CXON_FIELD(labels),
+                            CXON_FIELD(developers),
+                            CXON_FIELD(requiredCore),
+                            CXON_FIELD(dependencies),
+                            CXON_FIELD(gav),
+                            CXON_FIELD(previousVersion),
+                            CXON_FIELD(releaseTimestamp),
+                            CXON_FIELD(previousTimestamp),
+                            CXON_FIELD(excerpt),
+                            CXON_FIELD(buildDate),
+                            { nullptr }, { nullptr },
+                            CXON_FIELD(compatibleSinceVersion)
+                        };
+#                   undef CXON_FIELD
+
+                    if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
+                        unsigned int key = hash(str, len);
+                        if (key <= MAX_HASH_VALUE && wordlist[key].call)
+                            return wordlist[key].call(t, i, e, cx);
+                    }
+                    return false;
+                }
+#       endif // CXON_USE_GPERF
     };
 
     struct signature_ {
