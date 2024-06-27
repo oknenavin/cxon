@@ -635,7 +635,7 @@ namespace cxon {
 
     }
 
-#endif
+#endif // CXON_CBOR_DEFINED
 
 #undef CXON_NODE_RG
 
