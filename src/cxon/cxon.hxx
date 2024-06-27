@@ -42,7 +42,7 @@ namespace cxon { // interface
         struct from_bytes_result {
             std::error_condition ec;
             It end;
-            operator bool() const noexcept { return !ec; }
+            explicit operator bool() const noexcept { return !ec; }
         };
 
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename InIt, typename ...NaPa>
@@ -56,7 +56,7 @@ namespace cxon { // interface
         struct to_bytes_result {
             std::error_condition ec;
             It end;
-            operator bool() const noexcept { return !ec; }
+            explicit operator bool() const noexcept { return !ec; }
         };
 
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename OutIt, typename ...NaPa>
@@ -91,7 +91,7 @@ namespace cxon { // context
                 auto operator /(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, bool> {
                     return ec = e, !ec;
                 }
-            operator bool() const noexcept { return !ec; }
+            explicit operator bool() const noexcept { return !ec; }
         };
 
     template <typename X, typename ...P>
