@@ -72,7 +72,7 @@ namespace cxon { namespace node { namespace imp {
     template <typename Cx>
         struct scinc_<Cx, false> {
             scinc_(Cx&) noexcept                {}
-                     ~scinc_() noexcept         {}
+            ~scinc_() noexcept                  {}
             bool check() const noexcept         { return true; }
         };
 
