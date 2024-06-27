@@ -92,7 +92,7 @@ namespace cxon {
         struct from_bytes_result {
             std::error_condition ec;
             It end;
-            operator bool() const noexcept;
+            explicit operator bool() const noexcept;
         };
 
 }
@@ -179,7 +179,7 @@ namespace cxon {
         struct to_bytes_result {
             std::error_condition ec;
             It end;
-            operator bool() const noexcept;
+            explicit operator bool() const noexcept;
         };
 
 }
@@ -662,7 +662,7 @@ Member name |Type                                   | Description
     ```
 - `operator bool` - check if the context is good (i.e. no error condition)
     ``` c++
-    operator bool() const noexcept;
+    explicit operator bool() const noexcept;
     ```
 
 napa_type (`px`'s type) is a tagged tuple with parameter types as tags. 

@@ -262,7 +262,7 @@ namespace cxon {
 
     }
 
-#endif
+#endif // CXON_JSON_DEFINED
 
 #undef CXON_NODE_RG
 
