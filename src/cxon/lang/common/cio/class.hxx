@@ -42,12 +42,12 @@ namespace cxon { namespace cio { namespace cls { // traits
     template <typename T>
         struct is_bare_class;
 
-    // simple-key-class support types
-    struct cxon_simple_key_class_tag {};
+    // trivial-key-class support types
+    struct cxon_nontrivial_key_class_tag {};
     template <typename T>
-        struct is_simple_key_class;
+        struct is_trivial_key_class;
     template <typename X, typename ...Fs>
-        constexpr bool are_simple_key_fields(Fs&&... fs);
+        constexpr bool are_trivial_key_fields(Fs&&... fs);
 
     // ordered-keys-class support types
     struct cxon_ordered_keys_class_tag {};
@@ -78,34 +78,34 @@ namespace cxon { namespace cio { namespace cls {
     template <typename T>
         struct is_bare_class : imp::is_bare_class_<T> {};
 
-    // simple-key-class support types
+    // trivial-key-class support types
 
     namespace imp {
         template <typename T, typename E = void_t<>>
-            struct is_simple_key_class_                                                     : std::false_type   {};
+            struct is_trivial_key_class_                                                        : std::true_type    {};
         template <typename T>
-            struct is_simple_key_class_<T, void_t<typename T::cxon_simple_key_class_tag>>   : std::true_type    {};
+            struct is_trivial_key_class_<T, void_t<typename T::cxon_nontrivial_key_class_tag>>  : std::false_type   {};
     }
     template <typename T>
-        struct is_simple_key_class : imp::is_simple_key_class_<T> {};
+        struct is_trivial_key_class : imp::is_trivial_key_class_<T> {};
 
     namespace imp {
         template <typename X>
-            constexpr bool is_simple_key_(const char* s, std::size_t n, unsigned i = 0) {
-                return i == n || (!chr::imp::should_escape_<X>(s[i]) && is_simple_key_<X>(s, n, i + 1));
+            constexpr bool is_trivial_key_(const char* s, std::size_t n, unsigned i = 0) {
+                return i == n || (!chr::imp::should_escape_<X>(s[i]) && is_trivial_key_<X>(s, n, i + 1));
             }
         template <typename X>
-            constexpr bool are_simple_key_fields_() {
+            constexpr bool are_trivial_key_fields_() {
                 return true;
             }
         template <typename X, typename F, typename ...Fs>
-            constexpr bool are_simple_key_fields_(F&& f, Fs&&... fs) {
-                return is_simple_key_<X>(f.name, f.nale) && are_simple_key_fields_<X>(std::forward<Fs>(fs)...);
+            constexpr bool are_trivial_key_fields_(F&& f, Fs&&... fs) {
+                return is_trivial_key_<X>(f.name, f.nale) && are_trivial_key_fields_<X>(std::forward<Fs>(fs)...);
             }
     }
     template <typename X, typename ...Fs>
-        constexpr bool are_simple_key_fields(Fs&&... fs) {
-            return imp::are_simple_key_fields_<X>(std::forward<Fs>(fs)...);
+        constexpr bool are_trivial_key_fields(Fs&&... fs) {
+            return imp::are_trivial_key_fields_<X>(std::forward<Fs>(fs)...);
         }
 
     // ordered-keys-class support types

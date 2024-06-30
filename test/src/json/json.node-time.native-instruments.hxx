@@ -21,7 +21,6 @@ namespace test { namespace instruments {
         unsigned value;
 
         CXON_JSON_CLS_MEMBER(envelope_node, CXON_JSON_CLS_FIELD_ASIS(tick), CXON_JSON_CLS_FIELD_ASIS(value))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct envelope {
@@ -40,7 +39,6 @@ namespace test { namespace instruments {
             CXON_JSON_CLS_FIELD_ASIS(sustain_end),
             CXON_JSON_CLS_FIELD_ASIS(sustain_start)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct instrument {
@@ -113,7 +111,6 @@ namespace test { namespace instruments {
             CXON_JSON_CLS_FIELD_ASIS(volume_ramp_down),
             CXON_JSON_CLS_FIELD_ASIS(volume_ramp_up)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
 
 #       ifdef CXON_USE_GPERF
             static unsigned hash(const char *str, std::size_t len) {
@@ -230,7 +227,6 @@ namespace test { namespace instruments {
             CXON_JSON_CLS_FIELD_ASIS(volcmd),
             CXON_JSON_CLS_FIELD_ASIS(volval)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct pattern {
@@ -247,7 +243,6 @@ namespace test { namespace instruments {
             CXON_JSON_CLS_FIELD_ASIS(rows_per_beat),
             CXON_JSON_CLS_FIELD_ASIS(rows_per_measure)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct sample {
@@ -284,7 +279,6 @@ namespace test { namespace instruments {
             CXON_JSON_CLS_FIELD_ASIS(vibrato_type),
             CXON_JSON_CLS_FIELD_ASIS(volume)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -309,7 +303,6 @@ namespace test { namespace instruments {
             CXON_JSON_CLS_FIELD_ASIS(samples),
             CXON_JSON_CLS_FIELD_ASIS(version)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}

@@ -28,7 +28,6 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(url),
             CXON_JSON_CLS_FIELD_ASIS(version)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct dependency {
@@ -37,7 +36,6 @@ namespace test { namespace update_center {
         std::string version;
 
         CXON_JSON_CLS_MEMBER(dependency, CXON_JSON_CLS_FIELD_ASIS(name), CXON_JSON_CLS_FIELD_ASIS(optional), CXON_JSON_CLS_FIELD_ASIS(version))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct developer {
@@ -46,7 +44,6 @@ namespace test { namespace update_center {
         std::string name;
 
         CXON_JSON_CLS_MEMBER(developer, CXON_JSON_CLS_FIELD_ASIS(developerId), CXON_JSON_CLS_FIELD_ASIS(email), CXON_JSON_CLS_FIELD_ASIS(name))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct plugin {
@@ -89,7 +86,6 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(version),
             CXON_JSON_CLS_FIELD_ASIS(wiki)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
 
 #       ifdef CXON_USE_GPERF
             static unsigned hash(const char *str, std::size_t len) {
@@ -176,7 +172,6 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(digest),
             CXON_JSON_CLS_FIELD_ASIS(signature)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -195,7 +190,6 @@ namespace test { namespace update_center {
             CXON_JSON_CLS_FIELD_ASIS(signature),
             CXON_JSON_CLS_FIELD_ASIS(updateCenterVersion)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}
