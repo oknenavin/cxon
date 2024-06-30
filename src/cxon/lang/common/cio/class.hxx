@@ -34,9 +34,36 @@ namespace cxon { namespace cio { namespace cls { // structured types reader/writ
 
 }}}
 
-namespace cxon { namespace cio { namespace cls { // bare object support structured types
+namespace cxon { namespace cio { namespace cls { // traits
 
+    // bare-class support types
     struct cxon_bare_class_tag {};
+    struct bare_class;
+    template <typename T>
+        struct is_bare_class;
+
+    // simple-key-class support types
+    struct cxon_simple_key_class_tag {};
+    template <typename T>
+        struct is_simple_key_class;
+    template <typename X, typename ...Fs>
+        constexpr bool are_simple_key_fields(Fs&&... fs);
+
+    // ordered-keys-class support types
+    struct cxon_ordered_keys_class_tag {};
+    template <typename T>
+        struct is_ordered_keys_class;
+    template <typename ...Fs>
+        constexpr bool are_fields_ordered(Fs&&... fs);
+    template <typename T> struct ordered_keys_traits : T {};
+
+}}}
+
+// implementation //////////////////////////////////////////////////////////////
+
+namespace cxon { namespace cio { namespace cls {
+
+    // bare-object support types
 
     struct bare_class {
         using cxon_bare_class_tag = cls::cxon_bare_class_tag;
@@ -51,7 +78,7 @@ namespace cxon { namespace cio { namespace cls { // bare object support structur
     template <typename T>
         struct is_bare_class : imp::is_bare_class_<T> {};
 
-    struct cxon_simple_key_class_tag {};
+    // simple-key-class support types
 
     namespace imp {
         template <typename T, typename E = void_t<>>
@@ -81,9 +108,35 @@ namespace cxon { namespace cio { namespace cls { // bare object support structur
             return imp::are_simple_key_fields_<X>(std::forward<Fs>(fs)...);
         }
 
-}}}
+    // ordered-keys-class support types
 
-// implementation //////////////////////////////////////////////////////////////
+    namespace imp {
+        template <typename T, typename E = void_t<>>
+            struct is_ordered_keys_class_                                                       : std::false_type   {};
+        template <typename T>
+            struct is_ordered_keys_class_<T, void_t<typename T::cxon_ordered_keys_class_tag>>   : std::true_type    {};
+    }
+    template <typename T>
+        struct is_ordered_keys_class : imp::is_ordered_keys_class_<T> {};
+
+    namespace imp {
+        template <typename ...Fs>
+                constexpr bool are_fields_ordered_(Fs&&...) {
+                return  true;
+            }
+        template <typename F, typename S, typename ...Fs>
+            constexpr bool are_fields_ordered_(F&& f, S&& s, Fs&&... fs) {
+                return  std::char_traits<char>::compare(f.name, s.name, f.nale + 1) <= 0 &&
+                        are_fields_ordered_(std::forward<S>(s), std::forward<Fs>(fs)...)
+                ;
+            }
+    }
+    template <typename ...Fs>
+        constexpr bool are_fields_ordered(Fs&&... fs) {
+            return imp::are_fields_ordered_(std::forward<Fs>(fs)...) ;
+        }
+
+}}}
 
 #if __cplusplus < 202002L // use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
     namespace cxon {
@@ -152,61 +205,65 @@ namespace cxon { namespace cio { namespace cls {
                 return  val::sink_read<X>(f.unit, i, e, cx);
             }
 
-        template <typename X, std::size_t N, std::size_t L>
-            struct read_ {
-                template <typename T, typename Fs, typename II, typename Cx, typename Y = X>
-                    static auto field(T& t, const char* name, const Fs& fs, int (&st)[L], II& i, II e, Cx& cx)
-                        -> enable_if_t< Y::assume_unique_object_keys, bool>
-                    {
-                        return st[N] == 0 && std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
-                            (st[N] = 1, read_field_<Y>(t, std::get<N>(fs), i, e, cx)) :
-                            read_<Y, N + 1, L>::field(t, name, fs, st, i, e, cx)
-                        ;
-                    }
-                template <typename T, typename Fs, typename II, typename Cx, typename Y = X>
-                    static auto field(T& t, const char* name, const Fs& fs, int (&st)[L], II& i, II e, Cx& cx)
-                        -> enable_if_t<!Y::assume_unique_object_keys, bool>
-                    {
-                        return std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
-                            read_field_<Y>(t, std::get<N>(fs), i, e, cx) :
-                            read_<Y, N + 1, L>::field(t, name, fs, st, i, e, cx)
-                        ;
-                    }
-            };
-        template <typename X, std::size_t N>
-            struct read_<X, N, N> {
-                template <typename T, typename Fs, typename II, typename Cx>
-                    static constexpr bool field(T&, const char*, const Fs&, int (&)[N], II&, II, Cx&) noexcept {
-                        return false;
-                    }
-            };
-        template <typename X, std::size_t N, typename T, typename Fs, typename II, typename Cx>
-            inline bool read_field_(option<0>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx) {
-                return read_<X, 0, N>::field(t, name, fs, st, i, e, cx);
+        namespace imp {
+            namespace imp {
+                template <typename X, std::size_t N, std::size_t L>
+                    struct read_ {
+                        template <typename T, typename Fs, typename II, typename Cx, typename Y = X>
+                            static auto field(T& t, const char* name, const Fs& fs, int (&st)[L], II& i, II e, Cx& cx)
+                                -> enable_if_t< Y::assume_unique_object_keys, bool>
+                            {
+                                return st[N] == 0 && std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
+                                    (st[N] = 1, read_field_<Y>(t, std::get<N>(fs), i, e, cx)) :
+                                    read_<Y, N + 1, L>::field(t, name, fs, st, i, e, cx)
+                                ;
+                            }
+                        template <typename T, typename Fs, typename II, typename Cx, typename Y = X>
+                            static auto field(T& t, const char* name, const Fs& fs, int (&st)[L], II& i, II e, Cx& cx)
+                                -> enable_if_t<!Y::assume_unique_object_keys, bool>
+                            {
+                                return std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
+                                    read_field_<Y>(t, std::get<N>(fs), i, e, cx) :
+                                    read_<Y, N + 1, L>::field(t, name, fs, st, i, e, cx)
+                                ;
+                            }
+                    };
+                template <typename X, std::size_t N>
+                    struct read_<X, N, N> {
+                        template <typename T, typename Fs, typename II, typename Cx>
+                            static constexpr bool field(T&, const char*, const Fs&, int (&)[N], II&, II, Cx&) noexcept {
+                                return false;
+                            }
+                    };
             }
+            template <typename X, typename T, typename Fs, typename II, typename Cx, std::size_t N>
+                inline bool read_field_(option<0>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx) {
+                    return imp::read_<X, 0, N>::field(t, name, fs, st, i, e, cx);
+                }
 
-        template <typename X, std::size_t N, typename T, typename Fs, typename II, typename Cx> // read_field in cxon namespace
-            inline auto read_field_(option<1>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx)
-                -> decltype(read_field<X>(name, 0, i, e, cx), bool())
-            {   CXON_ASSERT(!X::assume_unique_object_keys, "not supported");
-                return read_field<X>(name, std::char_traits<char>::length(name), i, e, cx);
-            }
-        template <typename X, std::size_t N, typename T, typename Fs, typename II, typename Cx> // read_field static method of T
-            inline auto read_field_(option<2>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx)
-                -> decltype(T::template read_field<X>(t, name, 0, i, e, cx), bool())
-            {   CXON_ASSERT(!X::assume_unique_object_keys, "not supported");
-                return T::template read_field<X>(t, name, std::char_traits<char>::length(name), i, e, cx);
-            }
-        template <typename X, std::size_t N, typename T, typename Fs, typename II, typename Cx> // read_field method of T
-            inline auto read_field_(option<3>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx)
-                -> decltype(t.template read_field<X>(name, 0, i, e, cx), bool())
-            {   CXON_ASSERT(!X::assume_unique_object_keys, "not supported");
-                return t.template read_field<X>(name, std::char_traits<char>::length(name), i, e, cx);
-            }
-
-        template <typename X, typename T, typename II, typename Cx>
-            inline constexpr bool read_fields_(T&, const fields<>&, II& i, II e, Cx& cx) {
-                return consume<X>(X::map::beg, i, e, cx) && consume<X>(X::map::end, i, e, cx);
+            template <typename X, typename T, typename Fs, typename II, typename Cx, std::size_t N> // read_field in cxon namespace
+                inline auto read_field_(option<1>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx)
+                    -> decltype(read_field<X>(name, 0, i, e, cx), bool())
+                {   CXON_ASSERT(!X::assume_unique_object_keys, "not supported");
+                    return read_field<X>(name, std::char_traits<char>::length(name), i, e, cx);
+                }
+            template <typename X, typename T, typename Fs, typename II, typename Cx, std::size_t N> // read_field static method of T
+                inline auto read_field_(option<2>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx)
+                    -> decltype(T::template read_field<X>(t, name, 0, i, e, cx), bool())
+                {   CXON_ASSERT(!X::assume_unique_object_keys, "not supported");
+                    return T::template read_field<X>(t, name, std::char_traits<char>::length(name), i, e, cx);
+                }
+            template <typename X, typename T, typename Fs, typename II, typename Cx, std::size_t N> // read_field method of T
+                inline auto read_field_(option<3>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx)
+                    -> decltype(t.template read_field<X>(name, 0, i, e, cx), bool())
+                {   CXON_ASSERT(!X::assume_unique_object_keys, "not supported");
+                    return t.template read_field<X>(name, std::char_traits<char>::length(name), i, e, cx);
+                }
+        }
+        template <typename X, typename T, typename Fs, typename II, typename Cx, std::size_t N>
+            inline bool read_field_(T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx) {
+                using Y = unbind_traits_t<X, cio::key::simple_traits>;
+                return imp::read_field_<Y>(option<3>(), t, name, fs, st, i, e, cx);
             }
 
         template <typename X, typename T, typename ...Fs, typename II, typename Cx>
@@ -226,7 +283,7 @@ namespace cxon { namespace cio { namespace cls {
                     II const o = i;
                         if (!read_map_key<X>(id, i, e, cx))
                             return rewind(i, o), false;
-                        if (!read_field_<X>(option<3>(), t, id, fs, st, i, e, cx))
+                        if (!read_field_<X>(t, id, fs, st, i, e, cx))
                             return cx && (rewind(i, o), cx/X::read_error::unexpected);
                         if (cnt::consume_sep<X, typename X::map>(i, e, cx))
                             continue;
@@ -247,12 +304,16 @@ namespace cxon { namespace cio { namespace cls {
                     II const o = i;
                         if (!read_map_key<X>(id, i, e, cx))
                             return false;
-                        if (!read_field_<X>(option<3>(), t, id, fs, st, i, e, cx))
+                        if (!read_field_<X>(t, id, fs, st, i, e, cx))
                             return cx && (rewind(i, o), cx/X::read_error::unexpected);
                         if (!consume<X>(i, e, cx))
                             return false;
                 }
                 return true;
+            }
+        template <typename X, typename T, typename II, typename Cx>
+            inline constexpr bool read_fields_(T&, const fields<>&, II& i, II e, Cx& cx) {
+                return consume<X>(X::map::beg, i, e, cx) && consume<X>(X::map::end, i, e, cx);
             }
 
     }
@@ -270,8 +331,9 @@ namespace cxon { namespace cio { namespace cls {
             inline auto write_field_(O& o, const T& t, const F& f, Cx& cx)
                 -> enable_if_t<!val::is_sink<typename F::type>::value, bool>
             {
+                using Y = unbind_traits_t<X, cio::key::simple_traits>;
                 return  write_map_key<X>(o, f.name, f.nale, cx) &&
-                        write_map_val<X>(o, field_value_(t, f), cx)
+                        write_map_val<Y>(o, field_value_(t, f), cx)
                 ;
             }
         template <typename X, typename O, typename T, typename F, typename Cx>
