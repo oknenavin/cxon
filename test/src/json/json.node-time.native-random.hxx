@@ -19,7 +19,6 @@ namespace test { namespace random {
         std::string phone;
 
         CXON_JSON_CLS_MEMBER(friend_, CXON_JSON_CLS_FIELD_ASIS(id), CXON_JSON_CLS_FIELD_ASIS(name), CXON_JSON_CLS_FIELD_ASIS(phone))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct result {
@@ -48,7 +47,6 @@ namespace test { namespace random {
             CXON_JSON_CLS_FIELD_ASIS(friends),
             CXON_JSON_CLS_FIELD_ASIS(field)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -58,7 +56,6 @@ namespace test { namespace random {
         std::vector<struct result> result;
 
         CXON_JSON_CLS_MEMBER(object, CXON_JSON_CLS_FIELD_ASIS(id), CXON_JSON_CLS_FIELD_ASIS(jsonrpc), CXON_JSON_CLS_FIELD_ASIS(total), CXON_JSON_CLS_FIELD_ASIS(result))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}

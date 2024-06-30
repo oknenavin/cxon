@@ -1009,6 +1009,7 @@ namespace {
         bool operator ==(const Struct10& t) const { return a == t.a && b == t.b; }
     };
 }
+CXON_JSON_CLS_NONTRIVIAL_KEY(Struct10)
 CXON_JSON_CLS_READ(Struct10,
     CXON_JSON_CLS_FIELD_ASIS(a),
     CXON_JSON_CLS_FIELD_SKIP("skip1"),
@@ -1446,6 +1447,7 @@ namespace {
     struct Struct15 {
         std::string a, b, c, d;
         bool operator ==(const Struct15& t) const { return a == t.a && b == t.b && c == t.c && d == t.d; }
+        CXON_JSON_CLS_NONTRIVIAL_KEY_MEMBER()
     };
 }
 CXON_JSON_CLS(Struct15,
@@ -1561,6 +1563,7 @@ namespace {
         Struct18(int a = 0) : a(a) {}
         bool operator ==(const Struct18& o) const { return a == o.a; }
         CXON_JSON_CLS_MEMBER(Struct18, CXON_JSON_CLS_FIELD_NAME("\t", a))
+        CXON_JSON_CLS_NONTRIVIAL_KEY_MEMBER()
     };
     struct Struct19 {
         Struct18 a;

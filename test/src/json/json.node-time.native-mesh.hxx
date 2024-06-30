@@ -19,12 +19,10 @@ namespace test { namespace mesh {
         std::vector<unsigned> usedBones;
 
         CXON_JSON_CLS_MEMBER(batch, CXON_JSON_CLS_FIELD_ASIS(indexRange), CXON_JSON_CLS_FIELD_ASIS(vertexRange), CXON_JSON_CLS_FIELD_ASIS(usedBones))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct morph_targets {
         CXON_JSON_CLS_MEMBER(morph_targets)
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -47,7 +45,6 @@ namespace test { namespace mesh {
             CXON_JSON_CLS_FIELD_ASIS(normals),
             CXON_JSON_CLS_FIELD_ASIS(indices)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}
