@@ -33,7 +33,6 @@ namespace test { namespace emoji {
             CXON_JSON_CLS_FIELD_ASIS_DFLT(ios_version       , self.ios_version.empty()),
             CXON_JSON_CLS_FIELD_ASIS_DFLT(skin_tones        , !self.skin_tones)
         )
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
     using object = std::vector<entry>;
 
