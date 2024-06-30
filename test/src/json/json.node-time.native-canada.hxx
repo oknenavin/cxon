@@ -20,7 +20,6 @@ namespace test { namespace canada {
         std::vector<std::vector<std::pair<double, double>>> coordinates;
 
         CXON_JSON_CLS_MEMBER(geometry, CXON_JSON_CLS_FIELD_ASIS(type), CXON_JSON_CLS_FIELD_ASIS(coordinates))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct feature {
@@ -29,7 +28,6 @@ namespace test { namespace canada {
         struct geometry geometry;
 
         CXON_JSON_CLS_MEMBER(feature, CXON_JSON_CLS_FIELD_ASIS(type), CXON_JSON_CLS_FIELD_ASIS(properties), CXON_JSON_CLS_FIELD_ASIS(geometry))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
     struct object {
@@ -37,7 +35,6 @@ namespace test { namespace canada {
         std::vector<feature> features;
 
         CXON_JSON_CLS_MEMBER(object, CXON_JSON_CLS_FIELD_ASIS(type), CXON_JSON_CLS_FIELD_ASIS(features))
-        CXON_JSON_CLS_SIMPLE_KEY_MEMBER()
     };
 
 }}
