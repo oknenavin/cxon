@@ -331,8 +331,9 @@ namespace cxon { namespace cio { namespace cls {
             inline auto write_field_(O& o, const T& t, const F& f, Cx& cx)
                 -> enable_if_t<!val::is_sink<typename F::type>::value, bool>
             {
+                using Y = unbind_traits_t<X, cio::key::simple_traits>;
                 return  write_map_key<X>(o, f.name, f.nale, cx) &&
-                        write_map_val<X>(o, field_value_(t, f), cx)
+                        write_map_val<Y>(o, field_value_(t, f), cx)
                 ;
             }
         template <typename X, typename O, typename T, typename F, typename Cx>
