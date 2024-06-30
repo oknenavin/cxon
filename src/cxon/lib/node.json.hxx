@@ -238,7 +238,7 @@ namespace cxon {
                 if (read_value<X>(s, i, e, cx)) {
                     using real = typename N::real;
                     using symbol = typename S::value_type;
-                            if (s == nmst_<symbol>::pinf) n.template imbue<real>() =  std::numeric_limits<real>::infinity();
+                         if (s == nmst_<symbol>::pinf) n.template imbue<real>() =  std::numeric_limits<real>::infinity();
                     else if (s == nmst_<symbol>::ninf) n.template imbue<real>() = -std::numeric_limits<real>::infinity();
                     else if (s == nmst_<symbol>::nan ) n.template imbue<real>() =  std::numeric_limits<real>::quiet_NaN();
                     return true;
@@ -287,7 +287,7 @@ namespace cxon {
 #                           define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
                                 case '{'                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(object),     i, e, cx); }
                                 case '['                : { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),      i, e, cx); }
-                                case '"': case '\''     :                       return read_key_(t, CXON_IMBUE(string), i, e, cx);
+                                case '"': case '\''     :                       return read_key_(t, CXON_IMBUE(string),     i, e, cx);
                                 case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case 'I': case 'N'
                                                         :                       return read_key_(t, CXON_IMBUE(real),       i, e, cx);
                                 case 't': case 'f'      :                       return read_key_(t, CXON_IMBUE(boolean),    i, e, cx);
@@ -305,8 +305,8 @@ namespace cxon {
                                 if (!cio::consume<Y>(i, e, cx))
                                     return false;
                                 switch (cio::peek(i, e)) {
-                                        case '{': { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(object), i, e, cx); }
-                                        case '[': { CXON_NODE_RG();     return read_key_(t, CXON_IMBUE(array),  i, e, cx); }
+                                    case '{': { CXON_NODE_RG(); return read_key_(t, CXON_IMBUE(object), i, e, cx); }
+                                    case '[': { CXON_NODE_RG(); return read_key_(t, CXON_IMBUE(array),  i, e, cx); }
                                 }
                             }
                             return cio::key::read_key<Y>(CXON_IMBUE(string), i, e, cx);
@@ -353,7 +353,7 @@ namespace cxon {
                     }
             };
 
-    }}
+    }} // cio::key
 
     template <typename X, typename Tr>
         struct read<JSON<X>, json::basic_node<Tr>> {
@@ -515,7 +515,7 @@ namespace cxon {
                         }
                 };
 
-        }}
+        }} // cio::key
 
         template <typename X, typename Tr>
             struct read<JSON<X>, cbor::basic_node<Tr>> {
