@@ -100,8 +100,12 @@ namespace cxon {
     template <typename T, template <typename> class U>
         using unbind_traits_t = typename unbind_traits<T, U>::type;
 
-    template <typename T, template <typename> class D, template <typename> class A>
-        using rebind_traits_t = bind_traits_t<unbind_traits_t<T, D>, A>;
+    // replace U with B if bound
+    template <typename T, template <typename> class U, template <typename> class B>
+        using replace_traits_t = typename std::conditional<has_traits<T, U>::value, bind_traits_t<unbind_traits_t<T, U>, B>, T>::type;
+
+    template <bool C, typename T, template <typename> class U>
+        using conditional_bind_traits_t = typename std::conditional<C, bind_traits_t<T, U>, unbind_traits_t<T, U>>::type;
 
     // type sequence
 

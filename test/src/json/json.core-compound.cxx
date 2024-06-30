@@ -6,6 +6,7 @@
 #include "test.hxx"
 
 #include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/map.hxx"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1551,4 +1552,48 @@ TEST_BEG(cxcf_sink_single_quotes, cxon::CXCF<cxcf_single_quotes_traits>, "/core"
     R_TEST(Struct17 {1, {R"([2 ']' 4])"}}, R"(x = 1 y = [2 ']' 4])");
     R_TEST(Struct17 {1, {R"({ z = 2 })"}}, R"(x = 1 y = { z = 2 })");
     R_TEST(Struct17 {1, {R"({ z = '}' })"}}, R"(x = 1 y = { z = '}' })");
+TEST_END()
+
+
+namespace {
+    struct Struct18 {
+        int a = 0;
+        Struct18(int a = 0) : a(a) {}
+        bool operator ==(const Struct18& o) const { return a == o.a; }
+        CXON_JSON_CLS_MEMBER(Struct18, CXON_JSON_CLS_FIELD_NAME("\t", a))
+    };
+    struct Struct19 {
+        Struct18 a;
+        bool operator ==(const Struct19& o) const { return a == o.a; }
+        CXON_JSON_CLS_MEMBER(Struct19, CXON_JSON_CLS_FIELD_ASIS(a))
+    };
+}
+
+TEST_BEG(simple_keys, cxon::JSON<>, "/core")
+    R_TEST(Struct19 {1}, R"({"a": {"\t": 1}})");
+    W_TEST(R"({"a":{"\t":1}})", Struct19 {1});
+TEST_END()
+
+TEST_BEG(cxcf_simple_keys, cxon::CXCF<>, "/core")
+    R_TEST(Struct19 {1}, R"({a = {\t = 1}})");
+    W_TEST(R"({a={\t=1}})", Struct19 {1});
+TEST_END()
+
+
+namespace {
+    struct Struct20 {
+        std::map<std::string, int> a;
+        bool operator ==(const Struct20& o) const { return a == o.a; }
+        CXON_JSON_CLS_MEMBER(Struct20, CXON_JSON_CLS_FIELD_ASIS(a))
+    };
+}
+
+TEST_BEG(simple_keys_map, cxon::JSON<>, "/core")
+    R_TEST(Struct20 {{{"\t", 1}}}, R"({"a": {"\t": 1}})");
+    W_TEST(R"({"a":{"\t":1}})", Struct20 {{{"\t", 1}}});
+TEST_END()
+
+TEST_BEG(cxcf_simple_keys_map, cxon::CXCF<>, "/core")
+    R_TEST(Struct20 {{{"\t", 1}}}, R"({a = {\t = 1}})");
+    W_TEST(R"({a={\t=1}})", Struct20 {{{"\t", 1}}});
 TEST_END()
