@@ -8,6 +8,7 @@
 
 #include "cxon/json.hxx"
 #include "cxon/lib/std/string.hxx"
+#include "cxon/lib/std/array.hxx"
 #include "cxon/lib/std/vector.hxx"
 
 
@@ -22,10 +23,10 @@ namespace test { namespace marine_ik {
     };
 
     struct key {
-        std::vector<float> pos;
+        std::array<float, 3> pos;
         float time;
-        std::vector<float> scl;
-        std::vector<float> rot;
+        std::array<float, 3> scl;
+        std::array<float, 4> rot;
 
         CXON_JSON_CLS_MEMBER(key, CXON_JSON_CLS_FIELD_ASIS(pos), CXON_JSON_CLS_FIELD_ASIS(time), CXON_JSON_CLS_FIELD_ASIS(scl), CXON_JSON_CLS_FIELD_ASIS(rot))
     };
@@ -68,9 +69,9 @@ namespace test { namespace marine_ik {
 
     struct bone {
         int parent;
-        std::vector<float> pos;
-        std::vector<float> rotq;
-        std::vector<float> scl;
+        std::array<float, 3> pos;
+        std::array<float, 4> rotq;
+        std::array<float, 3> scl;
         std::string name;
 
         CXON_JSON_CLS_MEMBER(bone,
