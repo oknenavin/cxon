@@ -206,7 +206,42 @@ namespace cxon { namespace cio { namespace cls {
             }
 
         namespace imp {
-            namespace imp {
+            namespace imp { // binary search
+
+                template <typename X, int L, int R, typename EE = void_t<>>
+                    struct read_ordered_ {
+                        template <std::size_t Ix, typename T, typename ...Fs, typename II, typename Cx, typename Y = X>
+                            static auto field_(T& t, const fields<Fs...>& fs, int (&st)[sizeof...(Fs)], II& i, II e, Cx& cx)
+                                -> enable_if_t< Y::assume_unique_object_keys, bool>
+                            {
+                                return st[Ix] == 0 && read_field_<Y>(t, std::get<Ix>(fs), i, e, cx) && (st[Ix] = 1, true);
+                            }
+                        template <std::size_t Ix, typename T, typename ...Fs, typename II, typename Cx, typename Y = X>
+                            static auto field_(T& t, const fields<Fs...>& fs, int (&st)[sizeof...(Fs)], II& i, II e, Cx& cx)
+                                -> enable_if_t<!Y::assume_unique_object_keys, bool>
+                            {
+                                return read_field_<Y>(t, std::get<Ix>(fs), i, e, cx);
+                            }
+                        template <typename T, typename ...Fs, typename II, typename Cx>
+                            static bool field(T& t, const char* name, const fields<Fs...>& fs, int (&st)[sizeof...(Fs)], II& i, II e, Cx& cx) {
+                                constexpr auto M = (L + R) / 2;
+                                int const c = std::char_traits<char>::compare(std::get<M>(fs).name, name, std::get<M>(fs).nale + 1);
+                                     if (c < 0) return read_ordered_<X, M + 1, R>::field(t, name, fs, st, i, e, cx);
+                                else if (c > 0) return read_ordered_<X, L, M - 1>::field(t, name, fs, st, i, e, cx);
+                                else            return field_<M>(t, fs, st, i, e, cx);
+                            }
+                    };
+                template <typename X, int L, int R>
+                    struct read_ordered_<X, L, R, void_t<enable_if_t<R < L>>> {
+                        template <typename T, typename ...Fs, typename II, typename Cx, typename Y = X>
+                            static constexpr bool field(T&, const char* name, const fields<Fs...>&, int (&)[sizeof...(Fs)], II&, II, Cx&) noexcept {
+                                return false;
+                            }
+                    };
+
+            }
+            namespace imp { // linear search
+
                 template <typename X, std::size_t N, std::size_t L>
                     struct read_ {
                         template <typename T, typename Fs, typename II, typename Cx, typename Y = X>
@@ -235,9 +270,12 @@ namespace cxon { namespace cio { namespace cls {
                                 return false;
                             }
                     };
+
             }
             template <typename X, typename T, typename Fs, typename II, typename Cx, std::size_t N>
                 inline bool read_field_(option<0>, T& t, const char* name, const Fs& fs, int (&st)[N], II& i, II e, Cx& cx) {
+                    //CXON_IF_CONSTEXPR (has_traits<X, ordered_keys_traits>::value && N > 8)
+                    //    return imp::read_ordered_<X, 0, N - 1>::field(t, name, fs, st, i, e, cx);
                     return imp::read_<X, 0, N>::field(t, name, fs, st, i, e, cx);
                 }
 
@@ -343,60 +381,63 @@ namespace cxon { namespace cio { namespace cls {
                 return true;
             }
 
-        template <typename X, typename T, typename O, typename Cx>
-            inline auto write_sep_(O& o, Cx& cx) -> enable_if_t<!is_bare_class<T>::value, bool> {
-                return poke<X>(o, X::map::sep, cx);
-            }
-        template <typename X, typename T, typename O, typename Cx>
-            inline auto write_sep_(O& o, Cx& cx) -> enable_if_t< is_bare_class<T>::value, bool> {
-                return poke<X>(o, '\n', cx);
-            }
+        namespace imp {
 
-        template <typename X, std::size_t N, std::size_t L>
-            struct write_next_ {
-                template <typename T, typename Fs, typename O, typename Cx>
-                    static bool field(O& o, const T& t, const Fs& fs, Cx& cx) {
-                        using E = typename std::tuple_element<N, Fs>::type;
-                        CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value)
-                            if (!std::get<N>(fs).isdf(t))
-                                return  write_sep_<X, T>(o, cx) && write_field_<X>(o, t, std::get<N>(fs), cx) &&
-                                        write_next_<X, N + 1, L>::field(o, t, fs, cx)
-                                ;
-                        return          write_next_<X, N + 1, L>::field(o, t, fs, cx);
-                    }
-            };
-        template <typename X, std::size_t N>
-            struct write_next_<X, N, N> {
-                template <typename T, typename Fs, typename O, typename Cx>
-                    static constexpr bool field(O&, const T&, const Fs&, Cx&) noexcept {
-                        return true;
-                    }
-            };
+            template <typename X, typename T, typename O, typename Cx>
+                inline auto write_sep_(O& o, Cx& cx) -> enable_if_t<!is_bare_class<T>::value, bool> {
+                    return poke<X>(o, X::map::sep, cx);
+                }
+            template <typename X, typename T, typename O, typename Cx>
+                inline auto write_sep_(O& o, Cx& cx) -> enable_if_t< is_bare_class<T>::value, bool> {
+                    return poke<X>(o, '\n', cx);
+                }
 
-        template <typename X, std::size_t N, std::size_t L>
-            struct write_ {
-                template <typename T, typename Fs, typename O, typename Cx>
-                    static bool field(O& o, const T& t, const Fs& fs, Cx& cx) {
-                        using E = typename std::tuple_element<N, Fs>::type;
-                        CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value)
-                            if (!std::get<N>(fs).isdf(t))
-                                return  write_field_<X>(o, t, std::get<N>(fs), cx) &&
-                                        write_next_<X, N + 1, L>::field(o, t, fs, cx)
-                                ;
-                        return          write_<X, N + 1, L>::field(o, t, fs, cx);
-                    }
-            };
-        template <typename X, std::size_t N>
-            struct write_<X, N, N> {
-                template <typename T, typename Fs, typename O, typename Cx>
-                    static constexpr bool field(O&, const T&, const Fs&, Cx&) noexcept {
-                        return true;
-                    }
-            };
+            template <typename X, std::size_t N, std::size_t L>
+                struct write_next_ {
+                    template <typename T, typename Fs, typename O, typename Cx>
+                        static bool field(O& o, const T& t, const Fs& fs, Cx& cx) {
+                            using E = typename std::tuple_element<N, Fs>::type;
+                            CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value)
+                                if (!std::get<N>(fs).isdf(t))
+                                    return  write_sep_<X, T>(o, cx) && write_field_<X>(o, t, std::get<N>(fs), cx) &&
+                                            write_next_<X, N + 1, L>::field(o, t, fs, cx)
+                                    ;
+                            return          write_next_<X, N + 1, L>::field(o, t, fs, cx);
+                        }
+                };
+            template <typename X, std::size_t N>
+                struct write_next_<X, N, N> {
+                    template <typename T, typename Fs, typename O, typename Cx>
+                        static constexpr bool field(O&, const T&, const Fs&, Cx&) noexcept {
+                            return true;
+                        }
+                };
 
+            template <typename X, std::size_t N, std::size_t L>
+                struct write_ {
+                    template <typename T, typename Fs, typename O, typename Cx>
+                        static bool field(O& o, const T& t, const Fs& fs, Cx& cx) {
+                            using E = typename std::tuple_element<N, Fs>::type;
+                            CXON_IF_CONSTEXPR (!val::is_sink<typename E::type>::value)
+                                if (!std::get<N>(fs).isdf(t))
+                                    return  write_field_<X>(o, t, std::get<N>(fs), cx) &&
+                                            write_next_<X, N + 1, L>::field(o, t, fs, cx)
+                                    ;
+                            return          write_<X, N + 1, L>::field(o, t, fs, cx);
+                        }
+                };
+            template <typename X, std::size_t N>
+                struct write_<X, N, N> {
+                    template <typename T, typename Fs, typename O, typename Cx>
+                        static constexpr bool field(O&, const T&, const Fs&, Cx&) noexcept {
+                            return true;
+                        }
+                };
+
+        }
         template <typename X, typename T, typename Fs, typename O, typename Cx>
             constexpr bool write_fields_bare_(O& o, const T& t, const Fs& fs, Cx& cx) {
-                return write_<X, 0, std::tuple_size<Fs>::value>::field(o, t, fs, cx);
+                return imp::write_<X, 0, std::tuple_size<Fs>::value>::field(o, t, fs, cx);
             }
 
         template <typename X, typename T, typename ...Fs, typename O, typename Cx>

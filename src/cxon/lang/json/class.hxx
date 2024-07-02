@@ -59,6 +59,12 @@ namespace cxon { // cio::val::sink read
         template <> struct is_trivial_key_class<T> : std::false_type {}; \
     }}}
 
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 201703L
+#   define CXON_CLS_STATIC_ASSERT(c, m) static_assert((c), m)
+#else // because of the default lambdas in the fields
+#   define CXON_CLS_STATIC_ASSERT(c, m) CXON_ASSERT((c), m)
+#endif
+
 #define CXON_JSON_CLS_READ(Type, ...)\
     namespace cxon { \
         template <typename X, typename II, typename Cx> \
@@ -66,7 +72,7 @@ namespace cxon { // cio::val::sink read
                 using CXON_T_ = Type; \
                 static CXON_CXX17_CONSTEXPR auto fs = json::cls::make_fields(__VA_ARGS__); \
                 CXON_IF_CONSTEXPR (cio::cls::is_trivial_key_class<Type>::value) { \
-                    /*static_assert(cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected, use nontrivial key(s)");*/ \
+                    CXON_CLS_STATIC_ASSERT(cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected nontrivial key(s)"); \
                     using Y = bind_traits_t<X, cio::key::simple_traits>; \
                     CXON_IF_CONSTEXPR (cio::cls::is_ordered_keys_class<Type>::value || cio::cls::are_fields_ordered(__VA_ARGS__)) { \
                         using Y = bind_traits_t<Y, cio::cls::ordered_keys_traits>; \
@@ -88,7 +94,7 @@ namespace cxon { // cio::val::sink read
                 using CXON_T_ = Type; \
                 static CXON_CXX17_CONSTEXPR auto fs = json::cls::make_fields(__VA_ARGS__); \
                 CXON_IF_CONSTEXPR (cio::cls::is_trivial_key_class<Type>::value) { \
-                    /*static_assert(cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected, use nontrivial key(s)");*/ \
+                    CXON_CLS_STATIC_ASSERT(cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected nontrivial key(s)"); \
                     using Y = bind_traits_t<X, cio::key::simple_traits>; \
                     return json::cls::write_fields<Y>(o, t, fs, cx); \
                 } \
@@ -108,7 +114,7 @@ namespace cxon { // cio::val::sink read
             using CXON_T_ = Type; ((void)((CXON_T_*)0)); \
             static CXON_CXX17_CONSTEXPR auto fs = cxon::json::cls::make_fields(__VA_ARGS__); \
             CXON_IF_CONSTEXPR (cxon::cio::cls::is_trivial_key_class<Type>::value) { \
-                /*static_assert(cxon::cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected, use nontrivial key(s)");*/ \
+                CXON_CLS_STATIC_ASSERT(cxon::cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected nontrivial key(s)"); \
                 using Y = cxon::bind_traits_t<X, cxon::cio::key::simple_traits>; \
                 CXON_IF_CONSTEXPR (cxon::cio::cls::is_ordered_keys_class<Type>::value || cxon::cio::cls::are_fields_ordered(__VA_ARGS__)) { \
                     using Y = cxon::bind_traits_t<Y, cxon::cio::cls::ordered_keys_traits>; \
@@ -128,7 +134,7 @@ namespace cxon { // cio::val::sink read
             using CXON_T_ = Type; ((void)((CXON_T_*)0)); \
             static CXON_CXX17_CONSTEXPR auto fs = cxon::json::cls::make_fields(__VA_ARGS__); \
             CXON_IF_CONSTEXPR (cxon::cio::cls::is_trivial_key_class<Type>::value) { \
-                /*static_assert(cxon::cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected, use nontrivial key(s)");*/ \
+                CXON_CLS_STATIC_ASSERT(cxon::cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected nontrivial key(s)"); \
                 using Y = cxon::bind_traits_t<X, cxon::cio::key::simple_traits>; \
                 return cxon::json::cls::write_fields<Y>(o, t, fs, cx); \
             } \
