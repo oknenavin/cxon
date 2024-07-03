@@ -443,30 +443,38 @@ namespace cxon { namespace cio { namespace chr {
                             default  :  return poke<X>(o, c, cx);
                         }
                     }
-                template <typename O, typename Cx>
-                    static bool range(O& o, const char* f, const char* l, Cx& cx) {
+                template <typename O, typename Cx, typename Y = X>
+                    static auto range(O& o, const char* f, const char* l, Cx& cx)
+                        -> enable_if_t< is_unquoted_key_context<X>::value || !Y::assume_no_escapes, bool>
+                    {
                         char const* a = f;
                         for ( ; f != l; ++f) {
-                            if (should_escape_<X>(*f)) {
+                            if (should_escape_<Y>(*f)) {
                                 if (a != f)
-                                    if (!poke<X>(o, a, f, cx)) return false;
+                                    if (!poke<Y>(o, a, f, cx)) return false;
                                 if (!value(o, *f, cx)) return false;
                                 a = f + 1;
                             }
-                            else CXON_IF_CONSTEXPR (X::produce_strict_javascript) {
+                            else CXON_IF_CONSTEXPR (Y::produce_strict_javascript) {
                                 if (*f == '\xE2' && l - f > 2) {
                                     if (f[1] == '\x80') {
                                         if (f[2] == '\xA8' || f[2] == '\xA9') {
                                             if (a != f)
-                                                if (!poke<X>(o, a, f, cx)) return false;
-                                            if (!poke<X>(o, f[2] == '\xA8' ? "\\u2028" : "\\u2029", 6, cx)) return false;
+                                                if (!poke<Y>(o, a, f, cx)) return false;
+                                            if (!poke<Y>(o, f[2] == '\xA8' ? "\\u2028" : "\\u2029", 6, cx)) return false;
                                             f += 2, a = f + 1;
                                         }
                                     }
                                 }
                             }
                         }
-                        return a == f || poke<X>(o, a, f, cx);
+                        return a == f || poke<Y>(o, a, f, cx);
+                    }
+                template <typename O, typename Cx, typename Y = X>
+                    static auto range(O& o, const char* f, const char* l, Cx& cx)
+                        -> enable_if_t<!is_unquoted_key_context<X>::value &&  Y::assume_no_escapes, bool>
+                    {
+                        return poke<Y>(o, f, l, cx);
                     }
             };
 
