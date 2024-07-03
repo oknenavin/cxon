@@ -447,6 +447,9 @@ namespace cxon { namespace json { // format traits
         // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
         static constexpr bool produce_strict_javascript = false;
 
+        // read/write: assume that strings to be read/written do not contain escape characters
+        static constexpr bool assume_no_escapes = false;
+
         // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
         // if false, this JSON {1: 2} will now be valid
         static constexpr bool quote_unquoted_keys = true;
@@ -472,6 +475,16 @@ namespace cxon { namespace json { // format traits
 
 }}
 ```
+
+The correctness parameters can also be set with macros:
+
+Parameter                 | Macro
+--------------------------|------------------------------------
+validate_string_encoding  | CXON_JSON_VALIDATE_STRING_ENCODING
+validate_string_escapes   | CXON_JSON_VALIDATE_STRING_ESCAPES
+produce_strict_javascript | CXON_JSON_PRODUCE_STRICT_JAVASCRIPT
+assume_no_escapes         | CXON_JSON_ASSUME_NO_ESCAPES
+
 
 ###### Example
 
