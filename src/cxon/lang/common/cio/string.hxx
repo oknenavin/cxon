@@ -75,8 +75,9 @@ namespace cxon { namespace cio { namespace str {
             inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
                 -> enable_if_t<!chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
             {
+                constexpr bool HANDLE_ESCAPES = is_unquoted_key_context<X>::value || !X::assume_no_escapes;
                 while (i != e) {
-                    if (*i == '\\') {
+                    if (HANDLE_ESCAPES && *i == '\\') {
                         II const o = i; ++i;
                         CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
                             if (i != e && *i == X::string::del)
@@ -91,7 +92,7 @@ namespace cxon { namespace cio { namespace str {
                         CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
                             if (delim_en_check<X>(*i))      return delim_en_read<X>(i, e);
                         }
-                        CXON_IF_CONSTEXPR (X::validate_string_escapes) {
+                        CXON_IF_CONSTEXPR (X::validate_string_escapes) { // TODO: not correct, handle non-control characters
                             if (chr::is<X>::ctrl(*i))       return cx/X::read_error::unexpected;
                         }
                         if (!char_read_<X>(c, i, e, cx))    return false;
@@ -105,8 +106,9 @@ namespace cxon { namespace cio { namespace str {
                     -> enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
                 {
                     II l = i;
+                        constexpr bool HANDLE_ESCAPES = is_unquoted_key_context<X>::value || !X::assume_no_escapes;
                         for ( ; i != e; ++i) {
-                            if (*i == '\\') {
+                            if (HANDLE_ESCAPES && *i == '\\') {
                                 if (l != i && !cxon::cnt::append(c, l, i))
                                     return rewind(i, l), cx/X::read_error::overflow;
                                 CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
@@ -139,12 +141,12 @@ namespace cxon { namespace cio { namespace str {
                                             ;
                                         --i;
                                     }
-                                    else CXON_IF_CONSTEXPR (X::validate_string_escapes) {
+                                    else CXON_IF_CONSTEXPR (X::validate_string_escapes) { // TODO: not correct, handle non-control characters
                                         if (chr::is<X>::ctrl(*i))
                                             return cx/X::read_error::unexpected;
                                     }
                                 }
-                                else CXON_IF_CONSTEXPR (X::validate_string_escapes) {
+                                else CXON_IF_CONSTEXPR (X::validate_string_escapes) { // TODO: not correct, handle non-control characters
                                     if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
                                         return cx/X::read_error::unexpected;
                                 }

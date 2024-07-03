@@ -20,17 +20,19 @@ namespace cxon { namespace json { // format traits
         using read_error = json::read_error;
         using write_error = json::write_error;
 
-        static constexpr bool validate_string_encoding  = true;     // read: validate input strings (utf-8)
-        static constexpr bool validate_string_escapes   = true;     // read: validate input strings (unescaped control characters)
+        static constexpr bool validate_string_encoding  = CXON_JSON_VALIDATE_STRING_ENCODING;   // read: validate input strings (utf-8)
+        static constexpr bool validate_string_escapes   = CXON_JSON_VALIDATE_STRING_ESCAPES;    // read: validate input strings (unescaped control characters)
 
-        static constexpr bool produce_strict_javascript = false;    // write: escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
+        static constexpr bool produce_strict_javascript = CXON_JSON_PRODUCE_STRICT_JAVASCRIPT;  // write: escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
 
-        static constexpr bool quote_unquoted_keys       = true;     // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
-        static constexpr bool unquote_quoted_keys       = false;    // object keys for types serialized with quotes will be unquoted (e.g. strings)
-        static constexpr bool allow_comments            = false;    // allow c-style comments
-        static constexpr bool allow_trailing_separators = false;    // allow trailing separators for objects and arrays
-        static constexpr bool assume_unique_object_keys = true;     // assume that object keys are unique (for the class serializers)
-        static constexpr bool allow_javascript_nans     = false;    // allow NaN and Infinity
+        static constexpr bool assume_no_escapes         = CXON_JSON_ASSUME_NO_ESCAPES;          // read/write: assume that strings to be read/written do not contain escape characters
+
+        static constexpr bool quote_unquoted_keys       = true;                                 // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
+        static constexpr bool unquote_quoted_keys       = false;                                // object keys for types serialized with quotes will be unquoted (e.g. strings)
+        static constexpr bool allow_comments            = false;                                // allow c-style comments
+        static constexpr bool allow_trailing_separators = false;                                // allow trailing separators for objects and arrays
+        static constexpr bool assume_unique_object_keys = true;                                 // assume that object keys are unique (for the class serializers)
+        static constexpr bool allow_javascript_nans     = false;                                // allow NaN and Infinity
     };
 
 }}
