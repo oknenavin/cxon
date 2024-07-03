@@ -14,6 +14,19 @@
 
 // implementation //////////////////////////////////////////////////////////////
 
+#ifndef CXON_JSON_VALIDATE_STRING_ENCODING
+#   define CXON_JSON_VALIDATE_STRING_ENCODING 1
+#endif
+#ifndef CXON_JSON_VALIDATE_STRING_ESCAPES
+#   define CXON_JSON_VALIDATE_STRING_ESCAPES 1
+#endif
+#ifndef CXON_JSON_PRODUCE_STRICT_JAVASCRIPT
+#   define CXON_JSON_PRODUCE_STRICT_JAVASCRIPT 0
+#endif
+#ifndef CXON_JSON_ASSUME_NO_ESCAPES
+#   define CXON_JSON_ASSUME_NO_ESCAPES 0
+#endif
+
 namespace cxon { namespace json { // format traits
 
     struct format_traits : cio::format_traits {
