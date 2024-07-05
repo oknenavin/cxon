@@ -60,7 +60,7 @@ jobs:
     - name: Time JSON (default)
       env:
         CXX: g++-13
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
@@ -79,7 +79,7 @@ jobs:
     - name: Time JSON (boost::charconv)
       env:
         CXX: g++-13
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
@@ -174,7 +174,7 @@ jobs:
     - name: Time JSON (default)
       env:
         CXX: clang++-15
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
@@ -193,7 +193,7 @@ jobs:
     - name: Time JSON (boost::cahrconv)
       env:
         CXX: clang++-15
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
       run: |
@@ -293,7 +293,7 @@ jobs:
     - name: Time JSON (default)
       shell: bash
       env:
-        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
+        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
         LDFLAGS: -LTCG /LIBPATH:../../.dep/boost/stage/lib
       run: |
         cd test
@@ -315,7 +315,7 @@ jobs:
     - name: Time JSON (boost::charconv)
       shell: bash
       env:
-        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost -D CXON_USE_BOOST_CHARCONV -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
+        CXXFLAGS: -EHsc -Oi -Ot -GR- -GS- -GL -D CXON_TIME_ONLY -I ../../.dep/boost -D CXON_USE_BOOST_CHARCONV -D CXON_TIME_BOOST_JSON -I ../../.dep/rapidjson/include -D CXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../../.dep/nlohmann/single_include -D CXON_TIME_NLOHMANN
         LDFLAGS: -LTCG /LIBPATH:../../.dep/boost/stage/lib
       run: |
         cd test
@@ -385,7 +385,7 @@ jobs:
         echo > test/.root
     - name: Time JSON (default)
       env:
-        CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DRAPIDJSON_NEON -DCXON_TIME_NLOHMANN
         LDFLAGS: -l boost_json
       run: |
         DEP=$GITHUB_WORKSPACE/.dep
@@ -410,7 +410,7 @@ jobs:
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/xcode.head.default.json.native-s2.data
     - name: Time JSON (boost::charconv)
       env:
-        CXXFLAGS: -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DCXON_TIME_NLOHMANN
+        CXXFLAGS: -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DRAPIDJSON_NEON -DCXON_TIME_NLOHMANN
         LDFLAGS: -l boost_json -l boost_charconv
       run: |
         DEP=$GITHUB_WORKSPACE/.dep
