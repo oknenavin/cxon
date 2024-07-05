@@ -37,7 +37,7 @@ jobs:
     - name: Build
       run: |
         cd test
-        cmake --build .bld --parallel
+        cmake --build -j .bld --parallel
     - name: Check
       run: |
         cd test/.bld
