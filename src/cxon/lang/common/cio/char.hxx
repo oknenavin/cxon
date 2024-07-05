@@ -9,7 +9,7 @@
 #include "cio.hxx"
 #include <limits>
 
-#ifdef CXON_USE_SIMD
+#if CXON_USE_SIMD
 #   include <emmintrin.h>
 #   include <xmmintrin.h>
 #   ifdef _MSC_VER
