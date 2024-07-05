@@ -9,6 +9,10 @@
 #include "cio.hxx"
 #include <limits>
 
+#if CXON_USE_SIMD_SSE2
+#   include <emmintrin.h>
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace chr { // character conversion: read
@@ -415,17 +419,22 @@ namespace cxon { namespace cio { namespace chr {
                             case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
                             case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
                                         return poke<X>(o, esc_[(unsigned char)c], len_[(unsigned char)c], cx);
+                            case ' ' :
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                        return poke<X>(o, "\\ ", 2, cx);
+                                else    return poke<X>(o, ' ', cx);
                             case '"':
                                 CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
                                         return poke<X>(o, "\\u0022", 6, cx);
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\'')
                                         return poke<X>(o, '"', cx);
                                 else    return poke<X>(o, "\\\"", 2, cx);
-                            case '\\':  return poke<X>(o, "\\\\", 2, cx);
-                            case ' ' :
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
-                                        return poke<X>(o, "\\ ", 2, cx);
-                                else    return poke<X>(o, ' ', cx);
+                            case '\'':
+                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
+                                        return poke<X>(o, '\'', cx);
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '"')
+                                        return poke<X>(o, '\'', cx);
+                                else    return poke<X>(o, "\\'", 2, cx);
                             case ':' :
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
                                         return poke<X>(o, "\\:", 2, cx);
@@ -434,25 +443,21 @@ namespace cxon { namespace cio { namespace chr {
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
                                         return poke<X>(o, "\\=", 2, cx);
                                 else    return poke<X>(o, '=', cx);
-                            case '\'':
-                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
-                                        return poke<X>(o, '\'', cx);
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '"')
-                                        return poke<X>(o, '\'', cx);
-                                else    return poke<X>(o, "\\'", 2, cx);
+                            case '\\':  return poke<X>(o, "\\\\", 2, cx);
                             default  :  return poke<X>(o, c, cx);
                         }
                     }
+                template <typename Y = X>
+                    struct use_simd_ : bool_constant<CXON_USE_SIMD_SSE2 && !is_key_context<Y>::value && !Y::produce_strict_javascript> {};
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> enable_if_t< is_unquoted_key_context<X>::value || !Y::assume_no_escapes, bool>
+                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && !use_simd_<Y>::value, bool>
                     {
                         char const* a = f;
                         for ( ; f != l; ++f) {
                             if (should_escape_<Y>(*f)) {
-                                if (a != f)
-                                    if (!poke<Y>(o, a, f, cx)) return false;
-                                if (!value(o, *f, cx)) return false;
+                                if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                if (!value(o, *f, cx))                  return false;
                                 a = f + 1;
                             }
                             else CXON_IF_CONSTEXPR (Y::produce_strict_javascript) {
@@ -469,6 +474,60 @@ namespace cxon { namespace cio { namespace chr {
                             }
                         }
                         return a == f || poke<Y>(o, a, f, cx);
+                    }
+                template <typename O, typename Cx, typename Y = X>
+                    static auto range(O& o, const char* f, const char* l, Cx& cx)
+                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
+                    {   // TODO: assumes that the input 16 byte aligned, but it may not be the case - preprocess the unaligned prefix
+                        static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
+#                       if CXON_USE_SIMD_SSE2
+                            char const *a = f;
+
+                            if (l - f >= 16) {
+                                __m128i const v1 = _mm_set1_epi8('"');
+                                __m128i const v2 = _mm_set1_epi8('\'');
+                                __m128i const v3 = _mm_set1_epi8('\\');
+                                __m128i const v4 = _mm_set1_epi8(0x1F);
+                                std::size_t n = l - f;
+                                while (n >= 16) {
+                                    __m128i const v0 = _mm_loadu_si128((__m128i const*)f);
+                                    __m128i r = X::string::del == '\"' ?
+                                                                _mm_cmpeq_epi8(v0, v1) :
+                                                                _mm_cmpeq_epi8(v0, v2) ;
+                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, v3));
+                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, _mm_min_epu8(v0, v4)));
+                                    if (int const m = _mm_movemask_epi8(r)) {
+                                        int e = 0;
+                                            for (auto* g = f + 16; f != g; ++f, ++e) {
+                                                if ((1 << e) & m) {
+                                                    if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                                    if (!value(o, *f, cx))                  return false;
+                                                    a = f + 1;
+                                                }
+                                            }
+                                        if (a != f && !poke<Y>(o, a, f, cx)) return false;
+                                        a = f, f -= 16;
+                                    }
+                                    f += 16, n -= 16;
+                                }
+                                if (a != f) {
+                                    if (!poke<Y>(o, a, f, cx)) return false;
+                                    a = f;
+                                }
+                            }
+
+                            for ( ; f != l; ++f) {
+                                if (should_escape_<Y>(*f)) {
+                                    if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                    if (!value(o, *f, cx))                  return false;
+                                    a = f + 1;
+                                }
+                            }
+
+                            return a == f || poke<Y>(o, a, f, cx);
+#                       else
+                            return cx/X::read_error::unexpected;
+#                       endif
                     }
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
