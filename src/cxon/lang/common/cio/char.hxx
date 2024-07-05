@@ -452,10 +452,10 @@ namespace cxon { namespace cio { namespace chr {
                         }
                     }
                 template <typename Y = X>
-                    static constexpr bool use_simd_() { return CXON_USE_SIMD && !Y::produce_strict_javascript; }
+                    struct use_simd_ : bool_constant<CXON_USE_SIMD && !Y::produce_strict_javascript> {};
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && !use_simd_<Y>(), bool>
+                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && !use_simd_<Y>::value, bool>
                     {
                         char const* a = f;
                         for ( ; f != l; ++f) {
@@ -494,7 +494,7 @@ namespace cxon { namespace cio { namespace chr {
                     }
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>(), bool>
+                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
                     {
 #                       if CXON_USE_SIMD
                             char const *a = f;
