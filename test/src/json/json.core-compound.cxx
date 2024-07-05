@@ -650,6 +650,7 @@ namespace {
         };
     };
 }
+
 TEST_BEG(single_quotes, cxon::JSON<single_quotes_traits>, "/core")
     // char[]
         R_TEST("", "''");
@@ -1599,4 +1600,72 @@ TEST_END()
 TEST_BEG(cxcf_simple_keys_map, cxon::CXCF<>, "/core")
     R_TEST(Struct20 {{{"\t", 1}}}, R"({a = {\t = 1}})");
     W_TEST(R"({a={\t=1}})", Struct20 {{{"\t", 1}}});
+TEST_END()
+
+TEST_BEG(simd, cxon::JSON<>, "/core")
+    {   char b[2];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+            auto r = cxon::to_bytes<XXON>(c, "12'4567812345678");
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[2];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+             auto r = cxon::to_bytes<XXON>(c, "12\"4567812345678");
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[3];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+             auto r = cxon::to_bytes<XXON>(c, "12\"4567812345678");
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[3];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+             auto r = cxon::to_bytes<XXON>(c, "12\"4567812345678");
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+    {   char b[5];
+        auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
+             auto r = cxon::to_bytes<XXON>(c, "12\"4567812345678");
+        TEST_CHECK(r.ec == json::write_error::output_failure);
+    }
+TEST_END()
+
+TEST_BEG(double_quotes_simd, cxon::JSON<>, "/core")
+    // char[]
+        W_TEST("\"1'34567812345678\"", "1'34567812345678");
+        W_TEST("\"1\\\"34567812345678\"", "1\"34567812345678");
+    // wchar_t[]
+        W_TEST("\"1'34567812345678\"", L"1'34567812345678");
+        W_TEST("\"1\\\"34567812345678\"", L"1\"34567812345678");
+    // char8_t[]
+#       if defined(__cpp_char8_t)
+            W_TEST("\"1'34567812345678\"", u8"1'34567812345678");
+            W_TEST("\"1\\\"34567812345678\"", u8"1\"34567812345678");
+#       endif
+    // char16_t[]
+        W_TEST("\"1'34567812345678\"", u"1'34567812345678");
+        W_TEST("\"1\\\"34567812345678\"", u"1\"34567812345678");
+    // char32_t[]
+        W_TEST("\"1'34567812345678\"", U"1'34567812345678");
+        W_TEST("\"1\\\"34567812345678\"", U"1\"34567812345678");
+TEST_END()
+
+TEST_BEG(single_quotes_simd, cxon::JSON<single_quotes_traits>, "/core")
+    // char[]
+        W_TEST("'1\\'34567812345678'", "1'34567812345678");
+        W_TEST("'1\"34567812345678'", "1\"34567812345678");
+    // wchar_t[]
+        W_TEST("'1\\'34567812345678'", L"1'34567812345678");
+        W_TEST("'1\"34567812345678'", L"1\"34567812345678");
+    // char8_t[]
+#       if defined(__cpp_char8_t)
+            W_TEST("'1\\'34567812345678'", u8"1'34567812345678");
+            W_TEST("'1\"34567812345678'", u8"1\"34567812345678");
+#       endif
+    // char16_t[]
+        W_TEST("'1\\'34567812345678'", u"1'34567812345678");
+        W_TEST("'1\"34567812345678'", u"1\"34567812345678");
+    // char32_t[]
+        W_TEST("'1\\'34567812345678'", U"1'34567812345678");
+        W_TEST("'1\"34567812345678'", U"1\"34567812345678");
 TEST_END()
