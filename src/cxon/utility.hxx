@@ -60,6 +60,14 @@
 #   define CXON_INLAY inline
 #endif
 
+#if !defined(CXON_USE_SIMD)
+#   if (defined(_M_IX86) && _M_IX86_FP == 2) || defined(_M_X64) || defined(__SSE2__)
+#           define CXON_USE_SIMD 1
+#   else
+#           define CXON_USE_SIMD 0
+#   endif
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon {

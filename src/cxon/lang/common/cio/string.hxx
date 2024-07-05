@@ -92,7 +92,7 @@ namespace cxon { namespace cio { namespace str {
                         CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
                             if (delim_en_check<X>(*i))      return delim_en_read<X>(i, e);
                         }
-                        CXON_IF_CONSTEXPR (X::validate_string_escapes) { // TODO: not correct, handle non-control characters
+                        CXON_IF_CONSTEXPR (X::validate_string_escapes) {
                             if (chr::is<X>::ctrl(*i))       return cx/X::read_error::unexpected;
                         }
                         if (!char_read_<X>(c, i, e, cx))    return false;
@@ -141,12 +141,12 @@ namespace cxon { namespace cio { namespace str {
                                             ;
                                         --i;
                                     }
-                                    else CXON_IF_CONSTEXPR (X::validate_string_escapes) { // TODO: not correct, handle non-control characters
+                                    else CXON_IF_CONSTEXPR (X::validate_string_escapes) {
                                         if (chr::is<X>::ctrl(*i))
                                             return cx/X::read_error::unexpected;
                                     }
                                 }
-                                else CXON_IF_CONSTEXPR (X::validate_string_escapes) { // TODO: not correct, handle non-control characters
+                                else CXON_IF_CONSTEXPR (X::validate_string_escapes) {
                                     if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
                                         return cx/X::read_error::unexpected;
                                 }

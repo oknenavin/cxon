@@ -9,6 +9,14 @@
 #include "cio.hxx"
 #include <limits>
 
+#ifdef CXON_USE_SIMD
+#   include <emmintrin.h>
+#   include <xmmintrin.h>
+#   ifdef _MSC_VER
+#       include <intrin.h>
+#   endif
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace chr { // character conversion: read
@@ -415,17 +423,22 @@ namespace cxon { namespace cio { namespace chr {
                             case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
                             case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
                                         return poke<X>(o, esc_[(unsigned char)c], len_[(unsigned char)c], cx);
+                            case ' ' :
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                        return poke<X>(o, "\\ ", 2, cx);
+                                else    return poke<X>(o, ' ', cx);
                             case '"':
                                 CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
                                         return poke<X>(o, "\\u0022", 6, cx);
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\'')
                                         return poke<X>(o, '"', cx);
                                 else    return poke<X>(o, "\\\"", 2, cx);
-                            case '\\':  return poke<X>(o, "\\\\", 2, cx);
-                            case ' ' :
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
-                                        return poke<X>(o, "\\ ", 2, cx);
-                                else    return poke<X>(o, ' ', cx);
+                            case '\'':
+                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
+                                        return poke<X>(o, '\'', cx);
+                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '"')
+                                        return poke<X>(o, '\'', cx);
+                                else    return poke<X>(o, "\\'", 2, cx);
                             case ':' :
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
                                         return poke<X>(o, "\\:", 2, cx);
@@ -434,18 +447,13 @@ namespace cxon { namespace cio { namespace chr {
                                 CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
                                         return poke<X>(o, "\\=", 2, cx);
                                 else    return poke<X>(o, '=', cx);
-                            case '\'':
-                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
-                                        return poke<X>(o, '\'', cx);
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '"')
-                                        return poke<X>(o, '\'', cx);
-                                else    return poke<X>(o, "\\'", 2, cx);
+                            case '\\':  return poke<X>(o, "\\\\", 2, cx);
                             default  :  return poke<X>(o, c, cx);
                         }
                     }
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> enable_if_t< is_unquoted_key_context<X>::value || !Y::assume_no_escapes, bool>
+                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && (!CXON_USE_SIMD ||  Y::produce_strict_javascript), bool>
                     {
                         char const* a = f;
                         for ( ; f != l; ++f) {
@@ -468,6 +476,65 @@ namespace cxon { namespace cio { namespace chr {
                                 }
                             }
                         }
+                        return a == f || poke<Y>(o, a, f, cx);
+                    }
+                template <typename ...>
+                    static int ffs(int x) noexcept {
+                        int f;
+#                       ifdef _MSC_VER
+                            unsigned long i;
+                                _BitScanForward(&i, x);
+                            f = i;
+#                       else
+                            f = __builtin_ffs(x) - 1;
+#                       endif
+                        return f;
+                    }
+                template <typename O, typename Cx, typename Y = X>
+                    static auto range(O& o, const char* f, const char* l, Cx& cx)
+                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && ( CXON_USE_SIMD && !Y::produce_strict_javascript), bool>
+                    {
+                        char const *a = f;
+
+                        __m128i const v1 = _mm_set1_epi8('"');
+                        __m128i const v2 = _mm_set1_epi8('\\');
+                        __m128i const v3 = _mm_set1_epi8(0x1F);
+                        std::size_t n = l - f;
+                        while (n >= 16) {
+                            __m128i r0 = _mm_loadu_si128((__m128i const*)f);
+                            __m128i r1 = _mm_cmpeq_epi8(r0, v1);
+                            __m128i r2 = _mm_cmpeq_epi8(r0, v2);
+                            __m128i r3 = _mm_cmpeq_epi8(_mm_min_epu8(r0, v3), r0);
+                            __m128i r4 = _mm_or_si128(_mm_or_si128(r1, r2), r3);
+                            if (int r = _mm_movemask_epi8(r4)) {
+                                int e = ffs(r);
+                                if (a != (f += e) && !poke<Y>(o, a, f, cx))   return false;
+                                a = f;
+                                for (auto* k = f + 16 - e; f != k; ++f, ++e) {
+                                    if ((1 << e) & r) {
+                                        if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                        if (!value(o, *f, cx))                  return false;
+                                        a = f + 1;
+                                    }
+                                }
+                                if (a != f && !poke<Y>(o, a, f, cx)) return false;
+                                a = f, f -= 16;
+                            }
+                            f += 16, n -= 16;
+                        }
+                        if (a != f) {
+                            if (!poke<Y>(o, a, f, cx)) return false;
+                            a = f;
+                        }
+
+                        for ( ; f != l; ++f) {
+                            if (should_escape_<Y>(*f)) {
+                                if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                if (!value(o, *f, cx))                  return false;
+                                a = f + 1;
+                            }
+                        }
+
                         return a == f || poke<Y>(o, a, f, cx);
                     }
                 template <typename O, typename Cx, typename Y = X>
