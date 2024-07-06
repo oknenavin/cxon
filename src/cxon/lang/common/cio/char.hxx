@@ -9,12 +9,9 @@
 #include "cio.hxx"
 #include <limits>
 
-#if CXON_USE_SIMD
+#if CXON_USE_SIMD_SSE2
 #   include <emmintrin.h>
 #   include <xmmintrin.h>
-#   ifdef _MSC_VER
-#       include <intrin.h>
-#   endif
 #endif
 
 // interface ///////////////////////////////////////////////////////////////////
@@ -452,7 +449,7 @@ namespace cxon { namespace cio { namespace chr {
                         }
                     }
                 template <typename Y = X>
-                    struct use_simd_ : bool_constant<CXON_USE_SIMD && !is_key_context<Y>::value && !Y::produce_strict_javascript> {};
+                    struct use_simd_ : bool_constant<CXON_USE_SIMD_SSE2 && !is_key_context<Y>::value && !Y::produce_strict_javascript> {};
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
                         -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && !use_simd_<Y>::value, bool>
@@ -480,23 +477,11 @@ namespace cxon { namespace cio { namespace chr {
                         }
                         return a == f || poke<Y>(o, a, f, cx);
                     }
-                template <typename ...>
-                    static int ffs(int x) noexcept {
-                        int f;
-#                       ifdef _MSC_VER
-                            unsigned long i;
-                                _BitScanForward(&i, x);
-                            f = i;
-#                       else
-                            f = __builtin_ffs(x) - 1;
-#                       endif
-                        return f;
-                    }
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
                         -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
-                    {
-#                       if CXON_USE_SIMD
+                    {   // TODO: assumes that the input 16 byte alligned, but it may not be the case - preprocess the unaligned prefix
+#                       if CXON_USE_SIMD_SSE2
                             char const *a = f;
 
                             __m128i const v1 = _mm_set1_epi8('"');
@@ -514,17 +499,15 @@ namespace cxon { namespace cio { namespace chr {
                                 __m128i const r2 = _mm_cmpeq_epi8(r0, v2);
                                 __m128i const r3 = _mm_cmpeq_epi8(r0, _mm_min_epu8(r0, v3));
                                 __m128i const r4 = _mm_or_si128(_mm_or_si128(r1, r2), r3);
-                                if (int r = _mm_movemask_epi8(r4)) {
-                                    int e = ffs(r);
-                                    if (a != (f += e) && !poke<Y>(o, a, f, cx))   return false;
-                                    a = f;
-                                    for (auto* k = f + 16 - e; f != k; ++f, ++e) {
-                                        if ((1 << e) & r) {
-                                            if (a != f && !poke<Y>(o, a, f, cx))    return false;
-                                            if (!value(o, *f, cx))                  return false;
-                                            a = f + 1;
+                                if (int const r = _mm_movemask_epi8(r4)) {
+                                    int e = 0;
+                                        for (auto* g = f + 16; f != g; ++f, ++e) {
+                                            if ((1 << e) & r) {
+                                                if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                                if (!value(o, *f, cx))                  return false;
+                                                a = f + 1;
+                                            }
                                         }
-                                    }
                                     if (a != f && !poke<Y>(o, a, f, cx)) return false;
                                     a = f, f -= 16;
                                 }

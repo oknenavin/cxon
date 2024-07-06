@@ -60,12 +60,14 @@
 #   define CXON_INLAY inline
 #endif
 
-#if !defined(CXON_USE_SIMD)
+#if !defined(CXON_USE_SIMD) || CXON_USE_SIMD
 #   if (defined(_M_IX86) && _M_IX86_FP == 2) || defined(_M_X64) || defined(__SSE2__)
-#           define CXON_USE_SIMD 1
+#       define CXON_USE_SIMD_SSE2 1
 #   else
-#           define CXON_USE_SIMD 0
+#       define CXON_USE_SIMD_SSE2 0
 #   endif
+#else
+#   define CXON_USE_SIMD_SSE2 0
 #endif
 
 // interface ///////////////////////////////////////////////////////////////////
