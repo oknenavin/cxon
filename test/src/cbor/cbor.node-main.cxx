@@ -253,8 +253,8 @@ namespace test { namespace kind { // round-trip
                     ++err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
-            std::string const f0 = name(file) + ".ct(0).json";
-            std::string const f1 = name(file) + ".ct(1).json";
+            std::string const f0 = "cbor.round-trip." + name(file) + ".(0).json";
+            std::string const f1 = "cbor.round-trip." + name(file) + ".(1).json";
             {   // 0
                 std::ofstream os(f0, std::ofstream::binary);
                     if (!os) {
