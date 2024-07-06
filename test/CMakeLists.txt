@@ -86,7 +86,8 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxon/json/node/diff
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf diff | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf diff-node   | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf diff-native | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
 
@@ -108,7 +109,7 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
         NAME cxon/cbor/node/round-trip
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node ../data/cbor/tests.cf round-trip | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node ../data/cbor/tests.cf round-trip  | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
 
