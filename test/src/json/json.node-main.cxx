@@ -10,7 +10,6 @@
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/map.hxx"
 #include "cxon/lib/node.ordered.hxx"
-#include "cxon/lang/json/tidy.hxx"
 
 #include <fstream>
 #include <cstdio>
@@ -19,7 +18,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using node = cxon::json::ordered_node;
 
 namespace test {
 
@@ -91,8 +89,10 @@ int main(int argc, char *argv[]) {
             err += test::kind::pass(sets["pass"]);
         if (!sets["fail"].empty())
             err += test::kind::fail(sets["fail"]);
-        if (!sets["diff"].empty())
-            err += test::kind::diff(sets["diff"]);
+        if (!sets["diff-node"].empty())
+            err += test::kind::diff_node(sets["diff-node"]);
+        if (!sets["diff-native"].empty())
+            err += test::kind::diff_native(sets["diff-native"]);
 #   endif
         if (!sets["time-node"].empty())
             test::kind::time(sets["time-node"], test::kind::time_cxon_node);
@@ -115,6 +115,8 @@ CXON_JSON_CLS_BARE(test::config)
 #ifndef CXON_TIME_ONLY
 
     namespace test { namespace kind {
+
+        using node = cxon::json::ordered_node;
 
         int pass(cases& cases) {
             int err = 0;
@@ -168,72 +170,6 @@ CXON_JSON_CLS_BARE(test::config)
                     }
                 }
             std::fprintf(stdout, "%-21s: %zu of %4zu failed\n", "cxon/json/node/fail", fc, cases.size()); std::fflush(stdout);
-
-            return err;
-        }
-
-        int diff(cases& cases) {
-            int err = 0;
-
-            static auto const name = [](const std::string& p) {
-                auto f = p.find_last_of("/\\"); f = f != p.npos ? f + 1 : 0;
-                auto l = p.rfind('.'); if (l == p.npos) l = p.size();
-                return std::string(p, f, l - f);
-            };
-            for (auto& c : cases) {
-                std::string json;
-                {   // read
-                    std::ifstream is(c.source, std::ifstream::binary);
-                        if (!is) {
-                            ++err, c.error = "cannot be opened";
-                            continue;
-                        }
-                    json.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-                }
-                {   // tidy
-                    std::ofstream os(name(c.source) + ".jt(0).json", std::ofstream::binary);
-                        if (!os) {
-                            ++err, c.error = name(c.source) + ".jt(0).json" + ": cannot be opened";
-                            continue;
-                        }
-                    cxon::json::tidy(std::ostreambuf_iterator<char>(os), json);
-                }
-                node result;
-                {   // from
-                    auto const r = cxon::from_bytes(result, json);
-                        if (!r) {
-                            ++err, c.error = format_error(r, json.cbegin());
-                            continue;
-                        }
-                }
-                {   // to
-                    std::ofstream os(name(c.source) + ".jt(1).json", std::ofstream::binary);
-                        if (!os) {
-                            ++err, c.error = name(c.source) + ".jt(1).json" + "cannot be opened";
-                            continue;
-                        }
-                    auto const w = cxon::to_bytes(cxon::json::make_indenter(std::ostreambuf_iterator<char>(os)), result);
-                        if (!w) {
-                            ++err, c.error += w.ec.category().name(),
-                            c.error += ": " + w.ec.message();
-                        }
-                }
-            }
-            std::size_t fc = 0;
-                for (auto& c : cases) {
-                    if (!c.error.empty()) {
-                        ++fc, std::fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
-                    }
-                }
-            if (!fc) {
-                for (auto& c : cases) {
-                    std::fprintf(stdout, "%s %s ", (name(c.source) + ".jt(0).json").c_str(), (name(c.source) + ".jt(1).json").c_str()), std::fflush(stdout);
-                }
-                std::fputc('\n', stdout);
-            }
-            else {
-                std::fprintf(stdout, "%-21s: %zu of %4zu failed\n", "cxon/json/node/diff", fc, cases.size()), std::fflush(stdout);
-            }
 
             return err;
         }
