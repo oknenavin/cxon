@@ -84,9 +84,13 @@ find_program (CMAKE_MAKE make)
 
 if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
     add_test (
-        NAME cxon/json/node/diff
+        NAME cxon/json/node/diff-node
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
         COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf diff-node   | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
+    )
+    add_test (
+        NAME cxon/json/node/diff-native
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
         COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf diff-native | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
