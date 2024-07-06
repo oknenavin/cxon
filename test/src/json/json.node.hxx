@@ -36,7 +36,8 @@ namespace test { namespace kind {
 
     int pass(cases& cases);
     int fail(cases& cases);
-    int diff(cases& cases);
+    int diff_node(cases& cases);
+    int diff_native(cases& cases);
 
 }}
 

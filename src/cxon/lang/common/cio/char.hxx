@@ -505,15 +505,15 @@ namespace cxon { namespace cio { namespace chr {
                             __m128i const v4 = _mm_set1_epi8('\'');
                             std::size_t n = l - f;
                             while (n >= 16) {
-                                __m128i r0 = _mm_loadu_si128((__m128i const*)f);
+                                __m128i const r0 = _mm_loadu_si128((__m128i const*)f);
                                 __m128i r1;
                                         CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\"')
                                             r1 = _mm_cmpeq_epi8(r0, v1);
                                 else    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\'')
                                             r1 = _mm_cmpeq_epi8(r0, v4);
-                                __m128i r2 = _mm_cmpeq_epi8(r0, v2);
-                                __m128i r3 = _mm_cmpeq_epi8(_mm_min_epu8(r0, v3), r0);
-                                __m128i r4 = _mm_or_si128(_mm_or_si128(r1, r2), r3);
+                                __m128i const r2 = _mm_cmpeq_epi8(r0, v2);
+                                __m128i const r3 = _mm_cmpeq_epi8(r0, _mm_min_epu8(r0, v3));
+                                __m128i const r4 = _mm_or_si128(_mm_or_si128(r1, r2), r3);
                                 if (int r = _mm_movemask_epi8(r4)) {
                                     int e = ffs(r);
                                     if (a != (f += e) && !poke<Y>(o, a, f, cx))   return false;

@@ -3,18 +3,14 @@
 //
 // SPDX-License-Identifier: MIT
 
-
 #include "json.node-time.hxx"
 #include "json.node-time.native.hxx"
 
 #include "cxon/lib/node.ordered.hxx"
 
-#include <array>
 #include <fstream>
 
 ////////////////////////////////////////////////////////////////////////////////
-
-using node = cxon::json::ordered_node;
 
 namespace test { namespace kind {
 
@@ -52,7 +48,7 @@ namespace test { namespace kind {
                 ));
         }
 
-    using executor = void (*)(test& t);
+    using executor = void (*)(test&);
 
     static std::map<std::string, executor> executors_ = {
         // set 1 (time-s1.in)
