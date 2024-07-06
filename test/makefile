@@ -29,17 +29,19 @@ check-all: build-json build-json-node build-cbor build-cbor-node
 	@(cd $(outdir) && ./check-json)
 	@(cd $(outdir) && ./check-json-node)
 	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf pass fail)
-	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf diff | xargs -n2 diff -q)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf diff-node   | xargs -n2 diff -q)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf diff-native | xargs -n2 diff -q)
 	@(cd $(outdir) && ./check-cbor)
 	@(cd $(outdir) && ./check-cbor-node)
 	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/tests.cf test-vector)
-	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/tests.cf round-trip | xargs -n2 diff -q)
+	@(cd $(outdir) && ./check-cbor-node $(datdir)/cbor/tests.cf round-trip  | xargs -n2 diff -q)
 check-json: build-json
 	@(cd $(outdir) && ./check-json)
 check-json-node: build-json-node
 	@(cd $(outdir) && ./check-json-node)
 	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf pass fail)
-	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf diff | xargs -n2 diff -q)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf diff-node   | xargs -n2 diff -q)
+	@(cd $(outdir) && ./check-json-node $(datdir)/json/tests.cf diff-native | xargs -n2 diff -q)
 check-cbor: build-cbor
 	@(cd $(outdir) && ./check-cbor)
 check-cbor-node: build-cbor-node
