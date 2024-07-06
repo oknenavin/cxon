@@ -8,13 +8,11 @@
 #include "json.node.hxx"
 #include "json.node-time.native.hxx"
 
-#include "cxon/json.hxx"
 #include "cxon/lib/node.ordered.hxx"
 #include "cxon/lang/json/tidy.hxx"
 
-#include <string>
-#include <map>
 #include <fstream>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -97,34 +95,36 @@ namespace test { namespace kind {
         return err;
     }
 
-    using executor = int (*)(test&, const char*);
+    namespace native {
 
-    static std::map<std::string, executor> executors_ = {
-        { "blns.json",              &diff<blns::object> },
-        { "emoji.json",             &diff<emoji::object> },
-        { "apache_builds.json",     &diff<apache_builds::object> },
-        { "canada.json",            &diff<canada::object> },
-#       ifdef CXON_HAS_LIB_STD_OPTIONAL
-        { "citm_catalog.json",      &diff<citm_catalog::object> },
-#       endif
-#       ifdef CXON_HAS_LIB_STD_OPTIONAL
-        { "github_events.json",     &diff<github_events::object> },
-#       endif
-        { "gsoc-2018.json",         &diff<gsoc_2018::object> },
-#       ifdef CXON_HAS_LIB_STD_OPTIONAL
-        { "instruments.json",       &diff<instruments::object> },
-#       endif
-        { "marine_ik.json",         &diff<marine_ik::object> },
-        { "mesh.json",              &diff<mesh::object> },
-        { "mesh.pretty.json",       &diff<mesh::object> },
-        { "numbers.json",           &diff<numbers::object> },
-        { "random.json",            &diff<random::object> },
-#       ifdef CXON_HAS_LIB_STD_OPTIONAL
-        { "twitter.json",           &diff<twitter::object> },
-        { "twitterescaped.json",    &diff<twitter::object> },
-#       endif
-        { "update-center.json",     &diff<update_center::object> }
-    };
+        static std::map<std::string, int (*)(test&, const char*)> executors_ = {
+            { "blns.json",              &diff<blns::object> },
+            { "emoji.json",             &diff<emoji::object> },
+            { "apache_builds.json",     &diff<apache_builds::object> },
+            { "canada.json",            &diff<canada::object> },
+#           ifdef CXON_HAS_LIB_STD_OPTIONAL
+            { "citm_catalog.json",      &diff<citm_catalog::object> },
+#           endif
+#           ifdef CXON_HAS_LIB_STD_OPTIONAL
+            { "github_events.json",     &diff<github_events::object> },
+#           endif
+            { "gsoc-2018.json",         &diff<gsoc_2018::object> },
+#           ifdef CXON_HAS_LIB_STD_OPTIONAL
+            { "instruments.json",       &diff<instruments::object> },
+#           endif
+            { "marine_ik.json",         &diff<marine_ik::object> },
+            { "mesh.json",              &diff<mesh::object> },
+            { "mesh.pretty.json",       &diff<mesh::object> },
+            { "numbers.json",           &diff<numbers::object> },
+            { "random.json",            &diff<random::object> },
+#           ifdef CXON_HAS_LIB_STD_OPTIONAL
+            { "twitter.json",           &diff<twitter::object> },
+            { "twitterescaped.json",    &diff<twitter::object> },
+#           endif
+            { "update-center.json",     &diff<update_center::object> }
+        };
+
+    }
 
     int diff_native(cases& cases) {
         int err = 0;
@@ -132,10 +132,9 @@ namespace test { namespace kind {
             char const*const prefix = "json.native.";
 
             for (auto& c : cases) {
-                
-                auto i = executors_.find(c.source.substr(c.source.rfind('/') + 1));
-                if (i == executors_.end()) {
-                    ++err, c.error = name(c.source) + ": unknown format";
+                auto i = native::executors_.find(c.source.substr(c.source.rfind('/') + 1));
+                if (i == native::executors_.end()) {
+                    c.flag = true, c.error = "unknown format or unsupported with this C++ standard version";
                     continue;
                 }
                 else
@@ -144,11 +143,13 @@ namespace test { namespace kind {
             std::size_t fc = 0;
                 for (auto& c : cases) {
                     if (!c.error.empty()) {
-                        ++fc, std::fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
+                        std::fprintf(stderr, "%s:\n\tfailed: %s\n", c.source.c_str(), c.error.c_str()), std::fflush(stderr);
+                        if (!c.flag) ++fc;
                     }
                 }
             if (!fc) {
                 for (auto& c : cases) {
+                    if (c.flag) continue;
                     std::fprintf(stdout, "%s %s ", (prefix + name(c.source) + ".(0).json").c_str(), (prefix + name(c.source) + ".(1).json").c_str()), std::fflush(stdout);
                 }
                 std::fputc('\n', stdout);
