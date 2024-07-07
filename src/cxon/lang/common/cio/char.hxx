@@ -11,7 +11,6 @@
 
 #if CXON_USE_SIMD_SSE2
 #   include <emmintrin.h>
-#   include <xmmintrin.h>
 #endif
 
 // interface ///////////////////////////////////////////////////////////////////
@@ -457,9 +456,8 @@ namespace cxon { namespace cio { namespace chr {
                         char const* a = f;
                         for ( ; f != l; ++f) {
                             if (should_escape_<Y>(*f)) {
-                                if (a != f)
-                                    if (!poke<Y>(o, a, f, cx)) return false;
-                                if (!value(o, *f, cx)) return false;
+                                if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                if (!value(o, *f, cx))                  return false;
                                 a = f + 1;
                             }
                             else CXON_IF_CONSTEXPR (Y::produce_strict_javascript) {
@@ -480,42 +478,43 @@ namespace cxon { namespace cio { namespace chr {
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
                         -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
-                    {   // TODO: assumes that the input 16 byte alligned, but it may not be the case - preprocess the unaligned prefix
+                    {   // TODO: assumes that the input 16 byte aligned, but it may not be the case - preprocess the unaligned prefix
 #                       if CXON_USE_SIMD_SSE2
                             char const *a = f;
 
-                            __m128i const v1 = _mm_set1_epi8('"');
-                            __m128i const v2 = _mm_set1_epi8('\\');
-                            __m128i const v3 = _mm_set1_epi8(0x1F);
-                            __m128i const v4 = _mm_set1_epi8('\'');
-                            std::size_t n = l - f;
-                            while (n >= 16) {
-                                __m128i const r0 = _mm_loadu_si128((__m128i const*)f);
-                                __m128i r1;
-                                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\"')
-                                            r1 = _mm_cmpeq_epi8(r0, v1);
-                                else    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\'')
-                                            r1 = _mm_cmpeq_epi8(r0, v4);
-                                __m128i const r2 = _mm_cmpeq_epi8(r0, v2);
-                                __m128i const r3 = _mm_cmpeq_epi8(r0, _mm_min_epu8(r0, v3));
-                                __m128i const r4 = _mm_or_si128(_mm_or_si128(r1, r2), r3);
-                                if (int const r = _mm_movemask_epi8(r4)) {
-                                    int e = 0;
-                                        for (auto* g = f + 16; f != g; ++f, ++e) {
-                                            if ((1 << e) & r) {
-                                                if (a != f && !poke<Y>(o, a, f, cx))    return false;
-                                                if (!value(o, *f, cx))                  return false;
-                                                a = f + 1;
+                            if (l - f >= 16) {
+                                __m128i const v1 = _mm_set1_epi8('"');
+                                __m128i const v2 = _mm_set1_epi8('\'');
+                                __m128i const v3 = _mm_set1_epi8('\\');
+                                __m128i const v4 = _mm_set1_epi8(0x1F);
+                                std::size_t n = l - f;
+                                while (n >= 16) {
+                                    __m128i const v0 = _mm_loadu_si128((__m128i const*)f);
+                                    __m128i r;
+                                    CXON_IF_CONSTEXPR       (is_quoted_key_context<X>::value || X::string::del == '\"')
+                                        r =                     _mm_cmpeq_epi8(v0, v1);
+                                    else CXON_IF_CONSTEXPR  (is_quoted_key_context<X>::value || X::string::del == '\'')
+                                        r =                     _mm_cmpeq_epi8(v0, v2);
+                                    r =         _mm_or_si128(r, _mm_cmpeq_epi8(v0, v3));
+                                    r =         _mm_or_si128(r, _mm_cmpeq_epi8(v0, _mm_min_epu8(v0, v4)));
+                                    if (int const m = _mm_movemask_epi8(r)) {
+                                        int e = 0;
+                                            for (auto* g = f + 16; f != g; ++f, ++e) {
+                                                if ((1 << e) & m) {
+                                                    if (a != f && !poke<Y>(o, a, f, cx))    return false;
+                                                    if (!value(o, *f, cx))                  return false;
+                                                    a = f + 1;
+                                                }
                                             }
-                                        }
-                                    if (a != f && !poke<Y>(o, a, f, cx)) return false;
-                                    a = f, f -= 16;
+                                        if (a != f && !poke<Y>(o, a, f, cx)) return false;
+                                        a = f, f -= 16;
+                                    }
+                                    f += 16, n -= 16;
                                 }
-                                f += 16, n -= 16;
-                            }
-                            if (a != f) {
-                                if (!poke<Y>(o, a, f, cx)) return false;
-                                a = f;
+                                if (a != f) {
+                                    if (!poke<Y>(o, a, f, cx)) return false;
+                                    a = f;
+                                }
                             }
 
                             for ( ; f != l; ++f) {
