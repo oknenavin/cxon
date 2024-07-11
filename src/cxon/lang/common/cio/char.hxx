@@ -479,6 +479,7 @@ namespace cxon { namespace cio { namespace chr {
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
                         -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
                     {   // TODO: assumes that the input 16 byte aligned, but it may not be the case - preprocess the unaligned prefix
+                        static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
 #                       if CXON_USE_SIMD_SSE2
                             char const *a = f;
 
@@ -490,13 +491,11 @@ namespace cxon { namespace cio { namespace chr {
                                 std::size_t n = l - f;
                                 while (n >= 16) {
                                     __m128i const v0 = _mm_loadu_si128((__m128i const*)f);
-                                    __m128i r;
-                                    CXON_IF_CONSTEXPR       (is_quoted_key_context<X>::value || X::string::del == '\"')
-                                        r =                     _mm_cmpeq_epi8(v0, v1);
-                                    else CXON_IF_CONSTEXPR  (is_quoted_key_context<X>::value || X::string::del == '\'')
-                                        r =                     _mm_cmpeq_epi8(v0, v2);
-                                    r =         _mm_or_si128(r, _mm_cmpeq_epi8(v0, v3));
-                                    r =         _mm_or_si128(r, _mm_cmpeq_epi8(v0, _mm_min_epu8(v0, v4)));
+                                    __m128i r = X::string::del == '\"' ?
+                                                                _mm_cmpeq_epi8(v0, v1) :
+                                                                _mm_cmpeq_epi8(v0, v2) ;
+                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, v3));
+                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, _mm_min_epu8(v0, v4)));
                                     if (int const m = _mm_movemask_epi8(r)) {
                                         int e = 0;
                                             for (auto* g = f + 16; f != g; ++f, ++e) {

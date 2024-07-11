@@ -66,8 +66,14 @@
 #   else
 #       define CXON_USE_SIMD_SSE2 0
 #   endif
+#   if defined(__ARM_NEON__ )
+#       define CXON_USE_SIMD_NEON 1
+#   else
+#       define CXON_USE_SIMD_NEON 0
+#   endif
 #else
 #   define CXON_USE_SIMD_SSE2 0
+#   define CXON_USE_SIMD_NEON 0
 #endif
 
 // interface ///////////////////////////////////////////////////////////////////
