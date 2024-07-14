@@ -147,7 +147,7 @@ namespace cxon { namespace cio { namespace str {
                                     }
                                 }
                                 else CXON_IF_CONSTEXPR (X::validate_string_escapes) {
-                                    if ((unsigned char)*i <= 0x7F && chr::is<X>::ctrl(*i))
+                                    if (chr::is<X>::ctrl(*i))
                                         return cx/X::read_error::unexpected;
                                 }
                             }
