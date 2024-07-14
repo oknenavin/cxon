@@ -31,7 +31,7 @@ namespace test { namespace kind {
             std::vector<std::unique_ptr<rapidjson::Document>> vo;
             t.time.read.push_back(CXON_MEASURE(
                 vo.emplace_back(std::unique_ptr<rapidjson::Document>(new rapidjson::Document));
-                rapidjson::ParseResult const r = vo.back()->Parse(json.c_str());
+                rapidjson::ParseResult const r = vo.back()->Parse<rapidjson::kParseValidateEncodingFlag>(json.c_str());
                 if (!r) t.error = std::string("RapidJSON error: ") + rapidjson::GetParseError_En(r.Code());
             ));
         // write
