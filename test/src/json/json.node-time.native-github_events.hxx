@@ -575,17 +575,17 @@ namespace cxon {
                     using namespace test::github_events;
                     switch (t->type) {
                         case payload::push_event:
-                            return write_value<Y>(o, static_cast<const payload_push_event*>(t), cx);
+                            return write_value<Y>(o, static_cast<const payload_push_event&>(*t), cx);
                         case payload::create_event:
-                            return write_value<Y>(o, static_cast<const payload_create_event*>(t), cx);
+                            return write_value<Y>(o, static_cast<const payload_create_event&>(*t), cx);
                         case payload::fork_event:
-                            return write_value<Y>(o, static_cast<const payload_fork_event*>(t), cx);
+                            return write_value<Y>(o, static_cast<const payload_fork_event&>(*t), cx);
                         case payload::issue_comment_event:
-                            return write_value<Y>(o, static_cast<const payload_issue_comment_event*>(t), cx);
+                            return write_value<Y>(o, static_cast<const payload_issue_comment_event&>(*t), cx);
                         case payload::watch_event:
-                            return write_value<Y>(o, static_cast<const payload_watch_event*>(t), cx);
+                            return write_value<Y>(o, static_cast<const payload_watch_event&>(*t), cx);
                         case payload::gollum_event:
-                            return write_value<Y>(o, static_cast<const payload_gollum_event*>(t), cx);
+                            return write_value<Y>(o, static_cast<const payload_gollum_event&>(*t), cx);
                     }
                     return false;
                 }
