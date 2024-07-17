@@ -245,7 +245,7 @@ jobs:
   # msvc ######################################################################
 
   msvc:
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v4
