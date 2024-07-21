@@ -30,7 +30,7 @@ namespace test { namespace kind {
                 auto constexpr opt = rapidjson::kParseValidateEncodingFlag|rapidjson::kParseFullPrecisionFlag;
             t.time.read.push_back(CXON_MEASURE(
                 vo.emplace_back(std::unique_ptr<rapidjson::Document>(new rapidjson::Document));
-                    auto const r = vo.back()->Parse<opt>(json.c_str());
+                    rapidjson::ParseResult const r = vo.back()->Parse<opt>(json.c_str());
                 if (!r) t.error = std::string("RapidJSON error: ") + rapidjson::GetParseError_En(r.Code());
             ));
         // write
