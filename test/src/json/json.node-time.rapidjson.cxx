@@ -3,11 +3,9 @@
 //
 // SPDX-License-Identifier: MIT
 
-#define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+#ifdef CXON_TIME_RAPIDJSON
 
 #include "json.node.hxx"
-
-#ifdef CXON_TIME_RAPIDJSON
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -29,9 +27,10 @@ namespace test { namespace kind {
             t.size = json.size() - 1;
         // read
             std::vector<std::unique_ptr<rapidjson::Document>> vo;
+                auto constexpr opt = rapidjson::kParseValidateEncodingFlag|rapidjson::kParseFullPrecisionFlag;
             t.time.read.push_back(CXON_MEASURE(
                 vo.emplace_back(std::unique_ptr<rapidjson::Document>(new rapidjson::Document));
-                rapidjson::ParseResult const r = vo.back()->Parse<rapidjson::kParseValidateEncodingFlag>(json.c_str());
+                    rapidjson::ParseResult const r = vo.back()->Parse<opt>(json.c_str());
                 if (!r) t.error = std::string("RapidJSON error: ") + rapidjson::GetParseError_En(r.Code());
             ));
         // write
