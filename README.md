@@ -172,7 +172,7 @@ which can represent arbitrary `CBOR` data.
 
 Information about the benchmarks and additional benchmark results can be found [here][lnk-bench].
 
-*Note: Boost.JSON and RapidJSON use faster but slightly imprecise number parsing algorithms.
+*Note: Boost.JSON and RapidJSON use faster but slightly imprecise number parsing algorithms by default.
 In the benchmarks they are tested with full-precision enabled.*
 
 *Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
