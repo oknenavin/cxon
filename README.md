@@ -170,7 +170,10 @@ which can represent arbitrary `CBOR` data.
   ![space (default)][img-space-gcc]  
   ![space (default)][img-space-clang]
 
-Information about the benchmarks and additional benchmark results can be found [here][img-bench].
+Information about the benchmarks and additional benchmark results can be found [here][lnk-bench].
+
+*Note: Boost.JSON and RapidJSON use faster but slightly imprecise number parsing algorithms.
+In the benchmarks they are tested with full-precision enabled.*
 
 *Given the benchmark results and assuming that the libraries `CXON` is compared to are reasonably well written,
 it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.*
@@ -241,7 +244,7 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-time-write-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json.native-s1-write.svg
 [img-space-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg
 [img-space-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json-space.svg
-[img-bench]: https://github.com/oknenavin/workflows-data/tree/develop/cxon
+[lnk-bench]: https://github.com/oknenavin/workflows-data/tree/develop/cxon
 <!-- branch-links }-->
 
 [RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
