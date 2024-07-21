@@ -3,12 +3,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "json.node.hxx"
-
 #ifdef CXON_TIME_BOOST_JSON
 
+#include "json.node.hxx"
 #include "boost/json.hpp"
-
 #include <fstream>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,10 +21,12 @@ namespace test { namespace kind {
             t.size = json.size() - 1;
         // read
             std::vector<boost::json::value> vo;
+                boost::json::parse_options opt;
+                    opt.numbers = boost::json::number_precision::precise;
             t.time.read.push_back(CXON_MEASURE(
                 vo.emplace_back();
                 boost::system::error_code ec;
-                vo.back() = boost::json::parse(json, ec);
+                    vo.back() = boost::json::parse(json, ec, {}, opt);
                 if (ec) t.error = std::string("Boost/JSON: ") + ec.category().name() + ": " + ec.message();
             ));
         // write
