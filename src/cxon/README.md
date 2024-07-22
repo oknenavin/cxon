@@ -438,13 +438,13 @@ the behavior of the library or to change the `JSON` language:
 namespace cxon { namespace json { // format traits
 
     struct format_traits : cio::format_traits {
-        // enables/disables UTF-8 string validation
+        // read: check UTF-8 encoding
         static constexpr bool validate_string_encoding  = true;
 
-        // check for unescaped control characters
+        // read: check for unescaped control characters
         static constexpr bool validate_string_escapes   = true;
 
-        // escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
+        // write: escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
         static constexpr bool produce_strict_javascript = false;
 
         // read/write: assume that strings to be read/written do not contain escape characters
@@ -476,7 +476,7 @@ namespace cxon { namespace json { // format traits
 }}
 ```
 
-The correctness parameters can also be set with macros:
+The correctness parameters can also be set with preprocessor macros:
 
 Parameter                 | Macro
 --------------------------|------------------------------------

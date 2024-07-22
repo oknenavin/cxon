@@ -34,7 +34,7 @@ namespace cxon { namespace json { // format traits
         using write_error = json::write_error;
 
         static constexpr bool validate_string_encoding  = CXON_JSON_VALIDATE_STRING_ENCODING;   // read: validate input strings (utf-8)
-        static constexpr bool validate_string_escapes   = CXON_JSON_VALIDATE_STRING_ESCAPES;    // read: validate input strings (unescaped control characters)
+        static constexpr bool validate_string_escapes   = CXON_JSON_VALIDATE_STRING_ESCAPES;    // read: validate input strings for unescaped control characters
 
         static constexpr bool produce_strict_javascript = CXON_JSON_PRODUCE_STRICT_JAVASCRIPT;  // write: escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
 
