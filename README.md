@@ -48,10 +48,10 @@ int main() {
 }
 ```
 
-Successful deserialization means that the input is syntactically and semantically correct.
+Successful deserialization means that the input is syntactically and *semantically* correct.
 
 Other such libraries represent arbitrary data with polymorphic type (called `DOM`, `value`, etc.),
-and successful parsing of the input data means only that it is syntactically correct.
+and successful parsing of the input data only means that it is syntactically correct.
 
 ###### Example
 ``` c++
@@ -84,14 +84,13 @@ The **performance** is often important and is emphasized by many libraries and i
 Many libraries emphasize the floating-point serialization and deserialization performance.
 `CXON` uses [`<charconv>`][std-charconv] by default (with a fallback implementation for `C++11`),
 but can be configured to use [`boost::charconv`][lib-boost-charconv] by defining `CXON_USE_BOOST_CHARCONV`.  
-Note here, that libraries based on polymorphic types have validation and use overhead
+Note that libraries based on polymorphic types have validation and use overhead
 that should be taken into account.
 
 The **memory management** is often important. `CXON` does not allocate in general,
 it's up to the types provided.  
-In the example above, the memory management will be handled completely by `std::vector`
-and its allocator (whatever it is).  
-The polymorphic types provided by `CXON` are also [AllocatorAware][cpp-alaw] compliant.
+In the example above, the memory management will be handled completely by `std::vector` and its allocator.  
+The polymorphic types provided by `CXON` are [AllocatorAware][cpp-alaw] compliant.
 
 `CXON` is **non-throwing**, provided that the serializers involved do not throw.
 
@@ -158,11 +157,11 @@ which can represent arbitrary `CBOR` data.
 
 #### Performance
 
-- `CXON` deserialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
+- `CXON` deserialization using the default ([`<charconv>`][std-charconv]) number conversion.  
   ![read/native][img-time-read-gcc]  
   ![read/native][img-time-read-clang]
 
-- `CXON` serialization using the default ([`<charconv>`][std-charconv]) floating-point conversion.  
+- `CXON` serialization using the default ([`<charconv>`][std-charconv]) number conversion.  
   ![write/native (default)][img-time-write-gcc]  
   ![write/native (default)][img-time-write-clang]
 
@@ -237,14 +236,14 @@ Distributed under the MIT license. See [`LICENSE`](LICENSE) for more information
 [img-cvr]: https://scan.coverity.com/projects/18083/badge.svg
 
 <!--{ branch-links -->
-[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/develop/graph/badge.svg
-[img-time-read-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg
-[img-time-read-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json.native-s1-read.svg
-[img-time-write-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg
-[img-time-write-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json.native-s1-write.svg
-[img-space-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/g++.head.default.json-space.svg
-[img-space-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/develop/cxon/benchmarks/figures/clang++.head.default.json-space.svg
-[lnk-bench]: https://github.com/oknenavin/workflows-data/tree/develop/cxon
+[img-cov]: https://codecov.io/gh/oknenavin/cxon/branch/master/graph/badge.svg
+[img-time-read-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-s1-read.svg
+[img-time-read-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json.native-s1-read.svg
+[img-time-write-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json.native-s1-write.svg
+[img-time-write-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json.native-s1-write.svg
+[img-space-gcc]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/g++.head.default.json-space.svg
+[img-space-clang]: https://raw.githubusercontent.com/oknenavin/workflows-data/master/cxon/benchmarks/figures/clang++.head.default.json-space.svg
+[lnk-bench]: https://github.com/oknenavin/workflows-data/tree/master/cxon
 <!-- branch-links }-->
 
 [RFC8259]: https://www.ietf.org/rfc/rfc8259.txt
