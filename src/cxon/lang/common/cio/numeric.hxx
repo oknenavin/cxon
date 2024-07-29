@@ -365,12 +365,23 @@ namespace cxon { namespace cio { namespace num { // write
 #               endif
             }
 
+        template <typename T>
+            struct max_size_ { // https://stackoverflow.com/q/68472720
+                template <typename U>
+                    static constexpr U max_(U u1, U u2) { return u1 > u2 ? u1 : u2; }
+                template <typename U>
+                    static constexpr int max_exponent_digits10_(U e) { return e < 10 ? 1 : 1 + max_exponent_digits10_(e / 10); }
+                static constexpr int value =    std::numeric_limits<T>::max_digits10 +
+                                                max_(2, max_exponent_digits10_(std::numeric_limits<T>::max_exponent10)) +
+                                                4
+                ;
+            };
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
                 if (std::isfinite(t)) {
-                    char s[std::numeric_limits<T>::max_digits10 * 2];
-                        constexpr auto fp_precision = fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10);
-                        auto const r = charconv::to_chars(std::begin(s), std::end(s), t, fp_precision); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                    char s[max_size_<T>::value + 1]; // +1 because of the fall-back implementation (snprintf)
+                        constexpr auto fpp = fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10);
+                        auto const r = charconv::to_chars(std::begin(s), std::end(s), t, fpp); CXON_ASSERT(r.ec == std::errc(), "unexpected");
                     return poke<X>(o, s, r.ptr, cx);
                 }
                 else {
