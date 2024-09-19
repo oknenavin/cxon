@@ -124,6 +124,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: benchmark-data-gcc
+        include-hidden-files: true
         path: |
             test/.time/*.data
             test/.space/*.data
@@ -238,6 +239,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: benchmark-data-clang
+        include-hidden-files: true
         path: |
             test/.time/*.data
             test/.space/*.data
@@ -287,9 +289,7 @@ jobs:
         b2 -j3 runtime-link=shared address-model=64 variant=release
     - name: Time setup
       shell: bash
-      run: |
-        mkdir test/.time
-        echo > test/.root
+      run: mkdir test/.time
     - name: Time JSON (default)
       shell: bash
       env:
@@ -338,9 +338,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: benchmark-data-msvc
-        path: |
-            test/.root
-            test/.time/*.data
+        include-hidden-files: true
+        path: test/.time/*.data
 
   # xcode ######################################################################
 
@@ -380,9 +379,7 @@ jobs:
         ./bootstrap.sh
         ./b2
     - name: Time setup
-      run: |
-        mkdir test/.time
-        echo > test/.root
+      run: mkdir test/.time
     - name: Time JSON (default)
       env:
         CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DRAPIDJSON_NEON -DCXON_TIME_NLOHMANN
@@ -437,9 +434,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: benchmark-data-xcode
-        path: |
-            test/.root
-            test/.time/*.data
+        include-hidden-files: true
+        path: test/.time/*.data
 
   # commit #####################################################################
 
