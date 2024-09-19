@@ -57,8 +57,9 @@ jobs:
         ./b2
     - name: Time setup
       run: |
-          mkdir test/.time
-          ls -R
+          mkdir -v test/.time
+          mkdir -v test/time
+          ls -Rla test
     - name: Time JSON (default)
       env:
         CXX: g++-13
@@ -109,8 +110,9 @@ jobs:
     - name: Space setup
       run: |
         chmod +x test/benchmark-space.sh
-        mkdir test/.space
-        ls -R
+        mkdir -v test/.space
+        mkdir -v test/space
+        ls -Rla test
     - name: Space JSON (default)
       env:
         CXX: g++-13
@@ -124,7 +126,7 @@ jobs:
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/g++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/g++.head.default.json.data
     - name: DEBUG
-      run: ls -R
+      run: ls -Rla test
     - name: Upload Artifacts (Time)
       uses: actions/upload-artifact@v4
       with:
