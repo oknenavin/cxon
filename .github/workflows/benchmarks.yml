@@ -120,18 +120,14 @@ jobs:
         cd test
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/g++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/g++.head.default.json.data
-    - name: Upload Artifacts (Time)
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-time-gcc
+        name: benchmark-data-gcc
         include-hidden-files: true
-        path: test/.time/*.data
-    - name: Upload Artifacts (Space)
-      uses: actions/upload-artifact@v4
-      with:
-        name: benchmark-data-space-gcc
-        include-hidden-files: true
-        path: test/.space/*.data
+        path: |
+            test/.time/*.data
+            test/.space/*.data
 
   # clang ######################################################################
 
@@ -341,7 +337,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-time-msvc
+        name: benchmark-data-msvc
         include-hidden-files: true
         path: test/.time/*.data
 
@@ -437,7 +433,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-time-xcode
+        name: benchmark-data-xcode
         include-hidden-files: true
         path: test/.time/*.data
 
