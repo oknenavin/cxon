@@ -120,13 +120,16 @@ jobs:
         cd test
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/g++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/g++.head.default.json.data
-    - name: Upload Artifacts
+    - name: Upload Artifacts (Time)
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-gcc
-        path: |
-            test/.time/*.data
-            test/.space/*.data
+        name: benchmark-data-time-gcc
+        path: test/.time/*.data
+    - name: Upload Artifacts (Space)
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-data-space-gcc
+        path: test/.space/*.data
 
   # clang ######################################################################
 
@@ -234,13 +237,16 @@ jobs:
         cd test
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/clang++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/clang++.head.default.json.data
-    - name: Upload Artifacts
+    - name: Upload Artifacts (Time)
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-clang
-        path: |
-            test/.time/*.data
-            test/.space/*.data
+        name: benchmark-data-time-clang
+        path: test/.time/*.data
+    - name: Upload Artifacts (Space)
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-data-space-clang
+        path: test/.space/*.data
 
   # msvc ######################################################################
 
@@ -287,9 +293,7 @@ jobs:
         b2 -j3 runtime-link=shared address-model=64 variant=release
     - name: Time setup
       shell: bash
-      run: |
-        mkdir test/.time
-        echo > test/.root
+      run: mkdir test/.time
     - name: Time JSON (default)
       shell: bash
       env:
@@ -334,13 +338,11 @@ jobs:
         ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/msvc++.head.boost-charconv.json.node-s2.data
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (boost::charconv)" > ../.time/msvc++.head.boost-charconv.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/msvc++.head.boost-charconv.json.native-s2.data
-    - name: Upload Artifacts
+    - name: Upload Artifacts (Time)
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-msvc
-        path: |
-            test/.root
-            test/.time/*.data
+        name: benchmark-data-time-msvc
+        path: test/.time/*.data
 
   # xcode ######################################################################
 
@@ -380,9 +382,7 @@ jobs:
         ./bootstrap.sh
         ./b2
     - name: Time setup
-      run: |
-        mkdir test/.time
-        echo > test/.root
+      run: mkdir test/.time
     - name: Time JSON (default)
       env:
         CXXFLAGS: -DCXON_TIME_ONLY -DCXON_TIME_BOOST_JSON -DCXON_TIME_RAPIDJSON -DRAPIDJSON_NEON -DCXON_TIME_NLOHMANN
@@ -433,13 +433,11 @@ jobs:
         ./cxon-json-node ../data/json/tests.cf time-node-s2 | tee -a ../.time/xcode.head.boost-charconv.json.node-s2.data
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::charconv)" > ../.time/xcode.head.boost-charconv.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/xcode.head.boost-charconv.json.native-s2.data
-    - name: Upload Artifacts
+    - name: Upload Artifacts (Time)
       uses: actions/upload-artifact@v4
       with:
-        name: benchmark-data-xcode
-        path: |
-            test/.root
-            test/.time/*.data
+        name: benchmark-data-time-xcode
+        path: test/.time/*.data
 
   # commit #####################################################################
 
