@@ -16,7 +16,7 @@ jobs:
   # gcc ########################################################################
 
   gcc:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-get update -y
-        sudo apt-get install g++-13
+        sudo apt-get install g++-14
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -59,7 +59,7 @@ jobs:
       run: mkdir test/.time
     - name: Time JSON (default)
       env:
-        CXX: g++-13
+        CXX: g++-14
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
@@ -78,7 +78,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/g++.head.default.json.native-s2.data
     - name: Time JSON (boost::charconv)
       env:
-        CXX: g++-13
+        CXX: g++-14
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
@@ -97,7 +97,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/g++.head.boost-charconv.json.native-s2.data
     - name: Time CBOR (default)
       env:
-        CXX: g++-13
+        CXX: g++-14
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -110,7 +110,7 @@ jobs:
         mkdir test/.space
     - name: Space JSON (default)
       env:
-        CXX: g++-13
+        CXX: g++-14
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
@@ -132,7 +132,7 @@ jobs:
   # clang ######################################################################
 
   clang:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v4
@@ -157,7 +157,7 @@ jobs:
     - name: Compiler setup
       run: |
         sudo apt-get update
-        sudo apt-get install clang-15
+        sudo apt-get install clang-18
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -174,7 +174,7 @@ jobs:
       run: mkdir test/.time
     - name: Time JSON (default)
       env:
-        CXX: clang++-15
+        CXX: clang++-18
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
@@ -193,7 +193,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/clang++.head.default.json.native-s2.data
     - name: Time JSON (boost::cahrconv)
       env:
-        CXX: clang++-15
+        CXX: clang++-18
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
@@ -212,7 +212,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/clang++.head.boost-charconv.json.native-s2.data
     - name: Time CBOR (default)
       env:
-        CXX: clang++-15
+        CXX: clang++-18
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -225,7 +225,7 @@ jobs:
         mkdir test/.space
     - name: Space JSON (default)
       env:
-        CXX: clang++-15
+        CXX: clang++-18
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json

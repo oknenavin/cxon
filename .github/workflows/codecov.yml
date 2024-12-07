@@ -13,7 +13,7 @@ on:
 
 jobs:
   codecov:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: Checkout Boost
@@ -34,6 +34,10 @@ jobs:
         python tools/boostdep/depinst/depinst.py dynamic_bitset
         ./bootstrap.sh
         ./b2 headers
+    - name: Versions
+      run: |
+        g++ --version
+        gcov --version
     - name: Check
       env:
         CXX: g++
@@ -51,6 +55,7 @@ jobs:
         chmod +x codecov
     - name: Coverage
       run: |
+        lcov --version
         lcov -c -d . -o cov.info
         lcov -e cov.info '*/cxon/src/cxon/*.hxx' -o cxon.info
         lcov -l cxon.info
