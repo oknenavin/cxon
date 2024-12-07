@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['5', '6', '9', '10', '11', '12', '13'] # 7, 8 - unmet dependencies
+        compiler: ['5', '6', '9', '10', '11', '12', '13', '14'] # 7, 8 - unmet dependencies
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
@@ -23,6 +23,8 @@ jobs:
       run: |
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic universe' | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ jammy main'     | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ jammy universe' | sudo tee -a /etc/apt/sources.list
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-get update -y
     - name: Compiler setup
@@ -38,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['13']
+        compiler: ['14']
         standard: [11, 14, 17, 20]
       fail-fast: false
     steps:
@@ -141,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['4.0', '6.0', '7', '8', '9', '10', '11', '12', '13', '14', '15'] # 5.0 - unmet dependencies
+        compiler: ['4.0', '6.0', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'] # 5.0 - unmet dependencies
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
@@ -151,6 +153,8 @@ jobs:
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic universe' | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ focal main'      | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ focal universe'  | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ jammy main'      | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ jammy universe'  | sudo tee -a /etc/apt/sources.list
         sudo apt-get update
     - name: Compiler setup
       run: sudo apt-get install clang-${{ matrix.compiler }}
@@ -165,7 +169,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['15']
+        compiler: ['18']
         standard: [11, 14, 17, 20]
       fail-fast: false
     steps:
