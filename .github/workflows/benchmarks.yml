@@ -44,6 +44,9 @@ jobs:
         sudo apt-get update -y
         sudo apt-get install g++-14
     - name: Boost setup
+      env:
+        CXX: g++-14
+        CXXFLAGS: -std=c++20
       run: |
         cd .dep/boost
         git submodule update --init tools/build
@@ -159,6 +162,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install clang-18
     - name: Boost setup
+      env:
+        CXX: g++-14
+        CXXFLAGS: -std=c++20
       run: |
         cd .dep/boost
         git submodule update --init tools/build
