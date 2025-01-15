@@ -170,22 +170,7 @@ namespace cxon { namespace cbor { // node
             {
             }
             ~basic_node() {
-                switch (kind_) {
-#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::destruct<T>(*this); break
-                        CXON_CBOR_TYPE_DEF(map);
-                        CXON_CBOR_TYPE_DEF(array);
-                        CXON_CBOR_TYPE_DEF(tag);
-                        CXON_CBOR_TYPE_DEF(bytes);
-                        CXON_CBOR_TYPE_DEF(text);
-                        CXON_CBOR_TYPE_DEF(real);
-                        CXON_CBOR_TYPE_DEF(sint);
-                        CXON_CBOR_TYPE_DEF(uint);
-                        CXON_CBOR_TYPE_DEF(simple);
-                        CXON_CBOR_TYPE_DEF(boolean);
-                        CXON_CBOR_TYPE_DEF(null);
-                        CXON_CBOR_TYPE_DEF(undefined);
-#                   undef CXON_CBOR_TYPE_DEF
-                }
+                reset();
             }
 
             basic_node(basic_node&& o)
@@ -433,7 +418,23 @@ namespace cxon { namespace cbor { // node
                 }
 
             void reset() noexcept {
-                this->~basic_node(), kind_ = node_kind::undefined;
+                switch (kind_) {
+#                   define CXON_CBOR_TYPE_DEF(T)    case node_kind::T: value::destruct<T>(*this); break
+                        CXON_CBOR_TYPE_DEF(map);
+                        CXON_CBOR_TYPE_DEF(array);
+                        CXON_CBOR_TYPE_DEF(tag);
+                        CXON_CBOR_TYPE_DEF(bytes);
+                        CXON_CBOR_TYPE_DEF(text);
+                        CXON_CBOR_TYPE_DEF(real);
+                        CXON_CBOR_TYPE_DEF(sint);
+                        CXON_CBOR_TYPE_DEF(uint);
+                        CXON_CBOR_TYPE_DEF(simple);
+                        CXON_CBOR_TYPE_DEF(boolean);
+                        CXON_CBOR_TYPE_DEF(null);
+                        CXON_CBOR_TYPE_DEF(undefined);
+#                   undef CXON_CBOR_TYPE_DEF
+                }
+                kind_ = node_kind::undefined;
             }
 
             node_kind kind() const noexcept { return kind_; }

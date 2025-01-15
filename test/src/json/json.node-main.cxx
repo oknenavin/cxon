@@ -65,8 +65,8 @@ int main(int argc, char *argv[]) {
             for (auto& t : ts.group) {
                 auto& ss = cf.sets[t];
                 for (auto& s : ss.group) {
-                    auto const p = !test::is_absolute(s.c_str()) ? cfd + s : s;
-                    cs.push_back({p, 0, {}, {}, false});
+                    auto p = !test::is_absolute(s.c_str()) ? cfd + s : s;
+                    cs.push_back({std::move(p), 0, {}, {}, false});
                 }
             }
         };
