@@ -253,8 +253,8 @@ namespace test { namespace kind { // round-trip
                     ++err, std::fprintf(stderr, "error: cannot be opened: '%s'\n", file.c_str());
                     continue;
                 }
-            std::string const f0 = "cbor.round-trip." + name(file) + ".(0).json";
-            std::string const f1 = "cbor.round-trip." + name(file) + ".(1).json";
+            std::string f0 = "cbor.round-trip." + name(file) + ".(0).json";
+            std::string f1 = "cbor.round-trip." + name(file) + ".(1).json";
             {   // 0
                 std::ofstream os(f0, std::ofstream::binary);
                     if (!os) {
@@ -301,7 +301,7 @@ namespace test { namespace kind { // round-trip
                         continue;
                     }
                 }
-                diff.push_back(f0), diff.push_back(f1);
+                diff.push_back(std::move(f0)), diff.push_back(std::move(f1));
             }
         }
         for (auto& d : diff)
@@ -372,7 +372,7 @@ namespace test { namespace kind { // time
                         cxon::to_bytes(vs.back(), o);
                     );
             }
-            time.push_back(t);
+            time.push_back(std::move(t));
         }
 
         {   // print

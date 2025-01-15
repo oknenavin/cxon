@@ -126,7 +126,7 @@ namespace cxon { namespace value {
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_, n.alloc_ = std::move(o.alloc_);
+                            n.reset(), n.kind_ = o.kind_, n.alloc_ = std::move(o.alloc_);
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
                         }
                         return n;
@@ -140,7 +140,7 @@ namespace cxon { namespace value {
                             get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_, n.alloc_ = std::move(o.alloc_);
+                            n.reset(), n.kind_ = o.kind_, n.alloc_ = std::move(o.alloc_);
                             get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
                         }
                         return n;
@@ -158,7 +158,7 @@ namespace cxon { namespace value {
                                 alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_;
+                            n.reset(), n.kind_ = o.kind_;
                             if (n.alloc_ == o.alloc_) // TODO: likely
                                 alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
                             else
@@ -178,7 +178,7 @@ namespace cxon { namespace value {
                                 alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_;
+                            n.reset(), n.kind_ = o.kind_;
                             if (n.alloc_ == o.alloc_) // TODO: likely
                                 construct<T>(n, std::move(get<T>(o)));
                             else
@@ -215,7 +215,7 @@ namespace cxon { namespace value {
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_, n.alloc_ = o.alloc_;
+                            n.reset(), n.kind_ = o.kind_, n.alloc_ = o.alloc_;
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         return n;
@@ -229,7 +229,7 @@ namespace cxon { namespace value {
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_, n.alloc_ = o.alloc_;
+                            n.reset(), n.kind_ = o.kind_, n.alloc_ = o.alloc_;
                             construct<T>(n, get<T>(o));
                         }
                         return n;
@@ -243,7 +243,7 @@ namespace cxon { namespace value {
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_;
+                            n.reset(), n.kind_ = o.kind_;
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         return n;
@@ -257,7 +257,7 @@ namespace cxon { namespace value {
                             alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                         }
                         else {
-                            n.~N(), n.kind_ = o.kind_;
+                            n.reset(), n.kind_ = o.kind_;
                             construct<T>(n, get<T>(o));
                         }
                         return n;

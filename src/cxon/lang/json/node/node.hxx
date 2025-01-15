@@ -139,18 +139,7 @@ namespace cxon { namespace json { // node
             {
             }
             ~basic_node() noexcept {
-                switch (kind_) {
-#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::destruct<T>(*this); break
-                        CXON_JSON_TYPE_DEF(object);
-                        CXON_JSON_TYPE_DEF(array);
-                        CXON_JSON_TYPE_DEF(string);
-                        CXON_JSON_TYPE_DEF(real);
-                        CXON_JSON_TYPE_DEF(sint);
-                        CXON_JSON_TYPE_DEF(uint);
-                        CXON_JSON_TYPE_DEF(boolean);
-                        CXON_JSON_TYPE_DEF(null);
-#                   undef CXON_JSON_TYPE_DEF
-                }
+                reset();
             }
 
             basic_node(basic_node&& o)
@@ -369,7 +358,19 @@ namespace cxon { namespace json { // node
                 }
 
             void reset() noexcept {
-                this->~basic_node(), kind_ = node_kind::null;
+                switch (kind_) {
+#                   define CXON_JSON_TYPE_DEF(T)    case node_kind::T: value::destruct<T>(*this); break
+                        CXON_JSON_TYPE_DEF(object);
+                        CXON_JSON_TYPE_DEF(array);
+                        CXON_JSON_TYPE_DEF(string);
+                        CXON_JSON_TYPE_DEF(real);
+                        CXON_JSON_TYPE_DEF(sint);
+                        CXON_JSON_TYPE_DEF(uint);
+                        CXON_JSON_TYPE_DEF(boolean);
+                        CXON_JSON_TYPE_DEF(null);
+#                   undef CXON_JSON_TYPE_DEF
+                }
+                kind_ = node_kind::null;
             }
 
             node_kind kind() const noexcept { return kind_; }
