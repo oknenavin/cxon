@@ -55,7 +55,6 @@ jobs:
         chmod +x codecov
     - name: Coverage
       run: |
-        gcov --version
         lcov --version
         lcov -c -d . -o cov.info
         lcov -e cov.info '*/cxon/src/cxon/*.hxx' -o cxon.info
