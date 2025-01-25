@@ -63,6 +63,7 @@ namespace cxon { namespace cio { namespace chr { // character classes
             static bool ctrl   (char c) noexcept { return (unsigned char)c < 0x20; }
             static bool real   (char c) noexcept { return (unsigned char)c > 0x1F; }
             static bool space  (char c) noexcept { return CXSP & is_x_[(unsigned char)c]; }
+            static bool digit2 (char c) noexcept { return c == '0' || c == '1'; }
             static bool digit8 (char c) noexcept { return DGOC & is_x_[(unsigned char)c]; }
             static bool digit10(char c) noexcept { return DGDC & is_x_[(unsigned char)c]; }
             static bool digit16(char c) noexcept { return DGHX & is_x_[(unsigned char)c]; }

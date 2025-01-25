@@ -145,14 +145,144 @@ namespace {
 }
 
 TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
+    // integer_base
+    {   // read
+        {   char r = 0; char const s[] = "101"; auto i = std::begin(s), e = std::end(s);
+            auto cx = make_context<XXON>(cio::integer_base::set<2>());
+            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 5);
+        }
+        {   signed char r = 0;
+            TEST_CHECK(from_bytes(r, "101", json::integer_base::set<2>()) && r == 5);
+            {   auto const e = from_bytes(r, "201", json::integer_base::set<2>());
+                TEST_CHECK(!e && e.ec == json::read_error::integral_invalid && *e.end == '2');
+            }
+            {   auto const e = from_bytes(r, "1012", json::integer_base::set<2>());
+                TEST_CHECK(e && r == 5 && *e.end == '2');
+            }
+        }
+        {   unsigned char r = 0;
+            TEST_CHECK(from_bytes(r, "101", json::integer_base::set<2>()) && r == 5);
+            {   auto const e = from_bytes(r, "201", json::integer_base::set<2>());
+                TEST_CHECK(!e && e.ec == json::read_error::integral_invalid && *e.end == '2');
+            }
+            {   auto const e = from_bytes(r, "1012", json::integer_base::set<2>());
+                TEST_CHECK(e && r == 5 && *e.end == '2');
+            }
+        }
+        {   int r = 0;
+            TEST_CHECK(from_bytes(r, "101", json::integer_base::set<2>()) && r == 5);
+            {   auto const e = from_bytes(r, "201", json::integer_base::set<2>());
+                TEST_CHECK(!e && e.ec == json::read_error::integral_invalid && *e.end == '2');
+            }
+            {   auto const e = from_bytes(r, "1012", json::integer_base::set<2>());
+                TEST_CHECK(e && r == 5 && *e.end == '2');
+            }
+        }
+        {   unsigned r = 0;
+            TEST_CHECK(from_bytes(r, "701", json::integer_base::set<8>()) && r == 0701);
+            {   auto const e = from_bytes(r, "801", json::integer_base::set<8>());
+                TEST_CHECK(!e && e.ec == json::read_error::integral_invalid && *e.end == '8');
+            }
+            {   auto const e = from_bytes(r, "7018", json::integer_base::set<8>());
+                TEST_CHECK(e && r == 0701 && *e.end == '8');
+            }
+        }
+        {   long long r = 0;
+            TEST_CHECK(from_bytes(r, "42", json::integer_base::set<10>()) && r == 42);
+            {   auto const e = from_bytes(r, "A2", json::integer_base::set<10>());
+                TEST_CHECK(!e && e.ec == json::read_error::integral_invalid && *e.end == 'A');
+            }
+            {   auto const e = from_bytes(r, "42A", json::integer_base::set<10>());
+                TEST_CHECK(e && r == 42 && *e.end == 'A');
+            }
+        }
+        {   unsigned long long r = 0;
+            TEST_CHECK(from_bytes(r, "C0DE", json::integer_base::set<16>()) && r == 0xC0DE);
+            {   auto const e = from_bytes(r, "G0DE", json::integer_base::set<16>());
+                TEST_CHECK(!e && e.ec == json::read_error::integral_invalid && *e.end == 'G');
+            }
+            {   auto const e = from_bytes(r, "C0DEG", json::integer_base::set<16>());
+                TEST_CHECK(e && r == 0xC0DE && *e.end == 'G');
+            }
+        }
+#       ifdef __cpp_char8_t
+        {   char8_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+        }
+#       endif
+        {   char16_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+        }
+        {   char32_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+        }
+        {   wchar_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+        }
+    }
+    {   // write
+        {   std::string r;
+            auto cx = make_context<XXON>(cio::integer_base::set<2>());
+            TEST_CHECK(cio::num::number_write<XXON>(r, (char)5, cx) && r == "101");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, (signed char)5, json::integer_base::set<2>()) && r == "101");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, (unsigned char)5, json::integer_base::set<2>()) && r == "101");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, (short)5, json::integer_base::set<2>()) && r == "101");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, (unsigned short)5, json::integer_base::set<2>()) && r == "101");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, 5, json::integer_base::set<2>()) && r == "101");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, 0701u, json::integer_base::set<8>()) && r == "701");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, 42ll, json::integer_base::set<10>()) && r == "42");
+        }
+        {   std::string r;
+            TEST_CHECK(to_bytes(r, 0xC0DEull, json::integer_base::set<16>()) && r == "c0de");
+        }
+#       ifdef __cpp_char8_t
+        {   std::string r;
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<XXON>(r, char8_t(42), cx) && r == "2a");
+        }
+#       endif
+        {   std::string r;
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<XXON>(r, char16_t(42), cx) && r == "2a");
+        }
+        {   std::string r;
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<XXON>(r, char32_t(42), cx) && r == "2a");
+        }
+        {   std::string r;
+            auto cx = make_context<XXON>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<XXON>(r, wchar_t(42), cx) && r == "2a");
+        }
+    }
+    // fp_precision
     {   std::string r; std::string const e = "3.142";
         TEST_CHECK(to_bytes(r, 3.1415926, json::fp_precision::set<4>()) && r == e);
     }
+    // allocator
     {   int *r = nullptr;
         std::allocator<int> a;
         TEST_CHECK(from_bytes(r, "42", json::allocator::set(a)) && *r == 42);
         std::allocator_traits<std::allocator<int>>::deallocate(a, r, 1);
     }
+    // num_len_max
     {   std::size_t r = 0;
         TEST_CHECK(from_bytes(r, std::string("123"), json::num_len_max::set<4>()) && r == 123);
     }
@@ -168,6 +298,7 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
         auto const e = from_bytes(r, i, json::num_len_max::set<2>());
         TEST_CHECK(!e && e.ec == json::read_error::overflow && *e.end == '1');
     }
+    // ids_len_max
     {   Enum11 r = Enum11::one;
         TEST_CHECK(from_bytes(r, QS("three"), json::ids_len_max::set<8>()) && r == Enum11::three);
     }

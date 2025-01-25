@@ -29,6 +29,8 @@ namespace cxon { namespace cio { // input
         inline bool consume(char c, II& i, II e, Cx& cx);
     template <typename X, typename II>
         inline bool consume(const char* s, II& i, II e);
+    template <typename X, typename II, typename Cx>
+        inline bool consume(const char* s, II& i, II e, Cx& cx);
 
 #   if defined(__GNUC__) && __GNUC__ > 11 && !defined(__clang__) // gcc does not like this forward declaration
         template <typename X, typename II, typename RD, typename Cx>
@@ -157,6 +159,10 @@ namespace cxon { namespace cio { // input
         inline bool consume(const char* s, II& i, II e) {
             for ( ; i != e && *s && *s == *i; ++i, ++s) ;
             return *s == '\0';
+        }
+    template <typename X, typename II, typename Cx>
+        inline bool consume(const char* s, II& i, II e, Cx& cx) {
+            return consume(s, i, e) || cx/X::read_error::unexpected;
         }
 
     template <typename X, typename II, typename RD, typename Cx>

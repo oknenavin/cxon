@@ -91,13 +91,17 @@ namespace cxon { // context
                 auto operator /(E e) noexcept -> enable_if_t<std::is_error_condition_enum<E>::value, bool> {
                     return ec = e, !ec;
                 }
+            bool operator /(const std::error_condition& e) noexcept {
+                return ec = e, !ec;
+            }
+
             explicit operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X, typename ...P>
-        using read_context  = context<X, P...>;
-    template <typename X, typename ...P>
-        using write_context = context<X, P...>;
+    template <typename X, typename ...NaPa>
+        inline auto make_context(NaPa&&... p) -> context<X, NaPa...> {
+            return { std::forward<NaPa>(p)... };
+        }
 
     template <typename Cx>
         using napa_type = typename Cx::napa_type;
@@ -181,7 +185,7 @@ namespace cxon { // interface
 
         template <typename X, typename T, typename II, typename ...NaPa>
             inline auto from_bytes(T& t, II b, II e, NaPa&&... p) -> from_bytes_result<II> {
-                read_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
+                auto cx = make_context<X>(std::forward<NaPa>(p)...);
                     bool const r = read_value<X>(t, b, e, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, b };
             }
@@ -215,13 +219,13 @@ namespace cxon { // interface
 
         template <typename X, typename T, typename OI, typename ...NaPa>
             inline auto to_bytes(OI o, const T& t, NaPa&&... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
-                write_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
+                auto cx = make_context<X>(std::forward<NaPa>(p)...);
                     bool const r = write_value<X>(o, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, o };
             }
         template <typename X, typename T, typename I, typename ...NaPa>
             inline auto to_bytes(I& i, const T& t, NaPa&&... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
-                write_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
+                auto cx = make_context<X>(std::forward<NaPa>(p)...);
                     auto const s = std::distance(std::begin(i), std::end(i));
                     bool const r = write_value<X>(i, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                     auto b = std::begin(i); std::advance(b, s);
@@ -229,7 +233,7 @@ namespace cxon { // interface
             }
         template <typename X, typename T, typename FI, typename ...NaPa>
             inline auto to_bytes(FI b, FI e, const T& t, NaPa&&... p) -> to_bytes_result<FI> {
-                write_context<X, NaPa...> cx(std::forward<NaPa>(p)...);
+                auto cx = make_context<X>(std::forward<NaPa>(p)...);
                     auto c = cnt::make_range_container(b, e);
                     bool const r = write_value<X>(c, t, cx); CXON_ASSERT(!r != !cx.ec, "result discrepant");
                 return { cx.ec, c.end() };

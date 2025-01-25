@@ -143,7 +143,7 @@ namespace cxon { // numeric
         struct read<JSON<X>, T, enable_if_t<is_numeric<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
-                    return cio::num::number_read<X>(t, i, e, cx);
+                    return cio::consume<X>(i, e, cx) && cio::num::number_read<X>(t, i, e, cx);
                 }
         };
 
