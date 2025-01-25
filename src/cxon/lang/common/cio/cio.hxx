@@ -21,6 +21,7 @@ namespace cxon { namespace cio { // type traits
 
 namespace cxon { namespace cio { // named parameters
 
+    CXON_PARAMETER(integer_base, int);      // read/write: constexpr: integral (2, 8, 10, 16)
     CXON_PARAMETER(fp_precision, int);      // write: constexpr: floating-points
     CXON_PARAMETER(num_len_max, unsigned);  // read: constexpr: numbers
     CXON_PARAMETER(ids_len_max, unsigned);  // read: constexpr: object key
@@ -108,10 +109,9 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X>
         inline auto delim_en_check(char c) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
-            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
-                return c == X::string::del;
-            }
-            return chr::is<X>::space(c) || c == X::map::div;
+            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
+                    return c == X::string::del;
+            else    return chr::is<X>::space(c) || c == X::map::div;
         }
     template <typename X>
         inline auto delim_en_check(char c) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
@@ -120,10 +120,9 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename II>
         inline auto delim_be_read(II& i, II e) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
-            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
-                return peek(i, e) == X::string::del && (++i, true);
-            }
-            return true;
+            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
+                    return peek(i, e) == X::string::del && (++i, true);
+            else    return true;
         }
     template <typename X, typename II>
         inline auto delim_be_read(II& i, II e) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
@@ -132,10 +131,9 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename II>
         inline auto delim_en_read(II& i, II e) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
-            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
-                return peek(i, e) == X::string::del && (++i, true);
-            }
-            return true;
+            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
+                    return peek(i, e) == X::string::del && (++i, true);
+            else    return true;
         }
     template <typename X, typename II>
         inline auto delim_en_read(II& i, II e) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
@@ -144,10 +142,9 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename O>
         inline auto delim_be_write(O& o) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
-            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
-                return poke(o, X::string::del);
-            }
-            return true;
+            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
+                    return poke(o, X::string::del);
+            else    return true;
         }
     template <typename X, typename O>
         inline auto delim_be_write(O& o) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
@@ -156,10 +153,9 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename O>
         inline auto delim_en_write(O& o) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
-            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value) {
-                return poke(o, X::string::del);
-            }
-            return true;
+            CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
+                    return poke(o, X::string::del);
+            else    return true;
         }
     template <typename X, typename O>
         inline auto delim_en_write(O& o) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {

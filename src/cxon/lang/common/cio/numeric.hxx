@@ -11,6 +11,7 @@
 #include "../charconv.hxx"
 
 #include <cmath> // isfinite, ...
+#include <cstdint>
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -39,38 +40,66 @@ namespace cxon { namespace cio { namespace num { // read
                 return false;
             }
 
+        template <typename X, unsigned B>
+            struct is_digit;
+        template <typename X> struct is_digit<X,  2> { static constexpr auto fun = chr::is<X>::digit2;  };
+        template <typename X> struct is_digit<X,  8> { static constexpr auto fun = chr::is<X>::digit8;  };
+        template <typename X> struct is_digit<X, 10> { static constexpr auto fun = chr::is<X>::digit10; };
+        template <typename X> struct is_digit<X, 16> { static constexpr auto fun = chr::is<X>::digit16; };
+
+#       ifdef __cpp_char8_t
+            template <typename T>
+                using is_char_x_ = disjunction<std::is_same<T, char>, std::is_same<T, char8_t>, std::is_same<T, char16_t>, std::is_same<T, char32_t>, std::is_same<T, wchar_t>>;
+#       else
+            template <typename T>
+                using is_char_x_ = disjunction<std::is_same<T, char>, std::is_same<T, char16_t>, std::is_same<T, char32_t>, std::is_same<T, wchar_t>>;
+#       endif
+
+        template <typename T, unsigned W = sizeof(T), bool S = std::is_signed<T>::value>
+            struct int_sub_;
+        template <typename T> struct int_sub_<T, 1, false> { using type = std::uint8_t; };
+        template <typename T> struct int_sub_<T, 1, true > { using type = std::int8_t; };
+        template <typename T> struct int_sub_<T, 2, false> { using type = std::uint16_t; };
+        template <typename T> struct int_sub_<T, 2, true > { using type = std::int16_t; };
+        template <typename T> struct int_sub_<T, 4, false> { using type = std::uint32_t; };
+        template <typename T> struct int_sub_<T, 4, true > { using type = std::int32_t; };
+        template <typename T> struct int_sub_<T, 8, false> { using type = std::uint64_t; };
+        template <typename T> struct int_sub_<T, 8, true > { using type = std::int64_t; };
+        template <typename T>
+            using int_sub_t_ = typename int_sub_<T>::type;
+
 #       define CXON_READ() *f = c, c = next(i, e), ++f;
 #       define CXON_NEXT() { if (f == l) return -1; CXON_READ() }
 
-        template <typename X, typename T, typename II>
-            inline auto number_consume_(char* f, const char* l, II& i, II e)
+        template <typename X, typename T, typename II, typename C>
+            inline auto number_consume_(char* f, const char* l, II& i, II e, C is_digit)
                 -> enable_if_t<std::is_integral<T>::value, int>
             {
                 CXON_ASSERT(f && f < l, "unexpected");
                 char c = peek(i, e);
-                    if (is_sign_<T>(c))                 CXON_READ()
-                    if (c == '0') {                     CXON_NEXT()
-                                                        goto trap_end; }
-                       if (!chr::is<X>::digit10(c))     return 0;
-                    while ( chr::is<X>::digit10(c))     CXON_NEXT()
+                    if (is_sign_<T>(c))     CXON_READ()
+                    if (c == '0') {         CXON_NEXT()
+                                            goto trap_end; }
+                       if (!is_digit(c))    return 0;
+                    while ( is_digit(c))    CXON_NEXT()
                 trap_end:
                     return f != l ? (*f = '\0', 1) : -1;
             }
-        template <typename X, typename T>
-            inline auto number_consume_(const char*& i, const char* e)
+        template <typename X, typename T, typename C>
+            inline auto number_consume_(const char*& i, const char* e, C is_digit)
                 -> enable_if_t<std::is_integral<T>::value, int>
             {
                 char c = *i;
                     if (is_sign_<T>(c)) goto trap_neg;
                 // trap_pos
                     if (c == '0') return ++i, 1;
-                       if (!chr::is<X>::digit10(c)) return 0;
-                    while ( chr::is<X>::digit10(c)) c = next(i, e);
+                       if (!is_digit(c)) return 0;
+                    while ( is_digit(c)) c = next(i, e);
                     goto trap_end;
                 trap_neg:
                     c = next(i, e);
-                       if (!chr::is<X>::digit10(c)) return 0;
-                    while ( chr::is<X>::digit10(c)) c = next(i, e);
+                       if (!is_digit(c)) return 0;
+                    while ( is_digit(c)) c = next(i, e);
                 trap_end:
                     return 1;
             }
@@ -223,39 +252,56 @@ namespace cxon { namespace cio { namespace num { // read
 #       undef CXON_READ
 
         template <typename X, typename T, typename II, typename Cx>
-            inline auto number_read_(T& t, II& i, II e, Cx& cx)
+            inline auto number_read__(T& t, II& i, II e, Cx& cx)
                 -> enable_if_t<std::is_integral<T>::value, bool>
             {
+                constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
                 II const o = i;
                     char s[num_len_max::constant<napa_type<Cx>>(32)];
-                    switch (number_consume_<X, T>(std::begin(s), std::end(s), i, e)) {
+                    switch (number_consume_<X, T>(std::begin(s), std::end(s), i, e, is_digit<X, base>::fun)) {
                         case -1: return rewind(i, o), cx/X::read_error::overflow;
                         case  0: return rewind(i, o), cx/X::read_error::integral_invalid;
                         default: {
-                            auto const r = charconv::from_chars(std::begin(s), std::end(s), t); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                            auto const r = charconv::from_chars(std::begin(s), std::end(s), t, base); CXON_ASSERT(r.ec == std::errc(), "unexpected");
                             return true;
                         }
                     }
             }
         template <typename X, typename T, typename Cx>
-            inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
+            inline auto number_read__(T& t, const char*& i, const char* e, Cx& cx)
                 -> enable_if_t<std::is_integral<T>::value && X::number::strict, bool>
             {
+                constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
                 auto const b = i;
-                if (!number_consume_<X, T>(i, e))
+                if (!number_consume_<X, T>(i, e, is_digit<X, base>::fun))
                     return i = b, cx/X::read_error::integral_invalid;
                 if (i - b == 1)
                     return t = *b - '0', true;
-                auto const r = charconv::from_chars(b, i, t); CXON_ASSERT(r.ec == std::errc() && r.ptr == i, "unexpected");
+                auto const r = charconv::from_chars(b, i, t, base); CXON_ASSERT(r.ec == std::errc() && r.ptr == i, "unexpected");
                 return true;
             }
         template <typename X, typename T, typename Cx>
-            inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
+            inline auto number_read__(T& t, const char*& i, const char* e, Cx& cx)
                 -> enable_if_t<std::is_integral<T>::value && !X::number::strict, bool>
             {
-                auto const r = charconv::from_chars(i, e, t);
+                constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
+                auto const r = charconv::from_chars(i, e, t, base);
                     if (r.ec != std::errc()) return cx/X::read_error::integral_invalid;
                 return i = r.ptr, true;
+            }
+
+        template <typename X, typename T, typename II, typename Cx>
+            inline auto number_read_(T& t, II& i, II e, Cx& cx)
+                -> enable_if_t<std::is_integral<T>::value && !is_char_x_<T>::value, bool>
+            {
+                return number_read__<X>(t, i, e, cx);
+            }
+        template <typename X, typename T, typename II, typename Cx>
+            inline auto number_read_(T& t, II& i, II e, Cx& cx)
+                -> enable_if_t<std::is_integral<T>::value &&  is_char_x_<T>::value, bool>
+            {
+                int_sub_t_<T> u;
+                return number_read__<X>(u, i, e, cx) && (t = static_cast<T>(u), true);
             }
 
         template <typename X, typename T>
@@ -341,7 +387,7 @@ namespace cxon { namespace cio { namespace num { // read
     }
     template <typename X, typename T, typename II, typename Cx>
         inline bool number_read(T& t, II& i, II e, Cx& cx) {
-            return consume<X>(i, e, cx) && imp::number_read_<X>(t, i, e, cx);
+            return imp::number_read_<X>(t, i, e, cx);
         }
 
 }}}
@@ -358,7 +404,8 @@ namespace cxon { namespace cio { namespace num { // write
 #                   pragma GCC diagnostic ignored "-Warray-bounds"
 #               endif
                     char s[std::numeric_limits<T>::digits10 + 3];
-                        auto const r = charconv::to_chars(std::begin(s), std::end(s), t); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                        constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
+                        auto const r = charconv::to_chars(std::begin(s), std::end(s), t, base); CXON_ASSERT(r.ec == std::errc(), "unexpected");
                     return poke<X>(o, s, r.ptr, cx);
 #               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
 #                   pragma GCC diagnostic pop

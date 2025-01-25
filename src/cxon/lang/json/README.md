@@ -118,17 +118,19 @@ may be replaced or kept.*
 #### Parameters
 
   - _read_
-
-    Parameter      | Type                     | Default                             | Description
-    ---------------|--------------------------|-------------------------------------|-------------------------
-    `allocator`    | [`Allocator`][std-alloc] | `std::allocator<T>`                 | `T*` allocator
-    `num_len_max`  | `unsigned`               | 32 (integral) / 64 (floating-point) | number read buffer size
-    `ids_len_max`  | `unsigned`               | 64                                  | token read buffer size
+  
+    Parameter      | Type                     | Default                                 | Description
+    ---------------|--------------------------|-----------------------------------------|---------------------------------------------
+    `integer_base` | `int`                    | `10`                                    | integer base to use - one of 2, 8, 10 and 16
+    `allocator`    | [`Allocator`][std-alloc] | `std::allocator<T>`                     | `T*` allocator
+    `num_len_max`  | `unsigned`               | `32` (integral) / `64` (floating-point) | number read buffer size
+    `ids_len_max`  | `unsigned`               | `64`                                    | token read buffer size
 
   - _write_
-
+  
     Parameter      | Type  | Default                                | Description
-    ---------------|-------|----------------------------------------|-------------------------
+    ---------------|-------|----------------------------------------|---------------------------------------------
+    `integer_base` | `int` | `10`                                   | integer base to use - one of 2, 8, 10 and 16
     `fp_precision` | `int` | `std::numeric_limits<T>::max_digits10` | floating-point precision
 
 

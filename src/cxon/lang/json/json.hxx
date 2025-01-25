@@ -80,6 +80,7 @@ namespace cxon { // format selector
 
 namespace cxon { namespace json { // named parameters
 
+    using integer_base = cio::integer_base;     // read/write: constexpr: integral (2, 8, 10, 16)
     using fp_precision = cio::fp_precision;     // write: constexpr: floating-points
     using allocator = allocator;                // read: T*
     using num_len_max = cio::num_len_max;       // read: constexpr: numbers

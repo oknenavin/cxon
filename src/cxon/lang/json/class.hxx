@@ -80,11 +80,13 @@ namespace cxon { // cio::val::sink read
                     }*/ \
                     return json::cls::read_fields<Y>(t, fs, i, e, cx); \
                 } \
-                /*CXON_IF_CONSTEXPR (cio::cls::is_ordered_keys_class<Type>::value || cio::cls::are_fields_ordered(__VA_ARGS__)) { \
-                    using Y = bind_traits_t<X, cio::cls::ordered_keys_traits>; \
-                    return json::cls::read_fields<Y>(t, fs, i, e, cx); \
-                }*/ \
-                return json::cls::read_fields<X>(t, fs, i, e, cx); \
+                else { \
+                    /*CXON_IF_CONSTEXPR (cio::cls::is_ordered_keys_class<Type>::value || cio::cls::are_fields_ordered(__VA_ARGS__)) { \
+                        using Y = bind_traits_t<X, cio::cls::ordered_keys_traits>; \
+                        return json::cls::read_fields<Y>(t, fs, i, e, cx); \
+                    }*/ \
+                    return json::cls::read_fields<X>(t, fs, i, e, cx); \
+                } \
             } \
     }
 #define CXON_JSON_CLS_WRITE(Type, ...)\
@@ -98,7 +100,8 @@ namespace cxon { // cio::val::sink read
                     using Y = bind_traits_t<X, cio::key::simple_traits>; \
                     return json::cls::write_fields<Y>(o, t, fs, cx); \
                 } \
-                return json::cls::write_fields<X>(o, t, fs, cx); \
+                else \
+                    return json::cls::write_fields<X>(o, t, fs, cx); \
             } \
     }
 #define CXON_JSON_CLS(Type, ...)\
@@ -122,11 +125,13 @@ namespace cxon { // cio::val::sink read
                 }*/ \
                 return cxon::json::cls::read_fields<Y>(t, fs, i, e, cx); \
             } \
-            /*CXON_IF_CONSTEXPR (cxon::cio::cls::is_ordered_keys_class<Type>::value || cxon::cio::cls::are_fields_ordered(__VA_ARGS__)) { \
-                using Y = cxon::bind_traits_t<X, cxon::cio::cls::ordered_keys_traits>; \
-                return cxon::json::cls::read_fields<Y>(t, fs, i, e, cx); \
-            }*/ \
-            return cxon::json::cls::read_fields<X>(t, fs, i, e, cx); \
+            else { \
+                /*CXON_IF_CONSTEXPR (cxon::cio::cls::is_ordered_keys_class<Type>::value || cxon::cio::cls::are_fields_ordered(__VA_ARGS__)) { \
+                    using Y = cxon::bind_traits_t<X, cxon::cio::cls::ordered_keys_traits>; \
+                    return cxon::json::cls::read_fields<Y>(t, fs, i, e, cx); \
+                }*/ \
+                return cxon::json::cls::read_fields<X>(t, fs, i, e, cx); \
+            } \
         }
 #define CXON_JSON_CLS_WRITE_MEMBER(Type, ...)\
     template <typename X, typename O, typename Cx> \
@@ -138,7 +143,8 @@ namespace cxon { // cio::val::sink read
                 using Y = cxon::bind_traits_t<X, cxon::cio::key::simple_traits>; \
                 return cxon::json::cls::write_fields<Y>(o, t, fs, cx); \
             } \
-            return cxon::json::cls::write_fields<X>(o, t, fs, cx); \
+            else \
+                return cxon::json::cls::write_fields<X>(o, t, fs, cx); \
         }
 #define CXON_JSON_CLS_MEMBER(Type, ...)\
     CXON_JSON_CLS_READ_MEMBER(Type, __VA_ARGS__) \

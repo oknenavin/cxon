@@ -281,6 +281,7 @@ namespace cxon {
                     static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
                         -> enable_if_t<!Y::quote_unquoted_keys, bool>
                     {
+                        static_assert(integer_base::constant<napa_type<Cx>>(10) == 10, "not supported");
                         if (!cio::consume<Y>(i, e, cx))
                             return false;
                         switch (cio::peek(i, e)) {
@@ -373,6 +374,7 @@ namespace cxon {
                 }
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(json::basic_node<Tr>& t, II& i, II e, Cx& cx) {
+                    static_assert(cio::integer_base::constant<napa_type<Cx>>(10) == 10, "not supported");
                     if (!cio::consume<Y>(i, e, cx))
                         return false;
                     switch (cio::peek(i, e)) {
@@ -439,6 +441,7 @@ namespace cxon {
                         static auto key(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx)
                             -> enable_if_t<!Y::quote_unquoted_keys, bool>
                         {
+                            static_assert(integer_base::constant<napa_type<Cx>>(10) == 10, "not supported");
                             if (!cio::consume<Y>(i, e, cx))
                                 return false;
                             switch (cio::peek(i, e)) {
@@ -535,6 +538,7 @@ namespace cxon {
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static bool value(cbor::basic_node<Tr>& t, II& i, II e, Cx& cx) {
+                        static_assert(cio::integer_base::constant<napa_type<Cx>>(10) == 10, "not supported");
                         if (!cio::consume<Y>(i, e, cx))
                             return false;
                         switch (cio::peek(i, e)) {
