@@ -17,13 +17,7 @@ namespace cxon {
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(std::complex<T>& t, II& i, II e, Cx& cx) {
                     T rl, mg;
-                    return  cio::consume<Y>(Y::list::beg, i, e, cx) &&
-                                read_value<Y>(rl, i, e, cx) &&
-                                    cio::consume<Y>(cio::cnt::sep_read<Y, typename Y::list, II>, i, e, cx) &&
-                                read_value<Y>(mg, i, e, cx) &&
-                            cio::consume<Y>(Y::list::end, i, e, cx) &&
-                        (t.real(rl), t.imag(mg), true)
-                    ;
+                    return cio::cnt::read_tuple<Y>(i, e, cx, rl, mg) && (t.real(rl), t.imag(mg), true);
                 }
         };
 
@@ -31,12 +25,7 @@ namespace cxon {
         struct write<JSON<X>, std::complex<T>> {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::complex<T>& t, Cx& cx) {
-                    return  cio::poke<Y>(o, Y::list::beg, cx) &&
-                                write_value<Y>(o, t.real(), cx) &&
-                                    cio::poke<Y>(o, Y::list::sep, cx) &&
-                                write_value<Y>(o, t.imag(), cx) &&
-                            cio::poke<Y>(o, Y::list::end, cx)
-                    ;
+                    return cio::cnt::write_tuple<Y>(o, cx, t.real(), t.imag());
                 }
         };
 
