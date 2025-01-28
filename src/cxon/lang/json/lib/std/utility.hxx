@@ -16,12 +16,7 @@ namespace cxon {
         struct read<JSON<X>, std::pair<F, S>> {
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static bool value(std::pair<F, S>& t, II& i, II e, Cx& cx) {
-                    return  cio::consume<Y>(Y::list::beg, i, e, cx) &&
-                                read_value<Y>(t.first, i, e, cx) &&
-                                    cio::consume<Y>(cio::cnt::sep_read<Y, typename Y::list, II>, i, e, cx) &&
-                                read_value<Y>(t.second, i, e, cx) &&
-                            cio::consume<Y>(Y::list::end, i, e, cx)
-                    ;
+                    return cio::cnt::read_tuple<Y>(i, e, cx, t.first, t.second);
                 }
         };
 
@@ -29,12 +24,7 @@ namespace cxon {
         struct write<JSON<X>, std::pair<F, S>> {
             template <typename O, typename Cx, typename Y = JSON<X>>
                 static bool value(O& o, const std::pair<F, S>& t, Cx& cx) {
-                    return  cio::poke<Y>(o, Y::list::beg, cx) &&
-                                write_value<Y>(o, t.first, cx) &&
-                                    cio::poke<Y>(o, Y::list::sep, cx) &&
-                                write_value<Y>(o, t.second, cx) &&
-                            cio::poke<Y>(o, Y::list::end, cx)
-                    ;
+                    return cio::cnt::write_tuple<Y>(o, cx, t.first, t.second);
                 }
         };
 

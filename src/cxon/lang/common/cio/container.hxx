@@ -12,6 +12,9 @@
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace cnt { // container read/write helpers
+
+    template <typename X, typename II, typename Cx, typename ...Ts>
+        inline bool read_tuple(II& i, II e, Cx& cx, Ts&... ts);
     
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_list(C& c, II& i, II e, Cx& cx);
@@ -22,6 +25,9 @@ namespace cxon { namespace cio { namespace cnt { // container read/write helpers
         inline bool read_map(C& c, II& i, II e, Cx& cx);
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_map(II& i, II e, Cx& cx, EA element_add);
+
+    template <typename X, typename O, typename Cx, typename ...Ts>
+        inline bool write_tuple(O& o, Cx& cx, const Ts&... ts);
 
     template <typename X, typename C, typename O, typename II, typename Cx, typename L>
         inline bool write_list(O& o, II b, II e, Cx& cx, L element_write);
@@ -48,6 +54,44 @@ namespace cxon { namespace cio { namespace cnt { // container read/write helpers
 namespace cxon { namespace cio { namespace cnt {
 
     namespace imp {
+
+#       if !defined(__cpp_fold_expressions)
+            template <typename X, typename II, typename Cx>
+                constexpr bool read_tuple_tail_(II&, II, Cx&) {
+                    return true;
+                }
+            template <typename X, typename II, typename Cx, typename T, typename ...Ts>
+                inline bool read_tuple_tail_(II& i, II e, Cx& cx, T& t, Ts&... ts) {
+                    return cio::consume<X>(cio::cnt::sep_read<X, typename X::list, II>, i, e, cx) && read_value<X>(t, i, e, cx) && read_tuple_tail_<X>(i, e, cx, ts...);
+                }
+            template <typename X, typename II, typename Cx, typename T, typename ...Ts>
+                inline bool read_tuple_(II& i, II e, Cx& cx, T& t, Ts&... ts) {
+                    return read_value<X>(t, i, e, cx) && read_tuple_tail_<X>(i, e, cx, ts...);
+                }
+
+            template <typename X, typename O, typename Cx>
+                constexpr bool write_tuple_tail_(O&, Cx&) {
+                    return true;
+                }
+            template <typename X, typename O, typename Cx, typename T, typename ...Ts>
+                inline bool write_tuple_tail_(O& o, Cx& cx, const T& t, const Ts&... ts) {
+                    return cio::poke<X>(o, X::list::sep, cx) && write_value<X>(o, t, cx) && write_tuple_tail_<X>(o, cx, ts...);
+                }
+            template <typename X, typename O, typename Cx, typename T, typename ...Ts>
+                inline bool write_tuple_(O& o, Cx& cx, const T& t, const Ts&... ts) {
+                    return write_value<X>(o, t, cx) && write_tuple_tail_<X>(o, cx, ts...);
+                }
+#       else
+            template <typename X, typename II, typename Cx, typename T, typename ...Ts>
+                inline bool read_tuple_(II& i, II e, Cx& cx, T& t, Ts&... ts) {
+                    return (read_value<X>(t, i, e, cx) && ... && (cio::consume<X>(cio::cnt::sep_read<X, typename X::list, II>, i, e, cx) && read_value<X>(ts, i, e, cx)));
+                }
+
+            template <typename X, typename O, typename Cx, typename T, typename ...Ts>
+                inline bool write_tuple_(O& o, Cx& cx, const T& t, const Ts&... ts) {
+                    return (write_value<X>(o, t, cx) && ... && (cio::poke<X>(o, X::list::sep, cx) && write_value<X>(o, ts, cx)));
+                }
+#       endif
 
         template <typename X, typename Cr, typename II, typename Cx, typename EA>
             inline auto list_read_(II& i, II e, Cx& cx, EA element_add) -> enable_if_t<!X::allow_trailing_separators || Cr::sep == ' '> {
@@ -89,6 +133,14 @@ namespace cxon { namespace cio { namespace cnt {
 
     }
 
+    template <typename X, typename II, typename Cx, typename ...Ts>
+        inline bool read_tuple(II& i, II e, Cx& cx, Ts&... ts) {
+            return  cio::consume<X>(X::list::beg, i, e, cx) &&
+                        imp::read_tuple_<X>(i, e, cx, ts...) &&
+                    cio::consume<X>(X::list::end, i, e, cx)
+            ;
+        }
+
     template <typename X, typename C, typename II, typename Cx>
         inline bool read_list(C& c, II& i, II e, Cx& cx) {
             using Y = unbind_traits_t<X, key::quoted_traits>;
@@ -111,6 +163,14 @@ namespace cxon { namespace cio { namespace cnt {
     template <typename X, typename II, typename Cx, typename EA>
         inline bool read_map(II& i, II e, Cx& cx, EA element_add) {
             return imp::read_<X, typename X::map>(i, e, cx, element_add);
+        }
+
+    template <typename X, typename O, typename Cx, typename ...Ts>
+        inline bool write_tuple(O& o, Cx& cx, const Ts&... ts) {
+            return  cio::poke<X>(o, X::list::beg, cx) &&
+                        imp::write_tuple_<X>(o, cx, ts...) &&
+                    cio::poke<X>(o, X::list::end, cx)
+            ;
         }
 
     template <typename X, typename C, typename O, typename II, typename Cx, typename L>
