@@ -535,7 +535,7 @@ TEST_END()
 
 
 #ifdef CXON_HAS_LIB_STD_FLAT_MAP
-    TEST_BEG(map, cxon::JSON<>, "/std")
+    TEST_BEG(flat_map, cxon::JSON<>, "/std")
         using namespace std;
         // std::flat_map
             R_TEST(flat_map<string, int>{{"1", 2}, {"3", 4}}, R"({"1": 2, "3": 4})");

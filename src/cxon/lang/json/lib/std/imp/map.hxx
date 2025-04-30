@@ -16,10 +16,8 @@ namespace cxon { namespace json { namespace imp {
                 static bool read(M& t, II& i, II e, Cx& cx) {
                     typename M::key_type    k = alc::create_using_allocator_of<typename M::key_type>(t);
                     typename M::mapped_type v = alc::create_using_allocator_of<typename M::mapped_type>(t);
-                    typename M::value_type *p;
                     return  cio::read_map_key<X>(k, i, e, cx) &&
-                            (p = &cnt::emplace(t, std::move(k), std::move(v)), true) &&
-                            cio::read_map_val<X>(p->second, i, e, cx)
+                            cio::read_map_val<X>(cnt::emplace(t, std::move(k), std::move(v)).second, i, e, cx)
                     ;
                 }
         };
