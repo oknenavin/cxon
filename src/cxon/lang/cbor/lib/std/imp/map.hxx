@@ -16,10 +16,8 @@ namespace cxon { namespace cbor { namespace imp {
                 static bool read(M& t, II& i, II e, Cx& cx) {
                     typename M::key_type    k = alc::create_using_allocator_of<typename M::key_type>(t);
                     typename M::mapped_type v = alc::create_using_allocator_of<typename M::mapped_type>(t);
-                    typename M::value_type *p;
                     return  read_value<X>(k, i, e, cx) &&
-                            (p = &cxon::cnt::emplace(t, std::move(k), std::move(v)), true) &&
-                            read_value<X>(p->second, i, e, cx)
+                            read_value<X>(cxon::cnt::emplace(t, std::move(k), std::move(v)).second, i, e, cx)
                     ;
                 }
         };

@@ -171,7 +171,7 @@ namespace cxon { namespace cnt {
         template <typename F, typename S>
             struct using_allocator_of_<std::pair<F, S>> {
                 template <typename C, typename ...A>
-                    static auto emplace(C& c, A&&... as) -> std::pair<F, S>& {
+                    static auto emplace(C& c, A&&... as) -> typename C::reference {
                         return emplace_(option<5>(), c, alc::create_using_allocator_of<std::pair<F, S>>(c, std::forward<A>(as)...));
                     }
             };
