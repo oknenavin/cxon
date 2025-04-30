@@ -229,14 +229,14 @@ namespace cxon { namespace alc {
             }
 
             template <typename U = T, typename ...A> auto construct(U *u, A&&... as)
-                -> enable_if_t<!std::is_trivial<U>::value> { tr::construct(al_, u, std::forward<A>(as)...); }
-            template <typename U = T> auto construct(U *)
-                -> enable_if_t< std::is_trivial<U>::value> {}
+                -> enable_if_t<!std::is_trivially_constructible<U, A...>::value> { tr::construct(al_, u, std::forward<A>(as)...); }
+            template <typename U = T, typename ...A> auto construct(U *, A&&...)
+                -> enable_if_t< std::is_trivially_constructible<U, A...>::value> {}
 
             template <typename U = T> auto destroy(U *u)
-                -> enable_if_t<!std::is_trivial<U>::value> { tr::destroy(al_, u); }
+                -> enable_if_t<!std::is_trivially_destructible<U>::value> { tr::destroy(al_, u); }
             template <typename U = T> auto destroy(U *)
-                -> enable_if_t< std::is_trivial<U>::value> {}
+                -> enable_if_t< std::is_trivially_destructible<U>::value> {}
 
             private:
                 using tr = std::allocator_traits<type>;
