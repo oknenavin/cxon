@@ -576,7 +576,7 @@ namespace cxon { namespace cio { namespace chr {
                 template <typename O, typename Cx>
                     static bool value(O& o, char16_t c, Cx& cx) {
                         CXON_ASSERT(c < 0xD800 || c > 0xDBFF, "unexpected surrogate");
-                        return encode_<X, char32_t>::value(o, c, cx);
+                        return encode_<X, char32_t>::value(o, to_c32(c), cx);
                     }
                 template <typename O, typename Cx>
                     static bool range(O& o, const char16_t* i, const char16_t* e, Cx& cx) {
@@ -587,13 +587,16 @@ namespace cxon { namespace cio { namespace chr {
                 private:
                     template <typename O, typename Cx>
                         static bool value_(O& o, const char16_t*& i, const char16_t* e, Cx& cx) {
-                            char32_t c32 = *i;
+                            char32_t c32 = to_c32(*i);
                                 if (c32 >= 0xD800 && c32 <= 0xDBFF) { // surrogate
-                                    ++i;                        CXON_ASSERT(i != e, "invalid surrogate");
-                                    char32_t const s32 = *i;    CXON_ASSERT(s32 >= 0xDC00 && s32 <= 0xDFFF, "invalid surrogate");
+                                    ++i;                                CXON_ASSERT(i != e, "invalid surrogate");
+                                    char32_t const s32 = to_c32(*i);    CXON_ASSERT(s32 >= 0xDC00 && s32 <= 0xDFFF, "invalid surrogate");
                                     c32 = char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
                                 }
                             return encode_<X, char32_t>::value(o, c32, cx);
+                        }
+                        static char32_t to_c32(char16_t c16) noexcept {
+                            return static_cast<char32_t>(static_cast<typename std::make_unsigned<char16_t>::type>(c16));
                         }
             };
 
