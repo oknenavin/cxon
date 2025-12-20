@@ -22,12 +22,12 @@ namespace cxon { namespace cxcf { // format traits
         };
         // object keys for types serialized without quotes will be unquoted
         // e.g. strings will still be quoted, but numbers will not
-        // {1: 2} is valid
+        // {1 = 2} is valid
         static constexpr bool quote_unquoted_keys       = false;
         // object keys for types serialized with quotes will be unquoted (e.g. strings)
-        // {key: 1} is valid
-        // any white-space characters and object/key (i.e. '=') separator character
-        // must be escaped - e.g. { a\ key: 1}
+        // {key = 1} is valid
+        // any white-space characters and object/key separator character (i.e. '=')
+        // must be escaped - e.g. { a\ key = 1}
         static constexpr bool unquote_quoted_keys       = true;
         // allow c-style comments
         static constexpr bool allow_comments            = true;
