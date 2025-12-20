@@ -20,7 +20,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: boostorg/boost
-        ref: boost-1.87.0
+        ref: boost-1.90.0
         path: .dep/boost
     - name: Setup Boost
       run: |
