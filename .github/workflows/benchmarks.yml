@@ -24,7 +24,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: boostorg/boost
-        ref: boost-1.88.0
+        ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v4
@@ -140,7 +140,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: boostorg/boost
-        ref: boost-1.88.0
+        ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v4
@@ -157,7 +157,7 @@ jobs:
     - name: Compiler setup
       run: |
         sudo apt-get update
-        sudo apt-get install clang-19
+        sudo apt-get install clang-20
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -174,7 +174,7 @@ jobs:
       run: mkdir test/.time
     - name: Time JSON (default)
       env:
-        CXX: clang++-19
+        CXX: clang++-20
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
@@ -193,7 +193,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/clang++.head.default.json.native-s2.data
     - name: Time JSON (boost::cahrconv)
       env:
-        CXX: clang++-19
+        CXX: clang++-20
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY -I ../.dep/boost -DCXON_USE_BOOST_CHARCONV -DCXON_TIME_BOOST_JSON -I ../.dep/rapidjson/include -DCXON_TIME_RAPIDJSON -DRAPIDJSON_SSE2 -I ../.dep/nlohmann/single_include -DCXON_TIME_NLOHMANN
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json -l boost_charconv
         LD_LIBRARY_PATH: ../../.dep/boost/stage/lib:$LD_LIBRARY_PATH
@@ -212,7 +212,7 @@ jobs:
         make -s time-json-native-s2 | tee -a test/.time/clang++.head.boost-charconv.json.native-s2.data
     - name: Time CBOR (default)
       env:
-        CXX: clang++-19
+        CXX: clang++-20
         CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
@@ -225,7 +225,7 @@ jobs:
         mkdir test/.space
     - name: Space JSON (default)
       env:
-        CXX: clang++-19
+        CXX: clang++-20
         CPPFLAGS: -I ../.dep/boost -I ../.dep/rapidjson/include -I ../.dep/nlohmann/single_include
         CXXFLAGS: -std=c++20 -O2 -s -DNDEBUG
         LDFLAGS: -L ../.dep/boost/stage/lib -l boost_json
@@ -255,7 +255,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: boostorg/boost
-        ref: boost-1.88.0
+        ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v4
@@ -352,7 +352,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: boostorg/boost
-        ref: boost-1.88.0
+        ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v4
