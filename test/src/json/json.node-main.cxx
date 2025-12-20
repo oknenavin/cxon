@@ -244,7 +244,7 @@ namespace test { namespace kind {
                     }
                     double const size = double(t.size) / (1024. * 1024);
                     tab.push_back({
-                        t.source.substr(t.source.rfind('/') + 1),
+                        t.source.substr(t.source.rfind('/') + 1) + (t.flag ? "*" : ""),
                         fmt(size)
                     });
                     tab.back().push_back(fmt(size / (t.time.read[0] / 1000)));
