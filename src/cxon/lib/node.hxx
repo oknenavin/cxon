@@ -91,8 +91,5 @@ namespace cxon { namespace node { namespace imp {
 #ifdef CXON_JSON_DEFINED
 #   include "node.json.hxx"
 #endif
-#ifdef CXON_CBOR_DEFINED
-#   include "node.cbor.hxx"
-#endif
 
 #endif // CXON_LIB_NODE_HXX_

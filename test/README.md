@@ -73,7 +73,7 @@ sets = {
 }
 ```
 
-See [`JSON`](data/json/tests.cf) and [`CBOR`](data/cbor/tests.cf) configuration of `CXON`'s test suites 
+See [`JSON`](data/json/tests.cf) configuration of `CXON`'s test suites 
 for real example.  
 Currently, these test-kinds are implemented:
 
@@ -109,13 +109,6 @@ Note that some of the inputs are commented out, because of different reasons, fo
   redundant escapes, and the output is normalized
 - [data/set.5/marine_ik.json](data/set.5/marine_ik.json) - is ignored because the input contains 
   numbers with lower precision, and the output numbers are with the highest precision by default
-
-
---------------------------------------------------------------------------------
-
-#### `CXON/CBOR/NODE`
-
-Same as for `JSON`.
 
 
 --------------------------------------------------------------------------------

@@ -21,9 +21,6 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/boost/container/deque.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/boost/container/deque.hxx"
-#   endif
 
 namespace cxon { namespace cnt {
 

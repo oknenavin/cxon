@@ -27,10 +27,6 @@
 #       ifdef CXON_JSON_DEFINED
 #           include "cxon/lang/json/lib/std/string_view.hxx"
 #       endif
-#       ifdef CXON_CBOR_DEFINED
-#           include "cxon/lang/cbor/lib/std/string_view.hxx"
-#       endif
-
 #   endif // CXON_HAS_LIB_STD_STRING_VIEW
 
 #endif // CXON_LIB_STD_STRING_VIEW_HXX_

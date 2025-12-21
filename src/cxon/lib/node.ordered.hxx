@@ -66,20 +66,6 @@ namespace cxon { namespace ordered {
 
 #endif
 
-#ifdef CXON_CBOR_DEFINED
-
-    namespace cxon { namespace cbor {
-
-        template <typename Al = std::allocator<char>>
-            struct ordered_node_traits : cxon::cbor::node_traits<Al> {
-                template <typename K, typename V> using map_type = ordered::object<K, V, alc::rebind_t<Al, ordered::keval<K, V, Al>>>;
-            };
-        using ordered_node = cxon::cbor::basic_node<ordered_node_traits<>>;
-
-    }}
-
-#endif
-
 // implementation //////////////////////////////////////////////////////////////
 
 namespace cxon { // hash
@@ -128,48 +114,6 @@ namespace cxon { // hash
                 template <typename O, typename Cx, typename Y = JSON<X>>
                     static bool value(O& o, const ordered::object<K, V, Al>& t, Cx& cx) {
                         return cio::cnt::write_map<Y>(o, t, cx);
-                    }
-            };
-
-    }
-
-#endif
-
-#ifdef CXON_CBOR_DEFINED
-
-    namespace cxon {
-
-        template <typename X, typename K, typename V, typename Al>
-            struct read<CBOR<X>, ordered::keval<K, V, Al>> {
-                template <typename II, typename Cx, typename Y = CBOR<X>>
-                    static bool value(ordered::keval<K, V, Al>& t, II& i, II e, Cx& cx) {
-                        return  read_value<Y>(t.first, i, e, cx) &&
-                                read_value<Y>(t.second, i, e, cx)
-                        ;
-                    }
-            };
-        template <typename X, typename K, typename V, typename Al>
-            struct write<CBOR<X>, ordered::keval<K, V, Al>> {
-                template <typename O, typename Cx, typename Y = CBOR<X>>
-                    static bool value(O& o, const ordered::keval<K, V, Al>& t, Cx& cx) {
-                        return  write_value<Y>(o, t.first, cx) &&
-                                write_value<Y>(o, t.second, cx)
-                        ;
-                    }
-            };
-
-        template <typename X, typename K, typename V, typename Al>
-            struct read<CBOR<X>, ordered::object<K, V, Al>> {
-                template <typename II, typename Cx, typename Y = CBOR<X>>
-                    static bool value(ordered::object<K, V, Al>& t, II& i, II e, Cx& cx) {
-                        return cbor::cnt::read_array<Y>(t, i, e, cx);
-                    }
-            };
-        template <typename X, typename K, typename V, typename Al>
-            struct write<CBOR<X>, ordered::object<K, V, Al>> {
-                template <typename O, typename Cx, typename Y = CBOR<X>>
-                    static bool value(O& o, const ordered::object<K, V, Al>& t, Cx& cx) {
-                        return cbor::cnt::write_map<Y>(o, t, cx);
                     }
             };
 

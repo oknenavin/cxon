@@ -21,11 +21,8 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/std/memory.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/std/memory.hxx"
-#   endif
 
-#if defined(CXON_JSON_DEFINED) || defined(CXON_CBOR_DEFINED)
+#if defined(CXON_JSON_DEFINED)
     namespace cxon {
 
         template <typename X, typename T, typename D>

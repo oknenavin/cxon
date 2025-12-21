@@ -21,8 +21,5 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/std/utility.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/std/utility.hxx"
-#   endif
 
 #endif // CXON_LIB_STD_UTILITY_HXX_

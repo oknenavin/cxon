@@ -21,8 +21,5 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/boost/container/map.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/boost/container/map.hxx"
-#   endif
 
 #endif // CXON_LIB_BOOST_CONTAINER_MAP_HXX_

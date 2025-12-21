@@ -25,9 +25,6 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/boost/variant2.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/boost/variant2.hxx"
-#   endif
 #endif
 
 #endif // CXON_LIB_BOOST_VARIANT2_HXX_

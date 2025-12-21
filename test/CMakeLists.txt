@@ -38,24 +38,6 @@ set_target_properties (
         RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
 )
 
-file(GLOB CBOR-CORE-SRC src/cbor/cbor.core-*.cxx)
-add_executable (cxon-cbor ${CBOR-CORE-SRC})
-set_target_properties (
-    cxon-cbor PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
-)
-
-file(GLOB CBOR-NODE-SRC src/cbor/cbor.node-*.cxx)
-add_executable (cxon-cbor-node ${CBOR-NODE-SRC})
-set_target_properties (
-    cxon-cbor-node PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/.out
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/.out
-)
-
 enable_testing()
 
 add_test (
@@ -92,28 +74,6 @@ if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
         NAME cxon/json/node/diff-native
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
         COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-json-node ../data/json/tests.cf diff-native | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
-    )
-endif ()
-
-add_test (
-    NAME cxon/cbor/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-cbor
-)
-
-add_test (
-    NAME cxon/cbor/node/self
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node
-)
-add_test (
-    NAME cxon/cbor/node/test-vector
-    COMMAND ${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node ../data/cbor/tests.cf test-vector
-)
-
-if (CMAKE_BASH AND CMAKE_XARGS AND CMAKE_DIFF)
-    add_test (
-        NAME cxon/cbor/node/round-trip
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/.out
-        COMMAND ${CMAKE_BASH} -c "${PROJECT_SOURCE_DIR}/.out/cxon-cbor-node ../data/cbor/tests.cf round-trip  | \"${CMAKE_XARGS}\" -n2 \"${CMAKE_DIFF}\" -q"
     )
 endif ()
 

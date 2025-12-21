@@ -21,8 +21,5 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/std/valarray.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/std/valarray.hxx"
-#   endif
 
 #endif // CXON_LIB_STD_VALARRAY_HXX_
