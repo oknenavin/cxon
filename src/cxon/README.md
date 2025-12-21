@@ -10,7 +10,6 @@
   - [Introduction](#introduction)
     - Formats
       - [`JSON`](lang/json/README.md)
-      - [`CBOR`](lang/cbor/README.md)
       - [`CXCF`](lang/cxcf/README.md)
     - [Supported types](#supported-types)
   - [Interface](#interface)

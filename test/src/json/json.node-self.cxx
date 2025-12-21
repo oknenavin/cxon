@@ -19,7 +19,6 @@
 #include "test.hxx"
 
 #include "cxon/json.hxx"
-#include "cxon/cbor.hxx"
 #include "cxon/lang/json/tidy.hxx"
 #include "cxon/lib/node.ordered.hxx"
 #include "cxon/lib/std/list.hxx"
@@ -821,101 +820,6 @@ namespace test { namespace kind {
                 CHECK(s == R"({{1:2}:3,[4]:5,"6":7,8:9,true:10,null:11})");
             }
         }
-        {   // cbor::node
-            using node = cxon::cbor::node;
-            {   char const in[] = R"({"a":[{"f":2},[3,4],"string",5,false,null],"b":"string","c":1,"d":true,"e":null})";
-                node n;
-                    cxon::from_bytes(n, in);
-                std::string s;
-                    cxon::to_bytes(s, n);
-                CHECK(s == in);
-            }
-            {   char const in[] = R"({{1: 2}: 3, [4]: 5, "6": 7, -8: 9, 10: 11, 12.0: 13, true: 14, null: 15, "inf": 16, "-inf": 17})";
-                node const out = {
-                    {{{1U, 2U}}, 3U},
-                    {{4U}, 5U},
-                    {"6", 7U},
-                    {-8, 9U},
-                    {10U, 11U},
-                    {12.0, 13U},
-                    {true, 14U},
-                    {nullptr, 15U},
-                    {std::numeric_limits<node::real>::infinity(), 16U},
-                    {-std::numeric_limits<node::real>::infinity(), 17U}
-                };
-                node n;
-#               if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-                    cxon::from_bytes<UK_JSON, cxon::cbor::node_traits<>>(n, in, cxon::node::json::extract_nans::set<true>());
-#               else
-                    cxon::from_bytes<UK_JSON>(n, in, cxon::node::json::extract_nans::set<true>());
-#               endif
-                CHECK(n == out);
-                std::string s;
-                    cxon::to_bytes<UK_JSON>(s, n);
-                CHECK(s == R"({{1:2}:3,[4]:5,"6":7,"-inf":17,12:13,"inf":16,-8:9,10:11,true:14,null:15})");
-            }
-            {   node n; node const o = std::numeric_limits<node::real>::infinity();
-#               if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-                    cxon::from_bytes<UK_JSON, cxon::cbor::node_traits<>>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
-#               else
-                    cxon::from_bytes<UK_JSON>(n, R"("inf")", cxon::node::json::extract_nans::set<true>());
-#               endif
-                CHECK(n == o);
-            }
-            {   node n;
-                    auto const r = cxon::from_bytes<UK_JSON>(n, "{x: 0}");
-                CHECK(!r && r.ec == cxon::node::error::invalid);
-            }
-            {   char const in[] = "#[1]";
-                node n;
-                    auto r = cxon::from_bytes(n, in);
-                CHECK(!r && r.ec == cxon::node::error::invalid);
-            }
-            {   node n = { 1, 2U, node::bytes {3}, "text", {4}, {{"5", 6}}, true, nullptr, node::undefined(), 7.0, node::simple(8) };
-                std::string s;
-                    cxon::to_bytes(s, n);
-                CHECK(s == R"([1,2,[3],"text",[4],{"5":6},true,null,null,7,8])");
-            }
-            {   node n = {
-                    { {{1, 0}}, 0 },
-                    { {2}, 0 },
-                    { node::tag {3, 4}, 0 },
-                    { node::bytes {5}, 0 },
-                    { "6", 0 },
-                    { 7.0, 0 },
-                    { 8, 0 },
-                    { 9U, 0 },
-                    { node::simple(10), 0 },
-                    { true, 0 },
-                    { nullptr, 0 },
-                    { node::undefined(), 0 }
-                };
-                std::string s;
-                    cxon::to_bytes(s, n);
-                CHECK(s == R"({"{1:0}":0,"[2]":0,"4":0,"[5]":0,"6":0,"7":0,"8":0,"9":0,"10":0,"true":0,"null":0,"null":0})");
-            }
-        }
-        {   // round-trip
-            using node = cxon::cbor::node;
-            {   // cbor::node => json => cbor::node
-                node const fr = { -1, 2U, node::bytes {3 , 4 }, "5, 6", {7 , 8 }, {{  9, 10 }, {"11", 12 }}, node::tag {13, 14}, true, nullptr, node::undefined(), 15.16, node::simple(17) };
-                node const to = { -1, 2U,             {3U, 4U}, "5, 6", {7U, 8U}, {{"9", 10U}, {"11", 12U}},                14U, true, nullptr,           nullptr, 15.16,              17U };
-                std::string s;
-                    cxon::to_bytes(s, fr);
-                node n;
-                    cxon::from_bytes(n, s);
-                CHECK(n == to);
-            }
-            {   // json => cbor::node => json
-                std::string const fr = R"([{"1": 2}, [3, 4], "5, 6", 7, true, null])";
-                std::string const to = R"([{"1":2},[3,4],"5, 6",7,true,null])";
-                node n;
-                    cxon::from_bytes(n, fr);
-                std::string s;
-                    cxon::to_bytes(s, n);
-                CHECK(s == to);
-            }
-        }
         {   // errors with comments
             {   using COM = cxon::JSON<cxon::test::allow_comments_traits<>>;
                 cxon::json::node n;
@@ -929,21 +833,6 @@ namespace test { namespace kind {
             }
             {   using COM = cxon::JSON<cxon::test::unquoted_keys_traits<cxon::test::allow_comments_traits<>>>;
                 cxon::json::node n;
-                    auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
-                CHECK(r.ec == cxon::json::read_error::unexpected);
-            }
-            {   using COM = cxon::JSON<cxon::test::allow_comments_traits<>>;
-                cxon::cbor::node n;
-                    auto const r = cxon::from_bytes<COM>(n, "/{}");
-                CHECK(r.ec == cxon::json::read_error::unexpected);
-            }
-            {   using COM = cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_comments_traits<>>>;
-                cxon::cbor::node n;
-                    auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
-                CHECK(r.ec == cxon::json::read_error::unexpected);
-            }
-            {   using COM = cxon::JSON<cxon::test::unquoted_keys_traits<cxon::test::allow_comments_traits<>>>;
-                cxon::cbor::node n;
                     auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
                 CHECK(r.ec == cxon::json::read_error::unexpected);
             }
@@ -1134,34 +1023,6 @@ namespace test { namespace kind {
                 std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
                 CHECK(s1 == s0);
             }
-            // cbor::node
-            {   using node = cxon::cbor::node;
-                {   std::string const s0 = R"({a:"b",c:"d"})";
-                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-                {   std::string const s0 = R"({a:{b"c:{d\ e:"f"}},g\:h:"i"})";
-                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-                {   std::string const s0 = R"({{a:{b:"c"}}:"d"})";
-                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-                {   std::string const s0 = R"({["a",{b:"c"}]:"d"})";
-                    node n;         cxon::from_bytes<UQK_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-                {   std::string const s0 = R"({1:2})";
-                    node n;         cxon::from_bytes<UQK_JSON>(n, s0); CHECK(n.is<node::map>() && n.get<node::map>()["1"].is<node::uint>());
-                    std::string s1; cxon::to_bytes<UQK_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-            }
             // single quoted string
             {   using node = cxon::json::node;
                 {   std::string const s0 = R"({'a':'b','c':'d'})";
@@ -1185,58 +1046,8 @@ namespace test { namespace kind {
                     CHECK(s1 == s0);
                 }
             }
-            {   using node = cxon::cbor::node;
-                {   std::string const s0 = R"({'a':'b','c':'d'})";
-                    node n;         cxon::from_bytes<SQ_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<SQ_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-            }
-            {   using node = cxon::cbor::node;
-                {   std::string const s0 = R"({'aaa':'bbb','ccc':'ddd'})";
-                    node n;         cxon::from_bytes<SQ_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<SQ_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-            }
-            {   using node = cxon::cbor::node;
-                {   std::string const s0 = R"({'a':'b','c':'d'})";
-                    node n;         cxon::from_bytes<SQ_UK_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<SQ_UK_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-            }
-            {   using node = cxon::cbor::node;
-                {   std::string const s0 = R"({'aaa':'bbb','ccc':'ddd'})";
-                    node n;         cxon::from_bytes<SQ_UK_JSON>(n, s0);
-                    std::string s1; cxon::to_bytes<SQ_UK_JSON>(s1, n);
-                    CHECK(s1 == s0);
-                }
-            }
             // javascript nans
             {   using node = cxon::json::node;
-                {   std::string const s0 = R"([Infinity,NaN,-NaN,-Infinity])";
-                    node n;         cxon::from_bytes<JS_NANS>(n, s0);
-                    std::string s1; cxon::to_bytes<JS_NANS>(s1, n);
-                    CHECK(s1 == s0);
-                }
-                {   std::string const s0 = R"({-Infinity:-1,Infinity:1})";
-                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
-                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
-                    CHECK(s1 == s0);
-                }
-                {   std::string const s0 = R"({-NaN:0})";
-                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
-                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
-                    CHECK(s1 == s0);
-                }
-                {   std::string const s0 = R"({NaN:0})";
-                    node n;         cxon::from_bytes<UKJS_NANS>(n, s0);
-                    std::string s1; cxon::to_bytes<UKJS_NANS>(s1, n);
-                    CHECK(s1 == s0);
-                }
-            }
-            {   using node = cxon::cbor::node;
                 {   std::string const s0 = R"([Infinity,NaN,-NaN,-Infinity])";
                     node n;         cxon::from_bytes<JS_NANS>(n, s0);
                     std::string s1; cxon::to_bytes<JS_NANS>(s1, n);

@@ -27,9 +27,6 @@
 #       ifdef CXON_JSON_DEFINED
 #           include "cxon/lang/json/lib/std/flat_set.hxx"
 #       endif
-#       ifdef CXON_CBOR_DEFINED
-#           include "cxon/lang/cbor/lib/std/flat_set.hxx"
-#       endif
 #   endif
 
 #endif // CXON_LIB_STD_FLAT_SET_HXX_

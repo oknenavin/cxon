@@ -95,15 +95,6 @@ jobs:
         make -s time-json-node-s2 | tee -a test/.time/g++.head.boost-charconv.json.node-s2.data
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / native (boost::charconv)" > test/.time/g++.head.boost-charconv.json.native-s2.data
         make -s time-json-native-s2 | tee -a test/.time/g++.head.boost-charconv.json.native-s2.data
-    - name: Time CBOR (default)
-      env:
-        CXX: g++-14
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY
-      run: |
-        COMPILER_VERSION=`$CXX -dumpversion`
-        make clean && make -j build-cbor-node
-        echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`)" > test/.time/g++.head.cbor.data
-        make -s time-cbor | tee -a test/.time/g++.head.cbor.data
     - name: Space setup
       run: |
         chmod +x test/benchmark-space.sh
@@ -210,15 +201,6 @@ jobs:
         make -s time-json-node-s2 | tee -a test/.time/clang++.head.boost-charconv.json.node-s2.data
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::charconv)" > test/.time/clang++.head.boost-charconv.json.native-s2.data
         make -s time-json-native-s2 | tee -a test/.time/clang++.head.boost-charconv.json.native-s2.data
-    - name: Time CBOR (default)
-      env:
-        CXX: clang++-20
-        CXXFLAGS: -std=c++20 -DCXON_TIME_ONLY
-      run: |
-        COMPILER_VERSION=`$CXX -dumpversion`
-        make clean && make -j build-cbor-node
-        echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`)" > test/.time/clang++.head.cbor.data
-        make -s time-cbor | tee -a test/.time/clang++.head.cbor.data
     - name: Space setup
       run: |
         chmod +x test/benchmark-space.sh

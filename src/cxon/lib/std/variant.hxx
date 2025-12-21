@@ -27,9 +27,6 @@
 #       ifdef CXON_JSON_DEFINED
 #           include "cxon/lang/json/lib/std/variant.hxx"
 #       endif
-#       ifdef CXON_CBOR_DEFINED
-#           include "cxon/lang/cbor/lib/std/variant.hxx"
-#       endif
 #   endif // CXON_HAS_LIB_STD_VARIANT
 
 #endif // CXON_LIB_STD_VARIANT_HXX_

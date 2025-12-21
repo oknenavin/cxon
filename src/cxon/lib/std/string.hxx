@@ -21,9 +21,6 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/std/string.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/std/string.hxx"
-#   endif
 
 namespace cxon { namespace cnt {
 

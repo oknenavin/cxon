@@ -21,9 +21,6 @@
 #   ifdef CXON_JSON_DEFINED
 #       include "cxon/lang/json/lib/boost/container/static_vector.hxx"
 #   endif
-#   ifdef CXON_CBOR_DEFINED
-#       include "cxon/lang/cbor/lib/boost/container/static_vector.hxx"
-#   endif
 
 namespace cxon { namespace cnt {
 

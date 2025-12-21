@@ -15,10 +15,6 @@ check-json:
 	@$(MAKE) -C test check-json
 check-json-node:
 	@$(MAKE) -C test check-json-node
-check-cbor:
-	@$(MAKE) -C test check-cbor
-check-cbor-node:
-	@$(MAKE) -C test check-cbor-node
 
 
 time:
@@ -37,8 +33,6 @@ time-json-native-s1:
 	@$(MAKE) -C test time-json-native-s1
 time-json-native-s2:
 	@$(MAKE) -C test time-json-native-s2
-time-cbor:
-	@$(MAKE) -C test time-cbor
 
 
 build:
@@ -47,10 +41,6 @@ build-json:
 	@$(MAKE) -C test build-json
 build-json-node:
 	@$(MAKE) -C test build-json-node
-build-cbor:
-	@$(MAKE) -C test build-cbor
-build-cbor-node:
-	@$(MAKE) -C test build-cbor-node
 
 
 install:
@@ -67,8 +57,8 @@ clean:
 	@$(MAKE) -C examples clean
 
 
-.PHONY: check check-json check-json-node check-cbor check-cbor-node \
-        time time-json time-json-node time-json-native time-cbor \
-        build build-json build-json-node build-cbor build-cbor-node \
+.PHONY: check check-json check-json-node \
+        time time-json time-json-node time-json-native \
+        build build-json build-json-node  \
         install uninstall \
         clean
