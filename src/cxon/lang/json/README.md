@@ -245,7 +245,7 @@ macros for binding of enumeration and class types:
 
 --------------------------------------------------------------------------------
 
-Distributed under the MIT license. See [`LICENSE`](../../../../LICENSE) for more information.  
+Distributed under the terms of the GNU Affero General Public License. See [`LICENSE`](../../../../LICENSE) for more information.  
 [GitHub](https://github.com/oknenavin/cxon)  
 
 <!-- links -->
