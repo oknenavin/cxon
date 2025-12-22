@@ -1640,6 +1640,20 @@ TEST_BEG(simd, cxon::JSON<>, "/core")
     }
 TEST_END()
 
+
+namespace {
+    struct Struct21 {
+        bool operator ==(const Struct21&) const { return true; }
+    };
+}
+CXON_JSON_CLS(Struct21)
+
+TEST_BEG(empty_class, cxon::JSON<>, "/core")
+    R_TEST(Struct21 {}, R"({})");
+    W_TEST(R"({})", Struct21 {});
+TEST_END()
+
+
 TEST_BEG(double_quotes_simd, cxon::JSON<>, "/core")
     // char[]
         W_TEST("\"1'34567812345678\"", "1'34567812345678");

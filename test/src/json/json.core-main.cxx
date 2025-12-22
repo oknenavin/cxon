@@ -691,6 +691,16 @@ TEST_BEG(buffered_back_inserter, cxon::JSON<>, "/core")
             auto const tbr = cxon::to_bytes<XXON>(cxon::cio::buffered_back_inserter(ot, bf), "xxxxXXXXxxxx");
         TEST_CHECK(tbr && ot == R"("xxxxXXXXxxxx")");
     }
+    {   std::string ot;
+        std::array<char, 8> bf;
+            auto const tbr = cxon::to_bytes<XXON>(cxon::cio::buffered_back_inserter(ot, bf), "xxxxXXXX");
+        TEST_CHECK(tbr && ot == R"("xxxxXXXX")");
+    }
+    {   std::string ot;
+        std::array<char, 1> bf;
+            auto const tbr = cxon::to_bytes<XXON>(cxon::cio::buffered_back_inserter(ot, bf), "x");
+        TEST_CHECK(tbr && ot == R"("x")");
+    }
 TEST_END()
 
 

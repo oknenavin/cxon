@@ -491,6 +491,18 @@ namespace test { namespace kind {
                 b = a; CHECK(a == b);
             }
         }
+        {   // imbue with allocator
+            using node = cxon::json::node;
+            node n(std::allocator<node> {});
+            n.imbue<node::object>();
+            n.imbue<node::array>();
+            n.imbue<node::string>();
+            n.imbue<node::real>();
+            n.imbue<node::sint>();
+            n.imbue<node::uint>();
+            n.imbue<node::boolean>();
+            n.imbue<node::null>();
+        }
         {   // move construction with allocator
             using node = cxon::json::node;
             std::allocator<node> al;
