@@ -79,7 +79,7 @@ namespace cxon { // cio::val::sink read
     namespace cxon { \
         template <typename X, typename II, typename Cx> \
             inline auto read_value(Type& t, II& i, II e, Cx& cx) -> enable_for_t<X, JSON> { \
-                using CXON_T_ = Type; \
+                using CXON_T_ = Type; ((void)((CXON_T_*)0)); \
                 static CXON_CXX17_CONSTEXPR auto fs = json::cls::make_fields(__VA_ARGS__); \
                 CXON_IF_CONSTEXPR (cio::cls::is_trivial_key_class<Type>::value) { \
                     CXON_CLS_STATIC_ASSERT(cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected nontrivial key(s)"); \
@@ -103,7 +103,7 @@ namespace cxon { // cio::val::sink read
     namespace cxon { \
         template <typename X, typename O, typename Cx> \
             inline auto write_value(O& o, const Type& t, Cx& cx) -> enable_for_t<X, JSON> { \
-                using CXON_T_ = Type; \
+                using CXON_T_ = Type; ((void)((CXON_T_*)0)); \
                 static CXON_CXX17_CONSTEXPR auto fs = json::cls::make_fields(__VA_ARGS__); \
                 CXON_IF_CONSTEXPR (cio::cls::is_trivial_key_class<Type>::value) { \
                     CXON_CLS_STATIC_ASSERT(cio::cls::are_trivial_key_fields<X>(__VA_ARGS__), "unexpected nontrivial key(s)"); \
