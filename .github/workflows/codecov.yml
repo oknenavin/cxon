@@ -55,7 +55,8 @@ jobs:
     - name: Coverage
       run: |
         lcov --version
-        lcov -j -c -d . -o cov.info
-        lcov -j -e cov.info '*/cxon/src/cxon/*.hxx' -o cxon.info
-        lcov -j -l cxon.info
+        # TODO: add -j when possible
+        lcov -c -d . -o cov.info
+        lcov -e cov.info '*/cxon/src/cxon/*.hxx' -o cxon.info
+        lcov -l cxon.info
         ./codecov -t ${{ secrets.CODECOV_TOKEN }} -f cxon.info
