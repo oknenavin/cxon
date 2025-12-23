@@ -15,6 +15,7 @@
 
 #include "test.hxx"
 
+#include "cxon/cxcf.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/map.hxx"
 

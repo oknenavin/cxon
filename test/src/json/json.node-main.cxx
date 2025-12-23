@@ -16,6 +16,7 @@
 #include "json.node.hxx"
 
 #include "cxon/json.hxx"
+#include "cxon/cxcf.hxx"
 #include "cxon/lib/std/string.hxx"
 #include "cxon/lib/std/vector.hxx"
 #include "cxon/lib/std/map.hxx"

@@ -60,41 +60,18 @@ namespace cxon { namespace json { // format traits
 
 }}
 
-namespace cxon { namespace cxcf { // format traits
-
-    struct format_traits : json::format_traits {
-        struct map : json::format_traits::map {
-            static constexpr char div = '=';
-            static constexpr char sep = ' ';
-        };
-        struct list : json::format_traits::list {
-            static constexpr char sep = ' ';
-        };
-        static constexpr bool quote_unquoted_keys       = false;
-        static constexpr bool unquote_quoted_keys       = true;
-        static constexpr bool allow_comments            = true;
-        static constexpr bool allow_javascript_nans     = true;
-    };
-
-}}
-
 namespace cxon { // format selector
-
     template <typename T>
         struct JSON : format_selector<T> {};
-
-    template <typename T = cxcf::format_traits>
-        using CXCF = JSON<T>;
-
 }
 
 namespace cxon { namespace json { // named parameters
 
-    using integer_base = cio::integer_base;     // read/write: constexpr: integral (2, 8, 10, 16)
-    using fp_precision = cio::fp_precision;     // write: constexpr: floating-points
-    using allocator = allocator;                // read: T*
-    using num_len_max = cio::num_len_max;       // read: constexpr: numbers
-    using ids_len_max = cio::ids_len_max;       // read: constexpr: object key
+    using integer_base  = cio::integer_base;    // read/write: constexpr: integral (2, 8, 10, 16)
+    using fp_precision  = cio::fp_precision;    // write: constexpr: floating-points
+    using allocator     = allocator;            // read: T*
+    using num_len_max   = cio::num_len_max;     // read: constexpr: numbers
+    using ids_len_max   = cio::ids_len_max;     // read: constexpr: object key
 
 }}
 
