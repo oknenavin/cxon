@@ -13,15 +13,19 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+#ifndef CXON_CXCF_DEFINED
+#define CXON_CXCF_DEFINED
+
 #ifndef CXON_JSON_DEFINED
-#define CXON_JSON_DEFINED
+#   define CXON_JSON_DEFINED
+#endif
 
 #ifndef CXON_DEFAULT_FORMAT
 #   define CXON_DEFAULT_FORMAT JSON<cxcf::format_traits>
 #endif
 
-#include "lang/json/json-fwd.hxx"
+#include "lang/cxcf/cxcf-fwd.hxx"
 #   include "cxon/cxon.hxx"
-#include "lang/json/json.hxx"
+#include "lang/cxcf/cxcf.hxx"
 
-#endif // CXON_JSON_DEFINED
+#endif // CXON_CXCF_DEFINED
