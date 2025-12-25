@@ -29,8 +29,8 @@ namespace cxon { namespace cxcf { // format traits
         // any white-space characters and object/key separator character (i.e. '=')
         // must be escaped - e.g. { a\ key = 1}
         static constexpr bool unquote_quoted_keys       = true;
-        // allow c-style comments
-        static constexpr bool allow_comments            = true;
+        // allow bash-style comments
+        static constexpr bool allow_bash_comments       = true;
         // allow NaN and Infinity as a floating-point numbers
         static constexpr bool allow_javascript_nans     = true;
     };
@@ -45,10 +45,10 @@ namespace cxon { // format selector
 
 ###### Example
 ```
-// the root is a bare type, no braces needed
-prop1 = 42                          // the values are of arbitrary JSON type
-prop.array = ["one" "two" "three"]  // the keys are unquoted
-                                    // the list/map values are separated with white-spaces
+# the root is a bare type, no braces needed
+prop1 = 42                          # the values are of arbitrary JSON type
+prop.array = ["one" "two" "three"]  # the keys are unquoted
+                                    # the list/map values are separated with white-spaces
 prop-object = {
     key1 = {
         key.1 = [1 3 5]
@@ -94,10 +94,10 @@ CXON_JSON_CLS_BARE(config) // bare root, no braces
 
 // configuration data
 static char const  cf_[] = R"(
-    // the root is a bare type
-    prop1 = 42                          // the values are of arbitrary JSON type
-    prop.array = ["one" "two" "three"]  // the keys are unquoted
-                                        // the list/map values are separated with white-spaces
+    # the root is a bare type
+    prop1 = 42                          # the values are of arbitrary JSON type
+    prop.array = ["one" "two" "three"]  # the keys are unquoted
+                                        # the list/map values are separated with white-spaces
     prop-object = {
         key1 = {
             key.1 = [1 3 5]

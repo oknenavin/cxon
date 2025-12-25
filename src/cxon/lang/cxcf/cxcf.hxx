@@ -32,7 +32,7 @@ namespace cxon { namespace cxcf { // format traits
         };
         static constexpr bool quote_unquoted_keys       = false;    // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
         static constexpr bool unquote_quoted_keys       = true;     // object keys for types serialized with quotes will be unquoted (e.g. strings)
-        static constexpr bool allow_comments            = true;     // allow c-style comments
+        static constexpr bool allow_bash_comments       = true;     // allow bash-style comments
         static constexpr bool allow_javascript_nans     = true;     // allow NaN and Infinity
     };
 

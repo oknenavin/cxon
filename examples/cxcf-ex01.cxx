@@ -31,10 +31,10 @@ CXON_JSON_CLS_BARE(config) // bare root
 
 // configuration data
 static char const  cf_[] = R"(
-    // the root is a bare type
-    prop1 = 42                          // the values are of arbitrary JSON type
-    prop.array = ["one" "two" "three"]  // the keys are unquoted
-                                        // the list/map values are separated with white-spaces
+    # the root is a bare type
+    prop1 = 42                          # the values are of arbitrary JSON type
+    prop.array = ["one" "two" "three"]  # the keys are unquoted
+                                        # the list/map values are separated with white-spaces
     prop-object = {
         key1 = {
             key.1 = [1 3 5]

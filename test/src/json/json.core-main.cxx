@@ -444,7 +444,7 @@ TEST_BEG(struct_json, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/c
     TEST_CHECK(s1 == s0);
 TEST_END()
 
-TEST_BEG(struct_json_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/core")
+TEST_BEG(struct_json_comments, cxon::JSON<cxon::test::allow_cxx_comments_traits<>>, "/core")
     R_TEST(struct_json {}, "{/}", json::read_error::unexpected, 2);
 TEST_END()
 
@@ -514,7 +514,7 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
     }
 TEST_END()
 
-TEST_BEG(struct_bare_1_comments, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_comments_traits<>>>, "/core")
+TEST_BEG(struct_bare_1_comments, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_cxx_comments_traits<>>>, "/core")
     R_TEST(struct_bare_1 {{2, 4}, {5, 7}}, "even:[2,4]/ odd:[5,7]", json::read_error::unexpected, 11);
 TEST_END()
 
@@ -608,7 +608,7 @@ CXON_JSON_CLS(struct_comments,
     CXON_JSON_CLS_FIELD_ASIS(y)
 )
 
-TEST_BEG(allow_comments_core, cxon::JSON<cxon::test::allow_comments_traits<>>, "/core")
+TEST_BEG(allow_cxx_comments_core, cxon::JSON<cxon::test::allow_cxx_comments_traits<>>, "/core")
     R_TEST((unsigned)42, "// comment\n42");
     R_TEST((unsigned)42, "//\n42");
     R_TEST((unsigned)42, "/* comment */ 42");
@@ -638,7 +638,7 @@ TEST_BEG(allow_comments_core, cxon::JSON<cxon::test::allow_comments_traits<>>, "
     }
 TEST_END()
 
-TEST_BEG(allow_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<cxon::test::allow_comments_traits<>>>, "/core")
+TEST_BEG(allow_cxx_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<cxon::test::allow_cxx_comments_traits<>>>, "/core")
     R_TEST((unsigned)42, "// comment\n42");
     R_TEST((unsigned)42, "//\n42");
     R_TEST((unsigned)42, "/* comment */ 42");
@@ -666,6 +666,19 @@ TEST_BEG(allow_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterat
     {   int x = 42;
         R_TEST(&x, "/42", json::read_error::unexpected, 1);
     }
+TEST_END()
+
+
+TEST_BEG(allow_bash_comments_core, cxon::JSON<cxon::test::allow_bash_comments_traits<>>, "/core")
+    R_TEST((unsigned)42, "# comment\n42");
+    R_TEST((unsigned)42, "#\n42");
+    R_TEST((unsigned)42, "# comment1\n# comment2\n42");
+TEST_END()
+
+TEST_BEG(allow_bash_comments_core_input_iterator, cxon::JSON<cxon::test::input_iterator_traits<cxon::test::allow_bash_comments_traits<>>>, "/core")
+    R_TEST((unsigned)42, "# comment\n42");
+    R_TEST((unsigned)42, "#\n42");
+    R_TEST((unsigned)42, "# comment1\n# comment2\n42");
 TEST_END()
 
 

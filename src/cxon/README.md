@@ -458,8 +458,12 @@ namespace cxon { namespace json { // format traits
         // must be escaped - e.g. { a\ key: 1}
         static constexpr bool unquote_quoted_keys = false;
 
-        // allow c-style comments
-        static constexpr bool allow_comments            = false;
+        // allow c++-style comments
+        static constexpr bool allow_cxx_comments        = false;
+
+        // allow bash-style comments
+        static constexpr bool allow_bash_comments       = false;
+
         // allow trailing separators for objects and arrays
         static constexpr bool allow_trailing_separators = false;
 
