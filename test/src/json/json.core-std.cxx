@@ -776,7 +776,7 @@ TEST_END()
             }
     TEST_END()
 
-    TEST_BEG(optional_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+    TEST_BEG(optional_allow_cxx_comments, cxon::JSON<cxon::test::allow_cxx_comments_traits<>>, "/std")
         using namespace std;
             R_TEST(optional<int>(42), "/42", json::read_error::unexpected, 1);
     TEST_END()
@@ -921,7 +921,7 @@ TEST_END()
             }
     TEST_END()
 
-    TEST_BEG(variant_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+    TEST_BEG(variant_allow_cxx_comments, cxon::JSON<cxon::test::allow_cxx_comments_traits<>>, "/std")
         R_TEST(std::variant<std::monostate>(), R"(/**/null)");
         R_TEST(std::variant<std::monostate>(), R"(/**/nil)", json::read_error::unexpected, 4);
         R_TEST(std::variant<std::monostate>(), R"(/nil)", json::read_error::unexpected, 1);
@@ -2149,7 +2149,7 @@ TEST_BEG(memory, cxon::JSON<>, "/std")
         }
 TEST_END()
 
-TEST_BEG(memory_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+TEST_BEG(memory_allow_cxx_comments, cxon::JSON<cxon::test::allow_cxx_comments_traits<>>, "/std")
     using namespace std;
     // std::unique_ptr<T, D>
         R_TEST(unique_ptr<string>(), " / null", json::read_error::unexpected, 2);

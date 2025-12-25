@@ -122,11 +122,12 @@ namespace cxon { namespace cio { // input
             }
 
         template <typename X, typename II>
-            inline auto consume_(II& i, II e) -> enable_if_t<!X::allow_comments, bool> {
+            inline auto consume_(II& i, II e) -> enable_if_t<!X::allow_cxx_comments && !X::allow_bash_comments, bool> {
                 return consume_ws_<X>(i, e), true;
             }
         template <typename X, typename II>
-            inline auto consume_(II& i, II e) -> enable_if_t< X::allow_comments, bool> {
+            inline auto consume_(II& i, II e) -> enable_if_t< X::allow_cxx_comments, bool> {
+                static_assert(!X::allow_bash_comments, "c++ and bash style comments cannot be mixed");
                 consume_ws_<X>(i, e);
                 if (peek(i, e) == '/') {
                     switch (next(i, e)) {
@@ -142,6 +143,17 @@ namespace cxon { namespace cio { // input
                         default:
                             return false;
                     }
+                    consume_<X>(i, e);
+                }
+                return true;
+            }
+        template <typename X, typename II>
+            inline auto consume_(II& i, II e) -> enable_if_t< X::allow_bash_comments, bool> {
+                static_assert(!X::allow_cxx_comments, "bash and c++ style comments cannot be mixed");
+                consume_ws_<X>(i, e);
+                if (peek(i, e) == '#') {
+                    while (++i != e && *i != '\n')
+                        ;
                     consume_<X>(i, e);
                 }
                 return true;

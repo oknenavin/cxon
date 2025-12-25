@@ -459,7 +459,7 @@ TEST_END()
             }
     TEST_END()
 
-    TEST_BEG(variant2_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+    TEST_BEG(variant2_allow_cxx_comments, cxon::JSON<cxon::test::allow_cxx_comments_traits<>>, "/std")
         using namespace boost::variant2;
         R_TEST(variant<std::nullptr_t>(), R"(/**/null)");
         R_TEST(variant<std::nullptr_t>(), R"(/**/nil)", cxon::json::read_error::unexpected, 4);
@@ -662,7 +662,7 @@ TEST_BEG(boost_variant, cxon::JSON<>, "/boost")
         }
 TEST_END()
 
-TEST_BEG(variant_allow_comments, cxon::JSON<cxon::test::allow_comments_traits<>>, "/std")
+TEST_BEG(variant_allow_cxx_comments, cxon::JSON<cxon::test::allow_cxx_comments_traits<>>, "/std")
     using namespace boost;
     R_TEST(variant<std::nullptr_t>(), R"(/**/null)");
     R_TEST(variant<std::nullptr_t>(), R"(/**/nil)", cxon::json::read_error::unexpected, 4);

@@ -85,7 +85,8 @@ namespace cxon { namespace cio { // format traits
         static constexpr bool produce_strict_javascript = false;    // write: escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
         static constexpr bool quote_unquoted_keys       = false;    // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
         static constexpr bool unquote_quoted_keys       = false;    // object keys for types serialized with quotes will be unquoted (e.g. strings)
-        static constexpr bool allow_comments            = false;    // allow c-style comments
+        static constexpr bool allow_cxx_comments        = false;    // allow c++-style comments
+        static constexpr bool allow_bash_comments       = false;    // allow bash-style comments
         static constexpr bool allow_trailing_separators = false;    // allow trailing separators (map & lists)
         static constexpr bool assume_unique_object_keys = true;     // assume that object keys are unique (for the class serializers)
         static constexpr bool allow_javascript_nans     = false;    // allow NaN and Infinity

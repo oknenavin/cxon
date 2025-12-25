@@ -37,8 +37,13 @@ namespace cxon { namespace test {
         };
 
     template <typename T = cxon::json::format_traits>
-        struct allow_comments_traits : T {
-            static constexpr bool allow_comments = true;
+        struct allow_cxx_comments_traits : T {
+            static constexpr bool allow_cxx_comments = true;
+        };
+
+    template <typename T = cxon::json::format_traits>
+        struct allow_bash_comments_traits : T {
+            static constexpr bool allow_bash_comments = true;
         };
 
     template <typename T = cxon::json::format_traits>

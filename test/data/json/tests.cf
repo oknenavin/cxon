@@ -140,49 +140,49 @@ sets = {
             "set.2/test_parsing/y_structure_trailing_newline.json"
             "set.2/test_parsing/y_structure_true_in_array.json"
             "set.2/test_parsing/y_structure_whitespace_array.json"
-            // parsers are free to accept or reject content
-            //"set.2/test_parsing/i_number_double_huge_neg_exp.json"
-            //"set.2/test_parsing/i_number_huge_exp.json"
-            //"set.2/test_parsing/i_number_neg_int_huge_exp.json"
-            //"set.2/test_parsing/i_number_pos_double_huge_exp.json"
-            //"set.2/test_parsing/i_number_real_neg_overflow.json"
-            //"set.2/test_parsing/i_number_real_pos_overflow.json"
-            //"set.2/test_parsing/i_number_real_underflow.json"
-            //"set.2/test_parsing/i_number_too_big_neg_int.json"
-            //"set.2/test_parsing/i_number_too_big_pos_int.json"
-            //"set.2/test_parsing/i_number_very_big_negative_int.json"
-            //"set.2/test_parsing/i_object_key_lone_2nd_surrogate.json"
-            //"set.2/test_parsing/i_string_1st_surrogate_but_2nd_missing.json"
-            //"set.2/test_parsing/i_string_1st_valid_surrogate_2nd_invalid.json"
-            //"set.2/test_parsing/i_string_UTF-16LE_with_BOM.json"
-            //"set.2/test_parsing/i_string_UTF-8_invalid_sequence.json"
-            //"set.2/test_parsing/i_string_UTF8_surrogate_U+D800.json"
-            //"set.2/test_parsing/i_string_incomplete_surrogate_and_escape_valid.json"
-            //"set.2/test_parsing/i_string_incomplete_surrogate_pair.json"
-            //"set.2/test_parsing/i_string_incomplete_surrogates_escape_valid.json"
-            //"set.2/test_parsing/i_string_invalid_lonely_surrogate.json"
-            //"set.2/test_parsing/i_string_invalid_surrogate.json"
-            //"set.2/test_parsing/i_string_invalid_utf-8.json"
-            //"set.2/test_parsing/i_string_inverted_surrogates_U+1D11E.json"
-            //"set.2/test_parsing/i_string_iso_latin_1.json"
-            //"set.2/test_parsing/i_string_lone_second_surrogate.json"
-            //"set.2/test_parsing/i_string_lone_utf8_continuation_byte.json"
-            //"set.2/test_parsing/i_string_not_in_unicode_range.json"
-            //"set.2/test_parsing/i_string_overlong_sequence_2_bytes.json"
-            //"set.2/test_parsing/i_string_overlong_sequence_6_bytes.json"
-            //"set.2/test_parsing/i_string_overlong_sequence_6_bytes_null.json"
-            //"set.2/test_parsing/i_string_truncated-utf-8.json"
-            //"set.2/test_parsing/i_string_utf16BE_no_BOM.json"
-            //"set.2/test_parsing/i_string_utf16LE_no_BOM.json"
-            //"set.2/test_parsing/i_structure_500_nested_arrays.json"
-            //"set.2/test_parsing/i_structure_UTF-8_BOM_empty_object.json"
+            # parsers are free to accept or reject content
+            #"set.2/test_parsing/i_number_double_huge_neg_exp.json"
+            #"set.2/test_parsing/i_number_huge_exp.json"
+            #"set.2/test_parsing/i_number_neg_int_huge_exp.json"
+            #"set.2/test_parsing/i_number_pos_double_huge_exp.json"
+            #"set.2/test_parsing/i_number_real_neg_overflow.json"
+            #"set.2/test_parsing/i_number_real_pos_overflow.json"
+            #"set.2/test_parsing/i_number_real_underflow.json"
+            #"set.2/test_parsing/i_number_too_big_neg_int.json"
+            #"set.2/test_parsing/i_number_too_big_pos_int.json"
+            #"set.2/test_parsing/i_number_very_big_negative_int.json"
+            #"set.2/test_parsing/i_object_key_lone_2nd_surrogate.json"
+            #"set.2/test_parsing/i_string_1st_surrogate_but_2nd_missing.json"
+            #"set.2/test_parsing/i_string_1st_valid_surrogate_2nd_invalid.json"
+            #"set.2/test_parsing/i_string_UTF-16LE_with_BOM.json"
+            #"set.2/test_parsing/i_string_UTF-8_invalid_sequence.json"
+            #"set.2/test_parsing/i_string_UTF8_surrogate_U+D800.json"
+            #"set.2/test_parsing/i_string_incomplete_surrogate_and_escape_valid.json"
+            #"set.2/test_parsing/i_string_incomplete_surrogate_pair.json"
+            #"set.2/test_parsing/i_string_incomplete_surrogates_escape_valid.json"
+            #"set.2/test_parsing/i_string_invalid_lonely_surrogate.json"
+            #"set.2/test_parsing/i_string_invalid_surrogate.json"
+            #"set.2/test_parsing/i_string_invalid_utf-8.json"
+            #"set.2/test_parsing/i_string_inverted_surrogates_U+1D11E.json"
+            #"set.2/test_parsing/i_string_iso_latin_1.json"
+            #"set.2/test_parsing/i_string_lone_second_surrogate.json"
+            #"set.2/test_parsing/i_string_lone_utf8_continuation_byte.json"
+            #"set.2/test_parsing/i_string_not_in_unicode_range.json"
+            #"set.2/test_parsing/i_string_overlong_sequence_2_bytes.json"
+            #"set.2/test_parsing/i_string_overlong_sequence_6_bytes.json"
+            #"set.2/test_parsing/i_string_overlong_sequence_6_bytes_null.json"
+            #"set.2/test_parsing/i_string_truncated-utf-8.json"
+            #"set.2/test_parsing/i_string_utf16BE_no_BOM.json"
+            #"set.2/test_parsing/i_string_utf16LE_no_BOM.json"
+            #"set.2/test_parsing/i_structure_500_nested_arrays.json"
+            #"set.2/test_parsing/i_structure_UTF-8_BOM_empty_object.json"
         ]
     }
     set-fail-1 = {
         label   = "http://json.org/JSON_checker"
         group   = [
-            // payload not an object or array
-            //"set.1/fail1.json"
+            # payload not an object or array
+            #"set.1/fail1.json"
             "set.1/fail2.json"
             "set.1/fail3.json"
             "set.1/fail4.json"
@@ -199,8 +199,8 @@ sets = {
             "set.1/fail15.json"
             "set.1/fail16.json"
             "set.1/fail17.json"
-            // too deep
-            //"set.1/fail18.json"
+            # too deep
+            #"set.1/fail18.json"
             "set.1/fail19.json"
             "set.1/fail20.json"
             "set.1/fail21.json"
@@ -481,23 +481,23 @@ sets = {
             "set.5/canada.json"
             "set.5/citm_catalog.json"
             "set.5/github_events.json"
-            // redundant escapes
-            //"set.5/gsoc-2018.json"
+            # redundant escapes
+            #"set.5/gsoc-2018.json"
             "set.5/instruments.json"
-            // number precision
-            //"set.5/marine_ik.json"
-            // number precision
-            //"set.5/mesh.json"
-            //"set.5/mesh.pretty.json"
-            // number precision
-            //"set.5/numbers.json"
+            # number precision
+            #"set.5/marine_ik.json"
+            # number precision
+            #"set.5/mesh.json"
+            #"set.5/mesh.pretty.json"
+            # number precision
+            #"set.5/numbers.json"
             "set.5/random.json"
-            // number precision
-            //"set.5/twitter.json"
-            // redundant escapes + number precision
-            //"set.5/twitterescaped.json"
-            // redundant escapes
-            //"set.5/update-center.json"
+            # number precision
+            #"set.5/twitter.json"
+            # redundant escapes + number precision
+            #"set.5/twitterescaped.json"
+            # redundant escapes
+            #"set.5/update-center.json"
         ]
     }
     set-diff-native-1 = {
@@ -509,8 +509,8 @@ sets = {
     set-diff-native-2 = {
         label   = "https://github.com/github/gemoji"
         group   = [
-            // redundant default value
-            //"set.4/emoji.json"
+            # redundant default value
+            #"set.4/emoji.json"
         ]
     }
     set-diff-native-3 = {
@@ -519,25 +519,25 @@ sets = {
             "set.5/apache_builds.json"
             "set.5/canada.json"
             "set.5/citm_catalog.json"
-            // different key order for same objects
-            //"set.5/github_events.json"
-            // redundant escapes
-            //"set.5/gsoc-2018.json"
+            # different key order for same objects
+            #"set.5/github_events.json"
+            # redundant escapes
+            #"set.5/gsoc-2018.json"
             "set.5/instruments.json"
-            // number precision
-            //"set.5/marine_ik.json"
-            // number precision
-            //"set.5/mesh.json"
-            //"set.5/mesh.pretty.json"
-            // number precision
-            //"set.5/numbers.json"
+            # number precision
+            #"set.5/marine_ik.json"
+            # number precision
+            #"set.5/mesh.json"
+            #"set.5/mesh.pretty.json"
+            # number precision
+            #"set.5/numbers.json"
             "set.5/random.json"
-            // number precision
-            //"set.5/twitter.json"
-            // redundant escapes + number precision
-            //"set.5/twitterescaped.json"
-            // redundant escapes
-            //"set.5/update-center.json"
+            # number precision
+            #"set.5/twitter.json"
+            # redundant escapes + number precision
+            #"set.5/twitterescaped.json"
+            # redundant escapes
+            #"set.5/update-center.json"
         ]
     }
 }

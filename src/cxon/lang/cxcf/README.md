@@ -29,8 +29,8 @@ namespace cxon { namespace cxcf { // format traits
         // any white-space characters and object/key separator character (i.e. '=')
         // must be escaped - e.g. { a\ key = 1}
         static constexpr bool unquote_quoted_keys       = true;
-        // allow c-style comments
-        static constexpr bool allow_comments            = true;
+        // allow c++-style comments
+        static constexpr bool allow_cxx_comments        = true;
         // allow NaN and Infinity as a floating-point numbers
         static constexpr bool allow_javascript_nans     = true;
     };

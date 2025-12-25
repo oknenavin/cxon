@@ -832,18 +832,18 @@ namespace test { namespace kind {
                 CHECK(s == R"({{1:2}:3,[4]:5,"6":7,8:9,true:10,null:11})");
             }
         }
-        {   // errors with comments
-            {   using COM = cxon::JSON<cxon::test::allow_comments_traits<>>;
+        {   // errors with c++-style comments
+            {   using COM = cxon::JSON<cxon::test::allow_cxx_comments_traits<>>;
                 cxon::json::node n;
                     auto const r = cxon::from_bytes<COM>(n, "/{}");
                 CHECK(r.ec == cxon::json::read_error::unexpected);
             }
-            {   using COM = cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_comments_traits<>>>;
+            {   using COM = cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::allow_cxx_comments_traits<>>>;
                 cxon::json::node n;
                     auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
                 CHECK(r.ec == cxon::json::read_error::unexpected);
             }
-            {   using COM = cxon::JSON<cxon::test::unquoted_keys_traits<cxon::test::allow_comments_traits<>>>;
+            {   using COM = cxon::JSON<cxon::test::unquoted_keys_traits<cxon::test::allow_cxx_comments_traits<>>>;
                 cxon::json::node n;
                     auto const r = cxon::from_bytes<COM>(n, "{1:2,/3:4}");
                 CHECK(r.ec == cxon::json::read_error::unexpected);
