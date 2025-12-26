@@ -110,12 +110,12 @@ namespace cxon { namespace alc {
                         ;
                     }
                 template <typename T, typename Al, typename Tp, std::size_t ...I>
-                    static constexpr T* construct_with_(T* t, const Al& al, Tp&& tp, index_sequence<I...>) {
+                    static constexpr T* construct_with_(T* t, const Al& al, Tp&& tp, std::index_sequence<I...>) {
                         return uninitialized_<T>::construct_using_allocator(t, al, std::forward<typename std::tuple_element<I, Tp>::type>(std::get<I>(tp))...);
                     }
                 template <typename T, typename Al, typename Tp>
                     static constexpr T* construct_with_(T* t, const Al& al, Tp&& tp) {
-                        return construct_with_<T>(t, al, std::forward<Tp>(tp), make_index_sequence<std::tuple_size<Tp>::value>());
+                        return construct_with_<T>(t, al, std::forward<Tp>(tp), std::make_index_sequence<std::tuple_size<Tp>::value>());
                     }
                 template <typename Al, typename ...AF, typename ...AS>
                     static constexpr std::pair<F, S>* construct_using_allocator(std::pair<F, S>* t, const Al& al, std::piecewise_construct_t, std::tuple<AF...>&& af, std::tuple<AS...>&& as) {
@@ -170,12 +170,12 @@ namespace cxon { namespace alc {
                         );
                     }
                 template <typename T, typename Al, typename Tp, std::size_t ...I>
-                    static constexpr T create_with_(const Al& al, Tp&& tp, index_sequence<I...>) {
+                    static constexpr T create_with_(const Al& al, Tp&& tp, std::index_sequence<I...>) {
                         return using_allocator_<T>::create(al, std::forward<typename std::tuple_element<I, Tp>::type>(std::get<I>(tp))...);
                     }
                 template <typename T, typename Al, typename Tp>
                     static constexpr T create_with_(const Al& al, Tp&& tp) {
-                        return create_with_<T>(al, std::forward<Tp>(tp), make_index_sequence<std::tuple_size<Tp>::value>());
+                        return create_with_<T>(al, std::forward<Tp>(tp), std::make_index_sequence<std::tuple_size<Tp>::value>());
                     }
                 template <typename Al, typename ...AF, typename ...AS>
                     static constexpr std::pair<F, S> create(const Al& al, std::piecewise_construct_t, std::tuple<AF...>&& af, std::tuple<AS...>&& as) {
@@ -239,14 +239,14 @@ namespace cxon { namespace alc {
             }
 
             template <typename U = T, typename ...A> auto construct(U *u, A&&... as)
-                -> enable_if_t<!std::is_trivially_constructible<U, A...>::value> { tr::construct(al_, u, std::forward<A>(as)...); }
+                -> std::enable_if_t<!std::is_trivially_constructible<U, A...>::value> { tr::construct(al_, u, std::forward<A>(as)...); }
             template <typename U = T, typename ...A> auto construct(U *, A&&...)
-                -> enable_if_t< std::is_trivially_constructible<U, A...>::value> {}
+                -> std::enable_if_t< std::is_trivially_constructible<U, A...>::value> {}
 
             template <typename U = T> auto destroy(U *u)
-                -> enable_if_t<!std::is_trivially_destructible<U>::value> { tr::destroy(al_, u); }
+                -> std::enable_if_t<!std::is_trivially_destructible<U>::value> { tr::destroy(al_, u); }
             template <typename U = T> auto destroy(U *)
-                -> enable_if_t< std::is_trivially_destructible<U>::value> {}
+                -> std::enable_if_t< std::is_trivially_destructible<U>::value> {}
 
             private:
                 using tr = std::allocator_traits<type>;

@@ -195,22 +195,22 @@ namespace cxon { namespace cio { namespace cls {
 
         template <typename T, typename F>
             constexpr auto field_value_(T& t, const F& f)
-                -> enable_if_t< std::is_member_pointer<typename F::type>::value, decltype(t.*f.unit)&>
+                -> std::enable_if_t< std::is_member_pointer<typename F::type>::value, decltype(t.*f.unit)&>
             { return t.*f.unit; }
         template <typename T, typename F>
             constexpr auto field_value_(T&, const F& f)
-                -> enable_if_t<!std::is_member_pointer<typename F::type>::value, decltype(*f.unit)&>
+                -> std::enable_if_t<!std::is_member_pointer<typename F::type>::value, decltype(*f.unit)&>
             { return   *f.unit; }
 
         template <typename X, typename T, typename F, typename II, typename Cx>
             inline auto read_field_(T& t, const F& f, II& i, II e, Cx& cx)
-                -> enable_if_t<!val::is_sink<typename F::type>::value, bool>
+                -> std::enable_if_t<!val::is_sink<typename F::type>::value, bool>
             {
                 return  read_map_val<X>(field_value_(t, f), i, e, cx);
             }
         template <typename X, typename T, typename F, typename II, typename Cx>
             inline auto read_field_(T&, const F& f, II& i, II e, Cx& cx)
-                -> enable_if_t< val::is_sink<typename F::type>::value, bool>
+                -> std::enable_if_t< val::is_sink<typename F::type>::value, bool>
             {
                 return  val::sink_read<X>(f.unit, i, e, cx);
             }
@@ -222,13 +222,13 @@ namespace cxon { namespace cio { namespace cls {
                     struct read_ordered_ {
                         template <std::size_t Ix, typename T, typename ...Fs, typename II, typename Cx, typename Y = X>
                             static auto field_(T& t, const fields<Fs...>& fs, int (&st)[sizeof...(Fs)], II& i, II e, Cx& cx)
-                                -> enable_if_t< Y::assume_unique_object_keys, bool>
+                                -> std::enable_if_t< Y::assume_unique_object_keys, bool>
                             {
                                 return st[Ix] == 0 && read_field_<Y>(t, std::get<Ix>(fs), i, e, cx) && (st[Ix] = 1, true);
                             }
                         template <std::size_t Ix, typename T, typename ...Fs, typename II, typename Cx, typename Y = X>
                             static auto field_(T& t, const fields<Fs...>& fs, int (&)[sizeof...(Fs)], II& i, II e, Cx& cx)
-                                -> enable_if_t<!Y::assume_unique_object_keys, bool>
+                                -> std::enable_if_t<!Y::assume_unique_object_keys, bool>
                             {
                                 return read_field_<Y>(t, std::get<Ix>(fs), i, e, cx);
                             }
@@ -242,7 +242,7 @@ namespace cxon { namespace cio { namespace cls {
                             }
                     };
                 template <typename X, int L, int R>
-                    struct read_ordered_<X, L, R, void_t<enable_if_t<R < L>>> {
+                    struct read_ordered_<X, L, R, void_t<std::enable_if_t<R < L>>> {
                         template <typename T, typename ...Fs, typename II, typename Cx, typename Y = X>
                             static constexpr bool field(T&, const char*, const fields<Fs...>&, int (&)[sizeof...(Fs)], II&, II, Cx&) noexcept {
                                 return false;
@@ -256,7 +256,7 @@ namespace cxon { namespace cio { namespace cls {
                     struct read_ {
                         template <typename T, typename Fs, typename II, typename Cx, typename Y = X>
                             static auto field(T& t, const char* name, const Fs& fs, int (&st)[L], II& i, II e, Cx& cx)
-                                -> enable_if_t< Y::assume_unique_object_keys, bool>
+                                -> std::enable_if_t< Y::assume_unique_object_keys, bool>
                             {
                                 return st[N] == 0 && std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
                                     (st[N] = 1, read_field_<Y>(t, std::get<N>(fs), i, e, cx)) :
@@ -265,7 +265,7 @@ namespace cxon { namespace cio { namespace cls {
                             }
                         template <typename T, typename Fs, typename II, typename Cx, typename Y = X>
                             static auto field(T& t, const char* name, const Fs& fs, int (&st)[L], II& i, II e, Cx& cx)
-                                -> enable_if_t<!Y::assume_unique_object_keys, bool>
+                                -> std::enable_if_t<!Y::assume_unique_object_keys, bool>
                             {
                                 return std::char_traits<char>::compare(std::get<N>(fs).name, name, std::get<N>(fs).nale + 1) == 0 ?
                                     read_field_<Y>(t, std::get<N>(fs), i, e, cx) :
@@ -316,7 +316,7 @@ namespace cxon { namespace cio { namespace cls {
 
         template <typename X, typename T, typename ...Fs, typename II, typename Cx>
             inline auto read_fields_(T& t, const fields<Fs...>& fs, II& i, II e, Cx& cx)
-                -> enable_if_t<!is_bare_class<T>::value, bool>
+                -> std::enable_if_t<!is_bare_class<T>::value, bool>
             {
                 if (!consume<X>(X::map::beg, i, e, cx))
                     return false;
@@ -341,7 +341,7 @@ namespace cxon { namespace cio { namespace cls {
             }
         template <typename X, typename T, typename ...Fs, typename II, typename Cx>
             inline auto read_fields_(T& t, const fields<Fs...>& fs, II& i, II e, Cx& cx)
-                -> enable_if_t< is_bare_class<T>::value, bool>
+                -> std::enable_if_t< is_bare_class<T>::value, bool>
             {
                 if (!consume<X>(i, e, cx)) return false;
                     if (i == e) return true;
@@ -377,7 +377,7 @@ namespace cxon { namespace cio { namespace cls {
 
         template <typename X, typename O, typename T, typename F, typename Cx>
             inline auto write_field_(O& o, const T& t, const F& f, Cx& cx)
-                -> enable_if_t<!val::is_sink<typename F::type>::value, bool>
+                -> std::enable_if_t<!val::is_sink<typename F::type>::value, bool>
             {
                 using Y = unbind_traits_t<X, cio::key::simple_traits>;
                 return  write_map_key<X>(o, f.name, f.nale, cx) &&
@@ -386,7 +386,7 @@ namespace cxon { namespace cio { namespace cls {
             }
         template <typename X, typename O, typename T, typename F, typename Cx>
             constexpr auto write_field_(O&, const T&, const F&, Cx&) noexcept
-                -> enable_if_t< val::is_sink<typename F::type>::value, bool>
+                -> std::enable_if_t< val::is_sink<typename F::type>::value, bool>
             {
                 return true;
             }
@@ -394,11 +394,11 @@ namespace cxon { namespace cio { namespace cls {
         namespace imp {
 
             template <typename X, typename T, typename O, typename Cx>
-                inline auto write_sep_(O& o, Cx& cx) -> enable_if_t<!is_bare_class<T>::value, bool> {
+                inline auto write_sep_(O& o, Cx& cx) -> std::enable_if_t<!is_bare_class<T>::value, bool> {
                     return poke<X>(o, X::map::sep, cx);
                 }
             template <typename X, typename T, typename O, typename Cx>
-                inline auto write_sep_(O& o, Cx& cx) -> enable_if_t< is_bare_class<T>::value, bool> {
+                inline auto write_sep_(O& o, Cx& cx) -> std::enable_if_t< is_bare_class<T>::value, bool> {
                     return poke<X>(o, '\n', cx);
                 }
 
@@ -452,7 +452,7 @@ namespace cxon { namespace cio { namespace cls {
 
         template <typename X, typename T, typename ...Fs, typename O, typename Cx>
             inline auto write_fields_(O& o, const T& t, const fields<Fs...>& fs, Cx& cx)
-                -> enable_if_t<!is_bare_class<T>::value, bool>
+                -> std::enable_if_t<!is_bare_class<T>::value, bool>
             {
                 return  poke<X>(o, X::map::beg, cx) &&
                             write_fields_bare_<X>(o, t, fs, cx) &&
@@ -461,7 +461,7 @@ namespace cxon { namespace cio { namespace cls {
             }
         template <typename X, typename T, typename ...Fs, typename O, typename Cx>
             inline auto write_fields_(O& o, const T& t, const fields<Fs...>& fs, Cx& cx)
-                -> enable_if_t< is_bare_class<T>::value, bool>
+                -> std::enable_if_t< is_bare_class<T>::value, bool>
             {
                 return  write_fields_bare_<X>(o, t, fs, cx);
             }

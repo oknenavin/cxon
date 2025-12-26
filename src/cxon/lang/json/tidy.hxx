@@ -28,20 +28,20 @@ namespace cxon { namespace json { // interface
         struct indenter;
 
     template <typename X = format_traits, typename OutIt>
-        constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t')        -> enable_if_t<is_output_iterator<OutIt>::value, indenter<JSON<X>, OutIt>>;
+        constexpr auto make_indenter(OutIt o, unsigned tab = 1, char pad = '\t')        -> std::enable_if_t<is_output_iterator<OutIt>::value, indenter<JSON<X>, OutIt>>;
     template <typename X = format_traits, typename Insertable>
-        constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t')  -> enable_if_t<is_back_insertable<Insertable>::value, indenter<JSON<X>, Insertable&>>;
+        constexpr auto make_indenter(Insertable& i, unsigned tab = 1, char pad = '\t')  -> std::enable_if_t<is_back_insertable<Insertable>::value, indenter<JSON<X>, Insertable&>>;
     template <typename X = format_traits, typename FwIt>
         constexpr auto make_indenter(FwIt b, FwIt e, unsigned tab = 1, char pad = '\t') -> indenter<JSON<X>, cnt::range_container<FwIt>>;
 
     template <typename X = format_traits, typename OutIt, typename InIt>
-        inline auto tidy(OutIt o, InIt b, InIt e, unsigned tab = 1, char pad = '\t')    -> enable_if_t<is_output_iterator<OutIt>::value, bool>;
+        inline auto tidy(OutIt o, InIt b, InIt e, unsigned tab = 1, char pad = '\t')    -> std::enable_if_t<is_output_iterator<OutIt>::value, bool>;
     template <typename X = format_traits, typename OutIt, typename Iterable>
-        inline auto tidy(OutIt o, const Iterable& i, unsigned tab = 1, char pad = '\t') -> enable_if_t<is_output_iterator<OutIt>::value, bool>;
+        inline auto tidy(OutIt o, const Iterable& i, unsigned tab = 1, char pad = '\t') -> std::enable_if_t<is_output_iterator<OutIt>::value, bool>;
     template <typename X = format_traits, typename Result = std::string, typename InIt>
-        inline auto tidy(InIt b, InIt e, unsigned tab = 1, char pad = '\t')             -> enable_if_t<is_back_insertable<Result>::value, Result>;
+        inline auto tidy(InIt b, InIt e, unsigned tab = 1, char pad = '\t')             -> std::enable_if_t<is_back_insertable<Result>::value, Result>;
     template <typename X = format_traits, typename Result = std::string, typename Iterable>
-        inline auto tidy(const Iterable& i, unsigned tab = 1, char pad = '\t')          -> enable_if_t<is_back_insertable<Result>::value, Result>;
+        inline auto tidy(const Iterable& i, unsigned tab = 1, char pad = '\t')          -> std::enable_if_t<is_back_insertable<Result>::value, Result>;
     template <typename X = format_traits, typename FwIt, typename InIt>
         inline auto tidy(FwIt f, FwIt l, InIt b, InIt e, unsigned tab = 1, char pad = '\t')    -> bool;
     template <typename X = format_traits, typename FwIt, typename Iterable>
@@ -54,11 +54,11 @@ namespace cxon { namespace json { // interface
 namespace cxon { namespace json {
 
     template <typename X, typename OI>
-        constexpr auto make_indenter(OI o, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, indenter<JSON<X>, OI>> {
+        constexpr auto make_indenter(OI o, unsigned tab, char pad) -> std::enable_if_t<is_output_iterator<OI>::value, indenter<JSON<X>, OI>> {
             return indenter<JSON<X>, OI>{o, tab, pad};
         }
     template <typename X, typename I>
-        constexpr auto make_indenter(I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<I>::value, indenter<JSON<X>, I&>> {
+        constexpr auto make_indenter(I& i, unsigned tab, char pad) -> std::enable_if_t<is_back_insertable<I>::value, indenter<JSON<X>, I&>> {
             return indenter<JSON<X>, I&>{i, tab, pad};
         }
     template <typename X, typename FI>
@@ -68,19 +68,19 @@ namespace cxon { namespace json {
         }
 
     template <typename X, typename OI, typename II>
-        inline auto tidy(OI o, II b, II e, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, bool> {
+        inline auto tidy(OI o, II b, II e, unsigned tab, char pad) -> std::enable_if_t<is_output_iterator<OI>::value, bool> {
             auto i = make_indenter<JSON<X>>(o, tab, pad);
             for ( ; b != e && cio::poke(i, *b); ++b)
                 ;
             return b == e;
         }
     template <typename X, typename OI, typename I>
-        inline auto tidy(OI o, const I& i, unsigned tab, char pad) -> enable_if_t<is_output_iterator<OI>::value, bool> {
+        inline auto tidy(OI o, const I& i, unsigned tab, char pad) -> std::enable_if_t<is_output_iterator<OI>::value, bool> {
             return tidy<X>(o, std::begin(i), std::end(i), tab, pad);
         }
 
     template <typename X, typename R, typename II>
-        inline auto tidy(II b, II e, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
+        inline auto tidy(II b, II e, unsigned tab, char pad) -> std::enable_if_t<is_back_insertable<R>::value, R> {
             R r;
                 auto i = make_indenter<X>(r, tab, pad);
                 for ( ; b != e && cio::poke(i, *b); ++b)
@@ -88,7 +88,7 @@ namespace cxon { namespace json {
             return r;
         }   // LCOV_EXCL_LINE: not covered with g++ > 8 and lcov 1.15
     template <typename X, typename R, typename I>
-        inline auto tidy(const I& i, unsigned tab, char pad) -> enable_if_t<is_back_insertable<R>::value, R> {
+        inline auto tidy(const I& i, unsigned tab, char pad) -> std::enable_if_t<is_back_insertable<R>::value, R> {
             return tidy<X, R>(std::begin(i), std::end(i), tab, pad);
         }
         

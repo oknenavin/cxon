@@ -57,27 +57,27 @@ namespace cxon { namespace charconv { namespace imp {
     namespace {
 
         template <typename T, typename F>
-            constexpr auto clamp_(F t) noexcept -> enable_if_t<sizeof(T) == sizeof(F), T> {
+            constexpr auto clamp_(F t) noexcept -> std::enable_if_t<sizeof(T) == sizeof(F), T> {
                 return t;
             }
         template <typename T, typename F>
-            inline auto clamp_(F f) noexcept    -> enable_if_t<sizeof(T) < sizeof(F) && std::is_signed<T>(), T> {
+            inline auto clamp_(F f) noexcept    -> std::enable_if_t<sizeof(T) < sizeof(F) && std::is_signed<T>(), T> {
                         if (f < std::numeric_limits<T>::min()) errno = ERANGE, f = std::numeric_limits<T>::min();
                 else    if (f > std::numeric_limits<T>::max()) errno = ERANGE, f = std::numeric_limits<T>::max();
                 return (T)f;
             }
         template <typename T, typename F>
-            inline auto clamp_(F f) noexcept    -> enable_if_t<sizeof(T) < sizeof(F) && std::is_unsigned<T>(), T> {
+            inline auto clamp_(F f) noexcept    -> std::enable_if_t<sizeof(T) < sizeof(F) && std::is_unsigned<T>(), T> {
                 if (std::numeric_limits<T>::max() < f) errno = ERANGE, f = std::numeric_limits<T>::max();
                 return (T)f;
             }
 
         template <typename T>
-            inline auto is_sign_invalid_(char c) noexcept -> enable_if_t<std::is_signed<T>::value, bool> {
+            inline auto is_sign_invalid_(char c) noexcept -> std::enable_if_t<std::is_signed<T>::value, bool> {
                 return c == '+';
             }
         template <typename T>
-            inline auto is_sign_invalid_(char c) noexcept -> enable_if_t<std::is_unsigned<T>::value, bool> {
+            inline auto is_sign_invalid_(char c) noexcept -> std::enable_if_t<std::is_unsigned<T>::value, bool> {
                 return c == '+' || c == '-';
             }
 
@@ -220,7 +220,7 @@ namespace cxon { namespace charconv { // <charconv>
             }
         template <typename T>
             inline auto from_chars(const char* f, const char* l, T& t, int base = 10) noexcept
-                ->  enable_if_t<std::is_integral<T>::value, std::from_chars_result>
+                ->  std::enable_if_t<std::is_integral<T>::value, std::from_chars_result>
             {
                 return from_chars_i_(option<1>(), f, l, t, base);
             }
@@ -241,7 +241,7 @@ namespace cxon { namespace charconv { // <charconv>
             }
         template <typename T>
             inline auto from_chars(const char* f, const char* l, T& t) noexcept
-                ->  enable_if_t<std::is_floating_point<T>::value, std::from_chars_result>
+                ->  std::enable_if_t<std::is_floating_point<T>::value, std::from_chars_result>
             {
                 return from_chars_f_(option<1>(), f, l, t);
             }
@@ -261,7 +261,7 @@ namespace cxon { namespace charconv { // <charconv>
             }
         template <typename T>
             inline auto to_chars(char* f, char* l, T t, int base = 10) noexcept
-                ->  enable_if_t<std::is_integral<T>::value, std::to_chars_result>
+                ->  std::enable_if_t<std::is_integral<T>::value, std::to_chars_result>
             {
                 return to_chars_i_(option<1>(), f, l, t, base);
             }
@@ -273,7 +273,7 @@ namespace cxon { namespace charconv { // <charconv>
                 static constexpr T      value = (T)imp::chars_format::general;
             };
         template <typename T>
-            struct general<T, enable_if_t<sizeof(T::general)>> {
+            struct general<T, std::enable_if_t<sizeof(T::general)>> {
                 static constexpr T      value = T::general;
             };
 
@@ -303,7 +303,7 @@ namespace cxon { namespace charconv { // <charconv>
             }
         template <typename T>
             inline auto to_chars(char* f, char* l, T t, int precision) noexcept
-                ->  enable_if_t<std::is_floating_point<T>::value, std::to_chars_result>
+                ->  std::enable_if_t<std::is_floating_point<T>::value, std::to_chars_result>
             {
                 return to_chars_f_(option<2>(), f, l, t, precision);
             }
@@ -314,7 +314,7 @@ namespace cxon { namespace charconv { // <charconv>
 
             template <typename T>
                 inline auto to_chars(char* f, char* l, T t, int precision) noexcept
-                    ->  enable_if_t<std::is_floating_point<T>::value, boost::charconv::to_chars_result>
+                    ->  std::enable_if_t<std::is_floating_point<T>::value, boost::charconv::to_chars_result>
                 {
                     return to_chars(f, l, t, boost::charconv::chars_format::general, precision);
                 }

@@ -104,12 +104,12 @@ namespace cxon { namespace cio { namespace cnt {
 #       endif
 
         template <typename X, typename Cr, typename II, typename Cx, typename EA>
-            inline auto list_read_(II& i, II e, Cx& cx, EA element_add) -> enable_if_t<!X::allow_trailing_separators || Cr::sep == ' '> {
+            inline auto list_read_(II& i, II e, Cx& cx, EA element_add) -> std::enable_if_t<!X::allow_trailing_separators || Cr::sep == ' '> {
                 // expects non-empty list
                 while (element_add() && consume_sep<X, Cr>(i, e, cx)) ;
             }
         template <typename X, typename Cr, typename II, typename Cx, typename EA>
-            inline auto list_read_(II& i, II e, Cx& cx, EA element_add) -> enable_if_t< X::allow_trailing_separators> {
+            inline auto list_read_(II& i, II e, Cx& cx, EA element_add) -> std::enable_if_t< X::allow_trailing_separators> {
                 // expects non-empty list
                 while (element_add() && consume_sep<X, Cr>(i, e, cx) && (consume<X>(i, e, cx) && peek(i, e) != Cr::end)) ;
             }

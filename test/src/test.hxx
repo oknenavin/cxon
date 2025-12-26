@@ -120,11 +120,11 @@ namespace cxon { namespace test {
     template <typename T>
         struct match<T> {
             template <typename U = T>
-                static auto values(const U& t0, const U& t1) -> enable_if_t<!std::is_floating_point<U>::value, bool> {
+                static auto values(const U& t0, const U& t1) -> std::enable_if_t<!std::is_floating_point<U>::value, bool> {
                     return t0 == t1;
                 }
             template <typename U = T>
-                static auto values(U t0, U t1) -> enable_if_t< std::is_floating_point<U>::value, bool> {
+                static auto values(U t0, U t1) -> std::enable_if_t< std::is_floating_point<U>::value, bool> {
                     return !std::isgreater(t0, t1) && !std::isless(t0, t1);
                 }
         };
@@ -140,11 +140,11 @@ namespace cxon { namespace test {
     template <typename T>
         struct match<T*> {
             template <typename U = T>
-                static auto values(const T* t0, const T* t1) -> enable_if_t<!is_char<U>::value, bool> {
+                static auto values(const T* t0, const T* t1) -> std::enable_if_t<!is_char<U>::value, bool> {
                     return t0 == t1 || (t0 && t1 && match<T>::values(*t0, *t1));
                 }
             template <typename U = T>
-                static auto values(const T* t0, const T* t1) -> enable_if_t< is_char<U>::value, bool> {
+                static auto values(const T* t0, const T* t1) -> std::enable_if_t< is_char<U>::value, bool> {
                     if (!t0 || !t1) return t0 == t1;
                     while (*t0 && *t1 && *t0 == *t1) ++t0, ++t1;
                     return *t0 == *t1;
@@ -227,11 +227,11 @@ namespace cxon { namespace test {
     template <typename, typename = void>
         struct is_force_input_iterator : std::false_type {};
     template <typename X>
-        struct is_force_input_iterator<X, enable_if_t<X::force_input_iterator>> : std::true_type {};
+        struct is_force_input_iterator<X, std::enable_if_t<X::force_input_iterator>> : std::true_type {};
 
     template <typename X, typename T, typename S, typename ...A>
         inline auto from_string(T& t, const S& s, A&&... as)
-            -> enable_if_t< is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
+            -> std::enable_if_t< is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
         {
             auto b = make_force_input_iterator(std::begin(s)), e = make_force_input_iterator(std::end(s));
             auto const r =  from_bytes<X>(t, b, e, std::forward<A>(as)...);
@@ -239,7 +239,7 @@ namespace cxon { namespace test {
         }
     template <typename X, typename T, typename S, typename ...A>
         inline auto from_string(T& t, const S& s, A&&... as)
-            -> enable_if_t<!is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
+            -> std::enable_if_t<!is_force_input_iterator<X>::value, from_bytes_result<decltype(std::begin(s))>>
         {
             return from_bytes<X>(t, s, std::forward<A>(as)...);
         }
@@ -256,12 +256,12 @@ namespace cxon { namespace test {
             ~clean()            { destroy(); }
 
             template <typename U = typename std::remove_const<T>::type>
-                auto destroy() -> enable_if_t<!is_char<U>::value, void> {
+                auto destroy() -> std::enable_if_t<!is_char<U>::value, void> {
                     auto al = alc::make_allocator<U>(std::allocator<U>());
                     al.release(const_cast<U*>(t_));
                 }
             template <typename U = typename std::remove_const<T>::type>
-                auto destroy() -> enable_if_t< is_char<U>::value, void> {
+                auto destroy() -> std::enable_if_t< is_char<U>::value, void> {
                     auto al = alc::make_allocator<U>(std::allocator<U>());
                     al.release(const_cast<U*>(t_), t_ ? std::char_traits<U>::length(t_) + 1 : 0);
                 }

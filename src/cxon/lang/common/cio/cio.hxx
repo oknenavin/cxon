@@ -119,57 +119,57 @@ namespace cxon { namespace cio { namespace str {
     template <typename T> struct raw_traits : T {};
 
     template <typename X>
-        inline auto delim_en_check(char c) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_en_check(char c) -> std::enable_if_t<!is_unquoted_key_context<X>::value, bool> {
             CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
                     return c == X::string::del;
             else    return chr::is<X>::space(c) || c == X::map::div;
         }
     template <typename X>
-        inline auto delim_en_check(char c) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_en_check(char c) -> std::enable_if_t< is_unquoted_key_context<X>::value, bool> {
             return c == X::string::del;
         }
 
     template <typename X, typename II>
-        inline auto delim_be_read(II& i, II e) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_be_read(II& i, II e) -> std::enable_if_t<!is_unquoted_key_context<X>::value, bool> {
             CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
                     return peek(i, e) == X::string::del && (++i, true);
             else    return true;
         }
     template <typename X, typename II>
-        inline auto delim_be_read(II& i, II e) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_be_read(II& i, II e) -> std::enable_if_t< is_unquoted_key_context<X>::value, bool> {
             return peek(i, e) == '\\' && next(i, e) == X::string::del && (++i, true);
         }
 
     template <typename X, typename II>
-        inline auto delim_en_read(II& i, II e) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_en_read(II& i, II e) -> std::enable_if_t<!is_unquoted_key_context<X>::value, bool> {
             CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
                     return peek(i, e) == X::string::del && (++i, true);
             else    return true;
         }
     template <typename X, typename II>
-        inline auto delim_en_read(II& i, II e) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_en_read(II& i, II e) -> std::enable_if_t< is_unquoted_key_context<X>::value, bool> {
             return peek(i, e) == '\\' && next(i, e) == X::string::del && (++i, true);
         }
 
     template <typename X, typename O>
-        inline auto delim_be_write(O& o) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_be_write(O& o) -> std::enable_if_t<!is_unquoted_key_context<X>::value, bool> {
             CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
                     return poke(o, X::string::del);
             else    return true;
         }
     template <typename X, typename O>
-        inline auto delim_be_write(O& o) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_be_write(O& o) -> std::enable_if_t< is_unquoted_key_context<X>::value, bool> {
             return poke(o, '\\') && poke(o, X::string::del);
         }
 
     template <typename X, typename O>
-        inline auto delim_en_write(O& o) -> enable_if_t<!is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_en_write(O& o) -> std::enable_if_t<!is_unquoted_key_context<X>::value, bool> {
             CXON_IF_CONSTEXPR (!is_quoted_key_context<X>::value)
                     return poke(o, X::string::del);
             else    return true;
         }
     template <typename X, typename O>
-        inline auto delim_en_write(O& o) -> enable_if_t< is_unquoted_key_context<X>::value, bool> {
+        inline auto delim_en_write(O& o) -> std::enable_if_t< is_unquoted_key_context<X>::value, bool> {
             return poke(o, '\\') && poke(o, X::string::del);
         }
 
@@ -178,20 +178,20 @@ namespace cxon { namespace cio { namespace str {
 namespace cxon { namespace cio { namespace cnt {
 
     template <typename X, typename Cr, typename II>
-        inline auto sep_read(II& i, II e) -> enable_if_t<Cr::sep != ' ', bool> {
+        inline auto sep_read(II& i, II e) -> std::enable_if_t<Cr::sep != ' ', bool> {
             return peek(i, e) == Cr::sep && (++i, true);
         }
     template <typename X, typename Cr, typename II>
-        inline auto sep_read(II& i, II e) -> enable_if_t<Cr::sep == ' ', bool> {
+        inline auto sep_read(II& i, II e) -> std::enable_if_t<Cr::sep == ' ', bool> {
             return peek(i, e) != Cr::end;
         }
 
     template <typename X, typename Cr, typename II, typename Cx>
-        inline auto consume_sep(II& i, II e, Cx& cx) -> enable_if_t<Cr::sep != ' ', bool> {
+        inline auto consume_sep(II& i, II e, Cx& cx) -> std::enable_if_t<Cr::sep != ' ', bool> {
             return consume<X>(i, e, cx) && consume<X>(Cr::sep, i, e);
         }
     template <typename X, typename Cr, typename II, typename Cx>
-        inline auto consume_sep(II& i, II e, Cx& cx) -> enable_if_t<Cr::sep == ' ', bool> {
+        inline auto consume_sep(II& i, II e, Cx& cx) -> std::enable_if_t<Cr::sep == ' ', bool> {
             return consume<X>(i, e, cx) && peek(i, e) != Cr::end;
         }
 

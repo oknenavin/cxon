@@ -45,7 +45,7 @@ namespace cxon { namespace cio { // input
 #   if defined(__GNUC__) && __GNUC__ > 11 && !defined(__clang__) // gcc does not like this forward declaration
         template <typename X, typename II, typename RD, typename Cx>
             inline auto consume(RD read, II& i, II e, Cx& cx)
-                -> enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>;
+                -> std::enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>;
 #   endif
 
     template<typename II>
@@ -69,7 +69,7 @@ namespace cxon { namespace cio { // output
 #   if defined(__GNUC__) && __GNUC__ > 11 && !defined(__clang__) // gcc does not like this forward declaration
         template <typename O, typename WR>
             inline auto poke(O& o, WR write)
-                -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+                -> std::enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
 #   endif
 
     template <typename X, typename O, typename Cx>
@@ -86,7 +86,7 @@ namespace cxon { namespace cio { // output
 #   if defined(__GNUC__) && __GNUC__ > 11 && !defined(__clang__) // gcc does not like this forward declaration
         template <typename X, typename O, typename WR, typename Cx>
             inline auto poke(O& o, WR write, Cx& cx)
-                -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
+                -> std::enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool>;
 #   endif
 
 }}
@@ -122,11 +122,11 @@ namespace cxon { namespace cio { // input
             }
 
         template <typename X, typename II>
-            inline auto consume_(II& i, II e) -> enable_if_t<!X::allow_cxx_comments && !X::allow_bash_comments, bool> {
+            inline auto consume_(II& i, II e) -> std::enable_if_t<!X::allow_cxx_comments && !X::allow_bash_comments, bool> {
                 return consume_ws_<X>(i, e), true;
             }
         template <typename X, typename II>
-            inline auto consume_(II& i, II e) -> enable_if_t< X::allow_cxx_comments, bool> {
+            inline auto consume_(II& i, II e) -> std::enable_if_t< X::allow_cxx_comments, bool> {
                 static_assert(!X::allow_bash_comments, "c++ and bash style comments cannot be mixed");
                 consume_ws_<X>(i, e);
                 if (peek(i, e) == '/') {
@@ -148,7 +148,7 @@ namespace cxon { namespace cio { // input
                 return true;
             }
         template <typename X, typename II>
-            inline auto consume_(II& i, II e) -> enable_if_t< X::allow_bash_comments, bool> {
+            inline auto consume_(II& i, II e) -> std::enable_if_t< X::allow_bash_comments, bool> {
                 static_assert(!X::allow_cxx_comments, "bash and c++ style comments cannot be mixed");
                 consume_ws_<X>(i, e);
                 if (peek(i, e) == '#') {
@@ -189,16 +189,16 @@ namespace cxon { namespace cio { // input
 
     template <typename X, typename II, typename RD, typename Cx>
         inline auto consume(RD read, II& i, II e, Cx& cx)
-            -> enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>
+            -> std::enable_if_t<std::is_same<decltype(read(i, e)), bool>::value, bool>
         {
             return consume<X>(i, e, cx) && (read(i, e) || cx/X::read_error::unexpected);
         }
 
     namespace imp {
         template<typename II>
-            inline auto rewind_(II&  , II  ) noexcept -> enable_if_t<!cxon::is_forward_iterator<II>::value> {        }
+            inline auto rewind_(II&  , II  ) noexcept -> std::enable_if_t<!cxon::is_forward_iterator<II>::value> {        }
         template<typename II>
-            inline auto rewind_(II& i, II o) noexcept -> enable_if_t< cxon::is_forward_iterator<II>::value> { i = o; }
+            inline auto rewind_(II& i, II o) noexcept -> std::enable_if_t< cxon::is_forward_iterator<II>::value> { i = o; }
     }
     template<typename II>
         inline void rewind(II& i, II o) noexcept {
@@ -219,13 +219,13 @@ namespace cxon { namespace cio { // output
                 }
             template <typename O>
                 inline auto push_(option<1>, O& o, char c)
-                    -> enable_if_t<is_back_insertable<O>::value>
+                    -> std::enable_if_t<is_back_insertable<O>::value>
                 {
                     o.push_back(c);
                 }
             template <typename O>
                 inline auto push_(option<0>, O& o, char c)
-                    -> enable_if_t<is_output_iterator<O>::value>
+                    -> std::enable_if_t<is_output_iterator<O>::value>
                 {
                     *o = c, ++o;
                 }
@@ -281,13 +281,13 @@ namespace cxon { namespace cio { // output
         // bool bridge
             template <typename O, typename ...P>
                 inline auto poke_(option<2>, O& o, P... p)
-                    -> enable_if_t<std::is_same<decltype(o.append(p...)), bool>::value, bool>
+                    -> std::enable_if_t<std::is_same<decltype(o.append(p...)), bool>::value, bool>
                 {
                     return o.append(p...);
                 }
             template <typename O, typename ...P>
                 inline auto poke_(option<1>, O& o, P... p)
-                    -> enable_if_t<std::is_same<decltype(o.good()), bool>::value, bool>
+                    -> std::enable_if_t<std::is_same<decltype(o.good()), bool>::value, bool>
                 {
                     return push_(o, p...), o.good();
                 }
@@ -315,7 +315,7 @@ namespace cxon { namespace cio { // output
 
     template <typename O, typename WR>
         inline auto poke(O& o, WR write)
-            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool> { return write(o); }
+            -> std::enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool> { return write(o); }
 
     template <typename X, typename O, typename Cx>
         inline bool poke(O& o, char c, Cx& cx)                                  { return poke(o, c)     || cx/X::write_error::output_failure; }
@@ -330,7 +330,7 @@ namespace cxon { namespace cio { // output
 
     template <typename X, typename O, typename WR, typename Cx>
         inline auto poke(O& o, WR write, Cx& cx)
-            -> enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool> { return write(o)       || cx/X::write_error::output_failure; }
+            -> std::enable_if_t<std::is_same<decltype(write(o)), bool>::value, bool> { return write(o)       || cx/X::write_error::output_failure; }
 
 }}
 
