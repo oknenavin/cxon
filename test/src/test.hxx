@@ -23,14 +23,8 @@
 
 #include <cstring>
 
+
 ////////////////////////////////////////////////////////////////////////////////
-
-namespace cxon { namespace test {
-
-    using byte = unsigned char;
-    using bytes = std::basic_string<byte>;
-
-}}
 
 namespace cxon { namespace test {
 
@@ -98,7 +92,6 @@ namespace cxon { namespace test {
 #define W_TEST(ref, ...) TEST_CHECK(cxon::test::verify_write<XXON>(ref, __VA_ARGS__))
 
 #define QS(s) "\"" s "\""
-#define BS(s) cxon::test::bytes((cxon::test::byte*)s, sizeof(s) - 1)
 
 namespace cxon { namespace test {
 
@@ -109,19 +102,11 @@ namespace cxon { namespace test {
         inline bool verify_read(const T& ref, const std::string& sbj);
     template <typename X, typename T, typename E>
         inline bool verify_read(const T& ref, const std::string& sbj, E err, int pos = -1);
-    template <typename X, typename T>
-        inline bool verify_read(const T& ref, const bytes& sbj);
-    template <typename X, typename T, typename E>
-        inline bool verify_read(const T& ref, const bytes& sbj, E err, int pos = -1);
 
     template <typename X, typename T>
         inline bool verify_write(const std::string& ref, const T& sbj);
     template <typename X, typename T, typename E>
         inline bool verify_write(const std::string& ref, const T& sbj, E err);
-    template <typename X, typename T>
-        inline bool verify_write(const bytes& ref, const T& sbj);
-    template <typename X, typename T, typename E>
-        inline bool verify_write(const bytes& ref, const T& sbj, E err);
 
 }}
 
@@ -301,10 +286,6 @@ namespace cxon { namespace test {
         inline bool verify_read(const T& ref, const std::string& sbj)                   { return verify_read_<X>(ref, sbj); }
     template <typename X, typename T, typename E>
         inline bool verify_read(const T& ref, const std::string& sbj, E err, int pos)   { return verify_read_<X>(ref, sbj, err, pos); }
-    template <typename X, typename T>
-        inline bool verify_read(const T& ref, const bytes& sbj)                         { return verify_read_<X>(ref, sbj); }
-    template <typename X, typename T, typename E>
-        inline bool verify_read(const T& ref, const bytes& sbj, E err, int pos)         { return verify_read_<X>(ref, sbj, err, pos); }
 
     template <typename X, typename T, typename C>
         static bool verify_write_(const C& ref, const T& sbj) {
@@ -323,10 +304,6 @@ namespace cxon { namespace test {
         inline bool verify_write(const std::string& ref, const T& sbj)          { return verify_write_<X>(ref, sbj); }
     template <typename X, typename T, typename E>
         inline bool verify_write(const std::string& ref, const T& sbj, E err)   { return verify_write_<X>(ref, sbj, err); }
-    template <typename X, typename T>
-        inline bool verify_write(const bytes& ref, const T& sbj)                { return verify_write_<X>(ref, sbj); }
-    template <typename X, typename T, typename E>
-        inline bool verify_write(const bytes& ref, const T& sbj, E err)         { return verify_write_<X>(ref, sbj, err); }
 
 }}
 
