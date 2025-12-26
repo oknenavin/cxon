@@ -34,9 +34,9 @@ namespace cxon {
         inline auto     from_bytes(json::basic_node<Tr>& t, const Iterable& i, NaPa&&... p)     -> from_bytes_result<decltype(std::begin(i))>;
 
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename OutIt, typename ...NaPa>
-        inline auto     to_bytes(OutIt o, const json::basic_node<Tr>& t, NaPa&&... p)           -> enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
+        inline auto     to_bytes(OutIt o, const json::basic_node<Tr>& t, NaPa&&... p)           -> std::enable_if_t<is_output_iterator<OutIt>::value, to_bytes_result<OutIt>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename Insertable, typename ...NaPa>
-        inline auto     to_bytes(Insertable& i, const json::basic_node<Tr>& t, NaPa&&... p)     -> enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
+        inline auto     to_bytes(Insertable& i, const json::basic_node<Tr>& t, NaPa&&... p)     -> std::enable_if_t<is_back_insertable<Insertable>::value, to_bytes_result<decltype(std::begin(i))>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename Tr, typename FwIt, typename ...NaPa>
         inline auto     to_bytes(FwIt b, FwIt e, const json::basic_node<Tr>& t, NaPa&&... p)    -> to_bytes_result<FwIt>;
 
@@ -56,11 +56,11 @@ namespace cxon {
         }
 
     template <typename X, typename Tr, typename OI, typename ...NaPa>
-        inline auto to_bytes(OI o, const json::basic_node<Tr>& t, NaPa&&... p) -> enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
+        inline auto to_bytes(OI o, const json::basic_node<Tr>& t, NaPa&&... p) -> std::enable_if_t<is_output_iterator<OI>::value, to_bytes_result<OI>> {
             return interface::to_bytes<X>(o, t, node::recursion_guard::set(0), std::forward<NaPa>(p)...);
         }
     template <typename X, typename Tr, typename I, typename ...NaPa>
-        inline auto to_bytes(I& i, const json::basic_node<Tr>& t, NaPa&&... p) -> enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
+        inline auto to_bytes(I& i, const json::basic_node<Tr>& t, NaPa&&... p) -> std::enable_if_t<is_back_insertable<I>::value, to_bytes_result<decltype(std::begin(i))>> {
             return interface::to_bytes<X>(i, t, node::recursion_guard::set(0), std::forward<NaPa>(p)...);
         }
     template <typename X, typename Tr, typename FI, typename ...NaPa>
@@ -275,7 +275,7 @@ namespace cxon {
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static auto read_key_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::string& k, II& i, II e, Cx& cx)
-                        -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
+                        -> std::enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
                     {
                         return cxon::imp::read_string_value_extract_nans_<Y>(n, k, i, e, cx);
                     }
@@ -285,7 +285,7 @@ namespace cxon {
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
-                        -> enable_if_t<!Y::quote_unquoted_keys, bool>
+                        -> std::enable_if_t<!Y::quote_unquoted_keys, bool>
                     {
                         static_assert(integer_base::constant<napa_type<Cx>>(10) == 10, "not supported");
                         if (!cio::consume<Y>(i, e, cx))
@@ -305,7 +305,7 @@ namespace cxon {
                     }
                 template <typename II, typename Cx, typename Y = JSON<X>>
                     static auto key(json::basic_node<Tr>& t, II& i, II e, Cx& cx)
-                        -> enable_if_t< Y::quote_unquoted_keys, bool>
+                        -> std::enable_if_t< Y::quote_unquoted_keys, bool>
                     {
 #                       define CXON_IMBUE(T) t.template imbue<typename json::basic_node<Tr>::T>()
                             CXON_IF_CONSTEXPR (Y::unquote_quoted_keys) {
@@ -325,19 +325,19 @@ namespace cxon {
             struct write<JSON<X>, json::basic_node<Tr>> {
                 template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                     static auto write_key_(O& o, const T& t, Cx& cx)
-                        -> enable_if_t<!Y::quote_unquoted_keys, bool>
+                        -> std::enable_if_t<!Y::quote_unquoted_keys, bool>
                     {
                         return write_value<Y>(o, t, cx);
                     }
                 template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                     static auto write_key_(O& o, const T& t, Cx& cx)
-                        -> enable_if_t< Y::quote_unquoted_keys && !std::is_floating_point<T>::value, bool>
+                        -> std::enable_if_t< Y::quote_unquoted_keys && !std::is_floating_point<T>::value, bool>
                     {
                         return cio::key::write_key<Y>(o, t, cx);
                     }
                 template <typename O, typename T, typename Cx, typename Y = JSON<X>>
                     static auto write_key_(O& o, const T& t, Cx& cx)
-                        -> enable_if_t< Y::quote_unquoted_keys &&  std::is_floating_point<T>::value, bool>
+                        -> std::enable_if_t< Y::quote_unquoted_keys &&  std::is_floating_point<T>::value, bool>
                     {
                         return cxon::imp::write_number_key_<Y>(o, t, cx);
                     }
@@ -370,7 +370,7 @@ namespace cxon {
                 }
             template <typename II, typename Cx, typename Y = JSON<X>>
                 static auto read_value_(json::basic_node<Tr>& n, typename json::basic_node<Tr>::string& v, II& i, II e, Cx& cx)
-                    -> enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
+                    -> std::enable_if_t<node::json::extract_nans::in<napa_type<Cx>>::value, bool>
                 {
                     return imp::read_string_value_extract_nans_<Y>(n, v, i, e, cx);
                 }

@@ -27,25 +27,25 @@
 namespace cxon { namespace cio { namespace str { // char arrays: read
 
     template <typename X, typename C, typename II, typename Cx>
-        inline auto string_read(C& c, II& i, II e, Cx& cx)      -> enable_if_t<is_char<typename C::value_type>::value, bool>;
+        inline auto string_read(C& c, II& i, II e, Cx& cx)      -> std::enable_if_t<is_char<typename C::value_type>::value, bool>;
 
     template <typename X, typename T, typename II, typename Cx>
-        inline auto array_read(T* f, T* l, II& i, II e, Cx& cx) -> enable_if_t<is_char<T>::value, bool>;
+        inline auto array_read(T* f, T* l, II& i, II e, Cx& cx) -> std::enable_if_t<is_char<T>::value, bool>;
 
     template <typename X, typename T, typename II, typename Cx>
-        inline auto pointer_read(T*& t, II& i, II e, Cx& cx)    -> enable_if_t<is_char<T>::value, bool>;
+        inline auto pointer_read(T*& t, II& i, II e, Cx& cx)    -> std::enable_if_t<is_char<T>::value, bool>;
 
 }}}
 
 namespace cxon { namespace cio { namespace str { // char arrays: write
 
     template <typename X, typename O, typename T, typename Cx>
-        inline auto array_write(O& o, const T* t, const T* te, Cx& cx)      -> enable_if_t<is_char<T>::value, bool>;
+        inline auto array_write(O& o, const T* t, const T* te, Cx& cx)      -> std::enable_if_t<is_char<T>::value, bool>;
 
     template <typename X, typename O, typename T, typename Cx>
-        inline auto pointer_write(O& o, const T* t, std::size_t s, Cx& cx)  -> enable_if_t<is_char<T>::value, bool>;
+        inline auto pointer_write(O& o, const T* t, std::size_t s, Cx& cx)  -> std::enable_if_t<is_char<T>::value, bool>;
     template <typename X, typename O, typename T, typename Cx>
-        inline auto pointer_write(O& o, const T* t, Cx& cx)                 -> enable_if_t<is_char<T>::value, bool>;
+        inline auto pointer_write(O& o, const T* t, Cx& cx)                 -> std::enable_if_t<is_char<T>::value, bool>;
 
 }}}
 
@@ -56,12 +56,12 @@ namespace cxon { namespace cio { namespace str {
     namespace imp {
 
         template <typename C, typename T = typename C::value_type>
-            inline auto char_append_(C& c, char32_t c32) -> enable_if_t<chr::is_char_8<T>::value, bool> {
+            inline auto char_append_(C& c, char32_t c32) -> std::enable_if_t<chr::is_char_8<T>::value, bool> {
                 T b[4]; int const n = chr::utf32_to_utf8(b, c32); CXON_ASSERT(n > 0 && n <=4, "unexpected");
                 return cxon::cnt::append(c, &b[0], &b[0] + n);
             }
         template <typename C, typename T = typename C::value_type>
-            inline auto char_append_(C& c, char32_t c32) -> enable_if_t<chr::is_char_16<T>::value, bool> {
+            inline auto char_append_(C& c, char32_t c32) -> std::enable_if_t<chr::is_char_16<T>::value, bool> {
                 if (c32 > 0xFFFF) {
                     c32 -= 0x10000;
                     return cxon::cnt::append(c, T(0xD800 | (c32 >> 10))) && cxon::cnt::append(c, T(0xDC00 | (c32 & 0x3FF)));
@@ -69,7 +69,7 @@ namespace cxon { namespace cio { namespace str {
                 return cxon::cnt::append(c, T(c32));
             }
         template <typename C, typename T = typename C::value_type>
-            inline auto char_append_(C& c, char32_t c32) -> enable_if_t<chr::is_char_32<T>::value, bool> {
+            inline auto char_append_(C& c, char32_t c32) -> std::enable_if_t<chr::is_char_32<T>::value, bool> {
                 return cxon::cnt::append(c, T(c32));
             }
 
@@ -83,7 +83,7 @@ namespace cxon { namespace cio { namespace str {
 
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t<!chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
+                -> std::enable_if_t<!chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
             {
                 constexpr bool HANDLE_ESCAPES = is_unquoted_key_context<X>::value || !X::assume_no_escapes;
                 while (i != e) {
@@ -113,7 +113,7 @@ namespace cxon { namespace cio { namespace str {
         namespace imp { // str::raw_traits
             template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
                 inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                    -> enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
+                    -> std::enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
                 {
                     II l = i;
                         constexpr bool HANDLE_ESCAPES = is_unquoted_key_context<X>::value || !X::assume_no_escapes;
@@ -166,7 +166,7 @@ namespace cxon { namespace cio { namespace str {
                 }
             template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
                 inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                    -> enable_if_t< has_traits<X, str::raw_traits>::value, bool>
+                    -> std::enable_if_t< has_traits<X, str::raw_traits>::value, bool>
                 {
                     II l = i;
                         for ( ; i != e; ++i) {
@@ -181,7 +181,7 @@ namespace cxon { namespace cio { namespace str {
         }
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                -> enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
+                -> std::enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
             {
                 return imp::string_read_tail_<X>(c, i, e, cx);
             }
@@ -195,7 +195,7 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename C, typename II, typename Cx>
         inline auto string_read(C& c, II& i, II e, Cx& cx)
-             -> enable_if_t<is_char<typename C::value_type>::value, bool>
+             -> std::enable_if_t<is_char<typename C::value_type>::value, bool>
         {
             return  imp::string_read_head_<X>(c, i, e, cx) &&
                     imp::string_read_tail_<X>(c, i, e, cx)
@@ -204,7 +204,7 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename T, typename II, typename Cx>
         inline auto array_read(T* f, T* l, II& i, II e, Cx& cx)
-            -> enable_if_t<is_char<T>::value, bool>
+            -> std::enable_if_t<is_char<T>::value, bool>
         {
             auto c = cxon::cnt::make_range_container(f, l);
             return consume<X>(i, e, cx) && string_read<X>(c, i, e, cx) && (cxon::cnt::append(c, {}), true);
@@ -212,7 +212,7 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename T, typename II, typename Cx>
         inline auto pointer_read(T*& t, II& i, II e, Cx& cx)
-            -> enable_if_t<is_char<T>::value, bool>
+            -> std::enable_if_t<is_char<T>::value, bool>
         {
             if (!consume<X>(i, e, cx))
                 return false;
@@ -228,7 +228,7 @@ namespace cxon { namespace cio { namespace str {
 
     template <typename X, typename O, typename T, typename Cx>
         inline auto array_write(O& o, const T* f, const T* l, Cx& cx)
-             -> enable_if_t<is_char<T>::value, bool>
+             -> std::enable_if_t<is_char<T>::value, bool>
         {
             if (!poke<X>(o, delim_be_write<X, O>, cx)) return false;
                 if (*(l - 1) == T(0)) --l;
@@ -238,7 +238,7 @@ namespace cxon { namespace cio { namespace str {
     namespace imp { // str::raw_traits
         template <typename X, typename O, typename T, typename Cx>
             inline auto pointer_write_(O& o, const T* t, std::size_t s, Cx& cx)
-                 -> enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
+                 -> std::enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
             {
                 return  poke<X>(o, delim_be_write<X, O>, cx) &&
                             chr::encode_range<X>(o, t, t + s, cx) &&
@@ -247,7 +247,7 @@ namespace cxon { namespace cio { namespace str {
             }
         template <typename X, typename O, typename T, typename Cx>
             inline auto pointer_write_(O& o, const T* t, std::size_t s, Cx& cx)
-                 -> enable_if_t< has_traits<X, str::raw_traits>::value, bool>
+                 -> std::enable_if_t< has_traits<X, str::raw_traits>::value, bool>
             {
                 return  poke<X>(o, delim_be_write<X, O>, cx) &&
                             poke<X>(o, t, s, cx) &&
@@ -257,13 +257,13 @@ namespace cxon { namespace cio { namespace str {
     }
     template <typename X, typename O, typename T, typename Cx>
         inline auto pointer_write(O& o, const T* t, std::size_t s, Cx& cx)
-             -> enable_if_t<is_char<T>::value, bool>
+             -> std::enable_if_t<is_char<T>::value, bool>
         {
             return imp::pointer_write_<X>(o, t, s, cx);
         }
     template <typename X, typename O, typename T, typename Cx>
         inline auto pointer_write(O& o, const T* t, Cx& cx)
-            -> enable_if_t<is_char<T>::value, bool>
+            -> std::enable_if_t<is_char<T>::value, bool>
         {
             return t ?
                 pointer_write<X>(o, t, std::char_traits<T>::length(t), cx) :

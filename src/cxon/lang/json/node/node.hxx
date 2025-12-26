@@ -107,7 +107,7 @@ namespace cxon { namespace json { // node
                         typename Tr::dynamic_types, node_kind_<basic_node, typename std::remove_pointer<T>::type>::value
                     >;
                 template <typename T>
-                    using dt_   = conditional_t<is_dynamic_type_<T>::value, T*, T>;
+                    using dt_   = std::conditional_t<is_dynamic_type_<T>::value, T*, T>;
                 using object_   = dt_<object>;
                 using array_    = dt_<array>;
                 using string_   = dt_<string>;
@@ -118,7 +118,7 @@ namespace cxon { namespace json { // node
                 using null_     = dt_<null>;
 
                 template <typename T>
-                    using dt_dbg_   = conditional_t<is_dynamic_type_<T>::value, T*, char>;
+                    using dt_dbg_   = std::conditional_t<is_dynamic_type_<T>::value, T*, char>;
                 using object_dbg_   = dt_dbg_<object>;
                 using array_dbg_    = dt_dbg_<array>;
                 using string_dbg_   = dt_dbg_<string>;
@@ -321,19 +321,19 @@ namespace cxon { namespace json { // node
                         using int_type_ = typename int_type__<T>::type;
                 public:
             // integral
-                template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
+                template <typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
                     basic_node(T t) noexcept
                     :   kind_(int_kind_<T>::value)
                     {
                         value::construct<int_type_<T>>(*this, t);
                     }
-                template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
+                template <typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
                     basic_node(T t, const allocator_type& al) noexcept
                     :   kind_(int_kind_<T>::value), alloc_(al)
                     {
                         value::construct<int_type_<T>>(*this, t);
                     }
-                template <typename T, typename = enable_if_t<std::is_integral<T>::value>>
+                template <typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
                     basic_node& operator =(T t) noexcept {
                         return imbue<int_type_<T>>() = t, *this;
                     }
@@ -503,53 +503,53 @@ namespace cxon { namespace json { // node
                     //CXON_JSON_DEF(real)
                     template <typename U = real>
                         friend auto operator ==(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_floating_point<U>::value, bool>
                         { return n.is<real>() && n.get<real>() == v; }
                     template <typename U = real>
                         friend auto operator ==(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_floating_point<U>::value, bool>
                         { return n.is<real>() && n.get<real>() == v; }
                     template <typename U = real>
                         friend auto operator !=(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_floating_point<U>::value, bool>
                         { return !n.is<real>() || n.get<real>() != v; }
                     template <typename U = real>
                         friend auto operator !=(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_floating_point<U>::value, bool>
                         { return !n.is<real>() || n.get<real>() != v; }
                     //CXON_JSON_DEF(sint)
                     template <typename U = sint>
                         friend auto operator ==(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return n.is<sint>() && n.get<sint>() == v; }
                     template <typename U = sint>
                         friend auto operator ==(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return n.is<sint>() && n.get<sint>() == v; }
                     template <typename U = sint>
                         friend auto operator !=(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return !n.is<sint>() || n.get<sint>() != v; }
                     template <typename U = sint>
                         friend auto operator !=(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
+                            -> std::enable_if_t<std::is_signed<U>::value && !std::is_floating_point<U>::value, bool>
                         { return !n.is<sint>() || n.get<sint>() != v; }
                     //CXON_JSON_DEF(uint)
                     template <typename U = uint>
                         friend auto operator ==(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                            -> std::enable_if_t<std::is_unsigned<U>::value, bool>
                         { return n.is<uint>() && n.get<uint>() == v; }
                     template <typename U = uint>
                         friend auto operator ==(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                            -> std::enable_if_t<std::is_unsigned<U>::value, bool>
                         { return n.is<uint>() && n.get<uint>() == v; }
                     template <typename U = uint>
                         friend auto operator !=(const basic_node& n, U v) noexcept
-                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                            -> std::enable_if_t<std::is_unsigned<U>::value, bool>
                         { return !n.is<uint>() || n.get<uint>() != v; }
                     template <typename U = uint>
                         friend auto operator !=(U v, const basic_node& n) noexcept
-                            -> enable_if_t<std::is_unsigned<U>::value, bool>
+                            -> std::enable_if_t<std::is_unsigned<U>::value, bool>
                         { return !n.is<uint>() || n.get<uint>() != v; }
                     CXON_JSON_DEF(boolean)
                     friend bool operator ==(const basic_node& n, null) noexcept { return  n.is<null>(); }

@@ -32,11 +32,11 @@ namespace cxon {
 
     namespace imp { namespace json { namespace boost { namespace variant2 { // read
 
-        template <typename X, typename V, typename II, typename Cx, typename N = make_index_sequence<::boost::variant2::variant_size<V>::value>>
+        template <typename X, typename V, typename II, typename Cx, typename N = std::make_index_sequence<::boost::variant2::variant_size<V>::value>>
             struct read_;
         template <typename X, typename V, typename II, typename Cx, std::size_t ...N>
-            struct read_<X, V, II, Cx, index_sequence<N...>> {
-                static constexpr std::size_t S_ = index_sequence<N...>::size();
+            struct read_<X, V, II, Cx, std::index_sequence<N...>> {
+                static constexpr std::size_t S_ = std::index_sequence<N...>::size();
 
                 template <std::size_t M>
                     static bool variant_read_(V& t, II& i, II e, Cx& cx) {
@@ -63,7 +63,7 @@ namespace cxon {
 
         template <typename X, typename V, typename II, typename Cx>
             inline auto variant_read_(V& t, II& i, II e, Cx& cx)
-                -> enable_if_t< cio::is_key_context<X>::value ||  cio::var::has_ambiguous_types<V>::value, bool>
+                -> std::enable_if_t< cio::is_key_context<X>::value ||  cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  cio::consume<X>(X::map::beg, i, e, cx) &&
                             read_<X, V, II, Cx>::variant(t, i, e, cx) &&
@@ -72,7 +72,7 @@ namespace cxon {
             }
         template <typename X, typename V, typename II, typename Cx>
             inline auto variant_read_(V& t, II& i, II e, Cx& cx)
-                -> enable_if_t<!cio::is_key_context<X>::value && !cio::var::has_ambiguous_types<V>::value, bool>
+                -> std::enable_if_t<!cio::is_key_context<X>::value && !cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  cio::var::variant_read<X>(t, i, e, cx);
             }
@@ -81,11 +81,11 @@ namespace cxon {
 
     namespace imp { namespace json { namespace boost { namespace variant2 { // write
 
-        template <typename X, typename O, typename V, typename Cx, typename N = make_index_sequence<::boost::variant2::variant_size<V>::value>>
+        template <typename X, typename O, typename V, typename Cx, typename N = std::make_index_sequence<::boost::variant2::variant_size<V>::value>>
             struct write_;
         template <typename X, typename O, typename V, typename Cx, std::size_t ...N>
-            struct write_<X, O, V, Cx, index_sequence<N...>> {
-                static constexpr std::size_t S_ = index_sequence<N...>::size();
+            struct write_<X, O, V, Cx, std::index_sequence<N...>> {
+                static constexpr std::size_t S_ = std::index_sequence<N...>::size();
 
                 template <std::size_t M>
                     static bool variant_write_(O& o, const V& t, Cx& cx) {
@@ -104,7 +104,7 @@ namespace cxon {
 
         template <typename X, typename V, typename O, typename Cx>
             inline auto variant_write_(O& o, const V& t, Cx& cx)
-                -> enable_if_t< cio::is_key_context<X>::value ||  cio::var::has_ambiguous_types<V>::value, bool>
+                -> std::enable_if_t< cio::is_key_context<X>::value ||  cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  cio::poke<X>(o, X::map::beg, cx) &&
                             write_<X, O, V, Cx>::variant(o, t, cx) &&
@@ -113,7 +113,7 @@ namespace cxon {
             }
         template <typename X, typename V, typename O, typename Cx>
             inline auto variant_write_(O& o, const V& t, Cx& cx)
-                -> enable_if_t<!cio::is_key_context<X>::value && !cio::var::has_ambiguous_types<V>::value, bool>
+                -> std::enable_if_t<!cio::is_key_context<X>::value && !cio::var::has_ambiguous_types<V>::value, bool>
             {
                 return  write_<X, O, V, Cx>::variant(o, t, t.index(), cx);
             }

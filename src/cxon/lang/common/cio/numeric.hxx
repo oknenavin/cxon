@@ -42,11 +42,11 @@ namespace cxon { namespace cio { namespace num { // read
     namespace imp {
 
         template <typename T>
-            inline auto is_sign_(char c) -> enable_if_t<std::is_signed<T>::value, bool> {
+            inline auto is_sign_(char c) -> std::enable_if_t<std::is_signed<T>::value, bool> {
                 return c == '-';
             }
         template <typename T>
-            constexpr auto is_sign_(char) -> enable_if_t<std::is_unsigned<T>::value, bool> {
+            constexpr auto is_sign_(char) -> std::enable_if_t<std::is_unsigned<T>::value, bool> {
                 return false;
             }
 
@@ -83,7 +83,7 @@ namespace cxon { namespace cio { namespace num { // read
 
         template <typename X, typename T, typename II, typename C>
             inline auto number_consume_(char* f, const char* l, II& i, II e, C is_digit)
-                -> enable_if_t<std::is_integral<T>::value, int>
+                -> std::enable_if_t<std::is_integral<T>::value, int>
             {
                 CXON_ASSERT(f && f < l, "unexpected");
                 char c = peek(i, e);
@@ -97,7 +97,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
         template <typename X, typename T, typename C>
             inline auto number_consume_(const char*& i, const char* e, C is_digit)
-                -> enable_if_t<std::is_integral<T>::value, int>
+                -> std::enable_if_t<std::is_integral<T>::value, int>
             {
                 char c = *i;
                     if (is_sign_<T>(c)) goto trap_neg;
@@ -116,7 +116,7 @@ namespace cxon { namespace cio { namespace num { // read
 
         template <typename X, typename T, typename II>
             inline auto number_consume_(char* f, const char* l, II& i, II e)
-                -> enable_if_t<std::is_floating_point<T>::value, int>
+                -> std::enable_if_t<std::is_floating_point<T>::value, int>
             {   // as in RFC7159 (except nans)
                 CXON_ASSERT(f && f < l, "unexpected");
                 char c = peek(i, e);
@@ -192,7 +192,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
         template <typename X, typename T>
             inline auto number_consume_(const char*& i, const char* e)
-                -> enable_if_t<std::is_floating_point<T>::value, int>
+                -> std::enable_if_t<std::is_floating_point<T>::value, int>
             {   // as in RFC7159
                 char c = peek(i, e);
                     CXON_IF_CONSTEXPR(!X::allow_javascript_nans) {
@@ -263,7 +263,7 @@ namespace cxon { namespace cio { namespace num { // read
 
         template <typename X, typename T, typename II, typename Cx>
             inline auto number_read__(T& t, II& i, II e, Cx& cx)
-                -> enable_if_t<std::is_integral<T>::value, bool>
+                -> std::enable_if_t<std::is_integral<T>::value, bool>
             {
                 constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
                 II const o = i;
@@ -279,7 +279,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read__(T& t, const char*& i, const char* e, Cx& cx)
-                -> enable_if_t<std::is_integral<T>::value && X::number::strict, bool>
+                -> std::enable_if_t<std::is_integral<T>::value && X::number::strict, bool>
             {
                 constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
                 auto const b = i;
@@ -292,7 +292,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read__(T& t, const char*& i, const char* e, Cx& cx)
-                -> enable_if_t<std::is_integral<T>::value && !X::number::strict, bool>
+                -> std::enable_if_t<std::is_integral<T>::value && !X::number::strict, bool>
             {
                 constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
                 auto const r = charconv::from_chars(i, e, t, base);
@@ -302,13 +302,13 @@ namespace cxon { namespace cio { namespace num { // read
 
         template <typename X, typename T, typename II, typename Cx>
             inline auto number_read_(T& t, II& i, II e, Cx& cx)
-                -> enable_if_t<std::is_integral<T>::value && !is_char_x_<T>::value, bool>
+                -> std::enable_if_t<std::is_integral<T>::value && !is_char_x_<T>::value, bool>
             {
                 return number_read__<X>(t, i, e, cx);
             }
         template <typename X, typename T, typename II, typename Cx>
             inline auto number_read_(T& t, II& i, II e, Cx& cx)
-                -> enable_if_t<std::is_integral<T>::value &&  is_char_x_<T>::value, bool>
+                -> std::enable_if_t<std::is_integral<T>::value &&  is_char_x_<T>::value, bool>
             {
                 int_sub_t_<T> u;
                 return number_read__<X>(u, i, e, cx) && (t = static_cast<T>(u), true);
@@ -360,7 +360,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
         template <typename X, typename T, typename II, typename Cx>
             inline auto number_read_(T& t, II& i, II e, Cx& cx)
-                -> enable_if_t<std::is_floating_point<T>::value, bool>
+                -> std::enable_if_t<std::is_floating_point<T>::value, bool>
             {
                 II const o = i;
                     char s[num_len_max::constant<napa_type<Cx>>(64)];
@@ -375,7 +375,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
-                -> enable_if_t<std::is_floating_point<T>::value &&  X::number::strict, bool>
+                -> std::enable_if_t<std::is_floating_point<T>::value &&  X::number::strict, bool>
             {
                 auto const b = i;
                 if (!number_consume_<X, T>(i, e))
@@ -387,7 +387,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read_(T& t, const char*& i, const char* e, Cx& cx)
-                -> enable_if_t<std::is_floating_point<T>::value && !X::number::strict, bool>
+                -> std::enable_if_t<std::is_floating_point<T>::value && !X::number::strict, bool>
             {
                 auto const r = from_chars_<X>(i, e, t);
                     if (r.ec != std::errc()) return cx/X::read_error::floating_point_invalid;
@@ -407,7 +407,7 @@ namespace cxon { namespace cio { namespace num { // write
     namespace imp {
 
         template <typename X, typename T, typename O, typename Cx>
-            inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_integral<T>::value, bool> {
+            inline auto number_write_(O& o, T t, Cx& cx) -> std::enable_if_t<std::is_integral<T>::value, bool> {
 #               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
 #                   pragma GCC diagnostic push
 #                   pragma GCC diagnostic ignored "-Wrestrict" // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100366
@@ -434,7 +434,7 @@ namespace cxon { namespace cio { namespace num { // write
                 ;
             };
         template <typename X, typename T, typename O, typename Cx>
-            inline auto number_write_(O& o, T t, Cx& cx) -> enable_if_t<std::is_floating_point<T>::value, bool> {
+            inline auto number_write_(O& o, T t, Cx& cx) -> std::enable_if_t<std::is_floating_point<T>::value, bool> {
                 if (std::isfinite(t)) {
                     char s[max_size_<T>::value + 1]; // +1 because of the fall-back implementation (snprintf)
                         constexpr auto fpp = fp_precision::constant<napa_type<Cx>>(std::numeric_limits<T>::max_digits10);

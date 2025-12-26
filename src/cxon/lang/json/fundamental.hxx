@@ -20,7 +20,7 @@
 #include "cxon/lang/common/cio/numeric.hxx"
 
 namespace cxon { namespace cio { // type traits
-    template <typename T>   struct is_string<T, enable_if_t<is_char<T>::value>> : std::true_type {};
+    template <typename T>   struct is_string<T, std::enable_if_t<is_char<T>::value>> : std::true_type {};
     template <>             struct is_null<std::nullptr_t>                      : std::true_type {};
 }}
 
@@ -102,7 +102,7 @@ namespace cxon { // bool
 namespace cxon { // character
 
     template <typename X, typename T>
-        struct read<JSON<X>, T, enable_if_t<cio::chr::is_char_8<T>::value>> {
+        struct read<JSON<X>, T, std::enable_if_t<cio::chr::is_char_8<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
                     if (!cio::consume<X>(cio::str::delim_be_read<X, II>, i, e, cx)) return false;
@@ -114,7 +114,7 @@ namespace cxon { // character
                 }
             };
     template <typename X, typename T>
-        struct read<JSON<X>, T, enable_if_t<cio::chr::is_char_16<T>::value>> {
+        struct read<JSON<X>, T, std::enable_if_t<cio::chr::is_char_16<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
                     if (!cio::consume<X>(cio::str::delim_be_read<X, II>, i, e, cx)) return false;
@@ -126,7 +126,7 @@ namespace cxon { // character
                 }
         };
     template <typename X, typename T>
-        struct read<JSON<X>, T, enable_if_t<cio::chr::is_char_32<T>::value>> {
+        struct read<JSON<X>, T, std::enable_if_t<cio::chr::is_char_32<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
                     if (!cio::consume<X>(cio::str::delim_be_read<X, II>, i, e, cx)) return false;
@@ -138,7 +138,7 @@ namespace cxon { // character
         };
 
     template <typename X, typename T>
-        struct write<JSON<X>, T, enable_if_t<is_char<T>::value>> {
+        struct write<JSON<X>, T, std::enable_if_t<is_char<T>::value>> {
             template <typename O, typename Cx>
                 static bool value(O& o, T t, Cx& cx) {
                     return cio::chr::write<X>(o, t, cx);
@@ -150,7 +150,7 @@ namespace cxon { // character
 namespace cxon { // numeric
 
     template <typename X, typename T>
-        struct read<JSON<X>, T, enable_if_t<is_numeric<T>::value>> {
+        struct read<JSON<X>, T, std::enable_if_t<is_numeric<T>::value>> {
             template <typename II, typename Cx>
                 static bool value(T& t, II& i, II e, Cx& cx) {
                     return cio::consume<X>(i, e, cx) && cio::num::number_read<X>(t, i, e, cx);
@@ -158,7 +158,7 @@ namespace cxon { // numeric
         };
 
     template <typename X, typename T>
-        struct write<JSON<X>, T, enable_if_t<is_numeric<T>::value>> {
+        struct write<JSON<X>, T, std::enable_if_t<is_numeric<T>::value>> {
             template <typename O, typename Cx>
                 static bool value(O& o, T t, Cx& cx) {
                     return cio::num::number_write<X>(o, t, cx);

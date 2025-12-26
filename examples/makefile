@@ -11,7 +11,7 @@ check: $(BIN)
 
 $(outdir)/%: %.cxx
 	@mkdir -p $(outdir)
-	$(CXX) $(incdir) -O3 $(CPPFLAGS) -std=c++11 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
+	$(CXX) $(incdir) -O3 $(CPPFLAGS) -std=c++14 -Wall $(CXXFLAGS) $(LDFLAGS) $< -o $@
 	@$@ || (echo $@ failed; exit -1)
 
 clean:

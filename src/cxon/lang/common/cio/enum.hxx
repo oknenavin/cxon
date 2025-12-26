@@ -21,7 +21,7 @@
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { // type traits
-    template <typename T> struct is_string<T, enable_if_t<std::is_enum<T>::value>> : std::true_type {};
+    template <typename T> struct is_string<T, std::enable_if_t<std::is_enum<T>::value>> : std::true_type {};
 }}
 
 namespace cxon { namespace cio { namespace enm { // enum reader/writer construction helpers

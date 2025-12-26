@@ -66,13 +66,13 @@ $(outdir)/check-json: $(check-json-obj)
 	$(CXX) $(check-json-obj)  $(LDFLAGS)  -o $@
 $(outdir)/json.core-%.o: $(srcdir)/json/json.core-%.cxx
 	@mkdir -p $(outdir)
-	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
+	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++14 -Wall $(CXXFLAGS) $<  -o $@
 
 $(outdir)/check-json-node: $(check-json-node-obj)
 	$(CXX) $(check-json-node-obj)  $(LDFLAGS)  -o $@
 $(outdir)/json.node-%.o: $(srcdir)/json/json.node-%.cxx
 	@mkdir -p $(outdir)
-	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++11 -Wall $(CXXFLAGS) $<  -o $@
+	$(CXX) -c $(incdir) -DNDEBUG $(CPPFLAGS) -O3 -std=c++14 -Wall $(CXXFLAGS) $<  -o $@
 
 
 clean:

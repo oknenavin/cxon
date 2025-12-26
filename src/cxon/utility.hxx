@@ -44,12 +44,6 @@
 #   define CXON_FALLTHROUGH [[fallthrough]]
 #endif
 
-#if defined(__cpp_constexpr) && __cpp_constexpr >= 201304L
-#   define CXON_CXX14_CONSTEXPR constexpr
-#else
-#   define CXON_CXX14_CONSTEXPR const
-#endif
-
 #if defined(__cpp_constexpr) && __cpp_constexpr >= 201703L
 #   define CXON_CXX17_CONSTEXPR constexpr
 #else
@@ -92,9 +86,6 @@ namespace cxon {
 
     template <typename ...> // C++17
         using void_t = void;
-
-    template <bool C, typename T = void> // C++14
-        using enable_if_t = typename std::enable_if<C, T>::type;
 
     template <typename ...>
         constexpr bool unexpected();
@@ -162,45 +153,16 @@ namespace cxon {
     template <typename S, typename S::value_type>
         struct scalar_sequence_contains;
 
-#   if __cplusplus < 201402L
-        template <typename T, T ...Ts>  // C++14
-            using integer_sequence      = scalar_sequence<T, Ts...>;
-        template <typename T, T N>
-            using make_integer_sequence = make_scalar_sequence<T, N>;
-        template <std::size_t ...N>     // C++14
-            using index_sequence        = integer_sequence<std::size_t, N...>;
-        template <std::size_t N>
-            using make_index_sequence   = make_integer_sequence<std::size_t, N>;
-#   else
-        template <typename T, T ...Ts>  // C++14
-            using integer_sequence      = std::integer_sequence<T, Ts...>;
-        template <typename T, T N>
-            using make_integer_sequence = std::integer_sequence<T, N>;
-        template <std::size_t ...N>     // C++14
-            using index_sequence        = std::integer_sequence<std::size_t, N...>;
-        template <std::size_t N>
-            using make_index_sequence   = std::make_integer_sequence<std::size_t, N>;
-#   endif
-
     // type traits
 
     template <typename T> struct is_bool;
     template <typename T> struct is_char;
     template <typename T> struct is_numeric;
 
-    template <typename T> using remove_const_t      = typename std::remove_const<T>::type;      // C++14
-    template <typename T> using remove_volatile_t   = typename std::remove_volatile<T>::type;   // C++14
-    template <typename T> using remove_cv_t         = typename std::remove_cv<T>::type;         // C++14
-    template <typename T> using remove_reference_t  = typename std::remove_reference<T>::type;  // C++14
-    template <typename T> using decay_t             = typename std::decay<T>::type;             // C++14
-
     template <typename T>       // C++20
-        struct remove_cvref     : std::remove_cv<remove_reference_t<T>> {};
+        struct remove_cvref     : std::remove_cv<std::remove_reference_t<T>> {};
     template <typename T>       // C++20
         using  remove_cvref_t   = typename remove_cvref<T>::type;
-
-    template <bool B, typename T, typename F> // C++14
-        using conditional_t     = typename std::conditional<B, T, F>::type;
 
     template <bool B>       // C++17
         using bool_constant = std::integral_constant<bool, B>;
@@ -346,9 +308,9 @@ namespace cxon {
     }
 
     template <typename T>
-        struct is_bool      : bool_constant<imp::is_bool_<remove_cv_t<T>>::value> {};
+        struct is_bool      : bool_constant<imp::is_bool_<std::remove_cv_t<T>>::value> {};
     template <typename T>
-        struct is_char      : bool_constant<imp::is_char_<remove_cv_t<T>>::value> {};
+        struct is_char      : bool_constant<imp::is_char_<std::remove_cv_t<T>>::value> {};
     template <typename T>
         struct is_numeric   : bool_constant<std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value> {};
 
@@ -367,7 +329,7 @@ namespace cxon {
     template <typename, typename/* = void*/>
         struct is_forward_iterator : std::false_type {};
     template <typename I>
-        struct is_forward_iterator<I, enable_if_t<!std::is_same<iterator_category_t<I>, std::input_iterator_tag>::value>> : std::true_type {};
+        struct is_forward_iterator<I, std::enable_if_t<!std::is_same<iterator_category_t<I>, std::input_iterator_tag>::value>> : std::true_type {};
 
 }
 
@@ -400,20 +362,20 @@ namespace cxon { namespace napa {
 
                 private:
                     template <typename X = Tg>
-                        static constexpr auto get_(Pk& p) -> enable_if_t< is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>&> {
+                        static constexpr auto get_(Pk& p) -> std::enable_if_t< is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>&> {
                             return std::get<Sz - 1>(p).value;
                         }
                     template <typename X = Tg>
-                        static constexpr auto get_(Pk& p) -> enable_if_t<!is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>&> {
+                        static constexpr auto get_(Pk& p) -> std::enable_if_t<!is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>&> {
                             return pack<X, Pk, Sz - 1>::get(p);
                         }
 
                     template <typename X = Tg>
-                        static constexpr auto get_() -> enable_if_t< is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>> {
+                        static constexpr auto get_() -> std::enable_if_t< is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>> {
                             return tuple_element_t<Sz - 1, Pk>::value;
                         }
                     template <typename X = Tg>
-                        static constexpr auto get_() -> enable_if_t<!is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>> {
+                        static constexpr auto get_() -> std::enable_if_t<!is_same_tag<X, Pk, Sz - 1>::value, tag_type<X>> {
                             return pack<X, Pk, Sz - 1>::get();
                         }
             };
@@ -491,9 +453,9 @@ namespace cxon { namespace napa {
                 };
         template <typename T>
             constexpr auto head_pack_(T&& t)
-                -> decltype(head_<decay_t<T>>::pack(std::forward<T>(t)))
+                -> decltype(head_<std::decay_t<T>>::pack(std::forward<T>(t)))
             {
-                return      head_<decay_t<T>>::pack(std::forward<T>(t));
+                return      head_<std::decay_t<T>>::pack(std::forward<T>(t));
             }
 
         template <typename ...>
@@ -537,10 +499,10 @@ namespace cxon { namespace napa {
             static constexpr imp::var<Tg, T> set(const T& v)    { return imp::var<Tg, T>(v); }
 
             template <typename Pk>
-                static constexpr auto constant(T)       -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto constant(T)       -> std::enable_if_t< imp::has_tag<Tg, Pk>::value, T>
                 { return imp::get<Tg, Pk>(); }
             template <typename Pk>
-                static constexpr auto constant(T dflt)  -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto constant(T dflt)  -> std::enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
                 { return dflt; }
 
             template <typename Pk>
@@ -549,10 +511,10 @@ namespace cxon { namespace napa {
                 static constexpr T value(const Pk& p)   { return imp::get<Tg>(p); }
 
             template <typename Pk>
-                static constexpr auto value(const Pk& p, T)     -> enable_if_t< imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto value(const Pk& p, T)     -> std::enable_if_t< imp::has_tag<Tg, Pk>::value, T>
                 { return imp::get<Tg>(p); }
             template <typename Pk>
-                static constexpr auto value(const Pk&, T dflt)  -> enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
+                static constexpr auto value(const Pk&, T dflt)  -> std::enable_if_t<!imp::has_tag<Tg, Pk>::value, T>
                 { return dflt; }
         };
     template <typename Tg, typename T>

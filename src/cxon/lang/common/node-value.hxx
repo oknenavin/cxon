@@ -92,44 +92,44 @@ namespace cxon { namespace value {
 
             // value access
                 template <typename T, typename M>
-                    static constexpr auto get(M& n) noexcept -> enable_if_t<!is_dynamic_type<T>::value && !std::is_pointer<T>::value, T&> {
+                    static constexpr auto get(M& n) noexcept -> std::enable_if_t<!is_dynamic_type<T>::value && !std::is_pointer<T>::value, T&> {
                         return *(T*)&n.value_;
                     }
                 template <typename T, typename M>
-                    static constexpr auto get(M& n) noexcept -> enable_if_t< is_dynamic_type<T>::value && !std::is_pointer<T>::value, T&> {
+                    static constexpr auto get(M& n) noexcept -> std::enable_if_t< is_dynamic_type<T>::value && !std::is_pointer<T>::value, T&> {
                         return **(T**)&n.value_;
                     }
                 template <typename T, typename M>
-                    static constexpr auto get(M& n) noexcept -> enable_if_t<!is_dynamic_type<T>::value &&  std::is_pointer<T>::value, T&> {
+                    static constexpr auto get(M& n) noexcept -> std::enable_if_t<!is_dynamic_type<T>::value &&  std::is_pointer<T>::value, T&> {
                         return (T)&n.value_;
                     }
                 template <typename T, typename M>
-                    static constexpr auto get(M& n) noexcept -> enable_if_t< is_dynamic_type<T>::value &&  std::is_pointer<T>::value, T&> {
+                    static constexpr auto get(M& n) noexcept -> std::enable_if_t< is_dynamic_type<T>::value &&  std::is_pointer<T>::value, T&> {
                         return *(T*)&n.value_;
                     }
             // move construct
                 template <typename T>
                     static auto move_construct(N& n, N&& o) noexcept(std::is_nothrow_move_constructible<T>::value)
-                        -> enable_if_t<!is_dynamic_type<T>::value && !std::is_trivially_assignable<T, T>::value>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value && !std::is_trivially_assignable<T, T>::value>
                     {
                         alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::move(get<T>(o)));
                     }
                 template <typename T>
                     static auto move_construct(N& n, N&& o) noexcept
-                        -> enable_if_t<!is_dynamic_type<T>::value &&  std::is_trivially_assignable<T, T>::value>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value &&  std::is_trivially_assignable<T, T>::value>
                     {
                         get<T>(n) = get<T>(o);
                     }
                 template <typename T>
                     static auto move_construct(N& n, N&& o) noexcept
-                        -> enable_if_t< is_dynamic_type<T>::value>
+                        -> std::enable_if_t< is_dynamic_type<T>::value>
                     {
                         get<T*>(n) = get<T*>(o), o.kind_ = N::kind_default_;
                     }
             // move assign
                 template <typename T>
                     static auto move_assign(N& n, N&& o) noexcept(std::is_nothrow_move_constructible<T>::value)
-                        -> enable_if_t<!is_dynamic_type<T>::value &&  propagate_on_container_move_assignment::value, N&>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value &&  propagate_on_container_move_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             get<T>(n).~T(), n.alloc_ = std::move(o.alloc_);
@@ -143,7 +143,7 @@ namespace cxon { namespace value {
                     }
                 template <typename T>
                     static auto move_assign(N& n, N&& o) noexcept
-                        -> enable_if_t< is_dynamic_type<T>::value &&  propagate_on_container_move_assignment::value, N&>
+                        -> std::enable_if_t< is_dynamic_type<T>::value &&  propagate_on_container_move_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             destruct<T>(n), n.alloc_ = std::move(o.alloc_);
@@ -158,7 +158,7 @@ namespace cxon { namespace value {
                 template <typename T>
                     static auto move_assign(N& n, N&& o)
                         noexcept(std::is_nothrow_move_constructible<T>::value && std::is_nothrow_move_constructible<T>::value)
-                        -> enable_if_t<!is_dynamic_type<T>::value && !propagate_on_container_move_assignment::value, N&>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value && !propagate_on_container_move_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             get<T>(n).~T();
@@ -178,7 +178,7 @@ namespace cxon { namespace value {
                     }
                 template <typename T>
                     static auto move_assign(N& n, N&& o)
-                        -> enable_if_t< is_dynamic_type<T>::value && !propagate_on_container_move_assignment::value, N&>
+                        -> std::enable_if_t< is_dynamic_type<T>::value && !propagate_on_container_move_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             get<T>(n).~T();
@@ -199,26 +199,26 @@ namespace cxon { namespace value {
             // copy construct
                 template <typename T>
                     static auto copy_construct(N& n, const N& o) noexcept(std::is_nothrow_copy_constructible<T>::value)
-                        -> enable_if_t<!is_dynamic_type<T>::value && !std::is_trivially_assignable<T, T>::value>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value && !std::is_trivially_assignable<T, T>::value>
                     {
                         alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, get<T>(o));
                     }
                 template <typename T>
                     static auto copy_construct(N& n, const N& o) noexcept
-                        -> enable_if_t<!is_dynamic_type<T>::value &&  std::is_trivially_assignable<T, T>::value>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value &&  std::is_trivially_assignable<T, T>::value>
                     {
                         get<T>(n) = get<T>(o);
                     }
                 template <typename T>
                     static auto copy_construct(N& n, const N& o)
-                        -> enable_if_t< is_dynamic_type<T>::value>
+                        -> std::enable_if_t< is_dynamic_type<T>::value>
                     {
                         construct<T>(n, get<T>(o));
                     }
             // copy assign
                 template <typename T>
                     static auto copy_assign(N& n, const N& o) noexcept(std::is_nothrow_copy_constructible<T>::value)
-                        -> enable_if_t<!is_dynamic_type<T>::value &&  propagate_on_container_copy_assignment::value, N&>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value &&  propagate_on_container_copy_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             get<T>(n).~T(), n.alloc_ = o.alloc_;
@@ -232,7 +232,7 @@ namespace cxon { namespace value {
                     }
                 template <typename T>
                     static auto copy_assign(N& n, const N& o)
-                        -> enable_if_t< is_dynamic_type<T>::value &&  propagate_on_container_copy_assignment::value, N&>
+                        -> std::enable_if_t< is_dynamic_type<T>::value &&  propagate_on_container_copy_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             get<T>(n).~T(), n.alloc_ = o.alloc_;
@@ -246,7 +246,7 @@ namespace cxon { namespace value {
                     }
                 template <typename T>
                     static auto copy_assign(N& n, const N& o) noexcept(std::is_nothrow_copy_constructible<T>::value)
-                        -> enable_if_t<!is_dynamic_type<T>::value && !propagate_on_container_copy_assignment::value, N&>
+                        -> std::enable_if_t<!is_dynamic_type<T>::value && !propagate_on_container_copy_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             get<T>(n).~T();
@@ -260,7 +260,7 @@ namespace cxon { namespace value {
                     }
                 template <typename T>
                     static auto copy_assign(N& n, const N& o)
-                        -> enable_if_t< is_dynamic_type<T>::value && !propagate_on_container_copy_assignment::value, N&>
+                        -> std::enable_if_t< is_dynamic_type<T>::value && !propagate_on_container_copy_assignment::value, N&>
                     {
                         if (n.kind_ == o.kind_) {
                             get<T>(n).~T();
@@ -275,13 +275,13 @@ namespace cxon { namespace value {
             // construct
                 template <typename T, typename ...A>
                     static auto construct(N& n, A&&... t) noexcept(std::is_nothrow_constructible<T, A&&...>::value)
-                        ->  enable_if_t<!is_dynamic_type<T>::value>
+                        ->  std::enable_if_t<!is_dynamic_type<T>::value>
                     {
                         alc::uninitialized_construct_using_allocator<T>(&get<T>(n), n.alloc_, std::forward<A>(t)...);
                     }
                 template <typename T, typename ...A>
                     static auto construct(N& n, A&&... t)
-                        -> enable_if_t< is_dynamic_type<T>::value>
+                        -> std::enable_if_t< is_dynamic_type<T>::value>
                     {
                         using at = alc::rebind_t<allocator_type, T>;
                         at    al(n.alloc_);
@@ -290,11 +290,11 @@ namespace cxon { namespace value {
                     }
             // destruct
                 template <typename T>
-                    static auto destruct(N& n) noexcept -> enable_if_t<!is_dynamic_type<T>::value> {
+                    static auto destruct(N& n) noexcept -> std::enable_if_t<!is_dynamic_type<T>::value> {
                         get<T>(n).~T();
                     }
                 template <typename T>
-                    static auto destruct(N& n) noexcept -> enable_if_t< is_dynamic_type<T>::value> {
+                    static auto destruct(N& n) noexcept -> std::enable_if_t< is_dynamic_type<T>::value> {
                         using at = alc::rebind_t<allocator_type, T>;
                         at    al(n.alloc_);
                         std::allocator_traits<at>::destroy(al, get<T*>(n));
@@ -317,7 +317,7 @@ namespace cxon { namespace value {
                     template <typename F, typename S>
                         struct ndes_ {
                             template <typename U = F, typename V = S>
-                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value &&  propagate_on_container_swap::value> {
+                                static auto swap(N& f, N& s) -> std::enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value &&  propagate_on_container_swap::value> {
                                     auto t = std::move(get<U>(f));
                                     auto a = std::move(f.alloc_);
                                     destruct<U>(f); construct<V>(f, std::move(get<V>(s)), std::move(s.alloc_));
@@ -325,7 +325,7 @@ namespace cxon { namespace value {
                                     swap_(f.kind_, s.kind_);
                                 }
                             template <typename U = F, typename V = S>
-                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value && !propagate_on_container_swap::value> {
+                                static auto swap(N& f, N& s) -> std::enable_if_t<!std::is_void<U>::value && !std::is_void<V>::value && !propagate_on_container_swap::value> {
                                     auto t = std::move(get<U>(f));
                                     destruct<U>(f); construct<V>(f, std::move(get<V>(s)));
                                     destruct<V>(s); construct<U>(s, std::move(t));
@@ -335,13 +335,13 @@ namespace cxon { namespace value {
                     template <typename T>
                         struct ndes_<T, T> {
                             template <typename U = T>
-                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value &&  propagate_on_container_swap::value> {
+                                static auto swap(N& f, N& s) -> std::enable_if_t<!std::is_void<U>::value &&  propagate_on_container_swap::value> {
                                     swap_(get<T>(f), get<T>(s));
                                     swap_(f.kind_, s.kind_);
                                     swap_(f.alloc_, s.alloc_);
                                 }
                             template <typename U = T>
-                                static auto swap(N& f, N& s) -> enable_if_t<!std::is_void<U>::value && !propagate_on_container_swap::value> {
+                                static auto swap(N& f, N& s) -> std::enable_if_t<!std::is_void<U>::value && !propagate_on_container_swap::value> {
                                     swap_(get<T>(f), get<T>(s));
                                     swap_(f.kind_, s.kind_);
                                 }

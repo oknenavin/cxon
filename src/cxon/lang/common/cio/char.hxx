@@ -48,11 +48,11 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
 
     template <typename X, typename II, typename Cx>
         inline auto utf8_to_utf32(II& i, II e, Cx& cx)
-            -> enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>;
+            -> std::enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>;
 
     template <typename T>
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
-            -> enable_if_t<is_char_8<T>::value, int>;
+            -> std::enable_if_t<is_char_8<T>::value, int>;
 
     template <typename II>
         CXON_INLAY int utf8_check(II i, II e);
@@ -63,11 +63,11 @@ namespace cxon { namespace cio { namespace chr { // character conversion: write
 
     template <typename X, typename O, typename T, typename Cx>
         inline auto encode_range(O& o, const T* f, const T* l, Cx& cx)
-            -> enable_if_t<is_char<T>::value, bool>;
+            -> std::enable_if_t<is_char<T>::value, bool>;
 
     template <typename X, typename T, typename O, typename Cx>
         inline auto write(O& o, T t, Cx& cx)
-            -> enable_if_t<is_char<T>::value, bool>;
+            -> std::enable_if_t<is_char<T>::value, bool>;
 
 }}}
 
@@ -77,7 +77,7 @@ namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
 
-        static constexpr char32_t hex_to_dec_[] = { // outside u_to_ for C++11
+        static constexpr char32_t hex_to_dec_[] = { // outside because of C++11/14 with g++
             00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
             00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
             00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
@@ -89,7 +89,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X>
             struct u_to_ {
                 template <typename II>
-                    static auto dec(II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, char32_t> {
+                    static auto dec(II& i, II e) -> std::enable_if_t<!is_random_access_iterator<II>::value, char32_t> {
 #                       define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
                             char32_t c;
                                 CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
@@ -100,7 +100,7 @@ namespace cxon { namespace cio { namespace chr {
 #                       undef CXON_NEXT_HEX
                     }
                 template <typename II>
-                    static auto dec(II& i, II e) -> enable_if_t< is_random_access_iterator<II>::value, char32_t> {
+                    static auto dec(II& i, II e) -> std::enable_if_t< is_random_access_iterator<II>::value, char32_t> {
                         if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
                             return bad_utf32;
                         char32_t const c =  (hex_to_dec_[(unsigned char)i[1]] << 12) |
@@ -162,19 +162,19 @@ namespace cxon { namespace cio { namespace chr {
     namespace imp {
 
         template <typename II>
-            inline auto head_(II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return next(i, e); }
+            inline auto head_(II& i, II e) -> std::enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return next(i, e); }
         template <typename II>
-            inline auto head_(II& i, II  ) -> enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
+            inline auto head_(II& i, II  ) -> std::enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
         template <typename II>
-            inline auto tail_(II& i, II e) -> enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return i != e ? peek(++i, e) : '\xFF'; }
+            inline auto tail_(II& i, II e) -> std::enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return i != e ? peek(++i, e) : '\xFF'; }
         template <typename II>
-            inline auto tail_(II& i, II  ) -> enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
+            inline auto tail_(II& i, II  ) -> std::enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
 
 #       define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, bad_utf32
 
             template <typename X, typename II, typename Cx>
                 inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                    -> enable_if_t< X::validate_string_encoding, char32_t>
+                    -> std::enable_if_t< X::validate_string_encoding, char32_t>
                 {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
                     CXON_ASSERT(i != e, "unexpected");
                     char32_t const  c0 = (unsigned char)*i;
@@ -227,7 +227,7 @@ namespace cxon { namespace cio { namespace chr {
                 }
             template <typename X, typename II, typename Cx>
                 inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                    -> enable_if_t<!X::validate_string_encoding, char32_t>
+                    -> std::enable_if_t<!X::validate_string_encoding, char32_t>
                 {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
                     CXON_ASSERT(i != e, "unexpected");
                     char32_t const  c0 = (unsigned char)*i;
@@ -257,7 +257,7 @@ namespace cxon { namespace cio { namespace chr {
     }
     template <typename X, typename II, typename Cx>
         inline auto utf8_to_utf32(II& i, II e, Cx& cx)
-            -> enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>
+            -> std::enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>
         {
             return peek(i, e) != '\\' ?
                 imp::utf8_to_utf32_<X>(i, e, cx) :
@@ -267,7 +267,7 @@ namespace cxon { namespace cio { namespace chr {
 
     template <typename T>
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
-            -> enable_if_t<is_char_8<T>::value, int>
+            -> std::enable_if_t<is_char_8<T>::value, int>
         {
             static constexpr unsigned long const ms[] = { 0xBFUL, 0x00UL, 0xC0UL, 0xE0UL, 0xF0UL, 0xF8UL, 0xFCUL };
                 if (c32 >= 0xD800UL && c32 <= 0xDBFFUL) return 0; // surrogate
@@ -389,7 +389,7 @@ namespace cxon { namespace cio { namespace chr {
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         };
         template <typename X>
-            constexpr auto should_escape_(char c) noexcept -> enable_if_t<!is_quoted_key_context<X>::value, bool> {
+            constexpr auto should_escape_(char c) noexcept -> std::enable_if_t<!is_quoted_key_context<X>::value, bool> {
                 return should_escape_not_quoted_key_context_[(unsigned char)c] == '\1';
             }
         static constexpr char should_escape_quoted_key_context_[] = {
@@ -403,7 +403,7 @@ namespace cxon { namespace cio { namespace chr {
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         };
         template <typename X>
-            constexpr auto should_escape_(char c) noexcept -> enable_if_t< is_quoted_key_context<X>::value, bool> {
+            constexpr auto should_escape_(char c) noexcept -> std::enable_if_t< is_quoted_key_context<X>::value, bool> {
                 return should_escape_quoted_key_context_[(unsigned char)c] == '\1';
             }
 
@@ -461,7 +461,7 @@ namespace cxon { namespace cio { namespace chr {
                     struct use_simd_ : bool_constant<CXON_USE_SIMD_SSE2 && !is_key_context<Y>::value && !Y::produce_strict_javascript> {};
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && !use_simd_<Y>::value, bool>
+                        -> std::enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && !use_simd_<Y>::value, bool>
                     {
                         char const* a = f;
                         for ( ; f != l; ++f) {
@@ -487,7 +487,7 @@ namespace cxon { namespace cio { namespace chr {
                     }
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
+                        -> std::enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
                     {   // TODO: assumes that the input 16 byte aligned, but it may not be the case - preprocess the unaligned prefix
                         static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
 #                       if CXON_USE_SIMD_SSE2
@@ -541,7 +541,7 @@ namespace cxon { namespace cio { namespace chr {
                     }
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> enable_if_t<!is_unquoted_key_context<X>::value &&  Y::assume_no_escapes, bool>
+                        -> std::enable_if_t<!is_unquoted_key_context<X>::value &&  Y::assume_no_escapes, bool>
                     {
                         return poke<Y>(o, f, l, cx);
                     }
@@ -550,19 +550,19 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X>
             struct encode_<X, wchar_t> {
                 template <typename O, typename Cx, typename T = wchar_t>
-                    static auto value(O& o, T c, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    static auto value(O& o, T c, Cx& cx) -> std::enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
                         return encode_<X, char16_t>::value(o, char16_t(c), cx);
                     }
                 template <typename O, typename Cx, typename T = wchar_t>
-                    static auto value(O& o, T c, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    static auto value(O& o, T c, Cx& cx) -> std::enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                         return encode_<X, char32_t>::value(o, char32_t(c), cx);
                     }
                 template <typename O, typename Cx, typename T = wchar_t>
-                    static auto range(O& o, const T* f, const T* l, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
+                    static auto range(O& o, const T* f, const T* l, Cx& cx) -> std::enable_if_t<sizeof(T) == sizeof(char16_t), bool> {
                         return encode_<X, char16_t>::range(o, (const char16_t*)f, (const char16_t*)l, cx);
                     }
                 template <typename O, typename Cx, typename T = wchar_t>
-                    static auto range(O& o, const T* f, const T* l, Cx& cx) -> enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
+                    static auto range(O& o, const T* f, const T* l, Cx& cx) -> std::enable_if_t<sizeof(T) == sizeof(char32_t), bool> {
                         return encode_<X, char32_t>::range(o, (const char32_t*)f, (const char32_t*)l, cx);
                     }
             };
@@ -613,7 +613,7 @@ namespace cxon { namespace cio { namespace chr {
         template <typename X>
             struct encode_<X, char32_t> {
                 template <typename O, typename Cx, typename S = X>
-                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t<!S::produce_strict_javascript, bool> {
+                    static auto value(O& o, char32_t c, Cx& cx) -> std::enable_if_t<!S::produce_strict_javascript, bool> {
                         if (c > 0x7F) {
                                 char b[4]; int const n = utf32_to_utf8(b, c);
                                 return poke<X>(o, b, n, cx);
@@ -621,7 +621,7 @@ namespace cxon { namespace cio { namespace chr {
                         else    return encode_<X, char>::value(o, char(c), cx);
                     }
                 template <typename O, typename Cx, typename S = X>
-                    static auto value(O& o, char32_t c, Cx& cx) -> enable_if_t< S::produce_strict_javascript, bool> {
+                    static auto value(O& o, char32_t c, Cx& cx) -> std::enable_if_t< S::produce_strict_javascript, bool> {
                         if (c > 0x7F) {
                                 if (c == 0x2028) return poke<X>(o, "\\u2028", 6, cx);
                                 if (c == 0x2029) return poke<X>(o, "\\u2029", 6, cx);
@@ -641,12 +641,12 @@ namespace cxon { namespace cio { namespace chr {
     }
 
     template <typename X, typename O, typename T, typename Cx>
-        inline auto encode_range(O& o, const T* f, const T* l, Cx& cx) -> enable_if_t<is_char<T>::value, bool> {
+        inline auto encode_range(O& o, const T* f, const T* l, Cx& cx) -> std::enable_if_t<is_char<T>::value, bool> {
             return imp::encode_<X, T>::range(o, f, l, cx);
         }
 
     template <typename X, typename T, typename O, typename Cx>
-        inline auto write(O& o, T t, Cx& cx) -> enable_if_t<is_char<T>::value, bool> {
+        inline auto write(O& o, T t, Cx& cx) -> std::enable_if_t<is_char<T>::value, bool> {
             return  poke<X>(o, str::delim_be_write<X, O>, cx) &&
                         imp::encode_<X, T>::value(o, t, cx) &&
                     poke<X>(o, str::delim_en_write<X, O>, cx)

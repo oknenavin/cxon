@@ -25,7 +25,7 @@ namespace cxon { namespace test {
 
     template <typename T>
         inline auto to_string(T t)
-            -> enable_if_t<std::is_integral<T>::value, std::string>
+            -> std::enable_if_t<std::is_integral<T>::value, std::string>
         {
             return std::to_string(t);
         }
@@ -37,7 +37,7 @@ namespace cxon { namespace test {
 
     template <typename T>
         inline auto to_string(T t)
-            -> enable_if_t<std::is_floating_point<T>::value, std::string>
+            -> std::enable_if_t<std::is_floating_point<T>::value, std::string>
         {
             char s[std::numeric_limits<T>::max_digits10 * 2] = { 0 };
             std::size_t const l = sizeof(s) / sizeof(char);
@@ -253,12 +253,16 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
         R_TEST(tmax<double>(), smax<double>());
         W_TEST(smax<double>(), tmax<double>());
     // long double
-        //R_TEST(tmin<long double>(), smin<long double>());
-        W_TEST(smin<long double>(), tmin<long double>());
+        R_TEST(tmin<long double>(), smin<long double>());
+#       if !defined(_LIBCPP_VERSION) // long double falls back to double
+            W_TEST(smin<long double>(), tmin<long double>());
+#       endif
         R_TEST((long double)0, "0");
         W_TEST("0", (long double)0);
-        //R_TEST(tmax<long double>(), smax<long double>());
-        W_TEST(smax<long double>(), tmax<long double>());
+        R_TEST(tmax<long double>(), smax<long double>());
+#       if !defined(_LIBCPP_VERSION) // long double falls back to double
+            W_TEST(smax<long double>(), tmax<long double>());
+#       endif
     // nullptr_t
         R_TEST(nullptr, "null");
         W_TEST("null", nullptr);

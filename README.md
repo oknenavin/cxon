@@ -2,7 +2,7 @@
 
 [![Library][img-lib]](https://github.com/oknenavin/cxon)
 [![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
-[![Language][img-lng]](https://isocpp.org/wiki/faq/cpp11)
+[![Language][img-lng]](https://isocpp.org/wiki/faq/cpp14)
 [![Format][img-fmt-json]](http://json.org)
 [![License][img-lic]](LICENSE)
 
@@ -24,7 +24,7 @@
   - `CXON` is a C++ serialization interface  
   - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (an example of a text-based data format)  
   - `CXON` is easy to extend for different formats and types with [zero-overhead][cpp-zeov]  
-  - `CXON` is a `C++11` compliant, self contained and compact header-only library  
+  - `CXON` is a `C++14` compliant, self contained and compact header-only library  
 
 Although `CXON` is a serialization library, its goal is to actually compete with `JSON`/etc. libraries like
 `Boost.JSON`/`RapidJSON`/etc. and its main **advantage** is, that no intermediate type is needed to represent the data - 
@@ -80,7 +80,7 @@ that match the functionality provided by these libraries.
 The **performance** is often important and is emphasized by many libraries and in this respect,
 `CXON` is [close to the alternatives](#performance).  
 Many libraries emphasize the floating-point serialization and deserialization performance.
-`CXON` uses [`<charconv>`][std-charconv] by default (with a fallback implementation for `C++11`),
+`CXON` uses [`<charconv>`][std-charconv] by default (with a fallback implementation for `C++14`),
 but can be configured to use [`boost::charconv`][lib-boost-charconv] by defining `CXON_USE_BOOST_CHARCONV`.  
 Note that libraries based on polymorphic types have validation and use overhead
 that should be taken into account.
@@ -173,13 +173,13 @@ it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.*
 
 #### Compilation
 
-`CXON` requires [`C++11`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
+`CXON` requires [`C++14`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
 `clang++ >= 4.0` and `msvc++ >= 19.16` (see the [builds](https://github.com/oknenavin/cxon/actions)).
 
 *`CXON` is using [`<charconv>`][std-charconv] for numeric conversions if available.  
 If not (ex. pre-`C++17`) a fallback implementation (based on `strto*` and `sprintf`) will be used.  
 If `CXON_USE_BOOST_CHARCONV` is defined, [`boost::charconv`][lib-boost-charconv] will be used.
-This will provide a good performance boost for `C++11/14` and some earlier implementations of
+This will provide a good performance boost for `C++14` and some earlier implementations of
 [`<charconv>`][std-charconv].*
 
 --------------------------------------------------------------------------------
@@ -218,7 +218,7 @@ Distributed under the terms of the GNU Affero General Public License. See [`LICE
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
-[img-lng]: https://img.shields.io/badge/language-C++11/14/17/20/23/26-608060.svg?style=plastic&logo=C%2B%2B
+[img-lng]: https://img.shields.io/badge/language-C++14/14/17/20/23/26-608060.svg?style=plastic&logo=C%2B%2B
 [img-fmt-json]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [img-lic]: https://img.shields.io/badge/license-AGPLv3-608060.svg?style=plastic
 [img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg

@@ -66,7 +66,7 @@ namespace cxon {
             struct is_iterable_<T, void_t<typename T::const_iterator>>  : std::true_type {};
 
         template <typename T>
-            inline auto make_hash_(const T& t) noexcept -> enable_if_t< is_iterable_<T>::value, std::size_t> {
+            inline auto make_hash_(const T& t) noexcept -> std::enable_if_t< is_iterable_<T>::value, std::size_t> {
                 hash<typename T::value_type> hs;
                 std::size_t s = 0;
                 for (auto& v: t)
@@ -74,7 +74,7 @@ namespace cxon {
                 return s;
             }
         template <typename T>
-            inline auto make_hash_(const T& t) noexcept -> enable_if_t<!is_iterable_<T>::value, std::size_t> {
+            inline auto make_hash_(const T& t) noexcept -> std::enable_if_t<!is_iterable_<T>::value, std::size_t> {
                 return hash<T>()(t);
             }
 

@@ -49,22 +49,22 @@ namespace cxon { namespace cio { namespace var {
         struct get_type             : type_identity<void> {};
     template <template <typename ...> class P, typename H, typename ...T>
         struct get_type<P, H, T...> {
-            using type = conditional_t<P<remove_cv_t<H>>::value, remove_cv_t<H>, typename get_type<P, T...>::type>;
+            using type = std::conditional_t<P<std::remove_cv_t<H>>::value, std::remove_cv_t<H>, typename get_type<P, T...>::type>;
         };
 
     namespace imp {
         template <typename U, typename V>
-            using are_maps_     = conjunction<cio::is_map<remove_cv_t<U>>, cio::is_map<remove_cv_t<V>>>;
+            using are_maps_     = conjunction<cio::is_map<std::remove_cv_t<U>>, cio::is_map<std::remove_cv_t<V>>>;
         template <typename U, typename V>
-            using are_lists_    = conjunction<cio::is_list<remove_cv_t<U>>, cio::is_list<remove_cv_t<V>>>;
+            using are_lists_    = conjunction<cio::is_list<std::remove_cv_t<U>>, cio::is_list<std::remove_cv_t<V>>>;
         template <typename U, typename V>
-            using are_strings_  = conjunction<cio::is_string<remove_cv_t<U>>, cio::is_string<remove_cv_t<V>>>;
+            using are_strings_  = conjunction<cio::is_string<std::remove_cv_t<U>>, cio::is_string<std::remove_cv_t<V>>>;
         template <typename U, typename V>
-            using are_numbers_  = conjunction<cio::is_number<remove_cv_t<U>>, cio::is_number<remove_cv_t<V>>>;
+            using are_numbers_  = conjunction<cio::is_number<std::remove_cv_t<U>>, cio::is_number<std::remove_cv_t<V>>>;
         template <typename U, typename V>
-            using are_bools_    = conjunction<cio::is_bool<remove_cv_t<U>>, cio::is_bool<remove_cv_t<V>>>;
+            using are_bools_    = conjunction<cio::is_bool<std::remove_cv_t<U>>, cio::is_bool<std::remove_cv_t<V>>>;
         template <typename U, typename V>
-            using are_nulls_    = conjunction<cio::is_null<remove_cv_t<U>>, cio::is_null<remove_cv_t<V>>>;
+            using are_nulls_    = conjunction<cio::is_null<std::remove_cv_t<U>>, cio::is_null<std::remove_cv_t<V>>>;
     }
     template <typename U, typename V>
         struct are_same : disjunction<
@@ -73,12 +73,12 @@ namespace cxon { namespace cio { namespace var {
 
     template <typename T>
         using is_known = disjunction<
-            cio::is_map<remove_cv_t<T>>,
-            cio::is_list<remove_cv_t<T>>,
-            cio::is_string<remove_cv_t<T>>,
-            cio::is_number<remove_cv_t<T>>,
-            cio::is_bool<remove_cv_t<T>>,
-            cio::is_null<remove_cv_t<T>>
+            cio::is_map<std::remove_cv_t<T>>,
+            cio::is_list<std::remove_cv_t<T>>,
+            cio::is_string<std::remove_cv_t<T>>,
+            cio::is_number<std::remove_cv_t<T>>,
+            cio::is_bool<std::remove_cv_t<T>>,
+            cio::is_null<std::remove_cv_t<T>>
         >;
 
     template <typename ...>
