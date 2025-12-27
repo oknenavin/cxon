@@ -12,6 +12,7 @@ jobs:
   # gcc ########################################################################
 
   gcc:
+    name: g++ version
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -37,6 +38,7 @@ jobs:
       run: $CXX --version; make -j check
  
   gcc-cxx-std:
+    name: g++ standard
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -60,6 +62,7 @@ jobs:
       run: $CXX --version; make -j check
 
   gcc-arch-32:
+    name: g++ 32
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -79,6 +82,7 @@ jobs:
       run: $CXX --version; make -j check
 
   gcc-ubsan:
+    name: g++ UBSAN
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -98,6 +102,7 @@ jobs:
       run: $CXX --version; make -j check
 
   gcc-asan:
+    name: g++ ASAN
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -117,6 +122,7 @@ jobs:
       run: $CXX --version; make -j check
 
   make-install:
+    name: CXON installation
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -140,10 +146,12 @@ jobs:
   # clang ######################################################################
 
   clang:
+    name: calng++ version
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['4.0', '6.0', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'] # 5.0 - unmet dependencies
+        compiler: ['9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'] # 5.0 - unmet dependencies
+                                                                                          # 4, 6, 7, 8 - include/c++/14/bitset:181:6: error: use of undeclared identifier '__builtin_is_constant_evaluated'; did you mean '__is_constant_evaluated'?
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
@@ -165,7 +173,35 @@ jobs:
         CXX: clang++-${{ matrix.compiler }}
       run: $CXX --version; make -j check
 
+  clang-libcpp:
+    name: clang++ & libc++
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: ['20']
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v4
+    - name: APT Update
+      run: |
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ jammy main'      | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ jammy universe'  | sudo tee -a /etc/apt/sources.list
+        sudo apt-get update
+    - name: libc++ setup
+      run: sudo apt-get install libc++-${{ matrix.compiler }}-dev
+    - name: Compiler setup
+      run: sudo apt-get install clang-${{ matrix.compiler }}
+    - name: Boost setup
+      run: sudo apt-get install libboost-container-dev
+    - name: Check
+      env:
+        CXX: clang++-${{ matrix.compiler }}
+        CXXFLAGS: -std=c++20 -stdlib=libc++
+        LDFLAGS: -stdlib=libc++
+      run: $CXX --version; make -j check
+
   clang-cxx-std:
+    name: clang++ standard
     runs-on: ubuntu-latest
     strategy:
       matrix:
