@@ -315,7 +315,7 @@ namespace cxon { namespace cio { namespace num { // read
             }
 
         template <typename X, typename T>
-            inline charconv::imp::from_chars_result from_chars_(const char* b, const char* e, T& t) noexcept {
+            inline charconv::from_chars_result from_chars_(const char* b, const char* e, T& t) noexcept {
                 if (e - b >= 3) {
                     CXON_IF_CONSTEXPR (!X::allow_javascript_nans) {
                         if (b[0] == '"') {
@@ -324,17 +324,17 @@ namespace cxon { namespace cio { namespace num { // read
                                 case 'i':
                                     if (e - s >= 4 && s[1] == 'n' && s[2] == 'f' && s[3] == '"') {
                                         t = s != b ? -std::numeric_limits<T>::infinity() : std::numeric_limits<T>::infinity();
-                                        return charconv::imp::from_chars_result{ s + 4, std::errc() };
+                                        return charconv::from_chars_result{ s + 4, std::errc() };
                                     }
                                     break;
                                 case 'n':
                                     if (e - s >= 4 && s[1] == 'a' && s[2] == 'n' && s[3] == '"') {
                                         t = s != b ? -std::numeric_limits<T>::quiet_NaN() : std::numeric_limits<T>::quiet_NaN();
-                                        return charconv::imp::from_chars_result{ s + 4, std::errc() };
+                                        return charconv::from_chars_result{ s + 4, std::errc() };
                                     }
                                     break;
                             }
-                            return charconv::imp::from_chars_result { s != b ? --b : b, std::errc::invalid_argument };
+                            return charconv::from_chars_result { s != b ? --b : b, std::errc::invalid_argument };
                         }
                     }
                     CXON_IF_CONSTEXPR ( X::allow_javascript_nans) {
@@ -343,15 +343,15 @@ namespace cxon { namespace cio { namespace num { // read
                             case 'I':
                                 if (e - s >= 8 && std::char_traits<char>::compare(s + 1, "nfinity", 7) == 0) {
                                     t = s != b ? -std::numeric_limits<T>::infinity() : std::numeric_limits<T>::infinity();
-                                    return charconv::imp::from_chars_result { s + 8, std::errc() };
+                                    return charconv::from_chars_result { s + 8, std::errc() };
                                 }
-                                return charconv::imp::from_chars_result { b, std::errc::invalid_argument };
+                                return charconv::from_chars_result { b, std::errc::invalid_argument };
                             case 'N':
                                 if (e - s >= 3 && s[1] == 'a' && s[2] == 'N') {
                                     t = s != b ? -std::numeric_limits<T>::quiet_NaN() : std::numeric_limits<T>::quiet_NaN();
-                                    return charconv::imp::from_chars_result { s + 3, std::errc() };
+                                    return charconv::from_chars_result { s + 3, std::errc() };
                                 }
-                                return charconv::imp::from_chars_result { b, std::errc::invalid_argument };
+                                return charconv::from_chars_result { b, std::errc::invalid_argument };
                         }
                     }
                 }

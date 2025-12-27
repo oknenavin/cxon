@@ -40,7 +40,7 @@
 #   endif
 #endif
 
-namespace cxon { namespace charconv { namespace imp {
+namespace cxon { namespace charconv { namespace fallback {
 
     enum class chars_format {
         scientific  = 1,
@@ -54,7 +54,7 @@ namespace cxon { namespace charconv { namespace imp {
         std::errc ec;
     };
 
-    namespace {
+    namespace from_ {
 
         template <typename T, typename F>
             constexpr auto clamp_(F t) noexcept -> std::enable_if_t<sizeof(T) == sizeof(F), T> {
@@ -82,7 +82,7 @@ namespace cxon { namespace charconv { namespace imp {
             }
 
         template <typename T, typename Cv>
-            inline from_chars_result number_from_chars_(const char* first, const char*, Cv convert, T& value, int base) noexcept {
+            inline from_chars_result chars_(const char* first, const char*, Cv convert, T& value, int base) noexcept {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
                     if (is_sign_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
                 char* end;
@@ -90,7 +90,7 @@ namespace cxon { namespace charconv { namespace imp {
                 return { end, end != first ? errno != ERANGE ? (value = v, std::errc{}) : std::errc::result_out_of_range : std::errc::invalid_argument };
             }
         template <typename T, typename Cv>
-            inline from_chars_result number_from_chars_(const char* first, const char*, Cv convert, T& value, chars_format) noexcept {
+            inline from_chars_result chars_(const char* first, const char*, Cv convert, T& value, chars_format) noexcept {
                     if (is_sign_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
                 char* end;
                 errno = 0; auto const v = convert(first, &end);
@@ -101,7 +101,7 @@ namespace cxon { namespace charconv { namespace imp {
 
 #   define CXON_FROM_CHARS(T, C)\
         inline from_chars_result from_chars(const char* first, const char* last, T& value, int base = 10) noexcept {\
-            return number_from_chars_(first, last, C, value, base);\
+            return from_::chars_(first, last, C, value, base);\
         }
         CXON_FROM_CHARS(char, strtol)
         CXON_FROM_CHARS(signed char, strtol)
@@ -117,7 +117,7 @@ namespace cxon { namespace charconv { namespace imp {
 #   undef CXON_FROM_CHARS
 #   define CXON_FROM_CHARS(T, C)\
         inline from_chars_result from_chars(const char* first, const char* last, T& value, chars_format fmt = chars_format::general) noexcept {\
-            return number_from_chars_(first, last, C, value, fmt);\
+            return from_::chars_(first, last, C, value, fmt);\
         }
         CXON_FROM_CHARS(float, strtof)
         CXON_FROM_CHARS(double, strtod)
@@ -129,7 +129,7 @@ namespace cxon { namespace charconv { namespace imp {
         std::errc ec;
     };
 
-    namespace {
+    namespace to_ {
 
         template <typename T>
             inline auto itoa_(char* b, T t, int base) noexcept -> typename std::enable_if<std::is_unsigned<T>::value, unsigned>::type {
@@ -151,7 +151,7 @@ namespace cxon { namespace charconv { namespace imp {
         //  a copy of the value last in ptr, and leaves the contents of the range [first, last) in unspecified state,
         //  but we don't care, the buffer must be sufficient
         template <typename T>
-            inline auto number_to_chars_(char* first, char* last, T value, int base) noexcept
+            inline auto chars_(char* first, char* last, T value, int base) noexcept
                  -> typename std::enable_if<std::is_integral<T>::value, to_chars_result>::type
             {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
@@ -166,7 +166,7 @@ namespace cxon { namespace charconv { namespace imp {
         template <> struct fmt_<long double>    { static constexpr char const*const str = "%.*Lg";  };
 
         template <typename T>
-            inline auto number_to_chars_(char* first, char* last, T value, int precision) noexcept
+            inline auto chars_(char* first, char* last, T value, int precision) noexcept
                  -> typename std::enable_if<std::is_floating_point<T>::value, to_chars_result>::type
             {
                 std::size_t const l = last - first;
@@ -178,7 +178,7 @@ namespace cxon { namespace charconv { namespace imp {
 
 #   define CXON_TO_CHARS(T)\
         inline to_chars_result to_chars(char* first, char* last, T value, int base = 10) noexcept {\
-            return number_to_chars_<T>(first, last, value, base);\
+            return to_::chars_<T>(first, last, value, base);\
         }
         CXON_TO_CHARS(signed char)
         CXON_TO_CHARS(unsigned char)
@@ -193,7 +193,7 @@ namespace cxon { namespace charconv { namespace imp {
 #   undef CXON_TO_CHARS
 #   define CXON_TO_CHARS(T)\
         inline to_chars_result to_chars(char* first, char* last, T value, int precision) noexcept {\
-            return number_to_chars_<T>(first, last, value, precision);\
+            return to_::chars_<T>(first, last, value, precision);\
         }
         CXON_TO_CHARS(float)
         CXON_TO_CHARS(double)
@@ -202,128 +202,154 @@ namespace cxon { namespace charconv { namespace imp {
 
 }}}
 
-namespace cxon { namespace charconv { // <charconv>
+namespace cxon { namespace charconv {
 
-#   ifdef CXON_HAS_CHARCONV
+#   if defined(CXON_USE_BOOST_CHARCONV)
+        using boost::charconv::from_chars_result;
+        using boost::charconv::from_chars;
+
+        using boost::charconv::to_chars_result;
+        using boost::charconv::to_chars;
+
         template <typename T>
-            inline auto from_chars_i_(option<1>, const char* f, const char* l, T& t, int base = 10) noexcept
-                ->  decltype(std::from_chars(f, l, t, base), std::from_chars_result())
+            inline auto to_chars(char* f, char* l, T t, int precision) noexcept
+                ->  std::enable_if_t<std::is_floating_point<T>::value, boost::charconv::to_chars_result>
             {
-                return std::from_chars(f, l, t, base);
+                return to_chars(f, l, t, boost::charconv::chars_format::general, precision);
             }
+#   elif defined(CXON_HAS_CHARCONV)
+        using from_chars_result = std::from_chars_result;
+
         template <typename T>
-            inline auto from_chars_i_(option<0>, const char* f, const char* l, T& t, int base = 10) noexcept
-                ->  std::from_chars_result
-            {
-                auto const r = imp::from_chars(f, l, t, base);
-                return { r.ptr, r.ec };
-            }
+            inline auto from_chars(const char* f, const char* l, T& t, int base = 10) noexcept  -> std::enable_if_t<std::is_integral<T>::value, std::from_chars_result>;
         template <typename T>
-            inline auto from_chars(const char* f, const char* l, T& t, int base = 10) noexcept
+            inline auto from_chars(const char* f, const char* l, T& t) noexcept                 -> std::enable_if_t<std::is_floating_point<T>::value, std::from_chars_result>;
+
+        auto from_chars(const char*, const char*, bool&, int = 10) -> std::from_chars_result = delete;
+
+        using to_chars_result = std::to_chars_result;
+
+        template <typename T>
+            inline auto to_chars(char* f, char* l, T t, int base = 10) noexcept ->  std::enable_if_t<std::is_integral<T>::value, std::to_chars_result>;
+        template <typename T>
+            inline auto to_chars(char* f, char* l, T t, int precision) noexcept ->  std::enable_if_t<std::is_floating_point<T>::value, std::to_chars_result>;
+
+        auto to_chars(char*, char*, bool, int = 10) -> std::to_chars_result = delete;
+
+#   else
+        using fallback::from_chars_result;
+        using fallback::from_chars;
+
+        using fallback::to_chars_result;
+        using fallback::to_chars;
+#   endif
+
+}}
+
+#if defined(CXON_HAS_CHARCONV)
+    namespace cxon { namespace charconv {
+
+        namespace imp {
+            template <typename T>
+                inline auto from_chars_i_(option<1>, const char* f, const char* l, T& t, int base) noexcept
+                    ->  decltype(std::from_chars(f, l, t, base), std::from_chars_result())
+                {
+                    return std::from_chars(f, l, t, base);
+                }
+            template <typename T>
+                inline auto from_chars_i_(option<0>, const char* f, const char* l, T& t, int base) noexcept
+                    ->  std::from_chars_result
+                {
+                    auto const r = fallback::from_chars(f, l, t, base);
+                    return { r.ptr, r.ec };
+                }
+        }
+        template <typename T>
+            inline auto from_chars(const char* f, const char* l, T& t, int base/* = 10*/) noexcept
                 ->  std::enable_if_t<std::is_integral<T>::value, std::from_chars_result>
             {
-                return from_chars_i_(option<1>(), f, l, t, base);
+                return imp::from_chars_i_(option<1>(), f, l, t, base);
             }
-        std::from_chars_result from_chars(const char*, const char*, bool&, int = 10) = delete;
 
-        template <typename T>
-            inline auto from_chars_f_(option<1>, const char* f, const char* l, T& t) noexcept
-                ->  decltype(std::from_chars(f, l, t), std::from_chars_result())
-            {
-                return std::from_chars(f, l, t);
-            }
-        template <typename T>
-            inline auto from_chars_f_(option<0>, const char* f, const char* l, T& t) noexcept
-                ->  std::from_chars_result
-            {
-                auto const r = imp::from_chars(f, l, t);
-                return { r.ptr, r.ec };
-            }
+        namespace imp {
+            template <typename T>
+                inline auto from_chars_f_(option<1>, const char* f, const char* l, T& t) noexcept
+                    ->  decltype(std::from_chars(f, l, t), std::from_chars_result())
+                {
+                    return std::from_chars(f, l, t);
+                }
+            template <typename T>
+                inline auto from_chars_f_(option<0>, const char* f, const char* l, T& t) noexcept
+                    ->  std::from_chars_result
+                {
+                    auto const r = fallback::from_chars(f, l, t);
+                    return { r.ptr, r.ec };
+                }
+        }
         template <typename T>
             inline auto from_chars(const char* f, const char* l, T& t) noexcept
                 ->  std::enable_if_t<std::is_floating_point<T>::value, std::from_chars_result>
             {
-                return from_chars_f_(option<1>(), f, l, t);
+                return imp::from_chars_f_(option<1>(), f, l, t);
             }
 
+        namespace imp {
+            template <typename T>
+                inline auto to_chars_i_(option<1>, char* f, char* l, T t, int base) noexcept
+                    ->  decltype(std::to_chars(f, l, t, base), std::to_chars_result())
+                {
+                    return std::to_chars(f, l, t, base);
+                }
+            template <typename T>
+                inline auto to_chars_i_(option<0>, char* f, char* l, T t, int base) noexcept
+                    ->  std::to_chars_result
+                {
+                    auto const r = fallback::to_chars(f, l, t, base);
+                    return { r.ptr, r.ec };
+                }
+        }
         template <typename T>
-            inline auto to_chars_i_(option<1>, char* f, char* l, T t, int base = 10) noexcept
-                ->  decltype(std::to_chars(f, l, t, base), std::to_chars_result())
-            {
-                return std::to_chars(f, l, t, base);
-            }
-        template <typename T>
-            inline auto to_chars_i_(option<0>, char* f, char* l, T t, int base = 10) noexcept
-                ->  std::to_chars_result
-            {
-                auto const r = imp::to_chars(f, l, t, base);
-                return { r.ptr, r.ec };
-            }
-        template <typename T>
-            inline auto to_chars(char* f, char* l, T t, int base = 10) noexcept
+            inline auto to_chars(char* f, char* l, T t, int base/* = 10*/) noexcept
                 ->  std::enable_if_t<std::is_integral<T>::value, std::to_chars_result>
             {
-                return to_chars_i_(option<1>(), f, l, t, base);
+                return imp::to_chars_i_(option<1>(), f, l, t, base);
             }
-        std::to_chars_result to_chars(char*, char*, bool, int = 10) = delete;
 
-        // g++: error: 'general' is not a member of 'std::chars_format'
-        template <typename T, typename = void>
-            struct general {
-                static constexpr T      value = (T)imp::chars_format::general;
-            };
-        template <typename T>
-            struct general<T, std::enable_if_t<sizeof(T::general)>> {
-                static constexpr T      value = T::general;
-            };
+        namespace imp {
+            // g++: error: 'general' is not a member of 'std::chars_format'
+            template <typename T, typename = void>
+                struct general_                                             { static constexpr T value = (T)fallback::chars_format::general; };
+            template <typename T>
+                struct general_<T, std::enable_if_t<sizeof(T::general)>>    { static constexpr T value = T::general; };
 
-        template <typename T>
-            inline auto to_chars_f_(option<2>, char* f, char* l, T t, int precision) noexcept
-                ->  decltype(std::to_chars(f, l, t, (std::chars_format)0, precision), std::to_chars_result())
-            {
-#               if defined(_MSC_VER) && _MSC_VER <= 1923
-                    auto const r = imp::to_chars(f, l, t, precision);
+            template <typename T>
+                inline auto to_chars_f_(option<2>, char* f, char* l, T t, int precision) noexcept
+                    ->  decltype(std::to_chars(f, l, t, (std::chars_format)0, precision), std::to_chars_result())
+                {
+                    return std::to_chars(f, l, t, general_<std::chars_format>::value, precision);
+                }
+            template <typename T>
+                inline auto to_chars_f_(option<1>, char* f, char* l, T t, int) noexcept
+                    ->  decltype(std::to_chars(f, l, t), std::to_chars_result())
+                {
+                    return std::to_chars(f, l, t);
+                }
+            template <typename T>
+                inline auto to_chars_f_(option<0>, char* f, char* l, T t, int precision) noexcept
+                    ->  std::to_chars_result
+                {
+                    auto const r = fallback::to_chars(f, l, t, precision);
                     return { r.ptr, r.ec };
-#               else
-                    return std::to_chars(f, l, t, general<std::chars_format>::value, precision);
-#               endif
-            }
-        template <typename T>
-            inline auto to_chars_f_(option<1>, char* f, char* l, T t, int) noexcept
-                ->  decltype(std::to_chars(f, l, t), std::to_chars_result())
-            {
-                return std::to_chars(f, l, t);
-            }
-        template <typename T>
-            inline auto to_chars_f_(option<0>, char* f, char* l, T t, int precision) noexcept
-                ->  std::to_chars_result
-            {
-                auto const r = imp::to_chars(f, l, t, precision);
-                return { r.ptr, r.ec };
-            }
+                }
+        }
         template <typename T>
             inline auto to_chars(char* f, char* l, T t, int precision) noexcept
                 ->  std::enable_if_t<std::is_floating_point<T>::value, std::to_chars_result>
             {
-                return to_chars_f_(option<2>(), f, l, t, precision);
+                return imp::to_chars_f_(option<2>(), f, l, t, precision);
             }
-#   else
-#       ifdef CXON_USE_BOOST_CHARCONV
-            using boost::charconv::from_chars;
-            using boost::charconv::to_chars;
 
-            template <typename T>
-                inline auto to_chars(char* f, char* l, T t, int precision) noexcept
-                    ->  std::enable_if_t<std::is_floating_point<T>::value, boost::charconv::to_chars_result>
-                {
-                    return to_chars(f, l, t, boost::charconv::chars_format::general, precision);
-                }
-#       else
-            using imp::from_chars;
-            using imp::to_chars;
-#       endif
-#   endif
-
-}}
+    }}
+#endif
 
 #endif // CXON_CHARCONV_HXX_
