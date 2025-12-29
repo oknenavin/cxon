@@ -272,14 +272,16 @@ namespace cxon { namespace cio { namespace num { // read
                         case -1: return rewind(i, o), cx/X::read_error::overflow;
                         case  0: return rewind(i, o), cx/X::read_error::integral_invalid;
                         default: {
-                            auto const r = charconv::from_chars(std::begin(s), std::end(s), t, base); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                            auto const r = charconv::from_chars(std::begin(s), std::end(s), t, base);
+                                if (r.ec != std::errc())
+                                    return rewind(i, o), cx/X::read_error::integral_invalid;
                             return true;
                         }
                     }
             }
         template <typename X, typename T, typename Cx>
             inline auto number_read__(T& t, const char*& i, const char* e, Cx& cx)
-                -> std::enable_if_t<std::is_integral<T>::value && X::number::strict, bool>
+                -> std::enable_if_t<std::is_integral<T>::value &&  X::number::strict, bool>
             {
                 constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
                 auto const b = i;
@@ -287,7 +289,9 @@ namespace cxon { namespace cio { namespace num { // read
                     return i = b, cx/X::read_error::integral_invalid;
                 if (i - b == 1)
                     return t = *b - '0', true;
-                auto const r = charconv::from_chars(b, i, t, base); CXON_ASSERT(r.ec == std::errc() && r.ptr == i, "unexpected");
+                auto const r = charconv::from_chars(b, i, t, base);
+                    if (r.ec != std::errc())
+                        return i = b, cx/X::read_error::integral_invalid;
                 return true;
             }
         template <typename X, typename T, typename Cx>
@@ -296,7 +300,8 @@ namespace cxon { namespace cio { namespace num { // read
             {
                 constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
                 auto const r = charconv::from_chars(i, e, t, base);
-                    if (r.ec != std::errc()) return cx/X::read_error::integral_invalid;
+                    if (r.ec != std::errc())
+                        return cx/X::read_error::integral_invalid;
                 return i = r.ptr, true;
             }
 
@@ -368,7 +373,9 @@ namespace cxon { namespace cio { namespace num { // read
                         case -1: return rewind(i, o), cx/X::read_error::overflow;
                         case  0: return rewind(i, o), cx/X::read_error::floating_point_invalid;
                         default: {
-                            auto const r = from_chars_<X>(std::begin(s), std::end(s), t); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                            auto const r = from_chars_<X>(std::begin(s), std::end(s), t);
+                                if (r.ec != std::errc())
+                                    return rewind(i, o), cx/X::read_error::floating_point_invalid;
                             return true;
                         }
                     }
@@ -382,7 +389,9 @@ namespace cxon { namespace cio { namespace num { // read
                     return i = b, cx/X::read_error::floating_point_invalid;
                 if (i - b == 1)
                     return t = T(*b - '0'), true;
-                auto const r = from_chars_<X>(b, i, t); CXON_ASSERT(r.ec == std::errc() && r.ptr == i, "unexpected");
+                auto const r = from_chars_<X>(b, i, t);
+                    if (r.ec != std::errc())
+                        return i = b, cx/X::read_error::floating_point_invalid;
                 return true;
             }
         template <typename X, typename T, typename Cx>
@@ -390,7 +399,8 @@ namespace cxon { namespace cio { namespace num { // read
                 -> std::enable_if_t<std::is_floating_point<T>::value && !X::number::strict, bool>
             {
                 auto const r = from_chars_<X>(i, e, t);
-                    if (r.ec != std::errc()) return cx/X::read_error::floating_point_invalid;
+                    if (r.ec != std::errc())
+                        return cx/X::read_error::floating_point_invalid;
                 return i = r.ptr, true;
             }
 

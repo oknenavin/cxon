@@ -326,7 +326,7 @@ TEST_BEG(special_numbers, cxon::JSON<>, "/core") // special numbers
         R_TEST(  inf<float>(), QS("+inf"), json::read_error::floating_point_invalid, 0);
         W_TEST(QS("inf"),  inf<float>());
         R_TEST(  nan<float>(), QS("nan"));
-        R_TEST(  nan<float>(), QS("+nan"), json::read_error::floating_point_invalid, 0); 
+        R_TEST(  nan<float>(), QS("+nan"), json::read_error::floating_point_invalid, 0);
         R_TEST( -nan<float>(), QS("-nan")/*, json::read_error::floating_point_invalid, 0*/); // TODO: disallow?
         W_TEST(QS("nan"), nan<float>());
         W_TEST(QS("nan"), bfp<float>(0x7fffffff));
@@ -430,6 +430,8 @@ TEST_BEG(special_numbers_input_iterator, cxon::JSON<cxon::test::input_iterator_t
     W_TEST(QS("nan"), nan<double>());
     R_TEST(-nan<double>(), QS("-nan"));
     W_TEST(QS("-nan"), -nan<double>());
+    R_TEST(0.0, omin<double>(), json::read_error::floating_point_invalid);
+    R_TEST(0.0, omax<double>(), json::read_error::floating_point_invalid);
 TEST_END()
 
 
@@ -552,6 +554,7 @@ TEST_END()
 
 
 TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits<>>, "/core") // json number validation
+    using namespace test;
     // floating point
         R_TEST((double)0, "0");
         R_TEST((double)-0., "-0");
@@ -590,6 +593,8 @@ TEST_BEG(json_number_validation_1, cxon::JSON<cxon::test::input_iterator_traits<
         R_TEST((signed)0, "0x", json::read_error::ok, 1);
         R_TEST((signed)0, "0xg", json::read_error::ok, 1);
         R_TEST((signed)0, std::string(32 + 1, '1'), json::read_error::overflow, 32); // cxon::json::num_len_max
+        R_TEST((signed)0, omin<signed>(), json::read_error::integral_invalid);
+        R_TEST((signed)0, omax<signed>(), json::read_error::integral_invalid);
     // errors
 #   define CHECK_ERROR(ot, in, bf, ec) { auto r = test::from_string<XXON>(ot, in, cxon::json::num_len_max::set<bf>()); TEST_CHECK(ec); }
     {   signed t;
@@ -686,6 +691,8 @@ TEST_BEG(json_number_validation_2, cxon::JSON<strict_number_traits>, "/core") //
         R_TEST(-nan<double>(), QS("-nan"));
         W_TEST(QS("inf"), inf<double>());
         W_TEST(QS("nan"), nan<double>());
+        R_TEST( -inf<double>(), omin<double>(), json::read_error::floating_point_invalid, 0);
+        R_TEST(  inf<double>(), omax<double>(), json::read_error::floating_point_invalid, 0);
     // integral
         W_TEST("0", (signed)0);
         R_TEST((signed)0, "0");
@@ -702,6 +709,8 @@ TEST_BEG(json_number_validation_2, cxon::JSON<strict_number_traits>, "/core") //
         R_TEST((signed)0, "08", json::read_error::ok, 1);
         R_TEST((signed)0, "0x", json::read_error::ok, 1);
         R_TEST((signed)0, "0xg", json::read_error::ok, 1);
+        R_TEST((signed)0, omin<signed>(), json::read_error::integral_invalid, 0);
+        R_TEST((signed)0, omax<signed>(), json::read_error::integral_invalid, 0);
     // errors
 #   define CHECK_ERROR(ot, in, bf, ec) { auto r = test::from_string<XXON>(ot, in, cxon::json::num_len_max::set<bf>()); TEST_CHECK(ec); }
     {   double t;
