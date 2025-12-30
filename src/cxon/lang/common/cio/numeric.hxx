@@ -107,49 +107,41 @@ namespace cxon { namespace cio { namespace num { // read
             {   // as in RFC7159 (except nans)
                 CXON_ASSERT(f && f < l, "unexpected");
                 char c = peek(i, e);
-#                   if defined(__GNUC__) && __GNUC__ == 14 && !defined(__clang__)
-#                       pragma GCC diagnostic push
-#                       pragma GCC diagnostic ignored "-Warray-bounds"
-#                       pragma GCC diagnostic ignored "-Wstringop-overflow"
-#                   endif
-                        CXON_IF_CONSTEXPR(!X::allow_javascript_nans) {
-                            if (c == '"') {
-                                ;                               CXON_READ()
-                                if (is_sign_<T>(c))             CXON_NEXT()
-                                if (c == 'i') {
-                                    CXON_NEXT() if (c != 'n')   return 0;
-                                    CXON_NEXT() if (c != 'f')   return 0;
-                                }
-                                else if (c == 'n') {
-                                    CXON_NEXT() if (c != 'a')   return 0;
-                                    CXON_NEXT() if (c != 'n')   return 0;
-                                }
-                                else                            return 0;
-                                CXON_NEXT() if (c != '"')       return 0;
-                                CXON_NEXT()                     goto trap_end;
+                    CXON_IF_CONSTEXPR(!X::allow_javascript_nans) {
+                        if (c == '"') {
+                            ;                               CXON_READ()
+                            if (is_sign_<T>(c))             CXON_NEXT()
+                            if (c == 'i') {
+                                CXON_NEXT() if (c != 'n')   return 0;
+                                CXON_NEXT() if (c != 'f')   return 0;
                             }
+                            else if (c == 'n') {
+                                CXON_NEXT() if (c != 'a')   return 0;
+                                CXON_NEXT() if (c != 'n')   return 0;
+                            }
+                            else                            return 0;
+                            CXON_NEXT() if (c != '"')       return 0;
+                            CXON_NEXT()                     goto trap_end;
                         }
-                        if (is_sign_<T>(c))                     CXON_READ()
-                        CXON_IF_CONSTEXPR( X::allow_javascript_nans) {
-                            if (c == 'I') {
-                                CXON_NEXT() if (c != 'n')       return 0;
-                                CXON_NEXT() if (c != 'f')       return 0;
-                                CXON_NEXT() if (c != 'i')       return 0;
-                                CXON_NEXT() if (c != 'n')       return 0;
-                                CXON_NEXT() if (c != 'i')       return 0;
-                                CXON_NEXT() if (c != 't')       return 0;
-                                CXON_NEXT() if (c != 'y')       return 0;
-                                CXON_NEXT()                     goto trap_end;
-                            }
-                            if (c == 'N') {
-                                CXON_NEXT() if (c != 'a')       return 0;
-                                CXON_NEXT() if (c != 'N')       return 0;
-                                CXON_NEXT()                     goto trap_end;
-                            }
+                    }
+                    if (is_sign_<T>(c))                     CXON_READ()
+                    CXON_IF_CONSTEXPR( X::allow_javascript_nans) {
+                        if (c == 'I') {
+                            CXON_NEXT() if (c != 'n')       return 0;
+                            CXON_NEXT() if (c != 'f')       return 0;
+                            CXON_NEXT() if (c != 'i')       return 0;
+                            CXON_NEXT() if (c != 'n')       return 0;
+                            CXON_NEXT() if (c != 'i')       return 0;
+                            CXON_NEXT() if (c != 't')       return 0;
+                            CXON_NEXT() if (c != 'y')       return 0;
+                            CXON_NEXT()                     goto trap_end;
                         }
-#                   if defined(__GNUC__) && __GNUC__ == 14 && !defined(__clang__)
-#                       pragma GCC diagnostic pop
-#                   endif
+                        if (c == 'N') {
+                            CXON_NEXT() if (c != 'a')       return 0;
+                            CXON_NEXT() if (c != 'N')       return 0;
+                            CXON_NEXT()                     goto trap_end;
+                        }
+                    }
                     if (c == '0')                           goto trap_zero;
                 //trap_whole:
                        if (!chr::is<X>::digit10(c))         return 0;
@@ -405,38 +397,25 @@ namespace cxon { namespace cio { namespace num { // write
 
         template <unsigned WIDTH, unsigned BASE>
             struct numeric_digits_N;
-        template <> struct numeric_digits_N<1,  2> { static constexpr unsigned value =  8; };
-        template <> struct numeric_digits_N<1,  8> { static constexpr unsigned value =  3; };
-        template <> struct numeric_digits_N<1, 10> { static constexpr unsigned value =  3; };
-        template <> struct numeric_digits_N<1, 16> { static constexpr unsigned value =  2; };
-        template <> struct numeric_digits_N<2,  2> { static constexpr unsigned value = 16; };
-        template <> struct numeric_digits_N<2,  8> { static constexpr unsigned value =  6; };
-        template <> struct numeric_digits_N<2, 10> { static constexpr unsigned value =  5; };
-        template <> struct numeric_digits_N<2, 16> { static constexpr unsigned value =  4; };
-        template <> struct numeric_digits_N<4,  2> { static constexpr unsigned value = 32; };
-        template <> struct numeric_digits_N<4,  8> { static constexpr unsigned value = 11; };
-        template <> struct numeric_digits_N<4, 10> { static constexpr unsigned value = 10; };
-        template <> struct numeric_digits_N<4, 16> { static constexpr unsigned value =  8; };
-        template <> struct numeric_digits_N<8,  2> { static constexpr unsigned value = 64; };
-        template <> struct numeric_digits_N<8,  8> { static constexpr unsigned value = 22; };
-        template <> struct numeric_digits_N<8, 10> { static constexpr unsigned value = 20; };
-        template <> struct numeric_digits_N<8, 16> { static constexpr unsigned value = 16; };
+#       define CXON_NUMERIC_DIGITS_N(w, b02, b08, b10, b16) \
+            template <> struct numeric_digits_N<w,  2> { static constexpr unsigned value = b02; }; \
+            template <> struct numeric_digits_N<w,  8> { static constexpr unsigned value = b08; }; \
+            template <> struct numeric_digits_N<w, 10> { static constexpr unsigned value = b10; }; \
+            template <> struct numeric_digits_N<w, 16> { static constexpr unsigned value = b16; }
+            // BASE                W   2   8  10  16
+            CXON_NUMERIC_DIGITS_N( 1,  8,  3,  3,  2); //  8
+            CXON_NUMERIC_DIGITS_N( 2, 16,  6,  5,  4); // 16
+            CXON_NUMERIC_DIGITS_N( 4, 32, 11, 10,  8); // 32
+            CXON_NUMERIC_DIGITS_N( 8, 64, 22, 20, 16); // 64
+#       undef CXON_NUMERIC_DIGITS_N
 
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> std::enable_if_t<std::is_integral<T>::value, bool> {
-#               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
-#                   pragma GCC diagnostic push
-#                   pragma GCC diagnostic ignored "-Wrestrict" // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100366
-#                   pragma GCC diagnostic ignored "-Warray-bounds"
-#               endif
-                    using N = make_numeric_t<T>;
-                    constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
-                    char s[numeric_digits_N<sizeof(N), base>::value + 2];
-                        auto const r = charconv::to_chars(std::begin(s), std::end(s), static_cast<N>(t), base); CXON_ASSERT(r.ec == std::errc(), "unexpected");
-                    return poke<X>(o, s, r.ptr, cx);
-#               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
-#                   pragma GCC diagnostic pop
-#               endif
+                using N = make_numeric_t<T>;
+                constexpr auto B = integer_base::constant<napa_type<Cx>>(10);
+                char s[numeric_digits_N<sizeof(N), B>::value + 2];
+                    auto const r = charconv::to_chars(std::begin(s), std::end(s), static_cast<N>(t), B); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                return poke<X>(o, s, r.ptr, cx);
             }
 
         template <typename T>
