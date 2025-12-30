@@ -151,7 +151,7 @@ namespace cxon { namespace charconv { namespace fallback {
         //  a copy of the value last in ptr, and leaves the contents of the range [first, last) in unspecified state,
         //  but we don't care, the buffer must be sufficient
         template <typename T>
-            inline auto chars_(char* first, char* last, T value, int base) noexcept
+            inline auto chars_(char* first, char*/* last*/, T value, int base) noexcept
                  -> typename std::enable_if<std::is_integral<T>::value, to_chars_result>::type
             {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
