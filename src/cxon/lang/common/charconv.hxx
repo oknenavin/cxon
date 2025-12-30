@@ -155,7 +155,6 @@ namespace cxon { namespace charconv { namespace fallback {
                  -> typename std::enable_if<std::is_integral<T>::value, to_chars_result>::type
             {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
-                CXON_ASSERT(last > first && std::size_t(last - first) >= std::numeric_limits<T>::digits10 + 1, "buffer too small");
                 unsigned const w = itoa_(first, value, base);
                 return { first + w, std::errc{} };
             }

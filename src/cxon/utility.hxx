@@ -159,6 +159,9 @@ namespace cxon {
     template <typename T> struct is_char;
     template <typename T> struct is_numeric;
 
+    template <typename T> struct make_numeric;
+    //template <typename T> using make_numeric_t;
+
     template <typename T>       // C++20
         struct remove_cvref     : std::remove_cv<std::remove_reference_t<T>> {};
     template <typename T>       // C++20
@@ -313,6 +316,11 @@ namespace cxon {
         struct is_char      : bool_constant<imp::is_char_<std::remove_cv_t<T>>::value> {};
     template <typename T>
         struct is_numeric   : bool_constant<std::is_arithmetic<T>::value && !is_char<T>::value && !is_bool<T>::value> {};
+
+    template <typename T>
+        struct make_numeric : std::conditional<std::is_signed<T>::value, std::make_signed_t<T>, std::make_unsigned_t<T>> {};
+    template <typename T>
+        using make_numeric_t = typename make_numeric<T>::type;
 
     template <typename ...>
         struct conjunction                  : std::true_type {};
