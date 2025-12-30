@@ -218,7 +218,7 @@ namespace cxon { namespace charconv {
                 return to_chars(f, l, t, boost::charconv::chars_format::general, precision);
             }
 #   elif defined(CXON_HAS_CHARCONV)
-        using from_chars_result = fallback::from_chars_result;
+        using from_chars_result = std::from_chars_result;
 
         template <typename T>
             inline auto from_chars(const char* f, const char* l, T& t, int base = 10) noexcept  -> std::enable_if_t<std::is_integral<T>::value, std::from_chars_result>;
@@ -227,7 +227,7 @@ namespace cxon { namespace charconv {
 
         auto from_chars(const char*, const char*, bool&, int = 10) -> std::from_chars_result = delete;
 
-        using to_chars_result = fallback::to_chars_result;
+        using to_chars_result = std::to_chars_result;
 
         template <typename T>
             inline auto to_chars(char* f, char* l, T t, int base = 10) noexcept ->  std::enable_if_t<std::is_integral<T>::value, std::to_chars_result>;
