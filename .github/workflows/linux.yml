@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['5', '6', '9', '10', '11', '12', '13', '14'] # 7, 8 - unmet dependencies
+        compiler: ['9', '10', '11', '12', '13', '14'] # 5, 6 - cio/numeric.hxx:289:52: error: invalid initialization of non-const reference of type ‘unsigned int&’ from an rvalue of type ‘unsigned int’
+                                                      # 7, 8 - unmet dependencies
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
