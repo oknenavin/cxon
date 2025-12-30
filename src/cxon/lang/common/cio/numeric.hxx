@@ -302,7 +302,11 @@ namespace cxon { namespace cio { namespace num { // read
             inline auto number_read_(T& t, II& i, II e, Cx& cx)
                 -> std::enable_if_t<std::is_integral<T>::value &&  is_char_x_<T>::value, bool>
             {   using U = make_numeric_t<T>;
-                U u;
+#               if defined(__GNUC__) && __GNUC__ <= 6 && !defined(__clang__)
+                    auto u = U {};
+#               else
+                    U u;
+#               endif
                 return number_read__<X>(u, i, e, cx) && (t = static_cast<T>(u), true);
             }
 
