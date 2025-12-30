@@ -65,19 +65,6 @@ namespace cxon { namespace cio { namespace num { // read
                 using is_char_x_ = disjunction<std::is_same<T, char>, std::is_same<T, char16_t>, std::is_same<T, char32_t>, std::is_same<T, wchar_t>>;
 #       endif
 
-        template <typename T, unsigned W = sizeof(T), bool S = std::is_signed<T>::value>
-            struct int_sub_;
-        template <typename T> struct int_sub_<T, 1, false> { using type = std::uint8_t; };
-        template <typename T> struct int_sub_<T, 1, true > { using type = std::int8_t; };
-        template <typename T> struct int_sub_<T, 2, false> { using type = std::uint16_t; };
-        template <typename T> struct int_sub_<T, 2, true > { using type = std::int16_t; };
-        template <typename T> struct int_sub_<T, 4, false> { using type = std::uint32_t; };
-        template <typename T> struct int_sub_<T, 4, true > { using type = std::int32_t; };
-        template <typename T> struct int_sub_<T, 8, false> { using type = std::uint64_t; };
-        template <typename T> struct int_sub_<T, 8, true > { using type = std::int64_t; };
-        template <typename T>
-            using int_sub_t_ = typename int_sub_<T>::type;
-
 #       define CXON_READ() *f = c, c = next(i, e), ++f;
 #       define CXON_NEXT() { if (f == l) return -1; CXON_READ() }
 
@@ -315,7 +302,7 @@ namespace cxon { namespace cio { namespace num { // read
             inline auto number_read_(T& t, II& i, II e, Cx& cx)
                 -> std::enable_if_t<std::is_integral<T>::value &&  is_char_x_<T>::value, bool>
             {
-                int_sub_t_<T> u;
+                make_numeric_t<T> u;
                 return number_read__<X>(u, i, e, cx) && (t = static_cast<T>(u), true);
             }
 
@@ -416,30 +403,35 @@ namespace cxon { namespace cio { namespace num { // write
 
     namespace imp {
 
+        template <unsigned WIDTH, unsigned BASE>
+            struct numeric_digits_N;
+#       define CXON_NUMERIC_DIGITS_N(w, b02, b08, b10, b16) \
+            template <> struct numeric_digits_N<w,  2> { static constexpr unsigned value = b02; }; \
+            template <> struct numeric_digits_N<w,  8> { static constexpr unsigned value = b08; }; \
+            template <> struct numeric_digits_N<w, 10> { static constexpr unsigned value = b10; }; \
+            template <> struct numeric_digits_N<w, 16> { static constexpr unsigned value = b16; }
+            // BASE                W   2   8  10  16
+            CXON_NUMERIC_DIGITS_N( 1,  8,  3,  3,  2); //  8
+            CXON_NUMERIC_DIGITS_N( 2, 16,  6,  5,  4); // 16
+            CXON_NUMERIC_DIGITS_N( 4, 32, 11, 10,  8); // 32
+            CXON_NUMERIC_DIGITS_N( 8, 64, 22, 20, 16); // 64
+#       undef CXON_NUMERIC_DIGITS_N
+
         template <typename X, typename T, typename O, typename Cx>
             inline auto number_write_(O& o, T t, Cx& cx) -> std::enable_if_t<std::is_integral<T>::value, bool> {
-#               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
-#                   pragma GCC diagnostic push
-#                   pragma GCC diagnostic ignored "-Wrestrict" // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100366
-#                   pragma GCC diagnostic ignored "-Warray-bounds"
-#               endif
-                    char s[std::numeric_limits<T>::digits10 + 3];
-                        constexpr auto base = integer_base::constant<napa_type<Cx>>(10);
-                        auto const r = charconv::to_chars(std::begin(s), std::end(s), t, base); CXON_ASSERT(r.ec == std::errc(), "unexpected");
-                    return poke<X>(o, s, r.ptr, cx);
-#               if __cplusplus >= 202002L && defined(__GNUC__) && __GNUC__ >= 11 && !defined(__clang__)
-#                   pragma GCC diagnostic pop
-#               endif
+                using N = make_numeric_t<T>;
+                constexpr auto B = integer_base::constant<napa_type<Cx>>(10);
+                char s[numeric_digits_N<sizeof(N), B>::value + 2];
+                    auto const r = charconv::to_chars(std::begin(s), std::end(s), static_cast<N>(t), B); CXON_ASSERT(r.ec == std::errc(), "unexpected");
+                return poke<X>(o, s, r.ptr, cx);
             }
 
         template <typename T>
             struct max_size_ { // https://stackoverflow.com/q/68472720
                 template <typename U>
-                    static constexpr U max_(U u1, U u2) { return u1 > u2 ? u1 : u2; }
-                template <typename U>
                     static constexpr int max_exponent_digits10_(U e) { return e < 10 ? 1 : 1 + max_exponent_digits10_(e / 10); }
                 static constexpr int value =    std::numeric_limits<T>::max_digits10 +
-                                                max_(2, max_exponent_digits10_(std::numeric_limits<T>::max_exponent10)) +
+                                                std::max(2, max_exponent_digits10_(std::numeric_limits<T>::max_exponent10)) +
                                                 4
                 ;
             };
