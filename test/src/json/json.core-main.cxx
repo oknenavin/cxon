@@ -29,6 +29,37 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+TEST_BEG(charconv, cxon::JSON<>, "/core") // charconv
+    {   int o; char i[] = " 1";
+        auto r = charconv::from_chars(std::begin(i), std::end(i), o);
+        TEST_CHECK(r.ec == std::errc::invalid_argument && *r.ptr == ' ');
+    }
+    {   int o; char i[] = "+1";
+        auto r = charconv::from_chars(std::begin(i), std::end(i), o);
+        TEST_CHECK(r.ec == std::errc::invalid_argument && *r.ptr == '+');
+    }
+    {   unsigned o; char i[] = " 1";
+        auto r = charconv::from_chars(std::begin(i), std::end(i), o);
+        TEST_CHECK(r.ec == std::errc::invalid_argument && *r.ptr == ' ');
+    }
+    {   unsigned o; char i[] = "+1";
+        auto r = charconv::from_chars(std::begin(i), std::end(i), o);
+        TEST_CHECK(r.ec == std::errc::invalid_argument && *r.ptr == '+');
+    }
+    {   unsigned o; char i[] = "-1";
+        auto r = charconv::from_chars(std::begin(i), std::end(i), o);
+        TEST_CHECK(r.ec == std::errc::invalid_argument && *r.ptr == '-');
+    }
+    {   double o; char i[] = " 1";
+        auto r = charconv::from_chars(std::begin(i), std::end(i), o);
+        TEST_CHECK(r.ec == std::errc::invalid_argument && *r.ptr == ' ');
+    }
+    {   double o; char i[] = "+1";
+        auto r = charconv::from_chars(std::begin(i), std::end(i), o);
+        TEST_CHECK(r.ec == std::errc::invalid_argument && *r.ptr == '+');
+    }
+TEST_END()
+
 TEST_BEG(interface_read, cxon::JSON<>, "/core") // interface/read
     // iterator
     {   int r = 0; char const i[] = "1";
