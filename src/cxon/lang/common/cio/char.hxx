@@ -488,7 +488,7 @@ namespace cxon { namespace cio { namespace chr {
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
                         -> std::enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
-                    {   // TODO: assumes that the input 16 byte aligned, but it may not be the case - preprocess the unaligned prefix
+                    {
                         static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
 #                       if CXON_USE_SIMD_SSE2
                             char const *a = f;
