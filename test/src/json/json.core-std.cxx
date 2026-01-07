@@ -1031,8 +1031,27 @@ TEST_BEG(quoted_keys, cxon::JSON<>, "/std")
     W_TEST(R"({"1":2,"3":4})", map<float, int>{{1.f, 2}, {3.f, 4}});
     W_TEST(R"({"1":2,"3":4})", map<double, int>{{1., 2}, {3., 4}});
     W_TEST(R"({"1":2,"3":4})", map<long double, int>{{1., 2}, {3., 4}});
+    {   // spaces around the key
+        R_TEST(map<bool, int>{{true, 1}, {false, 0}}, R"({" true": 1, "false ": 0})");
+        R_TEST(map<char, int>{{'1', 1}}, R"({" 1": 1})", json::read_error::unexpected, 3);
+        R_TEST(map<char, int>{{'1', 1}}, R"({"1 ": 1})", json::read_error::unexpected, 3);
+#       if defined(__cpp_char8_t)
+            R_TEST(map<char8_t, int>{{u8'1', 1}}, R"({" 1": 1})", json::read_error::unexpected, 3);
+            R_TEST(map<char8_t, int>{{u8'1', 1}}, R"({"1 ": 1})", json::read_error::unexpected, 3);
+#       endif
+        R_TEST(map<char16_t, int>{{u'1', 1}}, R"({" 1": 1})", json::read_error::unexpected, 3);
+        R_TEST(map<char16_t, int>{{u'1', 1}}, R"({"1 ": 1})", json::read_error::unexpected, 3);
+        R_TEST(map<char32_t, int>{{U'1', 1}}, R"({" 1": 1})", json::read_error::unexpected, 3);
+        R_TEST(map<char32_t, int>{{U'1', 1}}, R"({"1 ": 1})", json::read_error::unexpected, 3);
+        R_TEST(map<wchar_t, int>{{L'1', 1}}, R"({" 1": 1})", json::read_error::unexpected, 3);
+        R_TEST(map<wchar_t, int>{{L'1', 1}}, R"({"1 ": 1})", json::read_error::unexpected, 3);
+        R_TEST(map<int, int>{{1, 2}, {3, 4}}, R"({" 1": 2, "3 ": 4})");
+        R_TEST(map<double, int>{{1, 2}, {3, 4}}, R"({" 1": 2, "3 ": 4})");
+    }
     {   struct less { constexpr bool operator ()(nullptr_t, nullptr_t) const noexcept { return true; } };
         W_TEST(R"({"null":0})", map<nullptr_t, int, less>{{nullptr, 0}});
+        R_TEST(map<std::nullptr_t, int, less>{{nullptr, 0}}, R"({" null": 0})");
+        R_TEST(map<std::nullptr_t, int, less>{{nullptr, 0}}, R"({"null ": 0})");
     }
     // escape quotes
     {   using xmap = map<map<char, int>, int>;
