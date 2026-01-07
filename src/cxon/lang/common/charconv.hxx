@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>
+#include <cctype>
 
 #include <algorithm> // reverse
 #include <limits>
@@ -73,25 +74,25 @@ namespace cxon { namespace charconv { namespace fallback {
             }
 
         template <typename T>
-            inline auto is_sign_invalid_(char c) noexcept -> std::enable_if_t<std::is_signed<T>::value, bool> {
-                return c == '+';
+            inline auto is_prefix_invalid_(char c) noexcept -> std::enable_if_t<std::is_signed<T>::value, bool> {
+                return c == '+' || std::isspace(c);
             }
         template <typename T>
-            inline auto is_sign_invalid_(char c) noexcept -> std::enable_if_t<std::is_unsigned<T>::value, bool> {
-                return c == '+' || c == '-';
+            inline auto is_prefix_invalid_(char c) noexcept -> std::enable_if_t<std::is_unsigned<T>::value, bool> {
+                return c == '+' || c == '-' || std::isspace(c);
             }
 
         template <typename T, typename Cv>
             inline from_chars_result chars_(const char* first, const char*, Cv convert, T& value, int base) noexcept {
                 CXON_ASSERT(base >= 2 && base <= 36, "invalid base");
-                    if (is_sign_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
+                    if (is_prefix_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
                 char* end;
                 errno = 0; auto const v = clamp_<T>(convert(first, &end, base));
                 return { end, end != first ? errno != ERANGE ? (value = v, std::errc{}) : std::errc::result_out_of_range : std::errc::invalid_argument };
             }
         template <typename T, typename Cv>
             inline from_chars_result chars_(const char* first, const char*, Cv convert, T& value, chars_format) noexcept {
-                    if (is_sign_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
+                    if (is_prefix_invalid_<T>(*first)) return { first, std::errc::invalid_argument };
                 char* end;
                 errno = 0; auto const v = convert(first, &end);
                 return { end, end != first ? errno != ERANGE ? (value = v, std::errc{}) : std::errc::result_out_of_range : std::errc::invalid_argument };
@@ -103,25 +104,25 @@ namespace cxon { namespace charconv { namespace fallback {
         inline from_chars_result from_chars(const char* first, const char* last, T& value, int base = 10) noexcept {\
             return from_::chars_(first, last, C, value, base);\
         }
-        CXON_FROM_CHARS(char, strtol)
-        CXON_FROM_CHARS(signed char, strtol)
-        CXON_FROM_CHARS(unsigned char, strtoul)
-        CXON_FROM_CHARS(short, strtol)
-        CXON_FROM_CHARS(unsigned short, strtoul)
-        CXON_FROM_CHARS(int, strtol)
-        CXON_FROM_CHARS(unsigned int, strtoul)
-        CXON_FROM_CHARS(long, strtol)
-        CXON_FROM_CHARS(unsigned long, strtoul)
-        CXON_FROM_CHARS(long long, strtoll)
-        CXON_FROM_CHARS(unsigned long long, strtoull)
+        CXON_FROM_CHARS(char, std::strtol)
+        CXON_FROM_CHARS(signed char, std::strtol)
+        CXON_FROM_CHARS(unsigned char, std::strtoul)
+        CXON_FROM_CHARS(short, std::strtol)
+        CXON_FROM_CHARS(unsigned short, std::strtoul)
+        CXON_FROM_CHARS(int, std::strtol)
+        CXON_FROM_CHARS(unsigned int, std::strtoul)
+        CXON_FROM_CHARS(long, std::strtol)
+        CXON_FROM_CHARS(unsigned long, std::strtoul)
+        CXON_FROM_CHARS(long long, std::strtoll)
+        CXON_FROM_CHARS(unsigned long long, std::strtoull)
 #   undef CXON_FROM_CHARS
 #   define CXON_FROM_CHARS(T, C)\
         inline from_chars_result from_chars(const char* first, const char* last, T& value, chars_format fmt = chars_format::general) noexcept {\
             return from_::chars_(first, last, C, value, fmt);\
         }
-        CXON_FROM_CHARS(float, strtof)
-        CXON_FROM_CHARS(double, strtod)
-        CXON_FROM_CHARS(long double, strtold)
+        CXON_FROM_CHARS(float, std::strtof)
+        CXON_FROM_CHARS(double, std::strtod)
+        CXON_FROM_CHARS(long double, std::strtold)
 #   undef CXON_FROM_CHARS
 
     struct to_chars_result {
