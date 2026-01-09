@@ -22,6 +22,12 @@
 #include "cxon/lang/common/container.hxx"
 #include <algorithm>
 
+#if CXON_USE_SIMD_SSE2
+#   ifdef _MSC_VER
+#       include <intrin.h>
+#   endif
+#endif
+
 // interface ///////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace cio { namespace str { // char arrays: read
@@ -50,6 +56,11 @@ namespace cxon { namespace cio { namespace str { // char arrays: write
 }}}
 
 // implementation //////////////////////////////////////////////////////////////
+
+namespace cxon { namespace cio { namespace str { namespace imp {
+    template <typename X>
+        using is_raw_ = has_traits<X, str::raw_traits>;
+}}}}
 
 namespace cxon { namespace cio { namespace str {
 
@@ -83,7 +94,7 @@ namespace cxon { namespace cio { namespace str {
 
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                -> std::enable_if_t<!chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
+                -> std::enable_if_t<!chr::is_char_8<T>::value || !std::is_pointer<II>::value, bool>
             {
                 while (i != e) {
                     CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
@@ -110,76 +121,133 @@ namespace cxon { namespace cio { namespace str {
                 }
                 return cx/X::read_error::unexpected;
             }
-        namespace imp { // str::raw_traits
-            template <typename X, typename C, typename II, typename Cx>
-                inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                    -> std::enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
-                {
-                    II l = i;
-                        for ( ; i != e; ++i) {
-                            CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
-                                if (delim_en_check<X>(*i)) {
-                                    if (l == i || cxon::cnt::append(c, l, i))
-                                        return delim_en_read<X>(i, e);
-                                    return rewind(i, l), cx/X::read_error::overflow;
-                                }
-                            }
-                            CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value || !X::assume_no_escapes) {
-                                if (*i == '\\') {
-                                    if (l != i && !cxon::cnt::append(c, l, i))
-                                        return rewind(i, l), cx/X::read_error::overflow;
-                                    CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
-                                        II const f = i;
-                                            if (++i != e && *i == X::string::del)
-                                                return ++i, true;
-                                        i = f;
-                                    }
-                                    II const o = i;
-                                        char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
-                                            if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                                        if (!char_append_(c, c32))
-                                            return rewind(i, o), cx/X::read_error::overflow;
-                                    l = i, --i;
-                                    continue;
-                                }
-                            }
-                            CXON_IF_CONSTEXPR (X::validate_string_escapes) {
-                                if (chr::is<X>::ctrl(*i))
-                                    return cx/X::read_error::unexpected;
-                            }
-                            CXON_IF_CONSTEXPR (X::validate_string_encoding) {
-                                if ((unsigned char)*i > 0x7F) {
-                                    auto bs = chr::utf8_check(i, e);
-                                    if (bs == 0)
-                                        return cx/X::read_error::character_invalid;
-                                    while ((bs = chr::utf8_check(i += bs, e)))
-                                        ;
-                                    --i;
-                                }
-                            }
-                        }
-                    return cx/X::read_error::unexpected;
+
+        namespace imp // str::raw_traits
+        {
+#           if CXON_USE_SIMD_SSE2
+                int inline find_first_set_(unsigned int value)
+                {   // returns the number of trailing 0-bits in x, starting at the least significant bit position. if x is 0, the result is undefined
+#                   ifdef _MSC_VER
+                        CXON_ASSERT(value, "unexpected invocaion");
+                        unsigned long f;
+                            _BitScanForward(&f, value);
+                        return f;
+#                   else
+                        return __builtin_ffs(value) - 1;
+#                   endif
                 }
-            template <typename X, typename C, typename II, typename Cx>
-                inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                    -> std::enable_if_t< has_traits<X, str::raw_traits>::value, bool>
-                {
-                    II l = i;
-                        for ( ; i != e; ++i) {
+#           endif
+
+            template <typename X>
+                using has_quotes_ = bool_constant<is_unquoted_key_context<X>::value || !is_quoted_key_context<X>::value>;
+
+            template <typename X>
+                inline auto check_break_condition_(unsigned char c) -> std::enable_if_t<!is_raw_<X>::value &&  has_quotes_<X>::value, bool>
+                { return c >= 0x80 || c == X::string::del || c == '\\' || c <= 0x1F; }
+            template <typename X>
+                inline auto check_break_condition_(unsigned char c) -> std::enable_if_t<!is_raw_<X>::value && !has_quotes_<X>::value, bool>
+                { return c >= 0x80 || c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F; }
+            template <typename X>
+                inline auto check_break_condition_(unsigned char c) -> std::enable_if_t< is_raw_<X>::value &&  has_quotes_<X>::value, bool>
+                { return c == X::string::del; }
+            template <typename X>
+                inline auto check_break_condition_(unsigned char c) -> std::enable_if_t< is_raw_<X>::value && !has_quotes_<X>::value, bool>
+                { return c == X::map::div || c == ' '; }
+
+            template <typename X>
+                inline const char* find_first_break_(const char* b, const char* e)
+                {   CXON_ASSERT(b < e, "unexpected invocaion");
+#                   if CXON_USE_SIMD_SSE2 // TODO actually SSE4.1 because of _mm_min_epu8
+                        if (e - b >= 16) {
+                            __m128i const vq = _mm_set1_epi8(X::string::del);
+                            __m128i const vd = _mm_set1_epi8(X::map::div);
+                            __m128i const vs = _mm_set1_epi8(' ');
+                            __m128i const vb = _mm_set1_epi8('\\');
+                            __m128i const vc = _mm_set1_epi8('\x1F');
+                            __m128i const vm = _mm_set1_epi8('\x80');
+                            do {
+                                __m128i const   vi = _mm_loadu_si128((__m128i const*)b);
+                                __m128i         rs;
+                                            CXON_IF_CONSTEXPR (has_quotes_<X>::value) {
+                                                rs =                  _mm_cmpeq_epi8(vi,                  vq);
+                                            }
+                                            else {
+                                                rs =                  _mm_cmpeq_epi8(vi,                  vd);
+                                                rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi,                  vs));
+                                            }
+                                            CXON_IF_CONSTEXPR (!is_raw_<X>::value) {
+                                                rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi,                  vb));
+                                                rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi, _mm_min_epu8(vi, vc)));
+                                                rs = _mm_or_si128(rs, _mm_and_si128 (vi,                  vm));
+                                            }
+                                int const       mk = _mm_movemask_epi8(rs);
+                                if (mk) {
+                                    int const i = find_first_set_(mk);
+                                    return b + i;
+                                }
+                                b += 16;
+                            }   while (e - b >= 16);
+                        }
+#                   endif
+                    for ( ; b != e; ++b) {
+                        if (check_break_condition_<X>(*b))
+                            return b;
+                    }
+                    return e;
+                }
+        }
+        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
+            inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
+                -> std::enable_if_t< chr::is_char_8<T>::value &&  std::is_pointer<II>::value, bool>
+            {
+                II l = i;
+                    while (i != e) {
+                        i = (II)imp::find_first_break_<X>(i, e);
+                        if (i == e)
+                            return cx/X::read_error::unexpected;
+                        CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
                             if (delim_en_check<X>(*i)) {
                                 if (l == i || cxon::cnt::append(c, l, i))
                                     return delim_en_read<X>(i, e);
                                 return rewind(i, l), cx/X::read_error::overflow;
                             }
                         }
-                    return cx/X::read_error::unexpected;
-                }
-        }
-        template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
-            inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                -> std::enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
-            {
-                return imp::string_read_tail_<X>(c, i, e, cx);
+                        CXON_IF_CONSTEXPR (!is_raw_<X>::value && X::validate_string_encoding) {
+                            if ((unsigned char)*i > 0x7F) {
+                                int bs = chr::utf8_check(i, e);
+                                if (bs == 0)
+                                    return cx/X::read_error::character_invalid;
+                                while ((bs = chr::utf8_check(i += bs, e)))
+                                    ;
+                                continue;
+                            }
+                        }
+                        CXON_IF_CONSTEXPR (!is_raw_<X>::value && (is_unquoted_key_context<X>::value || !X::assume_no_escapes)) {
+                            if (*i == '\\') {
+                                if (l != i && !cxon::cnt::append(c, l, i))
+                                    return rewind(i, l), cx/X::read_error::overflow;
+                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
+                                    II f = i;
+                                        if (++i != e && *i == X::string::del)
+                                            return ++i, true;
+                                    i = f;
+                                }
+                                II o = i;
+                                    char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
+                                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                                    if (!char_append_(c, c32))
+                                        return rewind(i, o), cx/X::read_error::overflow;
+                                l = i;
+                                continue;
+                            }
+                        }
+                        CXON_IF_CONSTEXPR (!is_raw_<X>::value && X::validate_string_escapes) {
+                            if (chr::is<X>::ctrl(*i))
+                                return cx/X::read_error::unexpected;
+                        }
+                        ++i;
+                    }
+                return cx/X::read_error::unexpected;
             }
 
         template <typename X, typename C, typename II, typename Cx>
@@ -234,7 +302,7 @@ namespace cxon { namespace cio { namespace str {
     namespace imp { // str::raw_traits
         template <typename X, typename O, typename T, typename Cx>
             inline auto pointer_write_(O& o, const T* t, std::size_t s, Cx& cx)
-                 -> std::enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
+                 -> std::enable_if_t<!is_raw_<X>::value, bool>
             {
                 return  poke<X>(o, delim_be_write<X, O>, cx) &&
                             chr::encode_range<X>(o, t, t + s, cx) &&
@@ -243,7 +311,7 @@ namespace cxon { namespace cio { namespace str {
             }
         template <typename X, typename O, typename T, typename Cx>
             inline auto pointer_write_(O& o, const T* t, std::size_t s, Cx& cx)
-                 -> std::enable_if_t< has_traits<X, str::raw_traits>::value, bool>
+                 -> std::enable_if_t< is_raw_<X>::value, bool>
             {
                 return  poke<X>(o, delim_be_write<X, O>, cx) &&
                             poke<X>(o, t, s, cx) &&

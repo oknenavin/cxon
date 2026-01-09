@@ -489,27 +489,23 @@ namespace cxon { namespace cio { namespace chr {
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
                         -> std::enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
                     {
-                        static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
-#                       if CXON_USE_SIMD_SSE2
+#                       if CXON_USE_SIMD_SSE2 // TODO actually SSE4.1 because of _mm_min_epu8
                             char const *a = f;
 
                             if (l - f >= 16) {
-                                __m128i const v1 = _mm_set1_epi8('"');
-                                __m128i const v2 = _mm_set1_epi8('\'');
-                                __m128i const v3 = _mm_set1_epi8('\\');
-                                __m128i const v4 = _mm_set1_epi8(0x1F);
+                                __m128i const vq = _mm_set1_epi8(Y::string::del);
+                                __m128i const vb = _mm_set1_epi8('\\');
+                                __m128i const vc = _mm_set1_epi8(0x1F);
                                 std::size_t n = l - f;
                                 while (n >= 16) {
-                                    __m128i const v0 = _mm_loadu_si128((__m128i const*)f);
-                                    __m128i r = X::string::del == '\"' ?
-                                                                _mm_cmpeq_epi8(v0, v1) :
-                                                                _mm_cmpeq_epi8(v0, v2) ;
-                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, v3));
-                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, _mm_min_epu8(v0, v4)));
-                                    if (int const m = _mm_movemask_epi8(r)) {
+                                    __m128i const   vi = _mm_loadu_si128((__m128i const*)f);
+                                    __m128i         rs =                  _mm_cmpeq_epi8(vi,                  vq);
+                                                    rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi,                  vb));
+                                                    rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi, _mm_min_epu8(vi, vc)));
+                                    if (int const   mk = _mm_movemask_epi8(rs)) {
                                         int e = 0;
                                             for (auto* g = f + 16; f != g; ++f, ++e) {
-                                                if ((1 << e) & m) {
+                                                if ((1 << e) & mk) {
                                                     if (a != f && !poke<Y>(o, a, f, cx))    return false;
                                                     if (!value(o, *f, cx))                  return false;
                                                     a = f + 1;
