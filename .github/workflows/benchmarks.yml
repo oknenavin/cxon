@@ -43,6 +43,7 @@ jobs:
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-get update -y
         sudo apt-get install g++-14
+        g++-14 -dM -E - < /dev/null | grep -E "SSE|AVX"
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -66,6 +67,8 @@ jobs:
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
+        # config
+        cd test/.out && ./check-json-node && cd ../..
         # S1
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / node (default)" > test/.time/g++.head.default.json.node-s1.data
         make -s time-json-node-s1 | tee -a test/.time/g++.head.default.json.node-s1.data
@@ -85,6 +88,8 @@ jobs:
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
+        # config
+        cd test/.out && ./check-json-node && cd ../..
         # S1
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION (`uname -sm`) / node (boost::charconv)" > test/.time/g++.head.boost-charconv.json.node-s1.data
         make -s time-json-node-s1 | tee -a test/.time/g++.head.boost-charconv.json.node-s1.data
@@ -149,6 +154,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install clang-20
+        clang-20 -dM -E - < /dev/null | grep -E "SSE|AVX"
     - name: Boost setup
       run: |
         cd .dep/boost
@@ -172,6 +178,8 @@ jobs:
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
+        # config
+        cd test/.out && ./check-json-node && cd ../..
         # S1
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / node (default)" > test/.time/clang++.head.default.json.node-s1.data
         make -s time-json-node-s1 | tee -a test/.time/clang++.head.default.json.node-s1.data
@@ -191,6 +199,8 @@ jobs:
       run: |
         COMPILER_VERSION=`$CXX -dumpversion`
         make clean && make -j build-json-node
+        # config
+        cd test/.out && ./check-json-node && cd ../..
         # S1
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION (`uname -sm`) / node (boost::charconv)" > test/.time/clang++.head.boost-charconv.json.node-s1.data
         make -s time-json-node-s1 | tee -a test/.time/clang++.head.boost-charconv.json.node-s1.data
@@ -284,6 +294,8 @@ jobs:
         cmake --build .bld --config Release --target cxon-json-node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
+        # config
+        ./cxon-json-node
         # S1
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / node (default)" > ../.time/msvc++.head.default.json.node-s1.data
         ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/msvc++.head.default.json.node-s1.data
@@ -306,6 +318,8 @@ jobs:
         cmake --build .bld --config Release --target cxon-json-node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
+        # config
+        ./cxon-json-node
         # S1
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / node (boost::charconv)" > ../.time/msvc++.head.boost-charconv.json.node-s1.data
         ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/msvc++.head.boost-charconv.json.node-s1.data
@@ -377,6 +391,8 @@ jobs:
         cmake --build .bld --target cxon-json-node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
+        # config
+        ./cxon-json-node
         # S1
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / node (default)" > ../.time/xcode.head.default.json.node-s1.data
         ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/xcode.head.default.json.node-s1.data
@@ -402,6 +418,8 @@ jobs:
         cmake --build .bld --target cxon-json-node --parallel
         COMPILER_VERSION=`grep -Erho 'CMAKE_CXX_COMPILER_VERSION ".*"' .bld | sed -E 's/.*"(.*)"/\1/' | head -n1`
         cd .out
+        # config
+        ./cxon-json-node
         # S1
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / node (boost::charconv)" > ../.time/xcode.head.boost-charconv.json.node-s1.data
         ./cxon-json-node ../data/json/tests.cf time-node-s1 | tee -a ../.time/xcode.head.boost-charconv.json.node-s1.data

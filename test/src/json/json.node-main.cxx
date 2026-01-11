@@ -46,12 +46,38 @@ namespace test {
 
 
 int main(int argc, char *argv[]) {
-    if (argc == 1)
+    if (argc == 1) {
 #       ifndef CXON_TIME_ONLY
             return test::kind::self();
 #       else
-            return -1;
+            std::fprintf(stdout, "------------------------------------\n");
+            std::fprintf(stdout, "__cplusplus                 : %li\n", __cplusplus);
+            std::fprintf(stdout, "CXON_USE_SIMD_SSE2          : %li\n", (long)CXON_USE_SIMD_SSE2);
+#           ifdef CXON_HAS_CHARCONV
+            std::fprintf(stdout, "CXON_HAS_CHARCONV           : 1\n");
+#           else
+            std::fprintf(stdout, "CXON_HAS_CHARCONV           : 0\n");
+#           endif
+#           ifdef CXON_USE_BOOST_CHARCONV
+            std::fprintf(stdout, "CXON_USE_BOOST_CHARCONV     : 1\n");
+#           else
+            std::fprintf(stdout, "CXON_USE_BOOST_CHARCONV     : 0\n");
+#           endif
+            std::fprintf(stdout, "cxon::json::format_traits   :\n");
+            std::fprintf(stdout, "  validate_string_encoding  : %li\n", (long)cxon::JSON<>::validate_string_encoding);
+            std::fprintf(stdout, "  validate_string_escapes   : %li\n", (long)cxon::JSON<>::validate_string_escapes);
+            std::fprintf(stdout, "  produce_strict_javascript : %li\n", (long)cxon::JSON<>::produce_strict_javascript);
+            std::fprintf(stdout, "  assume_no_escapes         : %li\n", (long)cxon::JSON<>::assume_no_escapes);
+            std::fprintf(stdout, "  quote_unquoted_keys       : %li\n", (long)cxon::JSON<>::quote_unquoted_keys);
+            std::fprintf(stdout, "  unquote_quoted_keys       : %li\n", (long)cxon::JSON<>::unquote_quoted_keys);
+            std::fprintf(stdout, "  allow_cxx_comments        : %li\n", (long)cxon::JSON<>::allow_cxx_comments);
+            std::fprintf(stdout, "  allow_trailing_separators : %li\n", (long)cxon::JSON<>::allow_trailing_separators);
+            std::fprintf(stdout, "  assume_unique_object_keys : %li\n", (long)cxon::JSON<>::allow_trailing_separators);
+            std::fprintf(stdout, "  allow_javascript_nans     : %li\n", (long)cxon::JSON<>::allow_trailing_separators);
+            std::fprintf(stdout, "------------------------------------\n");
+            return 0;
 #       endif
+    }
 
     test::config cf;
     std::map<std::string, test::cases> sets;
