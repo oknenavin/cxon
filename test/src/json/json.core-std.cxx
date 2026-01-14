@@ -1528,10 +1528,18 @@ namespace {
         bool operator ==(const struct_1& t) const { return a == t.a; }
         bool operator  <(const struct_1& t) const { return a  < t.a; }
     };
+    struct struct_2 {
+        std::string a, c, e, g;
+        bool operator ==(const struct_2& t) const { return a == t.a && c == t.c && e == t.e && g == t.g; }
+        bool operator  <(const struct_2& t) const { return std::make_tuple(a, c, e, g) < std::make_tuple(t.a, t.c, t.e, t.g); }
+    };
     enum class enum_1 { aaa, bbb, ccc, ddd };
 }
 CXON_JSON_CLS(struct_1,
     CXON_JSON_CLS_FIELD_ASIS(a)
+)
+CXON_JSON_CLS(struct_2,
+    CXON_JSON_CLS_FIELD_ASIS(a), CXON_JSON_CLS_FIELD_ASIS(c), CXON_JSON_CLS_FIELD_ASIS(e), CXON_JSON_CLS_FIELD_ASIS(g)
 )
 CXON_JSON_ENM(enum_1,
     CXON_JSON_ENM_VALUE_ASIS(aaa),
@@ -1555,6 +1563,16 @@ TEST_BEG(unquote_quoted_keys, cxon::JSON<cxon::test::unquoted_quoted_keys_traits
         R_TEST(xmap {{"x y", "z"}}, R"({x\ y:"z"})");
         W_TEST(R"({x\ y:"z"})", xmap {{"x y", "z"}});
         R_TEST(xmap {{"x y", "z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a\t:\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a\n:\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a\r:\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a :\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a\t:\"b\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a\n:\"b\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a\r:\"b\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a :\"b\"}");
     }
     {   using xmap = map<wstring, wstring>;
         R_TEST(xmap {{L"x", L"y"}}, R"({x:"y"})");
@@ -1760,6 +1778,16 @@ TEST_BEG(unquote_quoted_keys_input_iterator, cxon::JSON<cxon::test::unquoted_quo
         R_TEST(xmap {{"x y", "z"}}, R"({x\ y:"z"})");
         W_TEST(R"({x\ y:"z"})", xmap {{"x y", "z"}});
         R_TEST(xmap {{"x y", "z"}}, R"({x y:"z"})", json::read_error::unexpected, 3);
+    }
+    {
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a\t:\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a\n:\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a\r:\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b", "d", "f", "h"}, "{a :\"b\", c:\"d\", e:\"f\", g:\"h\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a\t:\"b\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a\n:\"b\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a\r:\"b\"}");
+        R_TEST(struct_2 {"b",  "",  "",  ""}, "{a :\"b\"}");
     }
     {   using xmap = map<wstring, wstring>;
         R_TEST(xmap {{L"x", L"y"}}, R"({x:"y"})");

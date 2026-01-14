@@ -971,6 +971,9 @@ TEST_BEG(produce_strict_javascript_traits, cxon::JSON<cxon::test::produce_strict
     W_TEST(QS("\xE2\x80\xA7"), u8"\u2027");
     W_TEST(QS("\xE2\x81\xA7"), "\xE2\x81\xA7");
     W_TEST(QS("\xf4\x8f\xbf\xbf"), u"\xdbff\xdfff"); // surrogate
+    W_TEST(QS("\\u2028xxxxxxxxxxxxx"), "\xE2\x80\xA8xxxxxxxxxxxxx");
+    W_TEST(QS("xxxxxxxxxxxxx\\u2028"), "xxxxxxxxxxxxx\xE2\x80\xA8");
+    W_TEST(QS("xxxxxxx\\u2028xxxxxx"), "xxxxxxx\xE2\x80\xA8xxxxxx");
     // errors
     {   char b[1];
         auto c = cxon::cnt::make_range_container(std::begin(b), std::end(b));
