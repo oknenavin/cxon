@@ -17,6 +17,7 @@
 #define CXON_CIO_STRING_HXX_
 
 #include "cio.hxx"
+#include "simd.hxx"
 #include "char.hxx"
 #include "cxon/lang/common/allocator.hxx"
 #include "cxon/lang/common/container.hxx"
@@ -83,7 +84,7 @@ namespace cxon { namespace cio { namespace str {
 
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                -> std::enable_if_t<!chr::is_char_8<T>::value || !is_forward_iterator<II>::value, bool>
+                -> std::enable_if_t<!chr::is_char_8<T>::value || !std::is_pointer<II>::value, bool>
             {
                 while (i != e) {
                     CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
@@ -110,76 +111,61 @@ namespace cxon { namespace cio { namespace str {
                 }
                 return cx/X::read_error::unexpected;
             }
-        namespace imp { // str::raw_traits
-            template <typename X, typename C, typename II, typename Cx>
-                inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                    -> std::enable_if_t<!has_traits<X, str::raw_traits>::value, bool>
-                {
-                    II l = i;
-                        for ( ; i != e; ++i) {
-                            CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
-                                if (delim_en_check<X>(*i)) {
-                                    if (l == i || cxon::cnt::append(c, l, i))
-                                        return delim_en_read<X>(i, e);
-                                    return rewind(i, l), cx/X::read_error::overflow;
-                                }
-                            }
-                            CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value || !X::assume_no_escapes) {
-                                if (*i == '\\') {
-                                    if (l != i && !cxon::cnt::append(c, l, i))
-                                        return rewind(i, l), cx/X::read_error::overflow;
-                                    CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
-                                        II const f = i;
-                                            if (++i != e && *i == X::string::del)
-                                                return ++i, true;
-                                        i = f;
-                                    }
-                                    II const o = i;
-                                        char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
-                                            if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                                        if (!char_append_(c, c32))
-                                            return rewind(i, o), cx/X::read_error::overflow;
-                                    l = i, --i;
-                                    continue;
-                                }
-                            }
-                            CXON_IF_CONSTEXPR (X::validate_string_escapes) {
-                                if (chr::is<X>::ctrl(*i))
-                                    return cx/X::read_error::unexpected;
-                            }
-                            CXON_IF_CONSTEXPR (X::validate_string_encoding) {
-                                if ((unsigned char)*i > 0x7F) {
-                                    auto bs = chr::utf8_check(i, e);
-                                    if (bs == 0)
-                                        return cx/X::read_error::character_invalid;
-                                    while ((bs = chr::utf8_check(i += bs, e)))
-                                        ;
-                                    --i;
-                                }
-                            }
-                        }
-                    return cx/X::read_error::unexpected;
-                }
-            template <typename X, typename C, typename II, typename Cx>
-                inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                    -> std::enable_if_t< has_traits<X, str::raw_traits>::value, bool>
-                {
-                    II l = i;
-                        for ( ; i != e; ++i) {
-                            if (delim_en_check<X>(*i)) {
-                                if (l == i || cxon::cnt::append(c, l, i))
-                                    return delim_en_read<X>(i, e);
-                                return rewind(i, l), cx/X::read_error::overflow;
-                            }
-                        }
-                    return cx/X::read_error::unexpected;
-                }
-        }
         template <typename X, typename C, typename II, typename Cx, typename T = typename C::value_type>
             inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
-                -> std::enable_if_t< chr::is_char_8<T>::value &&  is_forward_iterator<II>::value, bool>
+                -> std::enable_if_t< chr::is_char_8<T>::value &&  std::is_pointer<II>::value, bool>
             {
-                return imp::string_read_tail_<X>(c, i, e, cx);
+                constexpr bool IS_QUOTED        = !is_unquoted_key_context<X>::value;
+                constexpr bool CHECK_ENCODING   = !has_traits<X, str::raw_traits>::value && X::validate_string_encoding;
+                constexpr bool CHECK_ESCAPES    = !has_traits<X, str::raw_traits>::value && (is_unquoted_key_context<X>::value || !X::assume_no_escapes);
+                constexpr bool CHECK_CONTROLS   = !has_traits<X, str::raw_traits>::value && X::validate_string_escapes;
+                for (II l = i; i != e; ) {
+                    i = simd::find_first_read_break<X>(i, e);
+                    if (i == e)
+                        return cx/X::read_error::unexpected;
+                    CXON_IF_CONSTEXPR (IS_QUOTED) {
+                        if (delim_en_check<X>(*i)) {
+                            if (l == i || cxon::cnt::append(c, l, i))
+                                return delim_en_read<X>(i, e);
+                            return rewind(i, l), cx/X::read_error::overflow;
+                        }
+                    }
+                    CXON_IF_CONSTEXPR (CHECK_ENCODING) {
+                        if ((unsigned char)*i > 0x7F) {
+                            int bs = chr::utf8_check(i, e);
+                            if (bs == 0)
+                                return cx/X::read_error::character_invalid;
+                            while ((bs = chr::utf8_check(i += bs, e)))
+                                ;
+                            continue;
+                        }
+                    }
+                    CXON_IF_CONSTEXPR (CHECK_ESCAPES) {
+                        if (*i == '\\') {
+                            if (l != i && !cxon::cnt::append(c, l, i))
+                                return rewind(i, l), cx/X::read_error::overflow;
+                            CXON_IF_CONSTEXPR (!IS_QUOTED) {
+                                II f = i;
+                                    if (++i != e && *i == X::string::del)
+                                        return ++i, true;
+                                i = f;
+                            }
+                            II o = i;
+                                char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
+                                    if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                                if (!char_append_(c, c32))
+                                    return rewind(i, o), cx/X::read_error::overflow;
+                            l = i;
+                            continue;
+                        }
+                    }
+                    CXON_IF_CONSTEXPR (CHECK_CONTROLS) {
+                        if (chr::is<X>::ctrl(*i))
+                            return cx/X::read_error::unexpected;
+                    }
+                    ++i;
+                }
+                return cx/X::read_error::unexpected;
             }
 
         template <typename X, typename C, typename II, typename Cx>
