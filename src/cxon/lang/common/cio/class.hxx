@@ -102,7 +102,7 @@ namespace cxon { namespace cio { namespace cls {
     namespace imp {
         template <typename X>
             constexpr bool is_trivial_key_(const char* s, std::size_t n, unsigned i = 0) {
-                return i == n || (!chr::imp::should_escape_<X>(s[i]) && is_trivial_key_<X>(s, n, i + 1));
+                return i == n || (!chr::should_escape<X>(s[i]) && is_trivial_key_<X>(s, n, i + 1));
             }
         template <typename X>
             constexpr bool are_trivial_key_fields_() {

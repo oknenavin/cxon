@@ -56,14 +56,6 @@
 #   define CXON_IF_CONSTEXPR(...) if (__VA_ARGS__)
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-#   define CXON_INLAY inline __attribute__((always_inline))
-#elif defined(_MSC_VER)
-#   define CXON_INLAY __forceinline
-#else
-#   define CXON_INLAY inline
-#endif
-
 #if !defined(CXON_USE_SIMD) || CXON_USE_SIMD
 #   if (defined(_M_IX86) && _M_IX86_FP == 2) || defined(_M_X64) || defined(__SSE2__)
 #       define CXON_USE_SIMD_SSE2 1

@@ -17,11 +17,8 @@
 #define CXON_CIO_CHAR_HXX_
 
 #include "cio.hxx"
+#include "simd.hxx"
 #include <limits>
-
-#if CXON_USE_SIMD_SSE2
-#   include <emmintrin.h>
-#endif
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -55,7 +52,7 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
             -> std::enable_if_t<is_char_8<T>::value, int>;
 
     template <typename II>
-        CXON_INLAY int utf8_check(II i, II e);
+        inline int utf8_check(II i, II e);
 
 }}}
 
@@ -68,6 +65,9 @@ namespace cxon { namespace cio { namespace chr { // character conversion: write
     template <typename X, typename T, typename O, typename Cx>
         inline auto write(O& o, T t, Cx& cx)
             -> std::enable_if_t<is_char<T>::value, bool>;
+
+        template <typename X>
+            constexpr bool should_escape(char c) noexcept;
 
 }}}
 
@@ -305,7 +305,7 @@ namespace cxon { namespace cio { namespace chr {
         }
 
     template <typename II>
-        CXON_INLAY int utf8_check(II i, II e) {
+        inline int utf8_check(II i, II e) {
             // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
             // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
             CXON_ASSERT(i != e, "unexpected");
@@ -406,6 +406,17 @@ namespace cxon { namespace cio { namespace chr {
             constexpr auto should_escape_(char c) noexcept -> std::enable_if_t< is_quoted_key_context<X>::value, bool> {
                 return should_escape_quoted_key_context_[(unsigned char)c] == '\1';
             }
+    }
+    template <typename X>
+        constexpr bool should_escape(char c) noexcept {
+            return imp::should_escape_<X>(c);
+        }
+
+}}}
+
+namespace cxon { namespace cio { namespace chr {
+
+    namespace imp {
 
         template <typename X, typename T>
             struct encode_;
@@ -457,88 +468,35 @@ namespace cxon { namespace cio { namespace chr {
                             default  :  return poke<X>(o, c, cx);
                         }
                     }
-                template <typename Y = X>
-                    struct use_simd_ : bool_constant<CXON_USE_SIMD_SSE2 && !is_key_context<Y>::value && !Y::produce_strict_javascript> {};
+
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> std::enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) && !use_simd_<Y>::value, bool>
+                        -> std::enable_if_t< is_unquoted_key_context<X>::value || !Y::assume_no_escapes, bool>
                     {
                         char const* a = f;
-                        for ( ; f != l; ++f) {
-                            if (should_escape_<Y>(*f)) {
-                                if (a != f && !poke<Y>(o, a, f, cx))    return false;
-                                if (!value(o, *f, cx))                  return false;
-                                a = f + 1;
-                            }
-                            else CXON_IF_CONSTEXPR (Y::produce_strict_javascript) {
-                                if (*f == '\xE2' && l - f > 2) {
-                                    if (f[1] == '\x80') {
-                                        if (f[2] == '\xA8' || f[2] == '\xA9') {
-                                            if (a != f)
-                                                if (!poke<Y>(o, a, f, cx)) return false;
-                                            if (!poke<Y>(o, f[2] == '\xA8' ? "\\u2028" : "\\u2029", 6, cx)) return false;
-                                            f += 2, a = f + 1;
+                            while (f != l) {
+                                f = simd::find_first_write_break<X>(f, l);
+                                    if (f == l) break;
+                                CXON_IF_CONSTEXPR (Y::produce_strict_javascript) {
+                                    if (*f == '\xE2' && l - f > 2) {
+                                        if (f[1] == '\x80') {
+                                            if (f[2] == '\xA8' || f[2] == '\xA9') {
+                                                if (a != f)
+                                                    if (!poke<Y>(o, a, f, cx)) return false;
+                                                if (!poke<Y>(o, f[2] == '\xA8' ? "\\u2028" : "\\u2029", 6, cx)) return false;
+                                                f += 3, a = f;
+                                                continue;
+                                            }
                                         }
                                     }
                                 }
+                                if (!poke<Y>(o, a, f, cx) || !value(o, *f, cx))
+                                    return false;
+                                a = ++f;
                             }
-                        }
                         return a == f || poke<Y>(o, a, f, cx);
                     }
-                template <typename O, typename Cx, typename Y = X>
-                    static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> std::enable_if_t<( is_unquoted_key_context<X>::value || !Y::assume_no_escapes) &&  use_simd_<Y>::value, bool>
-                    {
-                        static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
-#                       if CXON_USE_SIMD_SSE2
-                            char const *a = f;
 
-                            if (l - f >= 16) {
-                                __m128i const v1 = _mm_set1_epi8('"');
-                                __m128i const v2 = _mm_set1_epi8('\'');
-                                __m128i const v3 = _mm_set1_epi8('\\');
-                                __m128i const v4 = _mm_set1_epi8(0x1F);
-                                std::size_t n = l - f;
-                                while (n >= 16) {
-                                    __m128i const v0 = _mm_loadu_si128((__m128i const*)f);
-                                    __m128i r = X::string::del == '\"' ?
-                                                                _mm_cmpeq_epi8(v0, v1) :
-                                                                _mm_cmpeq_epi8(v0, v2) ;
-                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, v3));
-                                            r = _mm_or_si128(r, _mm_cmpeq_epi8(v0, _mm_min_epu8(v0, v4)));
-                                    if (int const m = _mm_movemask_epi8(r)) {
-                                        int e = 0;
-                                            for (auto* g = f + 16; f != g; ++f, ++e) {
-                                                if ((1 << e) & m) {
-                                                    if (a != f && !poke<Y>(o, a, f, cx))    return false;
-                                                    if (!value(o, *f, cx))                  return false;
-                                                    a = f + 1;
-                                                }
-                                            }
-                                        if (a != f && !poke<Y>(o, a, f, cx)) return false;
-                                        a = f, f -= 16;
-                                    }
-                                    f += 16, n -= 16;
-                                }
-                                if (a != f) {
-                                    if (!poke<Y>(o, a, f, cx)) return false;
-                                    a = f;
-                                }
-                            }
-
-                            for ( ; f != l; ++f) {
-                                if (should_escape_<Y>(*f)) {
-                                    if (a != f && !poke<Y>(o, a, f, cx))    return false;
-                                    if (!value(o, *f, cx))                  return false;
-                                    a = f + 1;
-                                }
-                            }
-
-                            return a == f || poke<Y>(o, a, f, cx);
-#                       else
-                            return cx/X::read_error::unexpected;
-#                       endif
-                    }
                 template <typename O, typename Cx, typename Y = X>
                     static auto range(O& o, const char* f, const char* l, Cx& cx)
                         -> std::enable_if_t<!is_unquoted_key_context<X>::value &&  Y::assume_no_escapes, bool>
