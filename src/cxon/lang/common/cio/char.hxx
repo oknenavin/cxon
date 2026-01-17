@@ -73,44 +73,128 @@ namespace cxon { namespace cio { namespace chr { // character conversion: write
 
 // implementation //////////////////////////////////////////////////////////////
 
+namespace cxon { namespace cio { namespace chr { namespace imp {
+
+    // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
+    //
+    // Table 3-6. UTF-8 Bit Distribution
+    // +---------------------------+----------+----------+----------+----------+
+    // |Scalar Value               | 1        | 2        | 3        | 4        |
+    // +---------------------------+----------+----------+----------+----------+
+    // |00000000 0xxxxxxx          | 0xxxxxxx |          |          |          |
+    // |00000yyy yyxxxxxx          | 110yyyyy | 10xxxxxx |          |          |
+    // |zzzzyyyy yyxxxxxx          | 1110zzzz | 10yyyyyy | 10xxxxxx |          |
+    // |000uuuuu zzzzyyyy yyxxxxxx | 11110uuu | 10uuzzzz | 10yyyyyy | 10xxxxxx |
+    // +---------------------------+----------+----------+----------+----------+
+    //
+    // Table 3-7. Well-Formed UTF-8 Byte Sequences
+    // +--------------------+--------+--------+--------+--------+
+    // | Code Points        | 1      | 2      | 3      | 4      |
+    // +--------------------+--------+--------+--------+--------+
+    // | U+0000..  U+007F   | 00..7F |        |        |        |
+    // | U+0080..  U+07FF   | C2..DF | 80..BF |        |        |
+    // | U+0800..  U+0FFF   | E0     | A0..BF | 80..BF |        |
+    // | U+1000..  U+CFFF   | E1..EC | 80..BF | 80..BF |        |
+    // | U+D000..  U+D7FF   | ED     | 80..9F | 80..BF |        |
+    // | U+E000..  U+FFFF   | EE..EF | 80..BF | 80..BF |        |
+    // | U+10000.. U+3FFFF  | F0     | 90..BF | 80..BF | 80..BF |
+    // | U+40000.. U+FFFFF  | F1..F3 | 80..BF | 80..BF | 80..BF |
+    // | U+100000..U+10FFFF | F4     | 80..8F | 80..BF | 80..BF |
+    // +--------------------+--------+--------+--------+--------+
+
+    // https://bjoern.hoehrmann.de/utf-8/decoder/dfa/
+    // Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+    // TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+    // CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+    // IN THE SOFTWARE.
+    static constexpr unsigned char utf8_decode_class_[] = {
+      // 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 0
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 1
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 2
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 3
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 4
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 5
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 6
+      //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 7
+         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 8
+         9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, // 9
+         7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, // A
+         7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, // B
+         8, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, // C
+         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, // D
+        10, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, // E
+        11, 6, 6, 6, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8  // F
+    };
+    static constexpr unsigned char utf8_decode_state_[] = { // 24/2, 36/3, 48/3, 60/3, 72/4, 84/4, 96/4
+      // 0  1  2  3  4  5  6  7  8  9
+         0,12,24,36,60,96,84,12,12,12, //  0
+        48,72,12,12,12,12,12,12,12,12, //  1
+        12,12,12,12,12, 0,12,12,12,12, //  2
+        12, 0,12, 0,12,12,12,24,12,12, //  3
+        12,12,12,24,12,24,12,12,12,12, //  4
+        12,12,12,12,12,24,12,12,12,12, //  5
+        12,24,12,12,12,12,12,12,12,24, //  6
+        12,12,12,12,12,12,12,12,12,36, //  7
+        12,36,12,12,12,36,12,12,12,12, //  8
+        12,36,12,36,12,12,12,36,12,12, //  9
+        12,12,12,12,12,12,12,12        // 10
+    };
+
+    inline unsigned utf8_decode_check_(unsigned state, unsigned char byte) {
+        return byte > 0x7F ? utf8_decode_state_[state + utf8_decode_class_[byte & 0x7F]] : 12;
+    }
+
+    inline unsigned utf8_decode_code_(unsigned state, char32_t& code, unsigned char byte) {
+        unsigned const type = byte > 0x7F ? utf8_decode_class_[byte & 0x7F] : 0;
+        code = (state != 0) ? (byte & 0x3F) | (code << 6) : (0xFF >> type) & byte;
+        return utf8_decode_state_[state + type];
+    }
+
+}}}}
+
 namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
 
-        static constexpr char32_t hex_to_dec_[] = { // outside because of C++11/14 with g++
-            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-            00, 1, 2, 3, 4, 5, 6, 7, 8, 9,00,00,00,00,00,00,
-            00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00,
-            00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
-            00,10,11,12,13,14,15,00,00,00,00,00,00,00,00,00
+        static constexpr char32_t hex_to_dec_[] = {
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+             0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0
         };
-        template <typename X>
-            struct u_to_ {
-                template <typename II>
-                    static auto dec(II& i, II e) -> std::enable_if_t<!is_random_access_iterator<II>::value, char32_t> {
-#                       define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
-                            char32_t c;
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                                CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                            return ++i, c;
-#                       undef CXON_NEXT_HEX
-                    }
-                template <typename II>
-                    static auto dec(II& i, II e) -> std::enable_if_t< is_random_access_iterator<II>::value, char32_t> {
-                        if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
-                            return bad_utf32;
-                        char32_t const c =  (hex_to_dec_[(unsigned char)i[1]] << 12) |
-                                            (hex_to_dec_[(unsigned char)i[2]] <<  8) |
-                                            (hex_to_dec_[(unsigned char)i[3]] <<  4) |
-                                            (hex_to_dec_[(unsigned char)i[4]] <<  0)
-                        ;
-                        return i += 5, c;
-                    }
-            };
+        template <typename X, typename II>
+            static auto u_to_dec_(II& i, II e)
+                -> std::enable_if_t<!is_random_access_iterator<II>::value, char32_t>
+            {
+#               define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
+                    char32_t c;
+                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
+                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                    return ++i, c;
+#               undef CXON_NEXT_HEX
+            }
+        template <typename X, typename II>
+            static auto u_to_dec_(II& i, II e)
+                -> std::enable_if_t< is_random_access_iterator<II>::value, char32_t>
+            {
+                if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
+                    return bad_utf32;
+                char32_t const c =
+                    (hex_to_dec_[(unsigned char)i[1]] << 12) |
+                    (hex_to_dec_[(unsigned char)i[2]] <<  8) |
+                    (hex_to_dec_[(unsigned char)i[3]] <<  4) |
+                    (hex_to_dec_[(unsigned char)i[4]] <<  0)
+                ;
+                return i += 5, c;
+            }
 
         template <typename X, typename II>
             inline char32_t esc_to_utf32_(II& i, II e) {
@@ -123,7 +207,7 @@ namespace cxon { namespace cio { namespace chr {
                     case 'n' :  return ++i, U'\n';
                     case 'r' :  return ++i, U'\r';
                     case 't' :  return ++i, U'\t';
-                    case 'u' :  return u_to_<X>::dec(i, e);
+                    case 'u' :  return u_to_dec_<X>(i, e);
                     case ' ' :
                         CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
                                 return ++i, U' ';
@@ -145,7 +229,6 @@ namespace cxon { namespace cio { namespace chr {
             }
 
     }
-
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx) {
             char32_t const c32 = imp::esc_to_utf32_<X>(i, e);
@@ -160,100 +243,23 @@ namespace cxon { namespace cio { namespace chr {
         }
 
     namespace imp {
-
-        template <typename II>
-            inline auto head_(II& i, II e) -> std::enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return next(i, e); }
-        template <typename II>
-            inline auto head_(II& i, II  ) -> std::enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
-        template <typename II>
-            inline auto tail_(II& i, II e) -> std::enable_if_t<!is_random_access_iterator<II>::value, unsigned char> { return i != e ? peek(++i, e) : '\xFF'; }
-        template <typename II>
-            inline auto tail_(II& i, II  ) -> std::enable_if_t< is_random_access_iterator<II>::value, unsigned char> { return *++i; }
-
-#       define CXON_EXPECT(c) if (!(c)) return cx/X::read_error::character_invalid, bad_utf32
-
-            template <typename X, typename II, typename Cx>
-                inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                    -> std::enable_if_t< X::validate_string_encoding, char32_t>
-                {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
-                    CXON_ASSERT(i != e, "unexpected");
-                    char32_t const  c0 = (unsigned char)*i;
-                    char32_t        c1, c2, c3;
-                    if (c0 <= 0x7F)
-                        return ++i, c0;
-                    if (c0 >= 0xC2 && c0 <= 0xDF) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                        return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
-                    }
-                    if (c0 == 0xE0) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0xA0 && c1 <= 0xBF);
-                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                    }
-                    if (c0 >= 0xE1 && c0 <= 0xEC) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                    }
-                    if (c0 == 0xED) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0x9F);
-                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                    }
-                    if (c0 >= 0xEE && c0 <= 0xEF) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                    }
-                    if (c0 == 0xF0) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x90 && c1 <= 0xBF);
-                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                        c3 = tail_(i, e);       CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
-                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                    }
-                    if (c0 >= 0xF1 && c0 <= 0xF3) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0xBF);
-                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                        c3 = tail_(i, e);       CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
-                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                    }
-                    if (c0 == 0xF4) {
-                        c1 = head_(i, e);       CXON_EXPECT(c1 >= 0x80 && c1 <= 0x8F);
-                        c2 = tail_(i, e);       CXON_EXPECT(c2 >= 0x80 && c2 <= 0xBF);
-                        c3 = tail_(i, e);       CXON_EXPECT(c3 >= 0x80 && c3 <= 0xBF);
-                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                    }
-                    CXON_EXPECT(false);
-                }
-            template <typename X, typename II, typename Cx>
-                inline auto utf8_to_utf32_(II& i, II e, Cx& cx)
-                    -> std::enable_if_t<!X::validate_string_encoding, char32_t>
-                {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
-                    CXON_ASSERT(i != e, "unexpected");
-                    char32_t const  c0 = (unsigned char)*i;
-                    char32_t        c1, c2, c3;
-                    if ((c0 & 0x80) == 0)
-                        return ++i, c0;
-                    if ((c0 & 0xE0) == 0xC0) {
-                        c1 = head_(i, e);       CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        return ++i, ((c0 & 0x1F) << 6) | (c1 & 0x3F);
-                    }
-                    if ((c0 & 0xF0) == 0xE0) {
-                        c1 = head_(i, e);       CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        c2 = tail_(i, e);       CXON_EXPECT((c2 & 0xC0) == 0x80);
-                        return ++i, ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-                    }
-                    if ((c0 & 0xF8) == 0xF0) {
-                        c1 = head_(i, e);       CXON_EXPECT((c1 & 0xC0) == 0x80);
-                        c2 = tail_(i, e);       CXON_EXPECT((c2 & 0xC0) == 0x80);
-                        c3 = tail_(i, e);       CXON_EXPECT((c3 & 0xC0) == 0x80);
-                        return ++i, ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                    }
-                    CXON_EXPECT(false);
-                }
-
-#       undef CXON_EXPECT
-
+        template <typename X, typename II, typename Cx>
+            inline char32_t utf8_to_utf32_(II& i, II e, Cx& cx)
+            {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
+                CXON_ASSERT(i != e, "unexpected");
+                char32_t c;
+                    auto s = utf8_decode_code_(0, c, *i);
+                        if (s > 12 && ++i != e) {
+                            s = imp::utf8_decode_code_(s, c, *i);
+                            if (s > 12 && ++i != e) {
+                                s = imp::utf8_decode_code_(s, c, *i);
+                                if (s > 12 && ++i != e) {
+                                    s = imp::utf8_decode_code_(s, c, *i);
+                                }
+                            }
+                        }
+                return s == 0 ? (++i, c) : (cx/X::read_error::character_invalid, bad_utf32);
+            }
     }
     template <typename X, typename II, typename Cx>
         inline auto utf8_to_utf32(II& i, II e, Cx& cx)
@@ -279,96 +285,20 @@ namespace cxon { namespace cio { namespace chr {
                     case 1: t[0] = (T)( c32 | ms[bs]          );
                 }
             return bs;
-            //if (c32 < 0x80)  // 0XXX XXXX
-            //    return t[0] = char(c32), 1;
-            //if (c32 < 0x800) { // 110XXXXX
-            //    t[0] = char(0xC0 | (c32 >> 6));
-            //    t[1] = char(0x80 | (0x3F & c32));
-            //    return 2;
-            //}
-            //if (c32 < 0x10000) { // 1110XXXX
-            //    // error: 0xFFFE || 0xFFFF // not a char?
-            //        if (c32 >= 0xD800 && c32 <= 0xDBFF) return 0;
-            //    t[0] = char(0xE0 | (c32 >> 12));
-            //    t[1] = char(0x80 | (0x3F & (c32 >> 6)));
-            //    t[2] = char(0x80 | (0x3F & c32));
-            //    return 3;
-            //}
-            //if (c32 < 0x110000) { // 11110XXX
-            //    t[0] = char(0xF0 | (c32 >> 18));
-            //    t[1] = char(0x80 | (0x3F & (c32 >> 12)));
-            //    t[2] = char(0x80 | (0x3F & (c32 >> 6)));
-            //    t[3] = char(0x80 | (0x3F & c32));
-            //    return 4;
-            //}
-            //return 0;
         }
 
     template <typename II>
-        inline int utf8_check(II i, II e) {
-            // http://www.unicode.org/versions/Unicode6.0.0/ch03.pdf
-            // p41, Table 3-7. Well-Formed UTF-8 Byte Sequences
-            CXON_ASSERT(i != e, "unexpected");
-            unsigned const  c0 = (unsigned char)*i;
-            unsigned        c1, c2, c3;
-            // 1
-            //if (c0 < 0x80)
-            //    return 1;
-            // 2
-            if (c0 < 0xE0) {
-                CXON_IF_CONSTEXPR (is_random_access_iterator<II>::value)
-                    if (e - i < 2) return 0;
-                if (c0 >= 0xC2 && c0 <= 0xDF) {
-                    c1 = imp::head_(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF)
-                        return 2;
+        inline int utf8_check(II b, II e) {
+            auto s = imp::utf8_decode_check_(0, *b);
+                if (s != 12 && ++b != e) {
+                    s = imp::utf8_decode_check_(s, *b);         if (s == 0) return 2;
+                    if (s != 12 && ++b != e) {
+                        s = imp::utf8_decode_check_(s, *b);     if (s == 0) return 3;
+                        if (s != 12 && ++b != e) {
+                            s = imp::utf8_decode_check_(s, *b); if (s == 0) return 4;
+                        }
+                    }
                 }
-            }
-            // 3
-            else if (c0 < 0xF0) {
-                CXON_IF_CONSTEXPR (is_random_access_iterator<II>::value)
-                    if (e - i < 3) return 0;
-                if (c0 == 0xE0) {
-                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                    if (c1 >= 0xA0 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 3;
-                }
-                else if (c0 >= 0xE1 && c0 <= 0xEC) {
-                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 3;
-                }
-                else if (c0 == 0xED) {
-                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                    if (c1 >= 0x80 && c1 <= 0x9F && c2 >= 0x80 && c2 <= 0xBF)
-                        return 3;
-                }
-                else if (c0 >= 0xEE && c0 <= 0xEF) {
-                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF)
-                        return 3;
-                }
-            }
-            // 4
-            else if (c0 < 0xF8) {
-                CXON_IF_CONSTEXPR (is_random_access_iterator<II>::value)
-                    if (e - i < 4) return 0;
-                if (c0 == 0xF0) {
-                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                    if (c1 >= 0x90 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 4;
-                }
-                else if (c0 >= 0xF1 && c0 <= 0xF3) {
-                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                    if (c1 >= 0x80 && c1 <= 0xBF && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 4;
-                }
-                else if (c0 == 0xF4) {
-                    c1 = imp::head_(i, e), c2 = imp::tail_(i, e), c3 = imp::tail_(i, e);
-                    if (c1 >= 0x80 && c1 <= 0x8F && c2 >= 0x80 && c2 <= 0xBF && c3 >= 0x80 && c3 <= 0xBF)
-                        return 4;
-                }
-            }
             return 0;
         }
 
@@ -379,32 +309,34 @@ namespace cxon { namespace cio { namespace chr {
     namespace imp {
 
         static constexpr char should_escape_not_quoted_key_context_[] = {
-            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-            0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        //  0 1 2 3 4 5 6 7 8 9 A B C D E F
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 0
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 1
+            0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0, // 2
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 3
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 4
+            0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0, // 5
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 6
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  // 7
         };
         template <typename X>
             constexpr auto should_escape_(char c) noexcept -> std::enable_if_t<!is_quoted_key_context<X>::value, bool> {
-                return should_escape_not_quoted_key_context_[(unsigned char)c] == '\1';
+                return ((unsigned char)c & 0x80) == 0 && should_escape_not_quoted_key_context_[(unsigned char)c] == '\1';
             }
         static constexpr char should_escape_quoted_key_context_[] = {
-            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-            1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        //  0 1 2 3 4 5 6 7 8 9 A B C D E F
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 0
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 1
+            1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0, // 2
+            0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0, // 3
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 4
+            0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0, // 5
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 6
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  // 7
         };
         template <typename X>
             constexpr auto should_escape_(char c) noexcept -> std::enable_if_t< is_quoted_key_context<X>::value, bool> {
-                return should_escape_quoted_key_context_[(unsigned char)c] == '\1';
+                return ((unsigned char)c & 0x80) == 0 && should_escape_quoted_key_context_[(unsigned char)c] == '\1';
             }
     }
     template <typename X>
@@ -425,48 +357,10 @@ namespace cxon { namespace cio { namespace chr {
             struct encode_<X, char> {
                 template <typename O, typename Cx>
                     static bool value(O& o, char c, Cx& cx) {
-                        static constexpr char const*const esc_[] = {
-                            "\\u0000", "\\u0001", "\\u0002", "\\u0003", "\\u0004", "\\u0005", "\\u0006", "\\u0007",
-                                "\\b",     "\\t",     "\\n", "\\u000b",     "\\f",     "\\r", "\\u000e", "\\u000f",
-                            "\\u0010", "\\u0011", "\\u0012", "\\u0013", "\\u0014", "\\u0015", "\\u0016", "\\u0017",
-                            "\\u0018", "\\u0019", "\\u001a", "\\u001b", "\\u001c", "\\u001d", "\\u001e", "\\u001f"
-                        };
-                        static constexpr unsigned len_[] = { 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2, 6, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
-                        static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
-                        static_assert(X::map::div == ':' || X::map::div == '=', "expecting colon or equal sign as a key/value divider");
-                        switch (c) {
-                            case  0: case  1: case  2: case  3: case  4: case  5: case  6: case  7:
-                            case  8: case  9: case 10: case 11: case 12: case 13: case 14: case 15:
-                            case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
-                            case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
-                                        return poke<X>(o, esc_[(unsigned char)c], len_[(unsigned char)c], cx);
-                            case ' ' :
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
-                                        return poke<X>(o, "\\ ", 2, cx);
-                                else    return poke<X>(o, ' ', cx);
-                            case '"':
-                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
-                                        return poke<X>(o, "\\u0022", 6, cx);
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\'')
-                                        return poke<X>(o, '"', cx);
-                                else    return poke<X>(o, "\\\"", 2, cx);
-                            case '\'':
-                                CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
-                                        return poke<X>(o, '\'', cx);
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '"')
-                                        return poke<X>(o, '\'', cx);
-                                else    return poke<X>(o, "\\'", 2, cx);
-                            case ':' :
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
-                                        return poke<X>(o, "\\:", 2, cx);
-                                else    return poke<X>(o, ':', cx);
-                            case '=' :
-                                CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
-                                        return poke<X>(o, "\\=", 2, cx);
-                                else    return poke<X>(o, '=', cx);
-                            case '\\':  return poke<X>(o, "\\\\", 2, cx);
-                            default  :  return poke<X>(o, c, cx);
-                        }
+                         return should_escape<X>(c) ?
+                            value_(o, c, cx) :
+                            poke<X>(o, c, cx)
+                        ;
                     }
 
                 template <typename O, typename Cx, typename Y = X>
@@ -503,6 +397,53 @@ namespace cxon { namespace cio { namespace chr {
                     {
                         return poke<Y>(o, f, l, cx);
                     }
+
+                private:
+                    template <typename O, typename Cx>
+                        static bool value_(O& o, char c, Cx& cx) {
+                            static_assert(X::string::del == '"' || X::string::del == '\'', "expecting single or double quotes as a string delimiter");
+                            static_assert(X::map::div == ':' || X::map::div == '=', "expecting colon or equal sign as a key/value divider");
+
+                            static constexpr struct { char const* c; std::size_t l; } esc_[] = {
+                                { "\\u0000", 6 }, { "\\u0001", 6 }, { "\\u0002", 6 }, { "\\u0003", 6 }, { "\\u0004", 6 }, { "\\u0005", 6 }, { "\\u0006", 6 }, { "\\u0007", 6 },
+                                {     "\\b", 2 }, {     "\\t", 2 }, {     "\\n", 2 }, { "\\u000b", 6 }, {     "\\f", 2 }, {     "\\r", 2 }, { "\\u000e", 6 }, { "\\u000f", 6 },
+                                { "\\u0010", 6 }, { "\\u0011", 6 }, { "\\u0012", 6 }, { "\\u0013", 6 }, { "\\u0014", 6 }, { "\\u0015", 6 }, { "\\u0016", 6 }, { "\\u0017", 6 }, 
+                                { "\\u0018", 6 }, { "\\u0019", 6 }, { "\\u001a", 6 }, { "\\u001b", 6 }, { "\\u001c", 6 }, { "\\u001d", 6 }, { "\\u001e", 6 }, { "\\u001f", 6 }
+                            };
+
+                            switch (c) {
+                                case ' ':
+                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
+                                            return poke<X>(o, "\\ ", 2, cx);
+                                    else    return poke<X>(o, ' ', cx);
+                                case '"':
+                                    CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
+                                            return poke<X>(o, "\\u0022", 6, cx);
+                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '\'')
+                                            return poke<X>(o, '"', cx);
+                                    else    return poke<X>(o, "\\\"", 2, cx);
+                                case '\'':
+                                    CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
+                                            return poke<X>(o, '\'', cx);
+                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value || X::string::del == '"')
+                                            return poke<X>(o, '\'', cx);
+                                    else    return poke<X>(o, "\\'", 2, cx);
+                                case ':':
+                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
+                                            return poke<X>(o, "\\:", 2, cx);
+                                    else    return poke<X>(o, ':', cx);
+                                case '=':
+                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
+                                            return poke<X>(o, "\\=", 2, cx);
+                                    else    return poke<X>(o, '=', cx);
+                                case '\\':
+                                    return poke<X>(o, "\\\\", 2, cx);
+                                default:
+                                    CXON_ASSERT((unsigned char)c <= 0x1F, "unexpected");
+                                    auto const& e = esc_[(unsigned char)c];
+                                    return poke<X>(o, e.c, e.l, cx);
+                            }
+                        }
             };
 
         template <typename X>
@@ -544,7 +485,7 @@ namespace cxon { namespace cio { namespace chr {
                 template <typename O, typename Cx>
                     static bool value(O& o, char16_t c, Cx& cx) {
                         CXON_ASSERT(c < 0xD800 || c > 0xDBFF, "unexpected surrogate");
-                        return encode_<X, char32_t>::value(o, to_c32(c), cx);
+                        return encode_<X, char32_t>::value(o, to_c32_(c), cx);
                     }
                 template <typename O, typename Cx>
                     static bool range(O& o, const char16_t* i, const char16_t* e, Cx& cx) {
@@ -555,15 +496,15 @@ namespace cxon { namespace cio { namespace chr {
                 private:
                     template <typename O, typename Cx>
                         static bool value_(O& o, const char16_t*& i, const char16_t* e, Cx& cx) {
-                            char32_t c32 = to_c32(*i);
+                            char32_t c32 = to_c32_(*i);
                                 if (c32 >= 0xD800 && c32 <= 0xDBFF) { // surrogate
                                     ++i;                                CXON_ASSERT(i != e, "invalid surrogate");
-                                    char32_t const s32 = to_c32(*i);    CXON_ASSERT(s32 >= 0xDC00 && s32 <= 0xDFFF, "invalid surrogate");
+                                    char32_t const s32 = to_c32_(*i);   CXON_ASSERT(s32 >= 0xDC00 && s32 <= 0xDFFF, "invalid surrogate");
                                     c32 = char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
                                 }
                             return encode_<X, char32_t>::value(o, c32, cx);
                         }
-                        static char32_t to_c32(char16_t c16) noexcept {
+                        static char32_t to_c32_(char16_t c16) noexcept {
                             return static_cast<char32_t>(static_cast<typename std::make_unsigned<char16_t>::type>(c16));
                         }
             };
