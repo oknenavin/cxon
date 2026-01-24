@@ -33,9 +33,6 @@
 #ifndef CXON_JSON_PRODUCE_STRICT_JAVASCRIPT
 #   define CXON_JSON_PRODUCE_STRICT_JAVASCRIPT 0
 #endif
-#ifndef CXON_JSON_ASSUME_NO_ESCAPES
-#   define CXON_JSON_ASSUME_NO_ESCAPES 0
-#endif
 
 namespace cxon { namespace json { // format traits
 
@@ -47,8 +44,6 @@ namespace cxon { namespace json { // format traits
         static constexpr bool validate_string_escapes   = CXON_JSON_VALIDATE_STRING_ESCAPES;    // read: validate input strings for unescaped control characters
 
         static constexpr bool produce_strict_javascript = CXON_JSON_PRODUCE_STRICT_JAVASCRIPT;  // write: escape U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR (ECMA-262, 12.3 Line Terminators)
-
-        static constexpr bool assume_no_escapes         = CXON_JSON_ASSUME_NO_ESCAPES;          // read/write: assume that strings to be read/written do not contain escape characters
 
         static constexpr bool quote_unquoted_keys       = true;                                 // object keys for types serialized without quotes will be quoted (e.g. strings will still be quoted, but numbers will not)
         static constexpr bool unquote_quoted_keys       = false;                                // object keys for types serialized with quotes will be unquoted (e.g. strings)

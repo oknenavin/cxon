@@ -67,7 +67,6 @@ int main(int argc, char *argv[]) {
             std::fprintf(stdout, "  validate_string_encoding  : %li\n", (long)cxon::JSON<>::validate_string_encoding);
             std::fprintf(stdout, "  validate_string_escapes   : %li\n", (long)cxon::JSON<>::validate_string_escapes);
             std::fprintf(stdout, "  produce_strict_javascript : %li\n", (long)cxon::JSON<>::produce_strict_javascript);
-            std::fprintf(stdout, "  assume_no_escapes         : %li\n", (long)cxon::JSON<>::assume_no_escapes);
             std::fprintf(stdout, "  quote_unquoted_keys       : %li\n", (long)cxon::JSON<>::quote_unquoted_keys);
             std::fprintf(stdout, "  unquote_quoted_keys       : %li\n", (long)cxon::JSON<>::unquote_quoted_keys);
             std::fprintf(stdout, "  allow_cxx_comments        : %li\n", (long)cxon::JSON<>::allow_cxx_comments);
