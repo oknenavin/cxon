@@ -90,7 +90,7 @@ namespace cxon { namespace cio { namespace str {
                     CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
                         if (delim_en_check<X>(*i)) return delim_en_read<X>(i, e);
                     }
-                    CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value || !X::assume_no_escapes) {
+                    CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
                         if (*i == '\\') {
                             II const o = i; ++i;
                             CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
@@ -117,7 +117,7 @@ namespace cxon { namespace cio { namespace str {
             {
                 constexpr bool IS_QUOTED        = !is_unquoted_key_context<X>::value;
                 constexpr bool CHECK_ENCODING   = !has_traits<X, str::raw_traits>::value && X::validate_string_encoding;
-                constexpr bool CHECK_ESCAPES    = !has_traits<X, str::raw_traits>::value && (is_unquoted_key_context<X>::value || !X::assume_no_escapes);
+                constexpr bool CHECK_ESCAPES    = !has_traits<X, str::raw_traits>::value;
                 constexpr bool CHECK_CONTROLS   = !has_traits<X, str::raw_traits>::value && X::validate_string_escapes;
                 for (II l = i; i != e; ) {
                     i = simd::find_first_read_break<X>(i, e);

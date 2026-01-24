@@ -364,9 +364,7 @@ namespace cxon { namespace cio { namespace chr {
                     }
 
                 template <typename O, typename Cx, typename Y = X>
-                    static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> std::enable_if_t< is_unquoted_key_context<X>::value || !Y::assume_no_escapes, bool>
-                    {
+                    static bool range(O& o, const char* f, const char* l, Cx& cx) {
                         char const* a = f;
                             while (f != l) {
                                 f = simd::find_first_write_break<X>(f, l);
@@ -389,13 +387,6 @@ namespace cxon { namespace cio { namespace chr {
                                 a = ++f;
                             }
                         return a == f || poke<Y>(o, a, f, cx);
-                    }
-
-                template <typename O, typename Cx, typename Y = X>
-                    static auto range(O& o, const char* f, const char* l, Cx& cx)
-                        -> std::enable_if_t<!is_unquoted_key_context<X>::value &&  Y::assume_no_escapes, bool>
-                    {
-                        return poke<Y>(o, f, l, cx);
                     }
 
                 private:
