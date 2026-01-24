@@ -56,35 +56,24 @@ namespace cxon { namespace cio { namespace simd { namespace imp {
     template <typename X>
         using has_quotes_ = bool_constant<is_unquoted_key_context<X>::value || !is_quoted_key_context<X>::value>;
 
-    template <typename X>
-        inline auto check_read_break_condition_(char c) -> std::enable_if_t<!is_raw_<X>::value &&  has_quotes_<X>::value, bool>
-        { return c == X::string::del || c == '\\' || c <= '\x1F'; }
-    template <typename X>
-        inline auto check_read_break_condition_(char c) -> std::enable_if_t<!is_raw_<X>::value && !has_quotes_<X>::value, bool>
-        { return c == X::map::div || c == ' ' || c == '\\' || c <= '\x1F'; }
-    template <typename X>
-        inline auto check_read_break_condition_(char c) -> std::enable_if_t< is_raw_<X>::value &&  has_quotes_<X>::value, bool>
-        { return c == X::string::del; }
-    template <typename X>
-        inline auto check_read_break_condition_(char c) -> std::enable_if_t< is_raw_<X>::value && !has_quotes_<X>::value, bool>
-        { return c == X::map::div || c == ' ' || c == '\n' || c == '\t' || c == '\r'; }
-
-    template <typename X>
-        inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t<!X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
-        { return c == X::string::del || c == '\\' || c <= 0x1F; }
-    template <typename X>
-        inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t<!X::produce_strict_javascript && !has_quotes_<X>::value, bool>
-        { return c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F; }
-    template <typename X>
-        inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t< X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
-        { return c == X::string::del || c == '\\' || c <= 0x1F || c == 0xE2; }
-    template <typename X>
-        inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t< X::produce_strict_javascript && !has_quotes_<X>::value, bool>
-        { return c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F || c == 0xE2; }
-
 }}}}
 
 namespace cxon { namespace cio { namespace simd {
+
+    namespace imp {
+        template <typename X>
+            inline auto check_read_break_condition_(char c) -> std::enable_if_t<!is_raw_<X>::value &&  has_quotes_<X>::value, bool>
+            { return c == X::string::del || c == '\\' || c <= '\x1F'; }
+        template <typename X>
+            inline auto check_read_break_condition_(char c) -> std::enable_if_t<!is_raw_<X>::value && !has_quotes_<X>::value, bool>
+            { return c == X::map::div || c == ' ' || c == '\\' || c <= '\x1F'; }
+        template <typename X>
+            inline auto check_read_break_condition_(char c) -> std::enable_if_t< is_raw_<X>::value &&  has_quotes_<X>::value, bool>
+            { return c == X::string::del; }
+        template <typename X>
+            inline auto check_read_break_condition_(char c) -> std::enable_if_t< is_raw_<X>::value && !has_quotes_<X>::value, bool>
+            { return c == X::map::div || c == ' ' || c == '\n' || c == '\t' || c == '\r'; }
+    }
 
     template <typename X, typename P8>
         inline P8 find_first_read_break(P8 b, P8 e)
@@ -110,8 +99,9 @@ namespace cxon { namespace cio { namespace simd {
                                         rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi, vb));                      // escape
                                         rs = _mm_or_si128(rs, _mm_cmplt_epi8(vi, vc));                      // control & multi-bytes characters
                                     }
-                                    else {
-                                        rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi, _mm_min_epu8(vi, vc)));    // control characters
+                                    else
+                                    CXON_IF_CONSTEXPR (!imp::has_quotes_<X>::value)  {
+                                        rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi, _mm_min_epu8(vi, vc)));    // whitespace characters
                                     }
                         if (int const   mk = _mm_movemask_epi8(rs)) {
                             return b + imp::find_first_set_(mk);
@@ -126,6 +116,25 @@ namespace cxon { namespace cio { namespace simd {
             }
             return e;
         }
+
+}}}
+
+namespace cxon { namespace cio { namespace simd {
+
+    namespace imp {
+        template <typename X>
+            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t<!X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
+            { return c == X::string::del || c == '\\' || c <= 0x1F; }
+        template <typename X>
+            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t<!X::produce_strict_javascript && !has_quotes_<X>::value, bool>
+            { return c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F; }
+        template <typename X>
+            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t< X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
+            { return c == X::string::del || c == '\\' || c <= 0x1F || c == 0xE2; }
+        template <typename X>
+            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t< X::produce_strict_javascript && !has_quotes_<X>::value, bool>
+            { return c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F || c == 0xE2; }
+    }
 
     template <typename X, typename P8>
         inline P8 find_first_write_break(P8 b, P8 e)
