@@ -86,26 +86,30 @@ namespace cxon { namespace cio { namespace str {
             inline auto string_read_tail_(C& c, II& i, II e, Cx& cx)
                 -> std::enable_if_t<!chr::is_char_8<T>::value || !std::is_pointer<II>::value, bool>
             {
+                constexpr bool IS_QUOTED        = !is_unquoted_key_context<X>::value;
+                constexpr bool CHECK_ESCAPES    = !has_traits<X, str::raw_traits>::value;
+                constexpr bool CHECK_CONTROLS   = !has_traits<X, str::raw_traits>::value && X::validate_string_escapes;
                 while (i != e) {
-                    CXON_IF_CONSTEXPR (!is_unquoted_key_context<X>::value) {
+                    CXON_IF_CONSTEXPR (IS_QUOTED) {
                         if (delim_en_check<X>(*i)) return delim_en_read<X>(i, e);
                     }
-                    CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
+                    CXON_IF_CONSTEXPR (CHECK_ESCAPES) {
                         if (*i == '\\') {
                             II const o = i; ++i;
-                            CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value) {
-                                if (i != e && *i == X::string::del)
-                                    return ++i, true;
-                            }
-                            char32_t c32 = chr::esc_to_utf32<X>(i, e, cx);
-                                if (c32 == chr::bad_utf32) return rewind(i, o), false;
-                            if (!char_append_(c, c32))
-                                return rewind(i, o), cx/X::read_error::overflow;
+                                CXON_IF_CONSTEXPR (!IS_QUOTED) {
+                                    if (i != e && *i == X::string::del)
+                                        return ++i, true;
+                                }
+                                char32_t const c32 = chr::esc_to_utf32<X>(i, e, cx);
+                                    if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                                if (!char_append_(c, c32))
+                                    return rewind(i, o), cx/X::read_error::overflow;
                             continue;
                         }
                     }
-                    CXON_IF_CONSTEXPR (X::validate_string_escapes) {
-                        if (chr::is<X>::ctrl(*i)) return cx/X::read_error::unexpected;
+                    CXON_IF_CONSTEXPR (CHECK_CONTROLS) {
+                        if (chr::is<X>::ctrl(*i))
+                            return cx/X::read_error::unexpected;
                     }
                     if (!char_read_<X>(c, i, e, cx)) return false;
                 }

@@ -430,9 +430,7 @@ namespace cxon { namespace cio { namespace chr {
 
                             switch (c) {
                                 case ' ':
-                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
-                                            return poke<X>(o, "\\ ", 2, cx);
-                                    else    return poke<X>(o, ' ', cx);
+                                    return poke<X>(o, "\\ ", 2, cx);
                                 case '"':
                                     CXON_IF_CONSTEXPR (is_unquoted_key_context<X>::value)
                                             return poke<X>(o, "\\u0022", 6, cx);
@@ -446,17 +444,12 @@ namespace cxon { namespace cio { namespace chr {
                                             return poke<X>(o, '\'', cx);
                                     else    return poke<X>(o, "\\'", 2, cx);
                                 case ':':
-                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
-                                            return poke<X>(o, "\\:", 2, cx);
-                                    else    return poke<X>(o, ':', cx);
+                                    return poke<X>(o, "\\:", 2, cx);
                                 case '=':
-                                    CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
-                                            return poke<X>(o, "\\=", 2, cx);
-                                    else    return poke<X>(o, '=', cx);
+                                    return poke<X>(o, "\\=", 2, cx);
                                 case '\\':
                                     return poke<X>(o, "\\\\", 2, cx);
                                 default:
-                                    CXON_ASSERT((unsigned char)c <= 0x1F, "unexpected");
                                     auto const& e = esc_[(unsigned char)c];
                                     return poke<X>(o, e.c, e.l, cx);
                             }
