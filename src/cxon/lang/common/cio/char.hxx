@@ -41,10 +41,10 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
     static constexpr char32_t bad_utf32 = std::numeric_limits<char32_t>::max();
 
     template <typename X, typename II, typename Cx>
-        inline char32_t esc_to_utf32(II& i, II e, Cx& cx);
+        inline char32_t esc_to_utf32(II& i, II e, Cx& cx) noexcept;
 
     template <typename X, typename II, typename Cx>
-        inline auto utf8_to_utf32(II& i, II e, Cx& cx)
+        inline auto utf8_to_utf32(II& i, II e, Cx& cx) noexcept
             -> std::enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>;
 
     template <typename T>
@@ -52,7 +52,7 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
             -> std::enable_if_t<is_char_8<T>::value, int>;
 
     template <typename II>
-        inline int utf8_check(II i, II e);
+        inline int utf8_check(II i, II e) noexcept;
 
 }}}
 
@@ -143,11 +143,11 @@ namespace cxon { namespace cio { namespace chr { namespace imp {
         12,12,12,12,12,12,12,12        // 10
     };
 
-    inline unsigned utf8_decode_check_(unsigned state, unsigned char byte) {
+    inline unsigned utf8_decode_check_(unsigned state, unsigned char byte) noexcept {
         return byte > 0x7F ? utf8_decode_state_[state + utf8_decode_class_[byte & 0x7F]] : 12;
     }
 
-    inline unsigned utf8_decode_code_(unsigned state, char32_t& code, unsigned char byte) {
+    inline unsigned utf8_decode_code_(unsigned state, char32_t& code, unsigned char byte) noexcept {
         unsigned const type = byte > 0x7F ? utf8_decode_class_[byte & 0x7F] : 0;
         code = (state != 0) ? (byte & 0x3F) | (code << 6) : (0xFF >> type) & byte;
         return utf8_decode_state_[state + type];
@@ -169,7 +169,7 @@ namespace cxon { namespace cio { namespace chr {
              0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0
         };
         template <typename X, typename II>
-            static auto u_to_dec_(II& i, II e)
+            static auto u_to_dec_(II& i, II e) noexcept
                 -> std::enable_if_t<!is_random_access_iterator<II>::value, char32_t>
             {
 #               define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
@@ -182,7 +182,7 @@ namespace cxon { namespace cio { namespace chr {
 #               undef CXON_NEXT_HEX
             }
         template <typename X, typename II>
-            static auto u_to_dec_(II& i, II e)
+            static auto u_to_dec_(II& i, II e) noexcept
                 -> std::enable_if_t< is_random_access_iterator<II>::value, char32_t>
             {
                 if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
@@ -196,41 +196,67 @@ namespace cxon { namespace cio { namespace chr {
                 return i += 5, c;
             }
 
+        static constexpr unsigned char escape_type_map_[] = {
+        //  0 1 2 3 4 5 6 7 8 9 A B C D E F
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 1
+            3,0,1,0,0,0,0,6,0,0,0,0,0,0,0,1, // 2
+            0,0,0,0,0,0,0,0,0,0,4,0,0,5,0,0, // 3
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 4
+            0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0, // 5
+            0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0, // 6
+            0,0,1,0,1,2,0,0,0,0,0,0,0,0,0,0  // 7
+        };
+        template <typename X>
+            constexpr unsigned char escape_type_(unsigned char c) noexcept {
+                return (c & 0x80) == 0 ? escape_type_map_[c] : 0;
+            }
+
+        static constexpr char escape_map_[] = {
+        //    0    1    2    3    4    5    6    7    8    9    A    B    C   D    E   F
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 0
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 1
+            ' ',   0, '"',   0,   0,   0,   0,'\'',   0,   0,   0,   0,   0,  0,   0,'/', // 2
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ':',   0,   0,'=',   0,  0, // 3
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 4
+              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,'\\',  0,   0,  0, // 5
+              0,   0,'\b',   0,   0,   0,'\f',   0,   0,   0,   0,   0,   0,  0,'\n',  0, // 6
+              0,   0,'\r',   0,'\t',   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0  // 7
+        };
+
         template <typename X, typename II>
-            inline char32_t esc_to_utf32_(II& i, II e) {
-                switch (peek(i, e)) {
-                    case '"' :  return ++i, U'"';
-                    case '\\':  return ++i, U'\\';
-                    case '/' :  return ++i, U'/';
-                    case 'b' :  return ++i, U'\b';
-                    case 'f' :  return ++i, U'\f';
-                    case 'n' :  return ++i, U'\n';
-                    case 'r' :  return ++i, U'\r';
-                    case 't' :  return ++i, U'\t';
-                    case 'u' :  return u_to_dec_<X>(i, e);
-                    case ' ' :
-                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value)
-                                return ++i, U' ';
-                        else    return bad_utf32;
-                    case ':' :
-                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == ':')
-                                return ++i, U':';
-                        else    return bad_utf32;
-                    case '=' :
-                        CXON_IF_CONSTEXPR (is_quoted_key_context<X>::value && X::map::div == '=')
-                                return ++i, U'=';
-                        else    return bad_utf32;
-                    case '\'':
-                        CXON_IF_CONSTEXPR (X::string::del == '\'')
-                                return ++i, U'\'';
-                        else    return bad_utf32;
-                    default  :  return bad_utf32;
+            inline auto esc_to_utf32_(II& i, II e) noexcept -> std::enable_if_t<!is_quoted_key_context<X>::value, char32_t> {
+                unsigned char const c = peek(i, e);
+                switch (escape_type_<X>(c)) {
+                    case 1: return ++i, escape_map_[c];
+                    case 2: return u_to_dec_<X>(i, e);
+                    case 6: CXON_IF_CONSTEXPR (X::string::del == '\'')
+                            return ++i, U'\'';
                 }
+                return bad_utf32;
+            }
+        template <typename X, typename II>
+            inline auto esc_to_utf32_(II& i, II e) noexcept -> std::enable_if_t< is_quoted_key_context<X>::value, char32_t> {
+                unsigned char const c = peek(i, e);
+                switch (escape_type_<X>(c)) {
+                    case 1: return ++i, escape_map_[c];
+                    case 2: return u_to_dec_<X>(i, e);
+                    case 3: return ++i, U' ';
+                    case 4: CXON_IF_CONSTEXPR (X::map::div == ':')
+                            return ++i, U':';
+                            break;
+                    case 5: CXON_IF_CONSTEXPR (X::map::div == '=')
+                            return ++i, U'=';
+                            break;
+                    case 6: CXON_IF_CONSTEXPR (X::string::del == '\'')
+                            return ++i, U'\'';
+                }
+                return bad_utf32;
             }
 
     }
     template <typename X, typename II, typename Cx>
-        inline char32_t esc_to_utf32(II& i, II e, Cx& cx) {
+        inline char32_t esc_to_utf32(II& i, II e, Cx& cx) noexcept {
             char32_t const c32 = imp::esc_to_utf32_<X>(i, e);
                 if (c32 == bad_utf32) return cx/X::read_error::escape_invalid, bad_utf32;
             if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
@@ -244,7 +270,7 @@ namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
         template <typename X, typename II, typename Cx>
-            inline char32_t utf8_to_utf32_(II& i, II e, Cx& cx)
+            inline char32_t utf8_to_utf32_(II& i, II e, Cx& cx) noexcept
             {   static_assert(is_char_8<typename std::iterator_traits<II>::value_type>::value, "unexpected");
                 CXON_ASSERT(i != e, "unexpected");
                 char32_t c;
@@ -262,7 +288,7 @@ namespace cxon { namespace cio { namespace chr {
             }
     }
     template <typename X, typename II, typename Cx>
-        inline auto utf8_to_utf32(II& i, II e, Cx& cx)
+        inline auto utf8_to_utf32(II& i, II e, Cx& cx) noexcept
             -> std::enable_if_t<is_char_8<typename std::iterator_traits<II>::value_type>::value, char32_t>
         {
             return peek(i, e) != '\\' ?
@@ -288,7 +314,7 @@ namespace cxon { namespace cio { namespace chr {
         }
 
     template <typename II>
-        inline int utf8_check(II b, II e) {
+        inline int utf8_check(II b, II e) noexcept {
             auto s = imp::utf8_decode_check_(0, *b);
                 if (s != 12 && ++b != e) {
                     s = imp::utf8_decode_check_(s, *b);         if (s == 0) return 2;
@@ -320,8 +346,8 @@ namespace cxon { namespace cio { namespace chr {
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  // 7
         };
         template <typename X>
-            constexpr auto should_escape_(char c) noexcept -> std::enable_if_t<!is_quoted_key_context<X>::value, bool> {
-                return ((unsigned char)c & 0x80) == 0 && should_escape_not_quoted_key_context_[(unsigned char)c] == '\1';
+            constexpr auto should_escape_(unsigned char c) noexcept -> std::enable_if_t<!is_quoted_key_context<X>::value, bool> {
+                return (c & 0x80) == 0 && should_escape_not_quoted_key_context_[c] == '\1';
             }
         static constexpr char should_escape_quoted_key_context_[] = {
         //  0 1 2 3 4 5 6 7 8 9 A B C D E F
@@ -335,8 +361,8 @@ namespace cxon { namespace cio { namespace chr {
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  // 7
         };
         template <typename X>
-            constexpr auto should_escape_(char c) noexcept -> std::enable_if_t< is_quoted_key_context<X>::value, bool> {
-                return ((unsigned char)c & 0x80) == 0 && should_escape_quoted_key_context_[(unsigned char)c] == '\1';
+            constexpr auto should_escape_(unsigned char c) noexcept -> std::enable_if_t< is_quoted_key_context<X>::value, bool> {
+                return (c & 0x80) == 0 && should_escape_quoted_key_context_[c] == '\1';
             }
     }
     template <typename X>
