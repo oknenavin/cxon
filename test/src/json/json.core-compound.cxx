@@ -53,6 +53,8 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
         {   char a[] = {'1', '2', '3'};
             R_TEST(a, QS("1234"), json::read_error::overflow, 1);
             R_TEST(a, QS("12\\u2728"), json::read_error::overflow, 3);
+            R_TEST(a, QS("1234\\t"), json::read_error::overflow, 1);
+            R_TEST(a, QS("123\\t"), json::read_error::overflow, 4);
         }
         {   char a[] = {'1', '2', '\0'};
             W_TEST(QS("12"), a);
@@ -111,6 +113,8 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             {   char8_t a[] = {'1', '2', '3'};
                 R_TEST(a, QS("1234"), json::read_error::overflow, 1);
                 R_TEST(a, QS("12\\u2728"), json::read_error::overflow, 3);
+                R_TEST(a, QS("1234\\t"), json::read_error::overflow, 1);
+                R_TEST(a, QS("123\\t"), json::read_error::overflow, 4);
             }
             {   char8_t a[] = {'1', '2', '\0'};
                 W_TEST(QS("12"), a);
@@ -1461,6 +1465,11 @@ namespace {
         bool operator ==(const Struct15& t) const { return a == t.a && b == t.b && c == t.c && d == t.d; }
         CXON_JSON_CLS_NONTRIVIAL_KEY_MEMBER()
     };
+    struct Struct22 {
+        std::string a;
+        bool operator ==(const Struct22& t) const { return a == t.a; }
+        CXON_JSON_CLS_NONTRIVIAL_KEY_MEMBER()
+    };
 }
 CXON_JSON_CLS(Struct15,
     CXON_JSON_CLS_FIELD_ASIS(a),
@@ -1468,21 +1477,63 @@ CXON_JSON_CLS(Struct15,
     CXON_JSON_CLS_FIELD_NAME("c c", c),
     CXON_JSON_CLS_FIELD_NAME("d:d", d)
 )
+CXON_JSON_CLS(Struct22,
+    CXON_JSON_CLS_FIELD_NAME("an \"interesting\" key name:\nyes", a)
+)
 
 TEST_BEG(struct_15, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/core")
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})");
+    W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b\"b:"2",c\ c:"3",d\:d:"4"})");
+    W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b\"b:"2",c\u0020c:"3",d\:d:"4"})");
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c c:"3",d\:d:"4"})", json::read_error::unexpected, 15);
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d:d:"4"})", json::read_error::unexpected, 24);
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d\=d:"4"})", json::read_error::escape_invalid, 24);
     W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
+    R_TEST(Struct22 {"1"}, R"({an\ "interesting"\ key\ name\:\nyes: "1"})");
+    W_TEST(R"({an\ "interesting"\ key\ name\:\nyes:"1"})", Struct22 {"1"});
 TEST_END()
 
 TEST_BEG(struct_15_input_iterator, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::input_iterator_traits<>>>, "/core")
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})");
+    W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b\"b:"2",c\u0020c:"3",d\:d:"4"})");
+    W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b\"b:"2",c\ c:"3",d\:d:"4"})");
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c c:"3",d\:d:"4"})", json::read_error::unexpected, 17);
     R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d:d:"4"})", json::read_error::unexpected, 26);
+    R_TEST(Struct15 {"1", "2", "3", "4"}, R"({a:"1",b"b:"2",c\ c:"3",d\=d:"4"})", json::read_error::escape_invalid, 26);
     W_TEST(R"({a:"1",b"b:"2",c\ c:"3",d\:d:"4"})", Struct15 {"1", "2", "3", "4"});
+    R_TEST(Struct22 {"1"}, R"({an\ "interesting"\ key\ name\:\nyes: "1"})");
+    W_TEST(R"({an\ "interesting"\ key\ name\:\nyes:"1"})", Struct22 {"1"});
+TEST_END()
+
+
+namespace {
+    struct Struct23 {
+        std::string a, b, c, d;
+        bool operator ==(const Struct23& t) const { return a == t.a && b == t.b && c == t.c && d == t.d; }
+        CXON_JSON_CLS_NONTRIVIAL_KEY_MEMBER()
+    };
+}
+CXON_JSON_CLS(Struct23,
+    CXON_JSON_CLS_FIELD_ASIS(a),
+    CXON_JSON_CLS_FIELD_NAME("b'b", b),
+    CXON_JSON_CLS_FIELD_NAME("c c", c),
+    CXON_JSON_CLS_FIELD_NAME("d:d", d)
+)
+
+TEST_BEG(struct_15_single_quotes, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<single_quotes_traits>>, "/core")
+    R_TEST(Struct23 {"1", "2", "3", "4"}, R"({a:'1',b'b:'2',c\ c:'3',d\:d:'4'})");
+    W_TEST(R"({a:'1',b'b:'2',c\ c:'3',d\:d:'4'})", Struct23 {"1", "2", "3", "4"});
+    R_TEST(Struct23 {"1", "2", "3", "4"}, R"({a:'1',b\'b:'2',c\ c:'3',d\:d:'4'})");
+TEST_END()
+
+TEST_BEG(struct_15_single_quotes_inpu_iterator, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::input_iterator_traits<single_quotes_traits>>>, "/core")
+    R_TEST(Struct23 {"1", "2", "3", "4"}, R"({a:'1',b'b:'2',c\ c:'3',d\:d:'4'})");
+    W_TEST(R"({a:'1',b'b:'2',c\ c:'3',d\:d:'4'})", Struct23 {"1", "2", "3", "4"});
+    R_TEST(Struct23 {"1", "2", "3", "4"}, R"({a:'1',b\'b:'2',c\ c:'3',d\:d:'4'})");
 TEST_END()
 
 
