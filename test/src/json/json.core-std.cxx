@@ -2009,6 +2009,7 @@ TEST_BEG(map_div_unquoted_quoted_keys, cxon::JSON<cxon::test::unquoted_quoted_ke
         R_TEST(xmap {{"x=y", 1}}, R"({x\=y=1})");
         W_TEST(R"({x\=y=1})", xmap {{"x=y", 1}});
         R_TEST(xmap {}, R"({x:1})", cxon::json::read_error::unexpected, 5);
+        R_TEST(xmap {}, R"({x\:1})", cxon::json::read_error::escape_invalid, 2);
     }
 TEST_END()
 
