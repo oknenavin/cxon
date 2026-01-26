@@ -45,6 +45,8 @@ TEST_BEG(arrays, cxon::JSON<>, "/core")
             R_TEST(a, QS("123\\u0000"));
             W_TEST(QS("123"), a);
             R_TEST(a, QS("x\xFFy"), json::read_error::character_invalid, 2);
+            R_TEST(a, QS("123\\\x8F"), json::read_error::escape_invalid, 4);
+            R_TEST(a, QS("123\\\xFF"), json::read_error::escape_invalid, 4);
         }
         {   char a[] = {'1', '2', '3', '\0', '4', '\0'};
             R_TEST(a, QS("123\\u00004"));
