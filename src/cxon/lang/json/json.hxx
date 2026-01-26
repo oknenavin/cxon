@@ -75,7 +75,7 @@ namespace cxon { namespace cio { namespace chr { // character classes
 
     template <typename X>
         struct is<JSON<X>> : is<X> {
-            static bool space(char c) noexcept { return JSSP & is_x_[(unsigned char)c]; }
+            static bool space(char c) noexcept { return JSSP & is_x_(c); }
         };
 
 }}}
