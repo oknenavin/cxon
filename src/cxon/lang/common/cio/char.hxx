@@ -110,7 +110,7 @@ namespace cxon { namespace cio { namespace chr { namespace imp {
     // CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
     // IN THE SOFTWARE.
     static constexpr unsigned char utf8_decode_class_[] = {
-      // 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    //   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
       //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 0
       //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 1
       //12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12, // 2
@@ -129,7 +129,7 @@ namespace cxon { namespace cio { namespace chr { namespace imp {
         11, 6, 6, 6, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8  // F
     };
     static constexpr unsigned char utf8_decode_state_[] = { // 24/2, 36/3, 48/3, 60/3, 72/4, 84/4, 96/4
-      // 0  1  2  3  4  5  6  7  8  9
+    //   0  1  2  3  4  5  6  7  8  9
          0,12,24,36,60,96,84,12,12,12, //  0
         48,72,12,12,12,12,12,12,12,12, //  1
         12,12,12,12,12, 0,12,12,12,12, //  2
@@ -159,39 +159,42 @@ namespace cxon { namespace cio { namespace chr {
 
     namespace imp {
 
-        static constexpr char32_t hex_to_dec_[] = {
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
-             0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0
-        };
+        inline char32_t x_to_d_(unsigned char c) {
+            static constexpr unsigned char X_TO_D_[] = {
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+                 0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0,10,11,12,13,14,15, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            };
+            return X_TO_D_[c];
+        }
         template <typename X, typename II>
-            static auto u_to_dec_(II& i, II e) noexcept
+            inline auto u_to_d_(II& i, II e) noexcept
                 -> std::enable_if_t<!is_random_access_iterator<II>::value, char32_t>
             {
 #               define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
                     char32_t c;
-                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i];
-                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
-                        CXON_NEXT_HEX(); c = hex_to_dec_[(unsigned char)*i] | (c << 4);
+                        CXON_NEXT_HEX(); c = x_to_d_(*i);
+                        CXON_NEXT_HEX(); c = x_to_d_(*i) | (c << 4);
+                        CXON_NEXT_HEX(); c = x_to_d_(*i) | (c << 4);
+                        CXON_NEXT_HEX(); c = x_to_d_(*i) | (c << 4);
                     return ++i, c;
 #               undef CXON_NEXT_HEX
             }
         template <typename X, typename II>
-            static auto u_to_dec_(II& i, II e) noexcept
+            inline auto u_to_d_(II& i, II e) noexcept
                 -> std::enable_if_t< is_random_access_iterator<II>::value, char32_t>
             {
                 if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
                     return bad_utf32;
                 char32_t const c =
-                    (hex_to_dec_[(unsigned char)i[1]] << 12) |
-                    (hex_to_dec_[(unsigned char)i[2]] <<  8) |
-                    (hex_to_dec_[(unsigned char)i[3]] <<  4) |
-                    (hex_to_dec_[(unsigned char)i[4]] <<  0)
+                    (x_to_d_(i[1]) << 12) |
+                    (x_to_d_(i[2]) <<  8) |
+                    (x_to_d_(i[3]) <<  4) |
+                    (x_to_d_(i[4]) <<  0)
                 ;
                 return i += 5, c;
             }
@@ -212,35 +215,42 @@ namespace cxon { namespace cio { namespace chr {
                 return (c & 0x80) == 0 ? escape_type_map_[c] : 0;
             }
 
-        static constexpr char escape_map_[] = {
-        //    0    1    2    3    4    5    6    7    8    9    A    B    C   D    E   F
-              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 0
-              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 1
-            ' ',   0, '"',   0,   0,   0,   0,'\'',   0,   0,   0,   0,   0,  0,   0,'/', // 2
-              0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ':',   0,   0,'=',   0,  0, // 3
-              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 4
-              0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,'\\',  0,   0,  0, // 5
-              0,   0,'\b',   0,   0,   0,'\f',   0,   0,   0,   0,   0,   0,  0,'\n',  0, // 6
-              0,   0,'\r',   0,'\t',   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0  // 7
-        };
+        inline char escape_value_(unsigned char c) {
+            static constexpr char ESCAPE_VALUE_[] = {
+            //    0    1    2    3    4    5    6    7    8    9    A    B    C   D    E   F
+                  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 0
+                  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 1
+                ' ',   0, '"',   0,   0,   0,   0,'\'',   0,   0,   0,   0,   0,  0,   0,'/', // 2
+                  0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ':',   0,   0,'=',   0,  0, // 3
+                  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0, // 4
+                  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,'\\',  0,   0,  0, // 5
+                  0,   0,'\b',   0,   0,   0,'\f',   0,   0,   0,   0,   0,   0,  0,'\n',  0, // 6
+                  0,   0,'\r',   0,'\t',   0,   0,   0,   0,   0,   0,   0,   0,  0,   0,  0  // 7
+            };
+            return ESCAPE_VALUE_[c];
+        }
 
         template <typename X, typename II>
-            inline auto esc_to_utf32_(II& i, II e) noexcept -> std::enable_if_t<!is_quoted_key_context<X>::value, char32_t> {
+            inline auto esc_to_utf32_(II& i, II e) noexcept
+                -> std::enable_if_t<!is_quoted_key_context<X>::value, char32_t>
+            {
                 unsigned char const c = peek(i, e);
                 switch (escape_type_<X>(c)) {
-                    case 1: return ++i, escape_map_[c];
-                    case 2: return u_to_dec_<X>(i, e);
+                    case 1: return ++i, escape_value_(c);
+                    case 2: return u_to_d_<X>(i, e);
                     case 6: CXON_IF_CONSTEXPR (X::string::del == '\'')
                             return ++i, U'\'';
                 }
                 return bad_utf32;
             }
         template <typename X, typename II>
-            inline auto esc_to_utf32_(II& i, II e) noexcept -> std::enable_if_t< is_quoted_key_context<X>::value, char32_t> {
+            inline auto esc_to_utf32_(II& i, II e) noexcept
+                -> std::enable_if_t< is_quoted_key_context<X>::value, char32_t>
+            {
                 unsigned char const c = peek(i, e);
                 switch (escape_type_<X>(c)) {
-                    case 1: return ++i, escape_map_[c];
-                    case 2: return u_to_dec_<X>(i, e);
+                    case 1: return ++i, escape_value_(c);
+                    case 2: return u_to_d_<X>(i, e);
                     case 3: return ++i, U' ';
                     case 4: CXON_IF_CONSTEXPR (X::map::div == ':')
                             return ++i, U':';
