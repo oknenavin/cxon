@@ -58,7 +58,7 @@ namespace cxon { namespace cio { namespace str {
 
         template <typename C, typename T = typename C::value_type>
             inline auto char_append_(C& c, char32_t c32) -> std::enable_if_t<chr::is_char_8<T>::value, bool> {
-                T b[4]; int const n = chr::utf32_to_utf8(b, c32); CXON_ASSERT(n > 0 && n <=4, "unexpected");
+                T b[4]; unsigned const n = chr::utf32_to_utf8(b, c32); CXON_ASSERT(n > 0 && n <=4, "unexpected");
                 return cxon::cnt::append(c, &b[0], &b[0] + n);
             }
         template <typename C, typename T = typename C::value_type>

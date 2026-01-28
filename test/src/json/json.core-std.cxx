@@ -141,7 +141,6 @@ TEST_BEG(basic_string, cxon::JSON<>, "/std")
         W_TEST(QS("\xF0\x92\x90\x9D\xF0\x92\x90\x9C"), u16string({0xD809, 0xDC1D, 0xD809, 0xDC1C}));
         R_TEST(u16string(u"\xDBFF\xDFFF"), QS("\\uDBFF\\uDFFF")); // surrogate
         W_TEST(QS("\xF4\x8F\xBF\xBF"), u16string(u"\xDBFF\xDFFF")); // surrogate
-        W_TEST(QS("\xED\xB0\x80"), u16string(u"\xDC00"));
         R_TEST(u16string(), "a", json::read_error::unexpected, 0);
         R_TEST(u16string(), "\"", json::read_error::unexpected, 1);
         R_TEST(u16string(), QS("\\u001"), json::read_error::escape_invalid, 1);

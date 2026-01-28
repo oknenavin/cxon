@@ -38,7 +38,7 @@ namespace cxon { namespace cio { namespace simd {
 namespace cxon { namespace cio { namespace simd { namespace imp {
 
 #   if CXON_USE_SIMD_SSE2
-        inline int find_first_set_(unsigned int value)
+        inline int find_first_set_(unsigned value)
         {   // returns the number of trailing 0-bits in x, starting at the least significant bit position. if x is 0, the result is undefined
 #           ifdef _MSC_VER
                 CXON_ASSERT(value, "unexpected invocaion");
