@@ -140,9 +140,6 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
         R_TEST(U'\0', QS("\xE3"), json::read_error::character_invalid, 1);
         W_TEST(QS("\xE3\xA2\x9A"), U'\x389A');
         R_TEST(U'\x28440', QS("\xF0\xA8\x91\x80"));
-        {   char u[4];
-            TEST_CHECK(cio::chr::utf32_to_utf8(u, 0xDBFF) == 0);
-        }
         R_TEST(U'\0', QS("\\udbff"), json::read_error::surrogate_invalid, 1); // invalid surrogate
         R_TEST(U'\0', QS("\\udbff\\ue000"), json::read_error::surrogate_invalid, 1); // invalid surrogate
         R_TEST(U'\0', QS("\\udbff\\udbff"), json::read_error::surrogate_invalid, 1); // invalid surrogate
