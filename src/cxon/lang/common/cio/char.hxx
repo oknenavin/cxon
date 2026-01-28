@@ -49,7 +49,7 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
 
     template <typename T>
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
-            -> std::enable_if_t<is_char_8<T>::value, int>;
+            -> std::enable_if_t<is_char_8<T>::value, unsigned>;
 
     template <typename II>
         inline int utf8_check(II i, II e) noexcept;
@@ -307,17 +307,22 @@ namespace cxon { namespace cio { namespace chr {
             ;
         }
 
+    namespace imp {
+        inline unsigned utf8_bytes_(char32_t c) {
+            return c > 0x7F ? c > 0x7FF ? c > 0xFFFF ? c > 0x10FFFF ? 0 : 4 : 3 : 2 : 1;
+        }
+    }
     template <typename T>
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
-            -> std::enable_if_t<is_char_8<T>::value, int>
+            -> std::enable_if_t<is_char_8<T>::value, unsigned>
         {
-            static constexpr unsigned long const ms[] = { 0xBFUL, 0x00UL, 0xC0UL, 0xE0UL, 0xF0UL, 0xF8UL, 0xFCUL };
-                if (c32 >= 0xD800UL && c32 <= 0xDBFFUL) return 0; // surrogate
-            int const bs = c32 >= 0x80UL ? c32 >= 0x800UL ? c32 >= 0x10000UL ? c32 >= 0x110000UL ? 0 : 4 : 3 : 2 : 1;
+            CXON_ASSERT(!(c32 >= 0xD800 && c32 <= 0xDFFF), "unexpected surrogate");
+            static constexpr unsigned long const ms[] = { 0xBF, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+            unsigned const bs = imp::utf8_bytes_(c32);
                 switch (bs) {
-                    case 4: t[3] = (T)((c32 | 0x80UL) & 0xBFUL); c32 >>= 6; CXON_FALLTHROUGH;
-                    case 3: t[2] = (T)((c32 | 0x80UL) & 0xBFUL); c32 >>= 6; CXON_FALLTHROUGH;
-                    case 2: t[1] = (T)((c32 | 0x80UL) & 0xBFUL); c32 >>= 6; CXON_FALLTHROUGH;
+                    case 4: t[3] = (T)((c32 | 0x80) & 0xBF); c32 >>= 6; CXON_FALLTHROUGH;
+                    case 3: t[2] = (T)((c32 | 0x80) & 0xBF); c32 >>= 6; CXON_FALLTHROUGH;
+                    case 2: t[1] = (T)((c32 | 0x80) & 0xBF); c32 >>= 6; CXON_FALLTHROUGH;
                     case 1: t[0] = (T)( c32 | ms[bs]          );
                 }
             return bs;
@@ -534,7 +539,7 @@ namespace cxon { namespace cio { namespace chr {
                 template <typename O, typename Cx, typename S = X>
                     static auto value(O& o, char32_t c, Cx& cx) -> std::enable_if_t<!S::produce_strict_javascript, bool> {
                         if (c > 0x7F) {
-                                char b[4]; int const n = utf32_to_utf8(b, c);
+                                char b[4]; unsigned const n = utf32_to_utf8(b, c);
                                 return poke<X>(o, b, n, cx);
                         }
                         else    return encode_<X, char>::value(o, char(c), cx);
@@ -544,7 +549,7 @@ namespace cxon { namespace cio { namespace chr {
                         if (c > 0x7F) {
                                 if (c == 0x2028) return poke<X>(o, "\\u2028", 6, cx);
                                 if (c == 0x2029) return poke<X>(o, "\\u2029", 6, cx);
-                                char b[4]; int const n = utf32_to_utf8(b, c);
+                                char b[4]; unsigned const n = utf32_to_utf8(b, c);
                                 return poke<X>(o, b, n, cx);
                         }
                         else    return encode_<X, char>::value(o, char(c), cx);
