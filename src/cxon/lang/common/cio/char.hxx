@@ -18,7 +18,7 @@
 
 #include "cio.hxx"
 #include "simd.hxx"
-#include <limits>
+
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -38,7 +38,7 @@ namespace cxon { namespace cio { namespace chr { // character conversion: read
         >;
 
 
-    static constexpr char32_t bad_utf32 = std::numeric_limits<char32_t>::max();
+    static constexpr char32_t bad_code = 0xFFFFFFFF;
 
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx) noexcept;
@@ -175,7 +175,7 @@ namespace cxon { namespace cio { namespace chr {
             inline auto u_to_d_(II& i, II e) noexcept
                 -> std::enable_if_t<!is_random_access_iterator<II>::value, char32_t>
             {
-#               define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_utf32
+#               define CXON_NEXT_HEX() if (++i == e || !is<X>::digit16(*i)) return bad_code
                     char32_t c;
                         CXON_NEXT_HEX(); c = x_to_d_(*i);
                         CXON_NEXT_HEX(); c = x_to_d_(*i) | (c << 4);
@@ -189,7 +189,7 @@ namespace cxon { namespace cio { namespace chr {
                 -> std::enable_if_t< is_random_access_iterator<II>::value, char32_t>
             {
                 if (e - i < 5 || !is<X>::digit16(i[1]) || !is<X>::digit16(i[2]) || !is<X>::digit16(i[3]) || !is<X>::digit16(i[4]))
-                    return bad_utf32;
+                    return bad_code;
                 char32_t const c =
                     (x_to_d_(i[1]) << 12) |
                     (x_to_d_(i[2]) <<  8) |
@@ -241,7 +241,7 @@ namespace cxon { namespace cio { namespace chr {
                     case 6: CXON_IF_CONSTEXPR (X::string::del == '\'')
                             return ++i, U'\'';
                 }
-                return bad_utf32;
+                return bad_code;
             }
         template <typename X, typename II>
             inline auto esc_to_utf32_(II& i, II e) noexcept
@@ -261,20 +261,22 @@ namespace cxon { namespace cio { namespace chr {
                     case 6: CXON_IF_CONSTEXPR (X::string::del == '\'')
                             return ++i, U'\'';
                 }
-                return bad_utf32;
+                return bad_code;
             }
 
     }
     template <typename X, typename II, typename Cx>
         inline char32_t esc_to_utf32(II& i, II e, Cx& cx) noexcept {
             char32_t const c32 = imp::esc_to_utf32_<X>(i, e);
-                if (c32 == bad_utf32) return cx/X::read_error::escape_invalid, bad_utf32;
-            if (c32 < 0xD800 || c32 > 0xDBFF) return c32;
+                if (c32 == bad_code)                return cx/X::read_error::escape_invalid, bad_code;
+                if (c32 >= 0xDC00 && c32 <= 0xDFFF) return cx/X::read_error::surrogate_invalid, bad_code;
+            // possible surrogate
+            if (c32 < 0xD800 || c32 > 0xDBFF)       return c32;
             // surrogate
-                if (peek(i, e) != '\\') return cx/X::read_error::surrogate_invalid, bad_utf32;
-            char32_t const s32 = (++i, imp::esc_to_utf32_<X>(i, e));
-                if (s32 < 0xDC00 || s32 > 0xDFFF)
-                    return (s32 == bad_utf32 ? cx/X::read_error::escape_invalid : cx/X::read_error::surrogate_invalid), bad_utf32;
+                if (peek(i, e) != '\\')             return cx/X::read_error::surrogate_invalid, bad_code;
+            char32_t const s32 = imp::esc_to_utf32_<X>(++i, e);
+                if (s32 == bad_code)                return cx/X::read_error::escape_invalid, bad_code;
+                if (s32 < 0xDC00 || s32 > 0xDFFF)   return cx/X::read_error::surrogate_invalid, bad_code;
             return char32_t(0x10000 + (((c32 - 0xD800) << 10) | (s32 - 0xDC00)));
         }
 
@@ -294,7 +296,7 @@ namespace cxon { namespace cio { namespace chr {
                                 }
                             }
                         }
-                return s == 0 ? (++i, c) : (cx/X::read_error::character_invalid, bad_utf32);
+                return s == 0 ? (++i, c) : (cx/X::read_error::character_invalid, bad_code);
             }
     }
     template <typename X, typename II, typename Cx>
@@ -316,7 +318,7 @@ namespace cxon { namespace cio { namespace chr {
         inline auto utf32_to_utf8(T (&t)[4], char32_t c32) noexcept
             -> std::enable_if_t<is_char_8<T>::value, unsigned>
         {
-            CXON_ASSERT(!(c32 >= 0xD800 && c32 <= 0xDFFF), "unexpected surrogate");
+            CXON_ASSERT(!(c32 >= 0xD800 && c32 <= 0xDFFF), "unexpected surrogate"); // LCOV_EXCL_LINE
             static constexpr unsigned long const ms[] = { 0xBF, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
             unsigned const bs = imp::utf8_bytes_(c32);
                 switch (bs) {
