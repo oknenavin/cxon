@@ -108,7 +108,7 @@ namespace cxon { // character
                     if (!cio::consume<X>(cio::str::delim_be_read<X, II>, i, e, cx)) return false;
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
-                                if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
+                                if (c32 == cio::chr::bad_code)  return cio::rewind(i, o), false;
                                 if (c32 >  0xFF)                return cio::rewind(i, o), cx/json::read_error::character_invalid;
                     return (cio::str::delim_en_read<X>(i, e) || cx/X::read_error::unexpected) && (t = char(c32), true);
                 }
@@ -120,7 +120,7 @@ namespace cxon { // character
                     if (!cio::consume<X>(cio::str::delim_be_read<X, II>, i, e, cx)) return false;
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
-                                if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
+                                if (c32 == cio::chr::bad_code)  return cio::rewind(i, o), false;
                                 if (c32 >  0xFFFF)              return cio::rewind(i, o), cx/json::read_error::character_invalid;
                     return (cio::str::delim_en_read<X>(i, e) || cx/X::read_error::unexpected) && (t = T(c32), true);
                 }
@@ -132,7 +132,7 @@ namespace cxon { // character
                     if (!cio::consume<X>(cio::str::delim_be_read<X, II>, i, e, cx)) return false;
                         II const o = i;
                             char32_t const c32 = cio::chr::utf8_to_utf32<X>(i, e, cx);
-                                if (c32 == cio::chr::bad_utf32) return cio::rewind(i, o), false;
+                                if (c32 == cio::chr::bad_code) return cio::rewind(i, o), false;
                     return (cio::str::delim_en_read<X>(i, e) || cx/X::read_error::unexpected) && (t = T(c32), true);
                 }
         };

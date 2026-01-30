@@ -78,7 +78,7 @@ namespace cxon { namespace cio { namespace str {
             inline bool char_read_(C& c, II& i, II e, Cx& cx) {
                 II const o = i;
                     char32_t const c32 = chr::utf8_to_utf32<X>(i, e, cx);
-                        if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                        if (c32 == chr::bad_code) return rewind(i, o), false;
                 return char_append_(c, c32) || (rewind(i, o), cx/X::read_error::overflow);
             }
 
@@ -101,7 +101,7 @@ namespace cxon { namespace cio { namespace str {
                                         return ++i, true;
                                 }
                                 char32_t const c32 = chr::esc_to_utf32<X>(i, e, cx);
-                                    if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                                    if (c32 == chr::bad_code) return rewind(i, o), false;
                                 if (!char_append_(c, c32))
                                     return rewind(i, o), cx/X::read_error::overflow;
                             continue;
@@ -156,7 +156,7 @@ namespace cxon { namespace cio { namespace str {
                             }
                             II o = i;
                                 char32_t const c32 = chr::esc_to_utf32<X>(++i, e, cx);
-                                    if (c32 == chr::bad_utf32) return rewind(i, o), false;
+                                    if (c32 == chr::bad_code) return rewind(i, o), false;
                                 if (!char_append_(c, c32))
                                     return rewind(i, o), cx/X::read_error::overflow;
                             l = i;
