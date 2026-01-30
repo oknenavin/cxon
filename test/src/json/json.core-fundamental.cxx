@@ -140,9 +140,14 @@ TEST_BEG(fundamental, cxon::JSON<>, "/core")
         R_TEST(U'\0', QS("\xE3"), json::read_error::character_invalid, 1);
         W_TEST(QS("\xE3\xA2\x9A"), U'\x389A');
         R_TEST(U'\x28440', QS("\xF0\xA8\x91\x80"));
-        R_TEST(U'\0', QS("\\udbff"), json::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(U'\0', QS("\\udbff\\ue000"), json::read_error::surrogate_invalid, 1); // invalid surrogate
-        R_TEST(U'\0', QS("\\udbff\\udbff"), json::read_error::surrogate_invalid, 1); // invalid surrogate
+        {   // invalid surrogates
+            R_TEST(U'\0', QS("\\udbff"), json::read_error::surrogate_invalid, 1);
+            R_TEST(U'\0', QS("\\udbff\\ue000"), json::read_error::surrogate_invalid, 1);
+            R_TEST(U'\0', QS("\\udbff\\udbff"), json::read_error::surrogate_invalid, 1);
+            R_TEST(U'\0', QS("\\udbff\\udbf"), json::read_error::escape_invalid, 1);
+            R_TEST(U'\0', QS("\\uDFAA"), json::read_error::surrogate_invalid, 1);
+            R_TEST(U'\0', QS("\\uDD1Ea"), json::read_error::surrogate_invalid, 1);
+        }
         R_TEST(U'\0', QS("\xF0\xA8\x91"), json::read_error::character_invalid, 1);
         R_TEST(U'\0', QS("\xF0\xA8"), json::read_error::character_invalid, 1);
         R_TEST(U'\0', QS("\xF0"), json::read_error::character_invalid, 1);
