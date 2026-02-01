@@ -6,7 +6,7 @@
 #include "cxon/lib/std/vector.hxx"
 #include <cassert>
 
-static char in[] = // some heterogeneous JSON arrays
+static char const in[] = // some heterogeneous JSON arrays
     R"([["Fibonacci", 5, [0, 1, 1, 2, 3]],)"
     R"( ["Pascal", 5, [1, 8, 24, 32, 16]]])"
 ;
