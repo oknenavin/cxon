@@ -55,10 +55,12 @@ namespace cxon { // interface
             explicit operator bool() const noexcept { return !ec; }
         };
 
-    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename InIt, typename ...NaPa>
-        inline auto     from_bytes(T& t, InIt b, InIt e, NaPa&&... p)       -> from_bytes_result<InIt>;
+    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename P8, typename ...NaPa>
+        inline auto     from_bytes(T& t, const P8* b, const P8* e, NaPa&&... p) -> from_bytes_result<const P8*>;
+    template <typename X = CXON_DEFAULT_FORMAT, typename T, typename II, typename ...NaPa>
+        inline auto     from_bytes(T& t, II b, II e, NaPa&&... p)           -> std::enable_if_t<!std::is_pointer<II>::value, from_bytes_result<II>>;
     template <typename X = CXON_DEFAULT_FORMAT, typename T, typename Iterable, typename ...NaPa>
-        inline auto     from_bytes(T& t, const Iterable& i, NaPa&&... p)    -> from_bytes_result<decltype(std::begin(i))>;
+        inline auto     from_bytes(T& t, const Iterable& i, NaPa&&... p)        -> from_bytes_result<decltype(std::begin(i))>;
 
     // write
 
@@ -209,8 +211,12 @@ namespace cxon { // interface
 
     }
 
+    template <typename X, typename T, typename P8, typename ...NaPa>
+        inline auto from_bytes(T& t, const P8* b, const P8* e, NaPa&&... p) -> from_bytes_result<const P8*> {
+            return interface::from_bytes<X>(t, b, e, std::forward<NaPa>(p)...);
+        }
     template <typename X, typename T, typename II, typename ...NaPa>
-        inline auto from_bytes(T& t, II b, II e, NaPa&&... p) -> from_bytes_result<II> {
+        inline auto from_bytes(T& t, II b, II e, NaPa&&... p) -> std::enable_if_t<!std::is_pointer<II>::value, from_bytes_result<II>> {
             return interface::from_bytes<X>(t, b, e, std::forward<NaPa>(p)...);
         }
     template <typename X, typename T, typename I, typename ...NaPa>

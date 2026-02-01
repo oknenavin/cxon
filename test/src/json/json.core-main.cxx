@@ -89,6 +89,14 @@ TEST_BEG(interface_read, cxon::JSON<>, "/core") // interface/read
     {   int r = 0; std::array<char, 2> const i = {'1', '\0'};
         TEST_CHECK(from_bytes(r, i) && r == 1);
     }
+    {   char i[] = R"([1, 2, 3])";
+        std::vector<int> r;
+        TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && (r == std::vector<int> {1, 2, 3}));
+    }
+    {   char i[] = R"(["1", "2", "3"])";
+        std::vector<std::string> r;
+        TEST_CHECK(from_bytes(r, std::begin(i), std::end(i)) && (r == std::vector<std::string> {"1", "2", "3"}));
+    }
 TEST_END()
 
 TEST_BEG(interface_write, cxon::JSON<>, "/core") // interface/write

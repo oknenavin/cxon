@@ -27,9 +27,9 @@
 namespace cxon { namespace cio { namespace simd {
 
     template <typename X, typename P8>
-        inline P8 find_first_read_break(P8 b, P8 e);
+        inline const P8* find_first_read_break(const P8* b, const P8* e);
     template <typename X, typename P8>
-        inline P8 find_first_write_break(P8 b, P8 e);
+        inline const P8* find_first_write_break(const P8* b, const P8* e);
 
 }}}
 
@@ -76,7 +76,7 @@ namespace cxon { namespace cio { namespace simd {
     }
 
     template <typename X, typename P8>
-        inline P8 find_first_read_break(P8 b, P8 e)
+        inline const P8* find_first_read_break(const P8* b, const P8* e)
         {   CXON_ASSERT(b < e, "unexpected invocaion");
 #           if CXON_USE_SIMD_SSE2
                 if (e - b >= 16) {
@@ -137,7 +137,7 @@ namespace cxon { namespace cio { namespace simd {
     }
 
     template <typename X, typename P8>
-        inline P8 find_first_write_break(P8 b, P8 e)
+        inline const P8* find_first_write_break(const P8* b, const P8* e)
         {   CXON_ASSERT(b < e, "unexpected invocaion");
 #           if CXON_USE_SIMD_SSE2
                 if (e - b >= 16) {
