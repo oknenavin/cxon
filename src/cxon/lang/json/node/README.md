@@ -719,9 +719,9 @@ Distributed under the terms of the GNU Affero General Public License. See [`LICE
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
 
-[cpp-map]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/map&oldid=109218
-[cpp-vect]: https://en.cppreference.com/mwiki/index.php?title=cpp/container/vector&oldid=107643
-[cpp-bstr]: https://en.cppreference.com/mwiki/index.php?title=cpp/string/basic_string&oldid=107637
-[cpp-types]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/types&oldid=108124
-[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
-[cpp-hash]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/Hash&oldid=120791
+[cpp-map]: https://en.cppreference.com/w/cpp/container/map.html
+[cpp-vect]: https://en.cppreference.com/w/cpp/container/vector.html
+[cpp-bstr]: https://en.cppreference.com/w/cpp/string/basic_string.html
+[cpp-types]: https://en.cppreference.com/w/cpp/language/types.html
+[cpp-alaw]: https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer
+[cpp-hash]: https://en.cppreference.com/w/cpp/named_req/Hash.html
