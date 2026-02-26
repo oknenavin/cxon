@@ -22,13 +22,12 @@
 --------------------------------------------------------------------------------
 
   - `CXON` is a C++ serialization interface  
-  - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format (an example of a text-based data format)  
+  - `CXON` implements [`JSON`](http://json.org) (`UTF-8` encoded) as a serialization format
   - `CXON` is easy to extend for different formats and types with [zero-overhead][cpp-zeov]  
   - `CXON` is a `C++14` compliant, self contained and compact header-only library  
 
-Although `CXON` is a serialization library, its goal is to actually compete with `JSON`/etc. libraries like
-`Boost.JSON`/`RapidJSON`/etc. and its main **advantage** is, that no intermediate type is needed to represent the data - 
-any `C++` type that matches it semantically can be used.
+Unlike libraries such as `Boost.JSON` and `RapidJSON`, which only ensure syntactic correctness, `CXON` deserializes directly into C++ types.
+The data is already in the target type, so structural correctness is guaranteed; domain-specific validation is the responsibility of those types.
 
 ###### Example
 ``` c++
@@ -39,17 +38,15 @@ any `C++` type that matches it semantically can be used.
 int main() {
     std::vector<int> cxx; // or std::array, std::list, std::set, etc.
         // the input is a JSON array, semantically a list of integers
-        auto result = cxon::from_bytes(cxx,  "[1, 2, 3]");
+        auto result = cxon::from_bytes(cxx, "[1, 2, 3]");
     assert(result);
     // the data is loaded successfully, no additional semantic validation is needed, so
     assert(cxx == (std::vector<int> {1, 2, 3}));
 }
 ```
+Successful deserialization guarantees syntactic and semantic correctness.
 
-Successful deserialization means that the input is syntactically and *semantically* correct.
-
-Other such libraries represent arbitrary data with polymorphic type (called `DOM`, `value`, etc.),
-and successful parsing of the input data only means that it is syntactically correct.
+In contrast, libraries using polymorphic types only validate JSON syntax:
 
 ###### Example
 ``` c++
@@ -60,37 +57,30 @@ assert(json.has_parsing_errors()); // check for syntax errors
 assert(json.is_array()); // check the type
 auto& array = json.get_array();
 assert( // check the values
-    array.size() > ... &&
+    array.size() == 3 &&
     array[0].is_integer() &&
     array[1].is_integer() &&
     array[2].is_integer() &&
-    ...
+    // further value checks if needed
 );
 // the input is semantically correct, but
 // the values still need special attention
 int x0 = array[0].get_integer(); // it's an int, but not quite
-...
 ```
 
-To help with this, some of the libraries provide utilities to convert the value type to a
-`C++` type - e.g. `Boost.JSON` provides `value_from` / `value_to`.  
-For completeness, `CXON` also provides polymorphic types (called `node`) for the supported formats
-that match the functionality provided by these libraries.
+Some libraries provide conversion utilities like `value_from()`/`value_to()` for their polymorphic types, but this adds overhead.
+`CXON` deserializes directly into your type, enabling optimizations that a generic polymorphic approach cannot.
+For completeness, `CXON` also provides polymorphic types (called `node`) for the supported formats.
 
-The **performance** is often important and is emphasized by many libraries and in this respect,
-`CXON` is [close to the alternatives](#performance).  
-Many libraries emphasize the floating-point serialization and deserialization performance.
-`CXON` uses [`<charconv>`][std-charconv] by default (with a fallback implementation for `C++14`),
-but can be configured to use [`boost::charconv`][lib-boost-charconv] by defining `CXON_USE_BOOST_CHARCONV`.  
-Note that libraries based on polymorphic types have validation and use overhead
-that should be taken into account.
+The **performance** is [competitive with the alternatives](#performance). Floating-point serialization is inherently complex;
+`CXON` addresses this with [`<charconv>`][std-charconv] by default (available in C++17+).
+For earlier standards, you can configure it to use [`boost::charconv`][lib-boost-charconv] by defining `CXON_USE_BOOST_CHARCONV`.
 
-The **memory management** is often important. `CXON` does not allocate in general,
-it's up to the types provided.  
-In the example above, the memory management will be handled completely by `std::vector` and its allocator.  
-The polymorphic types provided by `CXON` are [AllocatorAware][cpp-alaw] compliant.
+The **memory management** is delegated to your types—`CXON` itself does not allocate.
+The library respects your type's allocator; when deserializing into `std::vector`, allocation follows the vector's allocator.
+CXON's polymorphic types are [`AllocatorAware`][cpp-alaw] containers, following standard library conventions.
 
-`CXON` is **non-throwing**, provided that the serializers involved do not throw.
+`CXON` is non-throwing; exception safety depends on whether your type serializers throw.
 
 --------------------------------------------------------------------------------
 
@@ -120,7 +110,7 @@ The polymorphic types provided by `CXON` are [AllocatorAware][cpp-alaw] complian
     see [`Interface`](src/cxon/README.md#interface))
 
 The traits can be stateful or stateless allowing arbitrary complex formats.  
-Named parameters can be compile time or runtime giving flexibility for the implementations.  
+Named parameters can be compile-time or run-time giving flexibility for the implementations.  
 
 *More about the interface can be found in the [`MANUAL`](src/cxon/README.md#interface).*
 
@@ -173,8 +163,8 @@ it can be said that `CXON` satisfies the [zero-overhead][cpp-zeov] principle.*
 
 #### Compilation
 
-`CXON` requires [`C++14`][cpp-comp-support] compliant compiler, tested with `g++ >= 5`, 
-`clang++ >= 4.0` and `msvc++ >= 19.16` (see the [builds](https://github.com/oknenavin/cxon/actions)).
+`CXON` requires [`C++14`][cpp-comp-support] compliant compiler.
+See the [builds](https://github.com/oknenavin/cxon/actions)) for the tested compilers.
 
 *`CXON` is using [`<charconv>`][std-charconv] for numeric conversions if available.  
 If not (ex. pre-`C++17`) a fallback implementation (based on `strto*` and `sprintf`) will be used.  
@@ -218,7 +208,7 @@ Distributed under the terms of the GNU Affero General Public License. See [`LICE
 <!-- links -->
 [img-lib]: https://img.shields.io/badge/lib-CXON-608060.svg?style=plastic
 [img-ver]: https://img.shields.io/github/release/oknenavin/cxon.svg?style=plastic&color=608060
-[img-lng]: https://img.shields.io/badge/language-C++14/14/17/20/23/26-608060.svg?style=plastic&logo=C%2B%2B
+[img-lng]: https://img.shields.io/badge/language-C++/14/17/20/23/26-608060.svg?style=plastic&logo=C%2B%2B
 [img-fmt-json]: https://img.shields.io/badge/language-JSON-608060.svg?style=plastic&logo=JSON
 [img-lic]: https://img.shields.io/badge/license-AGPLv3-608060.svg?style=plastic
 [img-bld-lnx]: https://github.com/oknenavin/cxon/workflows/Linux/badge.svg
@@ -243,8 +233,8 @@ Distributed under the terms of the GNU Affero General Public License. See [`LICE
 <!--[RFC8746]: https://tools.ietf.org/rfc/rfc8746.txt-->
 [GitHub]: https://github.com/oknenavin/cxon
 
-[std-charconv]: https://en.cppreference.com/mwiki/index.php?title=cpp/header/charconv&oldid=105120
+[std-charconv]: https://en.cppreference.com/w/cpp/header/charconv.html
 [lib-boost-charconv]: https://github.com/boostorg/charconv
-[cpp-alaw]: https://en.cppreference.com/mwiki/index.php?title=cpp/named_req/AllocatorAwareContainer&oldid=128189
-[cpp-zeov]: https://en.cppreference.com/mwiki/index.php?title=cpp/language/Zero-overhead_principle&oldid=118760
-[cpp-comp-support]: https://en.cppreference.com/mwiki/index.php?title=cpp/compiler_support&oldid=108771
+[cpp-alaw]: https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer
+[cpp-zeov]: https://en.cppreference.com/w/cpp/language/Zero-overhead_principle.html
+[cpp-comp-support]: https://en.cppreference.com/w/cpp/compiler_support.html
