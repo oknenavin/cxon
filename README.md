@@ -1,4 +1,4 @@
-## `CXON` library
+    ## `CXON` library
 
 [![Library][img-lib]](https://github.com/oknenavin/cxon)
 [![Version][img-ver]](https://github.com/oknenavin/cxon/releases)  
@@ -26,8 +26,9 @@
   - `CXON` is easy to extend for different formats and types with [zero-overhead][cpp-zeov]  
   - `CXON` is a `C++14` compliant, self contained and compact header-only library  
 
-Unlike libraries such as `Boost.JSON` and `RapidJSON`, which only ensure syntactic correctness, `CXON` deserializes directly into C++ types.
-The data is already in the target type, so structural correctness is guaranteed; domain-specific validation is the responsibility of those types.
+Unlike most of the "`JSON`" libraries (e.g. `Boost.JSON`, `RapidJSON`, etc.) that serialize `JSON` to/from a polymorphic type, 
+`CXON` serializes directly to/from user provided types. Polymorphic types provide syntactic correctness, user types provide
+semantic correctness in addition.
 
 ###### Example
 ``` c++
@@ -44,9 +45,8 @@ int main() {
     assert(cxx == (std::vector<int> {1, 2, 3}));
 }
 ```
-Successful deserialization guarantees syntactic and semantic correctness.
-
-In contrast, libraries using polymorphic types only validate JSON syntax:
+So, successful serialization guarantees syntactic and semantic correctness.  
+In contrast, libraries using polymorphic types only validate the syntax:
 
 ###### Example
 ``` c++
@@ -68,19 +68,20 @@ assert( // check the values
 int x0 = array[0].get_integer(); // it's an int, but not quite
 ```
 
-Some libraries provide conversion utilities like `value_from()`/`value_to()` for their polymorphic types, but this adds overhead.
-`CXON` deserializes directly into your type, enabling optimizations that a generic polymorphic approach cannot.
+Some libraries provide conversion utilities like `value_from()`/`value_to()` for their polymorphic types, but this adds overhead.  
+`CXON` serializes directly into a user provided types, enabling optimizations that generic polymorphic types cannot.  
 For completeness, `CXON` also provides polymorphic types (called `node`) for the supported formats.
 
-The **performance** is [competitive with the alternatives](#performance). Floating-point serialization is inherently complex;
-`CXON` addresses this with [`<charconv>`][std-charconv] by default (available in C++17+).
-For earlier standards, you can configure it to use [`boost::charconv`][lib-boost-charconv] by defining `CXON_USE_BOOST_CHARCONV`.
+The **performance** is important in many cases and `CXON` [demonstrates its premise](#performance).  
+Floating-point serialization is inherently complex - `CXON` addresses this with [`<charconv>`][std-charconv] by default (available in `C++17`).  
+For earlier standards, [`boost::charconv`][lib-boost-charconv] can be used by defining `CXON_USE_BOOST_CHARCONV`.  
+Slower, pre-`C++17` standard library implementation is also provided.
 
-The **memory management** is delegated to your types—`CXON` itself does not allocate.
-The library respects your type's allocator; when deserializing into `std::vector`, allocation follows the vector's allocator.
+The **memory management** is delegated to the types provided - `CXON` itself does not allocate. 
+The library respects type's allocator - e.g. serializing into `std::vector` respects its allocator.  
 CXON's polymorphic types are [`AllocatorAware`][cpp-alaw] containers, following standard library conventions.
 
-`CXON` is non-throwing; exception safety depends on whether your type serializers throw.
+`CXON` is non-throwing - exception safety depends on the types provided.
 
 --------------------------------------------------------------------------------
 
@@ -99,7 +100,7 @@ CXON's polymorphic types are [`AllocatorAware`][cpp-alaw] containers, following 
 
 #### Overview
 
-`CXON` defines and implements an interface similar to`C++17`'s [`<charconv>`][std-charconv].  
+`CXON` defines and implements an interface similar to `C++17`'s [`<charconv>`][std-charconv].  
 `CXON` extends [`<charconv>`][std-charconv]'s interface with:
 
   - traits template parameter (support for different serialization formats, 
