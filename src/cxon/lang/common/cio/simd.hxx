@@ -62,16 +62,16 @@ namespace cxon { namespace cio { namespace simd {
 
     namespace imp {
         template <typename X>
-            inline auto check_read_break_condition_(char c) -> std::enable_if_t<!is_raw_<X>::value &&  has_quotes_<X>::value, bool>
-            { return c == X::string::del || c == '\\' || c <= '\x1F'; }
+            inline auto check_read_break_condition_(unsigned char c) -> std::enable_if_t<!is_raw_<X>::value &&  has_quotes_<X>::value, bool>
+            { return c == X::string::del || c == '\\' || c <= 0x1F || c > 0x7F; }
         template <typename X>
-            inline auto check_read_break_condition_(char c) -> std::enable_if_t<!is_raw_<X>::value && !has_quotes_<X>::value, bool>
-            { return c == X::map::div || c == ' ' || c == '\\' || c <= '\x1F'; }
+            inline auto check_read_break_condition_(unsigned char c) -> std::enable_if_t<!is_raw_<X>::value && !has_quotes_<X>::value, bool>
+            { return c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F || c > 0x7F; }
         template <typename X>
-            inline auto check_read_break_condition_(char c) -> std::enable_if_t< is_raw_<X>::value &&  has_quotes_<X>::value, bool>
+            inline auto check_read_break_condition_(unsigned char c) -> std::enable_if_t< is_raw_<X>::value &&  has_quotes_<X>::value, bool>
             { return c == X::string::del; }
         template <typename X>
-            inline auto check_read_break_condition_(char c) -> std::enable_if_t< is_raw_<X>::value && !has_quotes_<X>::value, bool>
+            inline auto check_read_break_condition_(unsigned char c) -> std::enable_if_t< is_raw_<X>::value && !has_quotes_<X>::value, bool>
             { return c == X::map::div || c == ' ' || c == '\n' || c == '\t' || c == '\r'; }
     }
 
@@ -123,16 +123,16 @@ namespace cxon { namespace cio { namespace simd {
 
     namespace imp {
         template <typename X>
-            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t<!X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
+            inline auto check_write_break_condition_(unsigned char c) -> std::enable_if_t<!X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
             { return c == X::string::del || c == '\\' || c <= 0x1F; }
         template <typename X>
-            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t<!X::produce_strict_javascript && !has_quotes_<X>::value, bool>
+            inline auto check_write_break_condition_(unsigned char c) -> std::enable_if_t<!X::produce_strict_javascript && !has_quotes_<X>::value, bool>
             { return c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F; }
         template <typename X>
-            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t< X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
+            inline auto check_write_break_condition_(unsigned char c) -> std::enable_if_t< X::produce_strict_javascript &&  has_quotes_<X>::value, bool>
             { return c == X::string::del || c == '\\' || c <= 0x1F || c == 0xE2; }
         template <typename X>
-            inline auto check_write_break_condition_(unsigned c) -> std::enable_if_t< X::produce_strict_javascript && !has_quotes_<X>::value, bool>
+            inline auto check_write_break_condition_(unsigned char c) -> std::enable_if_t< X::produce_strict_javascript && !has_quotes_<X>::value, bool>
             { return c == X::map::div || c == ' ' || c == '\\' || c <= 0x1F || c == 0xE2; }
     }
 
@@ -170,7 +170,7 @@ namespace cxon { namespace cio { namespace simd {
                 }
 #           endif
             for ( ; b != e; ++b) {
-                if (imp::check_write_break_condition_<X>((unsigned char)*b))
+                if (imp::check_write_break_condition_<X>(*b))
                     return b;
             }
             return e;
