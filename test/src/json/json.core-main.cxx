@@ -26,6 +26,7 @@
 #include "cxon/lang/json/tidy.hxx"
 
 #include <cstdio>
+#include <type_traits>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -279,8 +280,14 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
             r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)5, cx) && r == "101");
             r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)55, cx) && r == "110111");
             r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)127, cx) && r == "1111111");
-            r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)128, cx) && r == "-10000000");
-            r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)255, cx) && r == "-1");
+            if (std::is_signed<char>::value) {
+                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)128, cx) && r == "-10000000");
+                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)255, cx) && r == "-1");
+            }
+            else {
+                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)128, cx) && r == "10000000");
+                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)255, cx) && r == "11111111");
+            }
         }
         {   std::string r;
             TEST_CHECK(to_bytes(r, (signed char)5, json::integer_base::set<2>()) && r == "101");
