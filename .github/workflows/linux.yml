@@ -20,7 +20,7 @@ jobs:
                                                       # 7, 8 - unmet dependencies
       fail-fast: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: |
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
@@ -47,7 +47,7 @@ jobs:
         standard: [14, 17, 20, 23, 26]
       fail-fast: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -66,7 +66,7 @@ jobs:
     name: g++ 32
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -86,7 +86,7 @@ jobs:
     name: g++ UBSAN
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -106,7 +106,7 @@ jobs:
     name: g++ ASAN
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -126,7 +126,7 @@ jobs:
     name: CXON installation
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: sudo apt-get update
     - name: Compiler setup
@@ -155,7 +155,7 @@ jobs:
                                                                                           # 4, 6, 7, 8 - include/c++/14/bitset:181:6: error: use of undeclared identifier '__builtin_is_constant_evaluated'; did you mean '__is_constant_evaluated'?
       fail-fast: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: |
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ bionic main'     | sudo tee -a /etc/apt/sources.list
@@ -182,7 +182,7 @@ jobs:
         compiler: ['20']
       fail-fast: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: |
         echo 'deb [trusted=yes] http://dk.archive.ubuntu.com/ubuntu/ jammy main'      | sudo tee -a /etc/apt/sources.list
@@ -210,7 +210,7 @@ jobs:
         standard: [14, 17, 20, 23, 26]
       fail-fast: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: APT Update
       run: sudo apt-get update
     - name: Compiler setup

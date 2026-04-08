@@ -19,21 +19,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Checkout Boost
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: boostorg/boost
         ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: nlohmann/json
         ref: master
@@ -117,7 +117,7 @@ jobs:
         echo "# `date -u --iso-8601=seconds` / g++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/g++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/g++.head.default.json.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: benchmark-data-gcc
         include-hidden-files: true
@@ -131,21 +131,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Checkout Boost
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: boostorg/boost
         ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: nlohmann/json
         ref: master
@@ -228,7 +228,7 @@ jobs:
         echo "# `date -u --iso-8601=seconds` / clang++-$COMPILER_VERSION $CXXFLAGS (`uname -sm`)" > .space/clang++.head.default.json.data
         ./benchmark-space.sh | tee -a .space/clang++.head.default.json.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: benchmark-data-clang
         include-hidden-files: true
@@ -242,21 +242,21 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Checkout Boost
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: boostorg/boost
         ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: nlohmann/json
         ref: master
@@ -331,7 +331,7 @@ jobs:
         echo "# `date -u --iso-8601=seconds` / msvc++-$COMPILER_VERSION (`uname -sm`) / native (boost::charconv)" > ../.time/msvc++.head.boost-charconv.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/msvc++.head.boost-charconv.json.native-s2.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: benchmark-data-msvc
         include-hidden-files: true
@@ -343,21 +343,21 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Checkout Boost
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: boostorg/boost
         ref: boost-1.90.0
         path: .dep/boost
     - name: Checkout RapidJSON
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: tencent/rapidjson
         ref: master
         path: .dep/rapidjson
     - name: Checkout nlohmann/json
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: nlohmann/json
         ref: master
@@ -431,7 +431,7 @@ jobs:
         echo "# `date -u +'%Y-%m-%dT%H:%M:%S+00:00'` / clang++-$COMPILER_VERSION (`uname -sm`) / native (boost::charconv)" > ../.time/xcode.head.boost-charconv.json.native-s2.data
         ./cxon-json-node ../data/json/tests.cf time-native-s2 | tee -a ../.time/xcode.head.boost-charconv.json.native-s2.data
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: benchmark-data-xcode
         include-hidden-files: true
@@ -444,16 +444,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout cxon
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Checkout workflows-data
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: oknenavin/workflows-data
         token: ${{ secrets.WORKFLOWS_DATA_TOKEN }}
         ref: develop # branch-links
         path: .dep/workflows-data
     - name: Download Artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         pattern: benchmark-data-*
         merge-multiple: true
