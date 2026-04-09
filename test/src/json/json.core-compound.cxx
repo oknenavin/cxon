@@ -1532,7 +1532,7 @@ TEST_BEG(struct_15_single_quotes, cxon::JSON<cxon::test::unquoted_quoted_keys_tr
     R_TEST(Struct23 {"1", "2", "3", "4"}, R"({a:'1',b\'b:'2',c\ c:'3',d\:d:'4'})");
 TEST_END()
 
-TEST_BEG(struct_15_single_quotes_inpu_iterator, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::input_iterator_traits<single_quotes_traits>>>, "/core")
+TEST_BEG(struct_15_single_quotes_input_iterator, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<cxon::test::input_iterator_traits<single_quotes_traits>>>, "/core")
     R_TEST(Struct23 {"1", "2", "3", "4"}, R"({a:'1',b'b:'2',c\ c:'3',d\:d:'4'})");
     W_TEST(R"({a:'1',b'b:'2',c\ c:'3',d\:d:'4'})", Struct23 {"1", "2", "3", "4"});
     R_TEST(Struct23 {"1", "2", "3", "4"}, R"({a:'1',b\'b:'2',c\ c:'3',d\:d:'4'})");
