@@ -18,7 +18,7 @@
 
 #define CXON_VERSION_MAJOR 0
 #define CXON_VERSION_MINOR 68
-#define CXON_VERSION_PATCH 0
+#define CXON_VERSION_PATCH 1
 
 #ifndef CXON_DEFAULT_FORMAT
 #   error "Should only be included by format-specific headers."
