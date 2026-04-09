@@ -20,6 +20,8 @@
 
 #if CXON_USE_SIMD_SSE2
 #   include <emmintrin.h>
+#elif CXON_USE_SIMD_NEON
+#   include <arm_neon.h>
 #endif
 
 // interface ///////////////////////////////////////////////////////////////////
@@ -37,17 +39,26 @@ namespace cxon { namespace cio { namespace simd {
 
 namespace cxon { namespace cio { namespace simd { namespace imp {
 
-#   if CXON_USE_SIMD_SSE2
+#   if CXON_USE_SIMD_SSE2 || CXON_USE_SIMD_NEON
         inline int find_first_set_(unsigned value)
         {   // returns the number of trailing 0-bits in x, starting at the least significant bit position. if x is 0, the result is undefined
 #           ifdef _MSC_VER
-                CXON_ASSERT(value, "unexpected invocaion");
+                CXON_ASSERT(value, "unexpected invocation");
                 unsigned long f;
                     _BitScanForward(&f, value);
                 return f;
 #           else
                 return __builtin_ffs(value) - 1;
 #           endif
+        }
+#   endif
+#   if CXON_USE_SIMD_NEON
+        inline int neon_movemask_u8(uint8x16_t v) {
+            static uint8x16_t const bp = { 1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128 };
+            uint8x16_t  const mk = vandq_u8(v, bp);
+            uint16_t    const lo = vaddlv_u8( vget_low_u8(mk));
+            uint16_t    const hi = vaddlv_u8(vget_high_u8(mk));
+            return lo | (hi << 8);
         }
 #   endif
 
@@ -77,7 +88,7 @@ namespace cxon { namespace cio { namespace simd {
 
     template <typename X, typename P8>
         inline const P8* find_first_read_break(const P8* b, const P8* e)
-        {   CXON_ASSERT(b < e, "unexpected invocaion");
+        {   CXON_ASSERT(b < e, "unexpected invocation");
 #           if CXON_USE_SIMD_SSE2
                 if (e - b >= 16) {
                     __m128i const vq = _mm_set1_epi8(X::string::del);
@@ -104,6 +115,41 @@ namespace cxon { namespace cio { namespace simd {
                                         rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi, _mm_min_epu8(vi, vc)));    // whitespace characters
                                     }
                         if (int const   mk = _mm_movemask_epi8(rs)) {
+                            return b + imp::find_first_set_(mk);
+                        }
+                        b += 16;
+                    }   while (e - b >= 16);
+                }
+#           elif CXON_USE_SIMD_NEON
+                if (e - b >= 16) {
+                    uint8x16_t const vq = vdupq_n_u8(X::string::del);
+                    uint8x16_t const vd = vdupq_n_u8(X::map::div);
+                    uint8x16_t const vs = vdupq_n_u8(' ');
+                    uint8x16_t const vb = vdupq_n_u8('\\');
+                    uint8x16_t const vc = vdupq_n_u8('\x1F');
+                    do {
+                        uint8x16_t const vi = vld1q_u8(reinterpret_cast<const uint8_t*>(b));
+                        uint8x16_t       rs;
+                                    CXON_IF_CONSTEXPR (imp::has_quotes_<X>::value) {
+                                        rs =              vceqq_u8(vi, vq);                 // quotes
+                                    }
+                                    else {
+                                        rs =              vceqq_u8(vi, vd);                 // key/value delimiter
+                                        rs = vorrq_u8(rs, vceqq_u8(vi, vs));                // space
+                                    }
+                                    CXON_IF_CONSTEXPR (!imp::is_raw_<X>::value) {
+                                        rs = vorrq_u8(rs, vceqq_u8(vi, vb));                // escape
+                                        rs = vorrq_u8(rs, vcltq_s8(                         // control & multi-byte characters
+                                                                vreinterpretq_s8_u8(vi),
+                                                                vreinterpretq_s8_u8(vc)
+                                                          )
+                                        );
+                                    }
+                                    else
+                                    CXON_IF_CONSTEXPR (!imp::has_quotes_<X>::value) {
+                                        rs = vorrq_u8(rs, vceqq_u8(vi, vminq_u8(vi, vc)));  // whitespace characters
+                                    }
+                        if (int const mk = imp::neon_movemask_u8(rs)) {
                             return b + imp::find_first_set_(mk);
                         }
                         b += 16;
@@ -138,7 +184,7 @@ namespace cxon { namespace cio { namespace simd {
 
     template <typename X, typename P8>
         inline const P8* find_first_write_break(const P8* b, const P8* e)
-        {   CXON_ASSERT(b < e, "unexpected invocaion");
+        {   CXON_ASSERT(b < e, "unexpected invocation");
 #           if CXON_USE_SIMD_SSE2
                 if (e - b >= 16) {
                     __m128i const vq = _mm_set1_epi8(X::string::del);
@@ -163,6 +209,35 @@ namespace cxon { namespace cio { namespace simd {
                                         rs = _mm_or_si128(rs, _mm_cmpeq_epi8(vi, ve));                      // U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR
                                     }
                         if (int const   mk = _mm_movemask_epi8(rs)) {
+                            return b + imp::find_first_set_(mk);
+                        }
+                        b += 16;
+                    }   while (e - b >= 16);
+                }
+#           elif CXON_USE_SIMD_NEON
+                if (e - b >= 16) {
+                    uint8x16_t const vq = vdupq_n_u8(X::string::del);
+                    uint8x16_t const vd = vdupq_n_u8(X::map::div);
+                    uint8x16_t const vs = vdupq_n_u8(' ');
+                    uint8x16_t const vb = vdupq_n_u8('\\');
+                    uint8x16_t const vc = vdupq_n_u8('\x1F');
+                    uint8x16_t const ve = vdupq_n_u8('\xE2');
+                    do {
+                        uint8x16_t const vi = vld1q_u8(reinterpret_cast<const uint8_t*>(b));
+                        uint8x16_t       rs;
+                                    CXON_IF_CONSTEXPR (imp::has_quotes_<X>::value) {
+                                        rs =              vceqq_u8(vi, vq);                 // quotes
+                                    }
+                                    else {
+                                        rs =              vceqq_u8(vi, vd);                 // key/value delimiter
+                                        rs = vorrq_u8(rs, vceqq_u8(vi, vs));                // space
+                                    }
+                                        rs = vorrq_u8(rs, vceqq_u8(vi, vb));                // escape
+                                        rs = vorrq_u8(rs, vceqq_u8(vi, vminq_u8(vi, vc)));  // control characters (<= 0x1F)
+                                    CXON_IF_CONSTEXPR (X::produce_strict_javascript) {
+                                        rs = vorrq_u8(rs, vceqq_u8(vi, ve));                // U+2028/U+2029 lead byte
+                                    }
+                        if (int const mk = imp::neon_movemask_u8(rs)) {
                             return b + imp::find_first_set_(mk);
                         }
                         b += 16;
