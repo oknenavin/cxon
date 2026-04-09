@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
             std::fprintf(stdout, "------------------------------------\n");
             std::fprintf(stdout, "__cplusplus                 : %li\n", __cplusplus);
             std::fprintf(stdout, "CXON_USE_SIMD_SSE2          : %li\n", (long)CXON_USE_SIMD_SSE2);
+            std::fprintf(stdout, "CXON_USE_SIMD_NEON          : %li\n", (long)CXON_USE_SIMD_NEON);
 #           ifdef CXON_HAS_CHARCONV
             std::fprintf(stdout, "CXON_HAS_CHARCONV           : 1\n");
 #           else

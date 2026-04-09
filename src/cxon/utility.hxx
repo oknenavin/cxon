@@ -59,12 +59,12 @@
 #if !defined(CXON_USE_SIMD) || CXON_USE_SIMD
 #   if (defined(_M_IX86) && _M_IX86_FP == 2) || defined(_M_X64) || defined(__SSE2__)
 #       define CXON_USE_SIMD_SSE2 1
-#   else
+#       define CXON_USE_SIMD_NEON 0
+#   elif (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_NEON)
 #       define CXON_USE_SIMD_SSE2 0
-#   endif
-#   if defined(__ARM_NEON__ )
 #       define CXON_USE_SIMD_NEON 1
 #   else
+#       define CXON_USE_SIMD_SSE2 0
 #       define CXON_USE_SIMD_NEON 0
 #   endif
 #else
