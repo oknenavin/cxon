@@ -147,7 +147,7 @@ jobs:
   # clang ######################################################################
 
   clang:
-    name: calng++ version
+    name: clang++ version
     runs-on: ubuntu-latest
     strategy:
       matrix:
