@@ -335,7 +335,9 @@ jobs:
       with:
         name: benchmark-data-msvc
         include-hidden-files: true
-        path: test/.time/*.data
+        path: |
+            test/.time/*.data
+            test/.space/*.data
 
   # xcode ######################################################################
 
@@ -435,7 +437,9 @@ jobs:
       with:
         name: benchmark-data-xcode
         include-hidden-files: true
-        path: test/.time/*.data
+        path: |
+            test/.time/*.data
+            test/.space/*.data
 
   # commit #####################################################################
 
