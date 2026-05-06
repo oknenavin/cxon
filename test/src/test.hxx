@@ -69,7 +69,7 @@ namespace cxon { namespace test {
 #define TEST_BEG_(Id, Tr, Ct) \
     namespace { \
         static struct test_##Id##_ : cxon::test::suite { \
-            using XXON = Tr; \
+            using X = Tr; \
             test_##Id##_() : suite(Ct) {} \
             void test() const override; \
         }   test_##Id##__; \
@@ -82,14 +82,20 @@ namespace cxon { namespace test {
 #define TEST_BEG(Id, Tr, Ct) TEST_BEG_(Id, Tr, Ct)
 #define TEST_END() TEST_END_()
 
-#define TEST_CHECK(conditon)\
-    do if (++suite::info::count(category), !(conditon)) {\
-        ++suite::info::errors(category), std::fprintf(stderr, "at %s:%li\n", __FILE__, (long)__LINE__);\
+#define TEST_CHECK(cnd)\
+    do if (++suite::info::count(category), !(cnd)) {\
+        ++suite::info::errors(category), std::fprintf(stderr, "at %s:%li\n\t%s\n", __FILE__, (long)__LINE__, #cnd);\
         CXON_ASSERT(false, "check failed");\
     }   while (0)
 
-#define R_TEST(ref, ...) TEST_CHECK(cxon::test::verify_read<XXON>(ref, __VA_ARGS__))
-#define W_TEST(ref, ...) TEST_CHECK(cxon::test::verify_write<XXON>(ref, __VA_ARGS__))
+#define TEST_VERIFY(cnd)\
+    do if (++suite::info::count(category), !(cnd)) {\
+        ++suite::info::errors(category), std::fprintf(stderr, "at %s:%li\n\t%s\n\t  ex: %s\n\t  rs: %s\n\t  in: %s\n", __FILE__, (long)__LINE__, #cnd, cnd.ex.c_str(), cnd.ot.c_str(), cnd.in.c_str());\
+        CXON_ASSERT(false, "check failed");\
+    }   while (0)
+
+#define R_TEST(ref, ...) TEST_VERIFY(cxon::test::verify_read<X>(ref, __VA_ARGS__))
+#define W_TEST(ref, ...) TEST_VERIFY(cxon::test::verify_write<X>(ref, __VA_ARGS__))
 
 #define QS(s) "\"" s "\""
 
@@ -98,15 +104,24 @@ namespace cxon { namespace test {
     template <typename I>
         struct force_input_iterator;
 
-    template <typename X, typename T>
-        inline bool verify_read(const T& ref, const std::string& sbj);
-    template <typename X, typename T, typename E>
-        inline bool verify_read(const T& ref, const std::string& sbj, E err, int pos = -1);
+    struct result {
+        std::string ex; // expected
+        std::string ot; // result
+        std::string in; // input
+        bool ok;
+        result(bool ok) : ok(ok) {};
+        operator bool() const noexcept { return ok; };
+    };
 
     template <typename X, typename T>
-        inline bool verify_write(const std::string& ref, const T& sbj);
+        inline result verify_read(const T& ref, const std::string& sbj);
     template <typename X, typename T, typename E>
-        inline bool verify_write(const std::string& ref, const T& sbj, E err);
+        inline result verify_read(const T& ref, const std::string& sbj, E err, int pos = -1);
+
+    template <typename X, typename T>
+        inline result verify_write(const std::string& ref, const T& sbj);
+    template <typename X, typename T, typename E>
+        inline result verify_write(const std::string& ref, const T& sbj, E err);
 
 }}
 
@@ -268,42 +283,66 @@ namespace cxon { namespace test {
         };
 
     template <typename X, typename T, typename C>
-        static bool verify_read_(const T& ref, const C& sbj) {
+        static result verify_read_(const T& ref, const C& sbj) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
                 clean<T> clean__(res);
-            return r && r.end == std::end(sbj) && match<T>::values(res, ref);
+            result rs = r && r.end == std::end(sbj) && match<T>::values(res, ref);
+                if (!rs) {
+                    to_bytes<X>(rs.ex, ref);
+                    to_bytes<X>(rs.ot, res);
+                    rs.in = sbj;
+                }
+            return rs;
         }
     template <typename X, typename T, typename C, typename E>
-        static bool verify_read_(const T&, const C& sbj, E err, int pos) {
+        static result verify_read_(const T& ref, const C& sbj, E err, int pos) {
             T res{};
                 auto const r = from_string<X>(res, sbj);
                 clean<T> clean__(res);
-            return r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
+            result rs = r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
+                if (!rs) {
+                    to_bytes<X>(rs.ex, ref);
+                    to_bytes<X>(rs.ot, res);
+                    rs.in = sbj;
+                }
+            return rs;
         }
 
     template <typename X, typename T>
-        inline bool verify_read(const T& ref, const std::string& sbj)                   { return verify_read_<X>(ref, sbj); }
+        inline result verify_read(const T& ref, const std::string& sbj)                   { return verify_read_<X>(ref, sbj); }
     template <typename X, typename T, typename E>
-        inline bool verify_read(const T& ref, const std::string& sbj, E err, int pos)   { return verify_read_<X>(ref, sbj, err, pos); }
+        inline result verify_read(const T& ref, const std::string& sbj, E err, int pos)   { return verify_read_<X>(ref, sbj, err, pos); }
 
     template <typename X, typename T, typename C>
-        static bool verify_write_(const C& ref, const T& sbj) {
+        static result verify_write_(const C& ref, const T& sbj) {
             C res;
                 auto const r = to_bytes<X>(res, sbj);
-            return r && ref == res;
+            result rs = r && ref == res;
+                if (!rs) {
+                    rs.ex = ref;
+                    rs.ot = res;
+                    to_bytes(rs.in, sbj);
+                }
+            return rs;
         }
     template <typename X, typename T, typename C, typename E>
-        static bool verify_write_(const C&, const T& sbj, E err) {
+        static result verify_write_(const C& ref, const T& sbj, E err) {
             C res;
                 auto const r = to_bytes<X>(res, sbj);
-            return r.ec.value() == (int)err;
+            result rs = r.ec.value() == (int)err;
+                if (!rs) {
+                    rs.ex = ref;
+                    rs.ot = res;
+                    to_bytes(rs.in, sbj);
+                }
+            return rs;
         }
 
     template <typename X, typename T>
-        inline bool verify_write(const std::string& ref, const T& sbj)          { return verify_write_<X>(ref, sbj); }
+        inline result verify_write(const std::string& ref, const T& sbj)          { return verify_write_<X>(ref, sbj); }
     template <typename X, typename T, typename E>
-        inline bool verify_write(const std::string& ref, const T& sbj, E err)   { return verify_write_<X>(ref, sbj, err); }
+        inline result verify_write(const std::string& ref, const T& sbj, E err)   { return verify_write_<X>(ref, sbj, err); }
 
 }}
 

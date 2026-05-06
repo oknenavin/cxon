@@ -198,8 +198,8 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
     // integer_base
     {   // read
         {   char r = 0; char const s[] = "101"; auto i = std::begin(s), e = std::end(s);
-            auto cx = make_context<XXON>(cio::integer_base::set<2>());
-            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 5);
+            auto cx = make_context<X>(cio::integer_base::set<2>());
+            TEST_CHECK(cio::num::number_read<X>(r, i, e, cx) && r == 5);
         }
         {   signed char r = 0;
             TEST_CHECK(from_bytes(r, "101", json::integer_base::set<2>()) && r == 5);
@@ -257,36 +257,36 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
         }
 #       ifdef __cpp_char8_t
         {   char8_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<X>(r, i, e, cx) && r == 42);
         }
 #       endif
         {   char16_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<X>(r, i, e, cx) && r == 42);
         }
         {   char32_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<X>(r, i, e, cx) && r == 42);
         }
         {   wchar_t r = 0; char const s[] = "2A"; auto i = std::begin(s), e = std::end(s);
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_read<XXON>(r, i, e, cx) && r == 42);
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_read<X>(r, i, e, cx) && r == 42);
         }
     }
     {   // write
         {   std::string r;
-            auto cx = make_context<XXON>(cio::integer_base::set<2>());
-            r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)5, cx) && r == "101");
-            r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)55, cx) && r == "110111");
-            r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)127, cx) && r == "1111111");
+            auto cx = make_context<X>(cio::integer_base::set<2>());
+            r = ""; TEST_CHECK(cio::num::number_write<X>(r, (char)5, cx) && r == "101");
+            r = ""; TEST_CHECK(cio::num::number_write<X>(r, (char)55, cx) && r == "110111");
+            r = ""; TEST_CHECK(cio::num::number_write<X>(r, (char)127, cx) && r == "1111111");
             if (std::is_signed<char>::value) {
-                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)128, cx) && r == "-10000000");
-                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)255, cx) && r == "-1");
+                r = ""; TEST_CHECK(cio::num::number_write<X>(r, (char)128, cx) && r == "-10000000");
+                r = ""; TEST_CHECK(cio::num::number_write<X>(r, (char)255, cx) && r == "-1");
             }
             else {
-                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)128, cx) && r == "10000000");
-                r = ""; TEST_CHECK(cio::num::number_write<XXON>(r, (char)255, cx) && r == "11111111");
+                r = ""; TEST_CHECK(cio::num::number_write<X>(r, (char)128, cx) && r == "10000000");
+                r = ""; TEST_CHECK(cio::num::number_write<X>(r, (char)255, cx) && r == "11111111");
             }
         }
         {   std::string r;
@@ -315,21 +315,21 @@ TEST_BEG(interface_parameters, cxon::JSON<>, "/core") // interface/parameters
         }
 #       ifdef __cpp_char8_t
         {   std::string r;
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_write<XXON>(r, char8_t(42), cx) && r == "2a");
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<X>(r, char8_t(42), cx) && r == "2a");
         }
 #       endif
         {   std::string r;
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_write<XXON>(r, char16_t(42), cx) && r == "2a");
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<X>(r, char16_t(42), cx) && r == "2a");
         }
         {   std::string r;
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_write<XXON>(r, char32_t(42), cx) && r == "2a");
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<X>(r, char32_t(42), cx) && r == "2a");
         }
         {   std::string r;
-            auto cx = make_context<XXON>(cio::integer_base::set<16>());
-            TEST_CHECK(cio::num::number_write<XXON>(r, wchar_t(42), cx) && r == "2a");
+            auto cx = make_context<X>(cio::integer_base::set<16>());
+            TEST_CHECK(cio::num::number_write<X>(r, wchar_t(42), cx) && r == "2a");
         }
     }
     // fp_precision
@@ -490,7 +490,7 @@ TEST_BEG(struct_json, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "/c
         "}"
     ;
     std::string s1;
-        cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), sb);
+        cxon::to_bytes<X>(json::make_indenter(s1, 2, ' '), sb);
     TEST_CHECK(s1 == s0);
 TEST_END()
 
@@ -530,9 +530,9 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
             "]"
         ;
         struct_bare_1 b0;
-            TEST_CHECK(cxon::from_bytes<XXON>(b0, s0));
+            TEST_CHECK(cxon::from_bytes<X>(b0, s0));
         std::string s1;
-            TEST_CHECK(cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0));
+            TEST_CHECK(cxon::to_bytes<X>(json::make_indenter(s1, 2, ' '), b0));
         TEST_CHECK(s1 == s0);
     }
     {   char const s0[] =
@@ -542,25 +542,25 @@ TEST_BEG(struct_bare_1, cxon::JSON<cxon::test::unquoted_quoted_keys_traits<>>, "
             "]"
         ;
         std::vector<std::string> b0;
-            TEST_CHECK(cxon::from_bytes<XXON>(b0, s0));
+            TEST_CHECK(cxon::from_bytes<X>(b0, s0));
         std::string s1;
-            TEST_CHECK(cxon::to_bytes<XXON>(json::make_indenter(s1, 2, ' '), b0));
+            TEST_CHECK(cxon::to_bytes<X>(json::make_indenter(s1, 2, ' '), b0));
         TEST_CHECK(s1 == s0);
     }
     {
         TEST_CHECK((
             "\"a\": [\n\t\"b\",\n\t1,\n\t\"c\"\n],\n\"d\": \"e\",\n\"f\": {\n\t\"g\": [\n\t\t2,\n\t\t\"h\",\n\t\t3\n\t],\n\t\"j\": \"k\"\n}" ==
-            cxon::json::tidy<XXON, std::string>(R"("a": ["b", 1, "c"], "d": "e", "f": {"g": [2, "h", 3], "j": "k"})")
+            cxon::json::tidy<X, std::string>(R"("a": ["b", 1, "c"], "d": "e", "f": {"g": [2, "h", 3], "j": "k"})")
         ));
         TEST_CHECK((
             "\"a\": [\n\t\"b\"\n\t1\n\t\"c\"\n]\n\"d\": \"e\"\n\"f\": {\n\t\"g\": [\n\t\t2\n\t\t\"h\"\n\t\t3\n\t]\n\t\"j\": \"k\"\n}" ==
-            cxon::json::tidy<XXON, std::string>(R"("a": ["b"  1  "c"]  "d": "e"  "f": {"g": [2  "h"  3]  "j": "k"})")
+            cxon::json::tidy<X, std::string>(R"("a": ["b"  1  "c"]  "d": "e"  "f": {"g": [2  "h"  3]  "j": "k"})")
         ));
         TEST_CHECK((
             "a: [\n\tb\n\t1\n\tc\n]\nd: e\nf: {\n\tg: [\n\t\t2\n\t\th\n\t\t3\n\t]\n\tj: k\n}" ==
-            cxon::json::tidy<XXON, std::string>(R"( a : [ b   1   c ]   d :  e    f : { g : [2   h   3]   j :  k })")
+            cxon::json::tidy<X, std::string>(R"( a : [ b   1   c ]   d :  e    f : { g : [2   h   3]   j :  k })")
         ));
-        TEST_CHECK((R"(a\:b: c)" == cxon::json::tidy<XXON, std::string>(R"(a\:b: c)")));
+        TEST_CHECK((R"(a\:b: c)" == cxon::json::tidy<X, std::string>(R"(a\:b: c)")));
     }
 TEST_END()
 
@@ -635,10 +635,10 @@ TEST_BEG(trailing_separator_2, cxon::JSON<cxon::test::allow_trailing_separators_
 TEST_END()
 
 TEST_BEG(trailing_separator_3, cxon::JSON<cxon::test::allow_trailing_separators_traits<>>, "/core")
-    TEST_CHECK(("[\n\ta,\n\tb,\n]" == cxon::json::tidy<XXON, std::string>(R"([a, b,])")));
-    TEST_CHECK(("[\n\ta,\n\tb\n]" == cxon::json::tidy<XXON, std::string>(R"([a, b ])")));
-    TEST_CHECK(("{\n\ta: 1,\n\tb: 2,\n}" == cxon::json::tidy<XXON, std::string>(R"({a: 1, b: 2,})")));
-    TEST_CHECK(("{\n\ta: 1,\n\tb: 2\n}" == cxon::json::tidy<XXON, std::string>(R"({a: 1, b: 2 })")));
+    TEST_CHECK(("[\n\ta,\n\tb,\n]" == cxon::json::tidy<X, std::string>(R"([a, b,])")));
+    TEST_CHECK(("[\n\ta,\n\tb\n]" == cxon::json::tidy<X, std::string>(R"([a, b ])")));
+    TEST_CHECK(("{\n\ta: 1,\n\tb: 2,\n}" == cxon::json::tidy<X, std::string>(R"({a: 1, b: 2,})")));
+    TEST_CHECK(("{\n\ta: 1,\n\tb: 2\n}" == cxon::json::tidy<X, std::string>(R"({a: 1, b: 2 })")));
 TEST_END()
 
 
@@ -733,35 +733,35 @@ TEST_END()
 
 
 TEST_BEG(single_quotes_tidy, cxon::JSON<>, "/core")
-    TEST_CHECK(("[\n\t'xxx',\n\t'yyy'\n]" == cxon::json::tidy<XXON, std::string>(R"(['xxx', 'yyy'])")));
-    TEST_CHECK(("[\n\t'x\\'x',\n\t'y\\'y'\n]" == cxon::json::tidy<XXON, std::string>(R"(['x\'x', 'y\'y'])")));
-    TEST_CHECK(("[\n\t'x\"x',\n\t'y\"y'\n]" == cxon::json::tidy<XXON, std::string>(R"(['x"x', 'y"y'])")));
-    TEST_CHECK(("[\n\t'x]x',\n\t'y]y'\n]" == cxon::json::tidy<XXON, std::string>(R"(['x]x', 'y]y'])")));
+    TEST_CHECK(("[\n\t'xxx',\n\t'yyy'\n]" == cxon::json::tidy<X, std::string>(R"(['xxx', 'yyy'])")));
+    TEST_CHECK(("[\n\t'x\\'x',\n\t'y\\'y'\n]" == cxon::json::tidy<X, std::string>(R"(['x\'x', 'y\'y'])")));
+    TEST_CHECK(("[\n\t'x\"x',\n\t'y\"y'\n]" == cxon::json::tidy<X, std::string>(R"(['x"x', 'y"y'])")));
+    TEST_CHECK(("[\n\t'x]x',\n\t'y]y'\n]" == cxon::json::tidy<X, std::string>(R"(['x]x', 'y]y'])")));
 TEST_END()
 
 
 TEST_BEG(map_div_sep_tidy, cxon::JSON<>, "/core")
-    TEST_CHECK(("{\n\t'aaa' = 'bbb';\n\t'ccc' = 'ddd'\n}" == cxon::json::tidy<XXON, std::string>(R"({'aaa' = 'bbb'; 'ccc' = 'ddd'})")));
-    TEST_CHECK(("{\n\t'aaa': 'bbb',\n\t'ccc': 'ddd'\n}" == cxon::json::tidy<XXON, std::string>(R"({'aaa': 'bbb', 'ccc': 'ddd'})")));
-    TEST_CHECK(("{\n\t'aaa': 'bbb'\n\t'ccc' = 'ddd'\n}" == cxon::json::tidy<XXON, std::string>(R"({'aaa': 'bbb' 'ccc' = 'ddd'})")));
-    TEST_CHECK(("[\n\ta,\n\tb;\n\tc\n\td\n]" == cxon::json::tidy<XXON, std::string>(R"([a, b; c d])")));
+    TEST_CHECK(("{\n\t'aaa' = 'bbb';\n\t'ccc' = 'ddd'\n}" == cxon::json::tidy<X, std::string>(R"({'aaa' = 'bbb'; 'ccc' = 'ddd'})")));
+    TEST_CHECK(("{\n\t'aaa': 'bbb',\n\t'ccc': 'ddd'\n}" == cxon::json::tidy<X, std::string>(R"({'aaa': 'bbb', 'ccc': 'ddd'})")));
+    TEST_CHECK(("{\n\t'aaa': 'bbb'\n\t'ccc' = 'ddd'\n}" == cxon::json::tidy<X, std::string>(R"({'aaa': 'bbb' 'ccc' = 'ddd'})")));
+    TEST_CHECK(("[\n\ta,\n\tb;\n\tc\n\td\n]" == cxon::json::tidy<X, std::string>(R"([a, b; c d])")));
 TEST_END()
 
 
 TEST_BEG(buffered_back_inserter, cxon::JSON<>, "/core")
     {   std::string ot;
         std::array<char, 8> bf;
-            auto const tbr = cxon::to_bytes<XXON>(cxon::cio::buffered_back_inserter(ot, bf), "xxxxXXXXxxxx");
+            auto const tbr = cxon::to_bytes<X>(cxon::cio::buffered_back_inserter(ot, bf), "xxxxXXXXxxxx");
         TEST_CHECK(tbr && ot == R"("xxxxXXXXxxxx")");
     }
     {   std::string ot;
         std::array<char, 8> bf;
-            auto const tbr = cxon::to_bytes<XXON>(cxon::cio::buffered_back_inserter(ot, bf), "xxxxXXXX");
+            auto const tbr = cxon::to_bytes<X>(cxon::cio::buffered_back_inserter(ot, bf), "xxxxXXXX");
         TEST_CHECK(tbr && ot == R"("xxxxXXXX")");
     }
     {   std::string ot;
         std::array<char, 1> bf;
-            auto const tbr = cxon::to_bytes<XXON>(cxon::cio::buffered_back_inserter(ot, bf), "x");
+            auto const tbr = cxon::to_bytes<X>(cxon::cio::buffered_back_inserter(ot, bf), "x");
         TEST_CHECK(tbr && ot == R"("x")");
     }
 TEST_END()
