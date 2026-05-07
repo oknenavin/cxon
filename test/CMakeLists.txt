@@ -14,6 +14,7 @@ if (MSVC)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -permissive-")
     endif ()
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Zc:rvalueCast -Zc:__cplusplus -EHsc")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bigobj")
     #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Za") # do not disable language extensions because of boost
 endif ()
 

@@ -24,7 +24,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: boostorg/boost
-        ref: boost-1.90.0
+        ref: boost-1.91.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v6
@@ -136,7 +136,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: boostorg/boost
-        ref: boost-1.90.0
+        ref: boost-1.91.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v6
@@ -247,7 +247,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: boostorg/boost
-        ref: boost-1.90.0
+        ref: boost-1.91.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v6
@@ -350,7 +350,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: boostorg/boost
-        ref: boost-1.90.0
+        ref: boost-1.91.0
         path: .dep/boost
     - name: Checkout RapidJSON
       uses: actions/checkout@v6
