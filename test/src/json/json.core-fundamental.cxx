@@ -19,6 +19,10 @@
 #include <string>
 #include <cstdio>
 
+#if defined(__has_include) && __has_include(<stdfloat>)
+#   include <stdfloat>
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace cxon { namespace test {
@@ -786,6 +790,31 @@ TEST_BEG(special_numbers_javascript_nans_strict, cxon::JSON<cxon::test::allow_ja
         R_TEST( inf<double>(), "-Nx", json::read_error::floating_point_invalid, 0);
         R_TEST( inf<double>(), "-xxx", json::read_error::floating_point_invalid, 0);
         R_TEST( inf<double>(), "xxx", json::read_error::floating_point_invalid, 0);
+TEST_END()
+
+
+TEST_BEG(fixed_width_floating_point_types, cxon::JSON<>, "/core") // special numbers
+    using namespace test;
+#   if __STDCPP_FLOAT16_T__
+        R_TEST((std::float16_t)0, "0");
+        W_TEST("0", (std::float16_t)0);
+#   endif
+#   if __STDCPP_FLOAT32_T__
+        R_TEST((std::float32_t)0, "0");
+        W_TEST("0", (std::float32_t)0);
+#   endif
+#   if __STDCPP_FLOAT64_T__
+        R_TEST((std::float64_t)0, "0");
+        W_TEST("0", (std::float64_t)0);
+#   endif
+#   if __STDCPP_FLOAT128_T__
+        R_TEST((std::float128_t)0, "0");
+        W_TEST("0", (std::float128_t)0);
+#   endif
+#   if __STDCPP_BFLOAT16_T__
+        R_TEST((std::bfloat16_t)0, "0");
+        W_TEST("0", (std::bfloat16_t)0);
+#   endif
 TEST_END()
 
 
