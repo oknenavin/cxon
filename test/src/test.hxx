@@ -284,7 +284,7 @@ namespace cxon { namespace test {
 
     template <typename X, typename T, typename C>
         static result verify_read_(const T& ref, const C& sbj) {
-            T res{};
+            T res {};
                 auto const r = from_string<X>(res, sbj);
                 clean<T> clean__(res);
             result rs = r && r.end == std::end(sbj) && match<T>::values(res, ref);
@@ -297,7 +297,7 @@ namespace cxon { namespace test {
         }
     template <typename X, typename T, typename C, typename E>
         static result verify_read_(const T& ref, const C& sbj, E err, int pos) {
-            T res{};
+            T res {};
                 auto const r = from_string<X>(res, sbj);
                 clean<T> clean__(res);
             result rs = r.ec.value() == (int)err && (pos == -1 || std::distance(std::begin(sbj), r.end) == pos);
@@ -333,7 +333,7 @@ namespace cxon { namespace test {
             result rs = r.ec.value() == (int)err;
                 if (!rs) {
                     rs.ex = ref;
-                    rs.ot = res;
+                    rs.ot = std::move(res);
                     to_bytes(rs.in, sbj);
                 }
             return rs;
