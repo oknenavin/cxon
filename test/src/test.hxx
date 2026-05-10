@@ -321,7 +321,7 @@ namespace cxon { namespace test {
             result rs = r && ref == res;
                 if (!rs) {
                     rs.ex = ref;
-                    rs.ot = res;
+                    rs.ot = std::move(res);
                     to_bytes(rs.in, sbj);
                 }
             return rs;
