@@ -77,7 +77,7 @@ namespace cxon { namespace cnt { // container element read/write
 
 }}
 
-namespace cxon { namespace cnt { // buffers
+namespace cxon { namespace cnt { // adaptors
 
     template <typename FI>
         struct range_container;
@@ -197,7 +197,7 @@ namespace cxon { namespace cnt {
     }
     template <typename C, typename II>
         inline bool append(C& c, II f, II l) {
-            return imp::append_(option<1>(), c, f, l);
+            return imp::append_(option<2>(), c, f, l);
         }
 
     // append
@@ -298,7 +298,7 @@ namespace cxon { namespace cnt { // container element read/write
 
 }}
 
-namespace cxon { namespace cnt { // buffers / static
+namespace cxon { namespace cnt { // adaptor for ranges
 
     template <typename FI>
         struct range_container {
@@ -313,26 +313,13 @@ namespace cxon { namespace cnt { // buffers / static
             FI begin() noexcept                     { return f_; }
             FI end() noexcept                       { return e_; }
 
-            reference emplace_back() noexcept {
-                CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
-                return *e_++;
-            }
-
             void push_back(const value_type& t) noexcept {
                 CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
                 *e_ = t, ++e_;
             }
             void push_back(value_type&& t) noexcept {
-#               if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
-#                   pragma GCC diagnostic push
-                    // with -O3 only when called from append(value_type&&)
-#                   pragma GCC diagnostic ignored "-Wstringop-overflow"
-#               endif
-                    CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
-                    *e_ = std::move(t), ++e_;
-#               if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
-#                   pragma GCC diagnostic pop
-#               endif
+                CXON_ASSERT(e_ != l_, "overflow"); // LCOV_EXCL_LINE
+                *e_ = std::move(t), ++e_;
             }
 
             bool append(value_type&& t) noexcept {
@@ -346,17 +333,10 @@ namespace cxon { namespace cnt { // buffers / static
                 auto append(II f, II l) noexcept
                     -> std::enable_if_t<is_random_access_iterator<II>::value, bool>
                 {
-#                   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
-#                       pragma GCC diagnostic push
-                        // if f == l we have this with -O3 and seems it's only for unsigned char
-#                       pragma GCC diagnostic ignored "-Wstringop-overflow"
-#                   endif
-                        auto const s = std::distance(f, l);
-                        return s <= std::distance(e_, l_) && (std::copy(f, l, e_), e_ += s, true);
-#                   if defined(__GNUC__) && __GNUC__ >= 7 && !defined(__clang__)
-#                       pragma GCC diagnostic pop
-#                   endif
+                    auto const s = std::distance(f, l);
+                    return s <= std::distance(e_, l_) && (std::copy(f, l, e_), e_ += s, true);
                 }
+
             bool append(const value_type* t, std::size_t n) noexcept {
                 return append(t, t + n);
             }
@@ -370,6 +350,7 @@ namespace cxon { namespace cnt { // buffers / static
             private:
                 FI f_, l_, e_;
         };
+
     template <typename FI>
         inline range_container<FI> make_range_container(FI f, FI l) noexcept {
             return {f, l};
@@ -377,10 +358,6 @@ namespace cxon { namespace cnt { // buffers / static
 
     template <typename FI>
         struct traits<range_container<FI>> {
-            template <typename II>
-                static bool append(range_container<FI>& c, II f, II l) {
-                    return c.append(f, l);
-                }
             template <typename T = typename range_container<FI>::value_type>
                 static bool append(range_container<FI>& c, T&& t) {
                     return c.append(std::forward<T>(t));
@@ -389,7 +366,7 @@ namespace cxon { namespace cnt { // buffers / static
 
 }}
 
-namespace cxon { namespace cnt { // buffers / dynamic
+namespace cxon { namespace cnt { // adaptor for pointers
 
     template <typename T, typename A>
         struct pointer_container {
@@ -407,13 +384,6 @@ namespace cxon { namespace cnt { // buffers / dynamic
                 return p;
             }
 
-            std::size_t size() const noexcept       { return b_.size(); }
-            std::size_t max_size() const noexcept   { return b_.max_size(); }
-
-            pointer begin() noexcept                { return b_.begin(); }
-            pointer end() noexcept                  { return b_.end(); }
-
-            reference emplace_back()                { return b_.emplace_back(), b_.back(); }
             void push_back(const value_type& t)     { b_.push_back(t); }
             void push_back(value_type&& t)          { b_.push_back(std::forward<value_type>(t)); }
 
@@ -423,6 +393,7 @@ namespace cxon { namespace cnt { // buffers / dynamic
             private:
                 std::vector<T, typename std::allocator_traits<A>::template rebind_alloc<T>> b_;
         };
+
     template <typename X, typename T, typename Cx>
         inline auto make_pointer_container(Cx& cx) -> pointer_container<T, alc::context_allocator_type<T, Cx>> {
             return { alc::context_allocator<T>(cx) };
