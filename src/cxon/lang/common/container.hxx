@@ -17,11 +17,11 @@
 #define CXON_CONTAINER_HXX_
 
 #include "allocator.hxx"
-#include <limits>
 #include <utility>
 #include <type_traits>
 #include <iterator>
 #include <algorithm>
+#include <vector>
 
 // interface ///////////////////////////////////////////////////////////////////
 
@@ -29,21 +29,22 @@ namespace cxon { namespace cnt { // container mutation
 
     template <typename C>
         struct traits;
-        //  static bool reserve(C& c, std::size_t s);
         //  static auto emplace(C& c) -> typename C::reference;
         //  template <typename II>
         //      static bool append(C& c, II f, II l);
         //template <typename C, typename T = typename C::value_type>
         //    inline bool append(C& c, T&& t);
 
-    template <typename C>
-        inline bool reserve(C& c, std::size_t s);
     template <typename C, typename ...A>
         inline auto emplace(C& c, A&&... as) -> typename C::reference;
     template <typename C, typename II>
         inline bool append(C& c, II f, II l);
     template <typename C, typename T = typename C::value_type>
         inline bool append(C& c, T&& t);
+
+}}
+
+namespace cxon { namespace cnt { // container adaptors container access
 
     template <typename A>
         inline auto container(      A& a) ->       typename A::container_type&;
@@ -76,7 +77,7 @@ namespace cxon { namespace cnt { // container element read/write
 
 }}
 
-namespace cxon { namespace cnt { // adapters
+namespace cxon { namespace cnt { // buffers
 
     template <typename FI>
         struct range_container;
@@ -86,7 +87,7 @@ namespace cxon { namespace cnt { // adapters
     template <typename T, typename A>
         struct pointer_container;
     template <typename X, typename T, typename Cx>
-        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(alc::make_context_allocator<T>(cx))>;
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, alc::context_allocator_type<T, Cx>>;
 
 }}
 
@@ -94,31 +95,7 @@ namespace cxon { namespace cnt { // adapters
 
 namespace cxon { namespace cnt {
 
-    namespace imp {
-
-        template <typename C>
-            inline auto reserve_(option<2>, C& c, std::size_t s)
-                -> std::enable_if_t<std::is_same<decltype(traits<C>::reserve(c, s)), bool>::value, bool>
-            {
-                return traits<C>::reserve(c, s);
-            }
-        template <typename C>
-            inline auto reserve_(option<1>, C& c, std::size_t s)
-                -> decltype(c.reserve(s), bool())
-            {
-                return c.reserve(s), true;
-            }
-        template <typename C>
-            constexpr bool reserve_(option<0>, C&, std::size_t) {
-                return true;
-            }
-
-    }
-    template <typename C>
-        inline bool reserve(C& c, std::size_t s) {
-            return imp::reserve_(option<1>(), c, s);
-        }
-
+    // emplace
 
     namespace imp {
 
@@ -192,13 +169,21 @@ namespace cxon { namespace cnt {
             return imp::using_allocator_of_<typename C::value_type>::emplace(c, std::forward<A>(as)...);
         }
 
+    // append range
+
     namespace imp {
 
         template <typename C, typename II>
-            inline auto append_(option<1>, C& c, II f, II l)
+            inline auto append_(option<2>, C& c, II f, II l)
                 -> std::enable_if_t<std::is_same<decltype(traits<C>::append(c, f, l)), bool>::value, bool>
             {
                 return traits<C>::append(c, f, l);
+            }
+        template <typename C, typename II>
+            inline auto append_(option<1>, C& c, II f, II l)
+                -> std::enable_if_t<std::is_same<decltype(c.append(f, l)), bool>::value, bool>
+            {
+                return c.append(f, l);
             }
         template <typename C, typename II>
             inline auto append_(option<0>, C& c, II f, II l)
@@ -214,6 +199,8 @@ namespace cxon { namespace cnt {
         inline bool append(C& c, II f, II l) {
             return imp::append_(option<1>(), c, f, l);
         }
+
+    // append
 
     namespace imp {
 
@@ -247,6 +234,10 @@ namespace cxon { namespace cnt {
         inline bool append(C& c, T&& t) {
             return imp::append_(option<3>(), c, std::forward<T>(t));
         }
+
+    }}
+
+namespace cxon { namespace cnt { // container adaptors container access
 
     namespace imp {
 
@@ -283,7 +274,7 @@ namespace cxon { namespace cnt {
 
 }}
 
-namespace cxon { namespace cnt {
+namespace cxon { namespace cnt { // container element read/write
 
     template <typename X, typename C>
         template <typename II, typename Cx>
@@ -307,7 +298,7 @@ namespace cxon { namespace cnt {
 
 }}
 
-namespace cxon { namespace cnt {
+namespace cxon { namespace cnt { // buffers / static
 
     template <typename FI>
         struct range_container {
@@ -398,7 +389,7 @@ namespace cxon { namespace cnt {
 
 }}
 
-namespace cxon { namespace cnt {
+namespace cxon { namespace cnt { // buffers / dynamic
 
     template <typename T, typename A>
         struct pointer_container {
@@ -406,48 +397,35 @@ namespace cxon { namespace cnt {
             using pointer = value_type*;
             using reference = value_type&;
 
-            pointer_container(const A& a)
-            :   a_(a), f_(), l_(), e_()
-            {
-                // coverity[var_deref_model] - 'grow dereferences null this->f_' - it's about std::move(f_, e_, p), but in this case f_ == e_
-                resize(8);
+            pointer_container(const A& a) : b_(a) {}
+
+            pointer release() {
+                auto a = alc::make_allocator<T>(b_.get_allocator());
+                auto const p = a.create(b_.size());
+                    std::copy(b_.begin(), b_.end(), p);
+                    b_.clear();
+                return p;
             }
-            ~pointer_container()                    { a_.release(f_, l_ - f_); }
 
-            pointer release()                       { pointer p = reduce(); return f_ = l_ = e_ = nullptr, p; }
+            std::size_t size() const noexcept       { return b_.size(); }
+            std::size_t max_size() const noexcept   { return b_.max_size(); }
 
-            std::size_t size() const noexcept       { return std::distance(f_, e_); }
-            std::size_t max_size() const noexcept   { return std::numeric_limits<std::size_t>::max(); }
+            pointer begin() noexcept                { return b_.begin(); }
+            pointer end() noexcept                  { return b_.end(); }
 
-            pointer begin() noexcept                { return f_; }
-            pointer end() noexcept                  { return e_; }
+            reference emplace_back()                { return b_.emplace_back(), b_.back(); }
+            void push_back(const value_type& t)     { b_.push_back(t); }
+            void push_back(value_type&& t)          { b_.push_back(std::forward<value_type>(t)); }
 
-            reference emplace_back()                { return grow(), *e_++; }
-            void push_back(const value_type& t)     { grow(), *e_ = t, ++e_; }
-            void push_back(value_type&& t)          { grow(), *e_ = std::move(t), ++e_; }
-
-            void reserve(std::size_t n)             { n > std::size_t(l_ - f_) ? resize(n) : void(); }
+            template <typename II>
+                bool append(II f, II l)             { return b_.insert(b_.end(), f, l), true; }
 
             private:
-                void grow()                         { e_ == l_ ? resize((l_ - f_) * 2) : void(); }
-                    
-                void resize(std::size_t n) {
-                    CXON_ASSERT(n != 0 && n >= std::size_t(e_ - f_), "unexpected");
-                    auto const p = a_.create(n);
-                        std::move(f_, e_, p);
-                        a_.release(f_, l_ - f_);
-                    e_ = p + (e_ - f_), l_ = p + n, f_ = p;
-                }
-
-                pointer reduce() { return resize(e_ - f_), f_; }
-
-            private:
-                A a_;
-                pointer f_, l_, e_;
+                std::vector<T, typename std::allocator_traits<A>::template rebind_alloc<T>> b_;
         };
     template <typename X, typename T, typename Cx>
-        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, decltype(alc::make_context_allocator<T>(cx))> {
-            return { alc::make_context_allocator<T>(cx) };
+        inline auto make_pointer_container(Cx& cx) -> pointer_container<T, alc::context_allocator_type<T, Cx>> {
+            return { alc::context_allocator<T>(cx) };
         }
 
 }}
