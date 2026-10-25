@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['9', '10', '11', '12', '13', '14'] # 5, 6 - cio/numeric.hxx:289:52: error: invalid initialization of non-const reference of type ‘unsigned int&’ from an rvalue of type ‘unsigned int’
-                                                      # 7, 8 - unmet dependencies
+        compiler: ['9', '10', '11', '12', '13', '14', '15', '16'] # 5, 6 - cio/numeric.hxx:289:52: error: invalid initialization of non-const reference of type ‘unsigned int&’ from an rvalue of type ‘unsigned int’
+                                                                  # 7, 8 - unmet dependencies
       fail-fast: false
     steps:
     - uses: actions/checkout@v6
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['14']
+        compiler: ['16']
         standard: [14, 17, 20, 23, 26]
       fail-fast: false
     steps:
@@ -72,12 +72,12 @@ jobs:
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt-get install gcc-14-multilib g++-14-multilib
+      run: sudo apt-get install gcc-16-multilib g++-16-multilib
     - name: Boost setup
       run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-14
+        CXX: g++-16
         CXXFLAGS: -m32 -std=c++20
         LDFLAGS: -m32
       run: $CXX --version; make -j check
@@ -92,12 +92,12 @@ jobs:
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt-get install gcc-14 g++-14
+      run: sudo apt-get install gcc-16 g++-16
     - name: Boost setup
       run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-14
+        CXX: g++-16
         CXXFLAGS: -std=c++20 -g -O0 -fsanitize=undefined
         LDFLAGS: -fsanitize=undefined
       run: $CXX --version; make -j check
@@ -112,12 +112,12 @@ jobs:
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-get update -y
     - name: Compiler setup
-      run: sudo apt-get install gcc-14 g++-14
+      run: sudo apt-get install gcc-16 g++-16
     - name: Boost setup
       run: sudo apt-get install libboost-container-dev
     - name: Check
       env:
-        CXX: g++-14
+        CXX: g++-16
         CXXFLAGS: -std=c++20 -g -O0 -fsanitize=address
         LDFLAGS: -fsanitize=address
       run: $CXX --version; make -j check
@@ -151,8 +151,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'] # 5.0 - unmet dependencies
-                                                                                          # 4, 6, 7, 8 - include/c++/14/bitset:181:6: error: use of undeclared identifier '__builtin_is_constant_evaluated'; did you mean '__is_constant_evaluated'?
+        compiler: ['9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'] # 5.0 - unmet dependencies
+                                                                                                      # 4, 6, 7, 8 - include/c++/14/bitset:181:6: error: use of undeclared identifier '__builtin_is_constant_evaluated'; did you mean '__is_constant_evaluated'?
       fail-fast: false
     steps:
     - uses: actions/checkout@v6
@@ -164,6 +164,8 @@ jobs:
         echo 'deb [trusted=yes] http://us.archive.ubuntu.com/ubuntu/ focal universe'  | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://us.archive.ubuntu.com/ubuntu/ jammy main'      | sudo tee -a /etc/apt/sources.list
         echo 'deb [trusted=yes] http://us.archive.ubuntu.com/ubuntu/ jammy universe'  | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://us.archive.ubuntu.com/ubuntu/ noble main'      | sudo tee -a /etc/apt/sources.list
+        echo 'deb [trusted=yes] http://us.archive.ubuntu.com/ubuntu/ noble universe'  | sudo tee -a /etc/apt/sources.list
         sudo apt-get update
     - name: Compiler setup
       run: sudo apt-get install clang-${{ matrix.compiler }}
@@ -179,7 +181,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['20']
+        compiler: ['22']
       fail-fast: false
     steps:
     - uses: actions/checkout@v6
@@ -206,7 +208,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: ['20']
+        compiler: ['22']
         standard: [14, 17, 20, 23, 26]
       fail-fast: false
     steps:
