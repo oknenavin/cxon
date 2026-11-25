@@ -129,6 +129,7 @@ jobs:
 
   clang:
     runs-on: ubuntu-latest
+    needs: gcc
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v6
@@ -240,6 +241,7 @@ jobs:
 
   msvc:
     runs-on: windows-latest
+    needs: clang
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v6
@@ -343,6 +345,7 @@ jobs:
 
   xcode:
     runs-on: macos-latest
+    needs: msvc
     steps:
     - name: Checkout cxon
       uses: actions/checkout@v6
